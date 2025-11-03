@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment - CRITICAL: Never commit these!
+.env
+.env.*
+*.env
+docker/.env
+backend/.env
+
+# Credentials & Secrets - NEVER COMMIT
+**/Credentials.md
+credentials.*
+secrets.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+*.log
+
+# Azure & Cloud
+*.publishsettings
+*.azurePubxml
+
+# Backup files
+*.bak
+*.backup
+*~

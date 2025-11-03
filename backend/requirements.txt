@@ -1,0 +1,37 @@
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
+alembic==1.12.1
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+cryptography>=41.0.0
+pyasn1>=0.6.1
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Payment Processing
+stripe==7.10.0
+
+# AI Services
+anthropic==0.39.0  # Claude API for creative writing assistance
+
+# Azure SDK
+azure-storage-blob==12.19.0
+azure-identity==1.15.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Development
+python-dotenv==1.0.0
+requests==2.31.0  # For Keycloak setup script
