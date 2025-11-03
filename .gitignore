@@ -24,6 +24,7 @@ backend/.env
 
 # Credentials & Secrets - NEVER COMMIT
 **/Credentials.md
+GITHUB-SECRETS.md
 credentials.*
 secrets.*
 *.pem
@@ -60,3 +61,4 @@ htmlcov/
 *.bak
 *.backup
 *~
+SECURITY-AUDIT.md
