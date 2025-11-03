@@ -17,7 +17,12 @@ class Settings(BaseSettings):
     
     # Security
     SECRET_KEY: str = "CHANGE-ME-IN-PRODUCTION"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://app.workshelf.dev",
+        "https://workshelf-frontend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io"
+    ]
     
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://workshelf:password@localhost:5432/workshelf"
