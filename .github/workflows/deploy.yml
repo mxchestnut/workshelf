@@ -75,8 +75,7 @@ jobs:
               COPYSCAPE_API_KEY=secretref:copyscape-api-key \
               COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
               CLAUDE_MODEL=claude-4-sonnet-20250514 \
-              SECRET_KEY=secretref:secret-key \
-              ALLOWED_ORIGINS=* || \
+              SECRET_KEY=secretref:secret-key || \
           az containerapp create \
             --name workshelf-backend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
@@ -107,7 +106,6 @@ jobs:
               COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
               CLAUDE_MODEL=claude-4-sonnet-20250514 \
               SECRET_KEY=secretref:secret-key \
-              ALLOWED_ORIGINS=* \
             --cpu 0.25 --memory 0.5Gi \
             --min-replicas 0 --max-replicas 2
 
