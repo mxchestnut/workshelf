@@ -48,6 +48,8 @@ jobs:
           file: ./frontend/Dockerfile
           platforms: linux/amd64
           push: true
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
           tags: |
             ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest
             ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }}
@@ -111,17 +113,11 @@ jobs:
 
       - name: Deploy frontend to Azure Container Apps
         run: |
-          BACKEND_URL=$(az containerapp show \
-            --name workshelf-backend \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --query properties.configuration.ingress.fqdn \
-            --output tsv)
-          
           az containerapp update \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }} \
-            --set-env-vars VITE_API_URL=https://workshelf-backend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io || \
+            --set-env-vars VITE_API_URL=${{ secrets.VITE_API_URL }} || \
           az containerapp create \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
@@ -132,7 +128,7 @@ jobs:
             --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
             --registry-username ${{ secrets.ACR_USERNAME }} \
             --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --env-vars VITE_API_URL=https://workshelf-backend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io \
+            --env-vars VITE_API_URL=${{ secrets.VITE_API_URL }} \
             --cpu 0.25 --memory 0.5Gi \
             --min-replicas 1 --max-replicas 3
 
