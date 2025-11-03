@@ -1,0 +1,168 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+  BACKEND_IMAGE: workshelf-backend
+  FRONTEND_IMAGE: workshelf-frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:buildcache,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:buildcache,mode=max
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy backend to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }} \
+            --set-env-vars \
+              DATABASE_URL=secretref:database-url \
+              ANTHROPIC_API_KEY=secretref:anthropic-api-key \
+              STRIPE_SECRET_KEY=secretref:stripe-secret-key \
+              STRIPE_PUBLISHABLE_KEY=secretref:stripe-publishable-key \
+              STRIPE_WEBHOOK_SECRET=secretref:stripe-webhook-secret \
+              GPTZERO_API_KEY=secretref:gptzero-api-key \
+              COPYSCAPE_API_KEY=secretref:copyscape-api-key \
+              COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
+              CLAUDE_MODEL=claude-4-sonnet-20250514 \
+              SECRET_KEY=secretref:secret-key \
+              ALLOWED_ORIGINS=* || \
+          az containerapp create \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }} \
+            --target-port 8000 \
+            --ingress external \
+            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --secrets \
+              database-url=${{ secrets.DATABASE_URL }} \
+              anthropic-api-key=${{ secrets.ANTHROPIC_API_KEY }} \
+              stripe-secret-key=${{ secrets.STRIPE_SECRET_KEY }} \
+              stripe-publishable-key=${{ secrets.STRIPE_PUBLISHABLE_KEY }} \
+              stripe-webhook-secret=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+              gptzero-api-key=${{ secrets.GPTZERO_API_KEY }} \
+              copyscape-api-key=${{ secrets.COPYSCAPE_API_KEY }} \
+              secret-key=${{ secrets.SECRET_KEY }} \
+            --env-vars \
+              DATABASE_URL=secretref:database-url \
+              ANTHROPIC_API_KEY=secretref:anthropic-api-key \
+              STRIPE_SECRET_KEY=secretref:stripe-secret-key \
+              STRIPE_PUBLISHABLE_KEY=secretref:stripe-publishable-key \
+              STRIPE_WEBHOOK_SECRET=secretref:stripe-webhook-secret \
+              GPTZERO_API_KEY=secretref:gptzero-api-key \
+              COPYSCAPE_API_KEY=secretref:copyscape-api-key \
+              COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
+              CLAUDE_MODEL=claude-4-sonnet-20250514 \
+              SECRET_KEY=secretref:secret-key \
+              ALLOWED_ORIGINS=* \
+            --cpu 0.25 --memory 0.5Gi \
+            --min-replicas 0 --max-replicas 2
+
+      - name: Deploy frontend to Azure Container Apps
+        run: |
+          BACKEND_URL=$(az containerapp show \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          
+          az containerapp update \
+            --name workshelf-frontend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }} || \
+          az containerapp create \
+            --name workshelf-frontend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }} \
+            --target-port 80 \
+            --ingress external \
+            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --cpu 0.25 --memory 0.5Gi \
+            --min-replicas 0 --max-replicas 2
+
+      - name: Get deployment URLs
+        run: |
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          BACKEND_URL=$(az containerapp show \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          
+          FRONTEND_URL=$(az containerapp show \
+            --name workshelf-frontend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          
+          echo "### 📍 URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend API**: https://$BACKEND_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: https://$FRONTEND_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **API Docs**: https://$BACKEND_URL/api/docs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Quick Tests:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Health check" >> $GITHUB_STEP_SUMMARY
+          echo "curl https://$BACKEND_URL/health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# API status" >> $GITHUB_STEP_SUMMARY
+          echo "curl https://$BACKEND_URL/api/v1/status" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
