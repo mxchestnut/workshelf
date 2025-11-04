@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app.models.collaboration import Group, GroupMember, GroupMemberRole, GroupPrivacyType
 from app.models.user import User
+from app.models.tenant import Tenant
 from app.core.config import settings
 
 
@@ -24,17 +25,32 @@ def create_test_data():
     engine = create_engine(settings.DATABASE_URL.replace('postgresql+asyncpg://', 'postgresql://'))
     
     with Session(engine) as db:
+        # Get or create default tenant
+        tenant = db.query(Tenant).first()
+        if not tenant:
+            tenant = Tenant(
+                name="WorkShelf",
+                slug="workshelf",
+                is_active=True
+            )
+            db.add(tenant)
+            db.flush()
+            print(f"✅ Created default tenant: {tenant.name}")
+        
         # Get or create a test user
         test_user = db.query(User).filter(User.email == "admin@workshelf.dev").first()
         if not test_user:
             test_user = User(
+                keycloak_id=f"test-admin-{datetime.utcnow().timestamp()}",
                 email="admin@workshelf.dev",
                 username="admin",
-                full_name="Admin User",
-                is_active=True
+                display_name="Admin User",
+                is_active=True,
+                tenant_id=tenant.id
             )
             db.add(test_user)
             db.flush()
+            print(f"✅ Created test user: {test_user.email}")
         
         # Create test groups with subdomain requests
         test_groups = [
