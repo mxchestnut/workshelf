@@ -147,8 +147,6 @@ async def get_pending_group_subdomains(
     
     **Tailscale-protected endpoint** - Only accessible from internal network.
     """
-    from app.models.collaboration import GroupMember, GroupMemberRole
-    
     result = await db.execute(
         select(Group).filter(
             and_(
@@ -162,25 +160,14 @@ async def get_pending_group_subdomains(
     
     results = []
     for group in groups:
-        # Find the owner
-        owner_result = await db.execute(
-            select(User).join(GroupMember).filter(
-                and_(
-                    GroupMember.group_id == group.id,
-                    GroupMember.role == GroupMemberRole.OWNER
-                )
-            )
-        )
-        owner = owner_result.scalar_one_or_none()
-        
         results.append(GroupPendingResponse(
             id=group.id,
             name=group.name,
             slug=group.slug,
             subdomain_requested=group.subdomain_requested,
             created_at=group.created_at,
-            member_count=group.member_count,
-            owner_username=owner.username if owner else None
+            member_count=0,  # TODO: Calculate member count when group_members table is available
+            owner_username=None  # TODO: Add owner lookup when GroupMemberRole enum exists
         ))
     
     return results
