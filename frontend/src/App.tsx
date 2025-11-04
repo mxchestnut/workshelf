@@ -11,7 +11,9 @@ import {
   TrendingUp,
   Star,
   Clock,
-  MoreVertical
+  MoreVertical,
+  Menu,
+  X
 } from 'lucide-react'
 import './App.css'
 
@@ -33,6 +35,7 @@ interface Document {
 function App() {
   const [health, setHealth] = useState<HealthStatus | null>(null)
   const [activeTab, setActiveTab] = useState('documents')
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -64,47 +67,18 @@ function App() {
       <header className="border-b border-neutral-light bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg transition-colors"
+              >
+                {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              
               <div className="flex items-center gap-2">
                 <BookOpen className="w-8 h-8 text-primary" />
                 <h1 className="text-2xl font-bold text-neutral-darkest">Work Shelf</h1>
               </div>
-              
-              <nav className="hidden md:flex items-center gap-6">
-                <button 
-                  onClick={() => setActiveTab('documents')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === 'documents' 
-                      ? 'bg-primary text-white' 
-                      : 'text-neutral-dark hover:bg-neutral-light/50'
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Documents</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab('projects')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === 'projects' 
-                      ? 'bg-primary text-white' 
-                      : 'text-neutral-dark hover:bg-neutral-light/50'
-                  }`}
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  <span>Projects</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab('community')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    activeTab === 'community' 
-                      ? 'bg-primary text-white' 
-                      : 'text-neutral-dark hover:bg-neutral-light/50'
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  <span>Community</span>
-                </button>
-              </nav>
             </div>
 
             <div className="flex items-center gap-4">
@@ -122,7 +96,7 @@ function App() {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
               </button>
               
-              <button className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg">
+              <button className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg hidden md:block">
                 <Settings className="w-5 h-5" />
               </button>
               
@@ -134,6 +108,79 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Sidebar Navigation */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity ${
+          menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMenuOpen(false)}
+      />
+      <aside 
+        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform ${
+          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-7 h-7 text-primary" />
+              <h2 className="text-xl font-bold text-neutral-darkest">Work Shelf</h2>
+            </div>
+            <button 
+              onClick={() => setMenuOpen(false)}
+              className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <nav className="space-y-2">
+            <button 
+              onClick={() => { setActiveTab('documents'); setMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                activeTab === 'documents' 
+                  ? 'bg-primary text-white' 
+                  : 'text-neutral-dark hover:bg-neutral-light/50'
+              }`}
+            >
+              <FileText className="w-5 h-5" />
+              <span className="font-medium">Documents</span>
+            </button>
+            
+            <button 
+              onClick={() => { setActiveTab('projects'); setMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                activeTab === 'projects' 
+                  ? 'bg-primary text-white' 
+                  : 'text-neutral-dark hover:bg-neutral-light/50'
+              }`}
+            >
+              <FolderOpen className="w-5 h-5" />
+              <span className="font-medium">Projects</span>
+            </button>
+            
+            <button 
+              onClick={() => { setActiveTab('community'); setMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                activeTab === 'community' 
+                  ? 'bg-primary text-white' 
+                  : 'text-neutral-dark hover:bg-neutral-light/50'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              <span className="font-medium">Community</span>
+            </button>
+
+            <div className="pt-6 mt-6 border-t border-neutral-light">
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-neutral-light/50 transition-colors">
+                <Settings className="w-5 h-5" />
+                <span className="font-medium">Settings</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+      </aside>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
