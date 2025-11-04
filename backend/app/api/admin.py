@@ -3,8 +3,8 @@ Admin API - Platform Administration Endpoints
 Secured via Tailscale for internal staff use only
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, func
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
@@ -76,42 +76,55 @@ class AdminStatsResponse(BaseModel):
 # ============================================================================
 
 @router.get("/stats", response_model=AdminStatsResponse)
-async def get_admin_stats(db: Session = Depends(get_db)):
+async def get_admin_stats(db: AsyncSession = Depends(get_db)):
     """
     Get admin dashboard statistics
     
     **Note**: This endpoint should be protected by Tailscale network security.
     Only accessible from internal network.
     """
-    from sqlalchemy import func
     from app.models.studio import Studio
     
     # Count pending subdomain requests
-    pending_subdomains = db.query(Group).filter(
-        and_(
-            Group.subdomain_requested.isnot(None),
-            Group.subdomain_approved == False
+    pending_subdomains_result = await db.execute(
+        select(func.count()).select_from(Group).filter(
+            and_(
+                Group.subdomain_requested.isnot(None),
+                Group.subdomain_approved == False
+            )
         )
-    ).count()
+    )
+    pending_subdomains = pending_subdomains_result.scalar() or 0
     
-    # Count pending custom domains
-    pending_domains = db.query(StudioCustomDomain).filter(
-        StudioCustomDomain.status == "pending"
-    ).count()
+    # Count pending custom domains  
+    pending_domains_result = await db.execute(
+        select(func.count()).select_from(StudioCustomDomain).filter(
+            StudioCustomDomain.status == "pending"
+        )
+    )
+    pending_domains = pending_domains_result.scalar() or 0
     
     # Total counts
-    total_groups = db.query(Group).count()
-    total_studios = db.query(Studio).count()
-    total_users = db.query(User).count()
+    total_groups_result = await db.execute(select(func.count()).select_from(Group))
+    total_groups = total_groups_result.scalar() or 0
+    
+    total_studios_result = await db.execute(select(func.count()).select_from(Studio))
+    total_studios = total_studios_result.scalar() or 0
+    
+    total_users_result = await db.execute(select(func.count()).select_from(User))
+    total_users = total_users_result.scalar() or 0
     
     # Approved today
     today = datetime.utcnow().date()
-    approved_today = db.query(Group).filter(
-        and_(
-            Group.subdomain_approved == True,
-            func.date(Group.subdomain_approved_at) == today
+    approved_today_result = await db.execute(
+        select(func.count()).select_from(Group).filter(
+            and_(
+                Group.subdomain_approved == True,
+                func.date(Group.subdomain_approved_at) == today
+            )
         )
-    ).count()
+    )
+    approved_today = approved_today_result.scalar() or 0
     
     return AdminStatsResponse(
         pending_group_subdomains=pending_subdomains,
@@ -127,33 +140,38 @@ async def get_admin_stats(db: Session = Depends(get_db)):
 async def get_pending_group_subdomains(
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get all groups with pending subdomain requests
     
     **Tailscale-protected endpoint** - Only accessible from internal network.
     """
-    from sqlalchemy.orm import joinedload
     from app.models.collaboration import GroupMember, GroupMemberRole
     
-    groups = db.query(Group).filter(
-        and_(
-            Group.subdomain_requested.isnot(None),
-            Group.subdomain_approved == False,
-            Group.subdomain_rejection_reason.is_(None)  # Not already rejected
-        )
-    ).order_by(Group.created_at.desc()).limit(limit).offset(offset).all()
+    result = await db.execute(
+        select(Group).filter(
+            and_(
+                Group.subdomain_requested.isnot(None),
+                Group.subdomain_approved == False,
+                Group.subdomain_rejection_reason.is_(None)
+            )
+        ).order_by(Group.created_at.desc()).limit(limit).offset(offset)
+    )
+    groups = result.scalars().all()
     
     results = []
     for group in groups:
         # Find the owner
-        owner = db.query(User).join(GroupMember).filter(
-            and_(
-                GroupMember.group_id == group.id,
-                GroupMember.role == GroupMemberRole.OWNER
+        owner_result = await db.execute(
+            select(User).join(GroupMember).filter(
+                and_(
+                    GroupMember.group_id == group.id,
+                    GroupMember.role == GroupMemberRole.OWNER
+                )
             )
-        ).first()
+        )
+        owner = owner_result.scalar_one_or_none()
         
         results.append(GroupPendingResponse(
             id=group.id,
@@ -173,14 +191,16 @@ async def approve_group_subdomain(
     group_id: int,
     request: GroupApprovalRequest,
     admin_user_id: int = Query(..., description="Admin user ID approving this request"),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Approve or reject a group subdomain request
     
     **Tailscale-protected endpoint** - Only accessible from internal network.
     """
-    group = db.query(Group).filter(Group.id == group_id).first()
+    result = await db.execute(select(Group).filter(Group.id == group_id))
+    group = result.scalar_one_or_none()
+    
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     
@@ -189,13 +209,16 @@ async def approve_group_subdomain(
     
     if request.approved:
         # Check if subdomain is already taken
-        existing = db.query(Group).filter(
-            and_(
-                Group.subdomain_requested == group.subdomain_requested,
-                Group.subdomain_approved == True,
-                Group.id != group_id
+        existing_result = await db.execute(
+            select(Group).filter(
+                and_(
+                    Group.subdomain_requested == group.subdomain_requested,
+                    Group.subdomain_approved == True,
+                    Group.id != group_id
+                )
             )
-        ).first()
+        )
+        existing = existing_result.scalar_one_or_none()
         
         if existing:
             raise HTTPException(
@@ -215,8 +238,8 @@ async def approve_group_subdomain(
         
         message = f"Subdomain '{group.subdomain_requested}' rejected for group '{group.name}'"
     
-    db.commit()
-    db.refresh(group)
+    await db.commit()
+    await db.refresh(group)
     
     return {
         "success": True,
@@ -235,7 +258,7 @@ async def approve_group_subdomain(
 async def get_pending_custom_domains(
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get all custom domains pending approval
@@ -244,13 +267,19 @@ async def get_pending_custom_domains(
     """
     from app.models.studio import Studio
     
-    domains = db.query(StudioCustomDomain).join(Studio).filter(
-        StudioCustomDomain.status == "pending"
-    ).order_by(StudioCustomDomain.created_at.desc()).limit(limit).offset(offset).all()
+    result = await db.execute(
+        select(StudioCustomDomain).join(Studio).filter(
+            StudioCustomDomain.status == "pending"
+        ).order_by(StudioCustomDomain.created_at.desc()).limit(limit).offset(offset)
+    )
+    domains = result.scalars().all()
     
     results = []
     for domain in domains:
-        studio = db.query(Studio).filter(Studio.id == domain.studio_id).first()
+        studio_result = await db.execute(
+            select(Studio).filter(Studio.id == domain.studio_id)
+        )
+        studio = studio_result.scalar_one_or_none()
         
         results.append(DomainPendingResponse(
             id=domain.id,
@@ -269,14 +298,18 @@ async def get_pending_custom_domains(
 async def approve_custom_domain(
     domain_id: int,
     request: DomainApprovalRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Approve or reject a custom domain request
     
     **Tailscale-protected endpoint** - Only accessible from internal network.
     """
-    domain = db.query(StudioCustomDomain).filter(StudioCustomDomain.id == domain_id).first()
+    result = await db.execute(
+        select(StudioCustomDomain).filter(StudioCustomDomain.id == domain_id)
+    )
+    domain = result.scalar_one_or_none()
+    
     if not domain:
         raise HTTPException(status_code=404, detail="Custom domain not found")
     
@@ -289,8 +322,8 @@ async def approve_custom_domain(
         domain.error_message = request.rejection_reason
         message = f"Custom domain '{domain.domain}' rejected"
     
-    db.commit()
-    db.refresh(domain)
+    await db.commit()
+    await db.refresh(domain)
     
     return {
         "success": True,
