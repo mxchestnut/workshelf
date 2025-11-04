@@ -2,7 +2,7 @@
 Phase 4 Feedback & Collaboration Models
 Models for comments, beta reading, groups, and messaging
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index, Numeric, ARRAY
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -191,6 +191,7 @@ class Group(Base, TimestampMixin):
     description = Column(Text, nullable=True)
     avatar_url = Column(String(500), nullable=True)
     tags = Column(JSON, nullable=True)
+    interests = Column(ARRAY(String), nullable=True)  # User-defined interests for AI template generation
     rules = Column(Text, nullable=True)
     
     # Settings

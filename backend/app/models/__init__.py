@@ -37,6 +37,9 @@ from app.models.advanced import (
 from app.models.templates import (
     ProjectTemplate, TemplateSection, TemplateSearch
 )
+from app.models.ai_templates import (
+    AIGeneratedTemplate, TemplateInterestMapping, AIGenerationLog
+)
 
 __all__ = [
     "Base",
@@ -114,4 +117,8 @@ __all__ = [
     "ProjectTemplate",
     "TemplateSection",
     "TemplateSearch",
+    # AI Templates
+    "AIGeneratedTemplate",
+    "TemplateInterestMapping",
+    "AIGenerationLog",
 ]
