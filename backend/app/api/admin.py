@@ -78,8 +78,8 @@ class AdminStatsResponse(BaseModel):
 
 @router.get("/stats", response_model=AdminStatsResponse)
 async def get_admin_stats(
-    db: AsyncSession = Depends(get_db),
-    staff_user: User = Depends(require_staff)
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get admin dashboard statistics
@@ -141,10 +141,10 @@ async def get_admin_stats(
 
 @router.get("/groups/pending", response_model=List[GroupPendingResponse])
 async def get_pending_group_subdomains(
-    limit: int = Query(50, le=100),
-    offset: int = Query(0, ge=0),
+    staff_user: User = Depends(require_staff),
     db: AsyncSession = Depends(get_db),
-    staff_user: User = Depends(require_staff)
+    limit: int = Query(50, le=100),
+    offset: int = Query(0, ge=0)
 ):
     """
     Get all groups with pending subdomain requests
@@ -181,8 +181,8 @@ async def get_pending_group_subdomains(
 async def approve_group_subdomain(
     group_id: int,
     request: GroupApprovalRequest,
-    db: AsyncSession = Depends(get_db),
     staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db),
     admin_user_id: Optional[int] = Query(None, description="Admin user ID approving this request")
 ):
     """
