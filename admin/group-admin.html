@@ -613,6 +613,99 @@
                         </div>
                     </div>
                     
+                    <!-- Interests/Tags Section -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--color-bg-dark);">Interests & Tags</h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Help others discover your group and get AI-powered template recommendations based on your interests.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <!-- Current Interests Display -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Interests</label>
+                                <div id="interests-display" class="flex flex-wrap gap-2 mb-3 min-h-[40px] p-2 border border-gray-200 rounded-lg">
+                                    <!-- Tags will be inserted here -->
+                                    <span class="text-sm text-gray-400">No interests added yet</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Add Interest Input -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add Interest</label>
+                                <div class="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        id="interest-input" 
+                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                                        placeholder="e.g., science fiction, worldbuilding, D&D..."
+                                        onkeypress="if(event.key === 'Enter') { addInterest(); event.preventDefault(); }"
+                                    >
+                                    <button onclick="addInterest()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Suggested Interests -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Popular Interests (click to add)</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="addSuggestedInterest('science fiction')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🚀 science fiction
+                                    </button>
+                                    <button onclick="addSuggestedInterest('fantasy')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🧙 fantasy
+                                    </button>
+                                    <button onclick="addSuggestedInterest('worldbuilding')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🗺️ worldbuilding
+                                    </button>
+                                    <button onclick="addSuggestedInterest('creative writing')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        ✍️ creative writing
+                                    </button>
+                                    <button onclick="addSuggestedInterest('D&D')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🎲 D&D
+                                    </button>
+                                    <button onclick="addSuggestedInterest('screenwriting')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🎬 screenwriting
+                                    </button>
+                                    <button onclick="addSuggestedInterest('business')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        💼 business
+                                    </button>
+                                    <button onclick="addSuggestedInterest('academic research')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🎓 academic research
+                                    </button>
+                                    <button onclick="addSuggestedInterest('game development')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        🎮 game development
+                                    </button>
+                                    <button onclick="addSuggestedInterest('poetry')" class="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition">
+                                        📜 poetry
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="text-sm text-blue-800">
+                                        <p class="font-semibold mb-1">Why add interests?</p>
+                                        <ul class="list-disc ml-4 space-y-1">
+                                            <li>Get AI-generated project templates tailored to your group</li>
+                                            <li>Help new users discover your group when browsing</li>
+                                            <li>Connect with similar communities</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="saveInterests()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                                Save Interests
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Privacy Settings</h3>
                         <div class="space-y-4">
@@ -933,6 +1026,8 @@
                 loadStudios();
             } else if (sectionName === 'members') {
                 loadMembers();
+            } else if (sectionName === 'settings') {
+                loadInterests();
             }
         }
 
@@ -1193,6 +1288,93 @@
                 console.error('Error saving settings:', error);
                 alert('Failed to save settings. Please try again.');
             }
+        }
+
+        // Interests/Tags Management
+        let groupInterests = [];
+
+        function renderInterests() {
+            const display = document.getElementById('interests-display');
+            if (!groupInterests || groupInterests.length === 0) {
+                display.innerHTML = '<span class="text-sm text-gray-400">No interests added yet</span>';
+                return;
+            }
+            
+            display.innerHTML = groupInterests.map(interest => `
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
+                    ${interest}
+                    <button onclick="removeInterest('${interest}')" class="ml-2 hover:text-orange-600">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        function addInterest() {
+            const input = document.getElementById('interest-input');
+            const interest = input.value.trim().toLowerCase();
+            
+            if (!interest) {
+                return;
+            }
+            
+            if (groupInterests.includes(interest)) {
+                alert('This interest is already added');
+                input.value = '';
+                return;
+            }
+            
+            groupInterests.push(interest);
+            renderInterests();
+            input.value = '';
+        }
+
+        function addSuggestedInterest(interest) {
+            if (groupInterests.includes(interest)) {
+                alert('This interest is already added');
+                return;
+            }
+            
+            groupInterests.push(interest);
+            renderInterests();
+        }
+
+        function removeInterest(interest) {
+            groupInterests = groupInterests.filter(i => i !== interest);
+            renderInterests();
+        }
+
+        async function saveInterests() {
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        interests: groupInterests
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to save interests');
+                
+                const updated = await response.json();
+                currentGroup.interests = updated.interests;
+                
+                alert('Interests saved successfully! 🎉\n\nYour group can now:\n• Get AI-generated templates tailored to these interests\n• Be discovered by users searching for similar topics');
+                await loadGroupData();
+            } catch (error) {
+                console.error('Error saving interests:', error);
+                alert('Failed to save interests. Please try again.');
+            }
+        }
+
+        function loadInterests() {
+            groupInterests = currentGroup.interests || [];
+            renderInterests();
         }
 
         function saveColors() {
