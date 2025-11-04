@@ -29,7 +29,8 @@ from app.api import (
     export,
     accessibility,
     ai_assist,
-    admin  # Admin endpoints for platform staff
+    admin,  # Admin endpoints for platform staff
+    group_admin  # Group admin endpoints for subdomain owners
 )
 
 api_router = APIRouter()
@@ -105,5 +106,8 @@ api_router.include_router(accessibility.router)
 # AI Assistance (helps users CREATE, never writes FOR them)
 api_router.include_router(ai_assist.router)
 
-# Admin endpoints (Tailscale-protected for platform staff)
+# Admin endpoints (Keycloak-protected for platform staff)
 api_router.include_router(admin.router)
+
+# Group admin endpoints (Keycloak-protected for group owners)
+api_router.include_router(group_admin.router)

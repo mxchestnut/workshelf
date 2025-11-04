@@ -1,6 +1,6 @@
 """
 Admin API - Platform Administration Endpoints
-Secured via Tailscale for internal staff use only
+Secured via Keycloak authentication with is_staff check
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +10,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from app.core.database import get_db
+from app.core.auth import require_staff
 from app.models.collaboration import Group
 from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
@@ -76,12 +77,14 @@ class AdminStatsResponse(BaseModel):
 # ============================================================================
 
 @router.get("/stats", response_model=AdminStatsResponse)
-async def get_admin_stats(db: AsyncSession = Depends(get_db)):
+async def get_admin_stats(
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff)
+):
     """
     Get admin dashboard statistics
     
-    **Note**: This endpoint should be protected by Tailscale network security.
-    Only accessible from internal network.
+    **Requires**: Platform staff authentication (is_staff=True)
     """
     from app.models.studio import Studio
     
@@ -140,12 +143,13 @@ async def get_admin_stats(db: AsyncSession = Depends(get_db)):
 async def get_pending_group_subdomains(
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff)
 ):
     """
     Get all groups with pending subdomain requests
     
-    **Tailscale-protected endpoint** - Only accessible from internal network.
+    **Requires**: Platform staff authentication (is_staff=True)
     """
     result = await db.execute(
         select(Group).filter(
@@ -177,13 +181,14 @@ async def get_pending_group_subdomains(
 async def approve_group_subdomain(
     group_id: int,
     request: GroupApprovalRequest,
-    admin_user_id: Optional[int] = Query(None, description="Admin user ID approving this request"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff),
+    admin_user_id: Optional[int] = Query(None, description="Admin user ID approving this request")
 ):
     """
     Approve or reject a group subdomain request
     
-    **Tailscale-protected endpoint** - Only accessible from internal network.
+    **Requires**: Platform staff authentication (is_staff=True)
     """
     result = await db.execute(select(Group).filter(Group.id == group_id))
     group = result.scalar_one_or_none()
@@ -245,12 +250,13 @@ async def approve_group_subdomain(
 async def get_pending_custom_domains(
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff)
 ):
     """
     Get all custom domains pending approval
     
-    **Tailscale-protected endpoint** - Only accessible from internal network.
+    **Requires**: Platform staff authentication (is_staff=True)
     """
     from app.models.studio import Studio
     
@@ -285,12 +291,13 @@ async def get_pending_custom_domains(
 async def approve_custom_domain(
     domain_id: int,
     request: DomainApprovalRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff)
 ):
     """
     Approve or reject a custom domain request
     
-    **Tailscale-protected endpoint** - Only accessible from internal network.
+    **Requires**: Platform staff authentication (is_staff=True)
     """
     result = await db.execute(
         select(StudioCustomDomain).filter(StudioCustomDomain.id == domain_id)

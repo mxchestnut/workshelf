@@ -236,3 +236,67 @@ class RequireRole:
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Access denied: requires role '{self.role}'"
         )
+
+
+async def get_current_user_from_db(
+    db,  # AsyncSession
+    user_payload: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Get the full User model from database based on Keycloak token
+    
+    Returns:
+        User model instance
+    """
+    from app.models.user import User
+    from sqlalchemy import select
+    
+    keycloak_id = user_payload["sub"]
+    
+    result = await db.execute(
+        select(User).filter(User.keycloak_id == keycloak_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found in database"
+        )
+    
+    return user
+
+
+async def require_staff(
+    db,  # AsyncSession
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Require user to be platform staff (is_staff=True)
+    
+    Returns:
+        User model instance if user is staff
+    """
+    from app.models.user import User
+    from sqlalchemy import select
+    
+    keycloak_id = user["sub"]
+    
+    result = await db.execute(
+        select(User).filter(User.keycloak_id == keycloak_id)
+    )
+    db_user = result.scalar_one_or_none()
+    
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if not db_user.is_staff:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Platform staff access required"
+        )
+    
+    return db_user
