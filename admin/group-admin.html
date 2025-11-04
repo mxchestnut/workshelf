@@ -966,10 +966,17 @@
                 if (groups.length > 0) {
                     currentGroup = groups[0]; // For now, use first group
                     document.getElementById('group-name').textContent = currentGroup.name;
-                    document.getElementById('subdomain-badge').textContent = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
-                    document.getElementById('current-subdomain').textContent = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
+                    
+                    // Show subdomain if approved, otherwise show requested subdomain
+                    const subdomain = currentGroup.subdomain_requested || 'not-set';
+                    const subdomainDisplay = currentGroup.subdomain_approved 
+                        ? `${subdomain}.workshelf.dev` 
+                        : `${subdomain} (pending approval)`;
+                    
+                    document.getElementById('subdomain-badge').textContent = subdomain;
+                    document.getElementById('current-subdomain').textContent = subdomainDisplay;
                     document.getElementById('settings-group-name').value = currentGroup.name;
-                    document.getElementById('settings-subdomain').value = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
+                    document.getElementById('settings-subdomain').value = subdomain;
                     
                     await loadDashboardStats();
                     await loadMembers();
