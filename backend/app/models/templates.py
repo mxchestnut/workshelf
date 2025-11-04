@@ -2,10 +2,9 @@
 Project Template Models
 Templates for studios with pre-built structures and AI prompts
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Index, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 from app.models.base import Base, TimestampMixin
 
@@ -63,7 +62,7 @@ class TemplateSection(Base):
     # Format: [{"id": "prompt1", "question": "What is...", "type": "short_text", "help_text": "..."}, ...]
     ai_prompts = Column(JSONB, nullable=True)
     
-    created_at = Column(DateTime(timezone=True), server_default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=text('now()'), nullable=False)
     
     # Relationships
     template = relationship("ProjectTemplate", back_populates="sections")
@@ -89,7 +88,7 @@ class TemplateSearch(Base):
     selected_template_id = Column(Integer, ForeignKey('project_templates.id', ondelete='SET NULL'), nullable=True)
     created_blank = Column(Boolean, default=False, nullable=False)  # user chose "Start from Scratch"
     
-    created_at = Column(DateTime(timezone=True), server_default=datetime.utcnow, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=text('now()'), nullable=False, index=True)
     
     # Relationships
     user = relationship("User")
