@@ -177,7 +177,7 @@ async def get_pending_group_subdomains(
 async def approve_group_subdomain(
     group_id: int,
     request: GroupApprovalRequest,
-    admin_user_id: int = Query(..., description="Admin user ID approving this request"),
+    admin_user_id: Optional[int] = Query(None, description="Admin user ID approving this request"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -215,7 +215,7 @@ async def approve_group_subdomain(
         
         group.subdomain_approved = True
         group.subdomain_approved_at = datetime.utcnow()
-        group.subdomain_approved_by = admin_user_id
+        group.subdomain_approved_by = admin_user_id  # Will be None if not provided
         group.subdomain_rejection_reason = None
         
         message = f"Subdomain '{group.subdomain_requested}' approved for group '{group.name}'"

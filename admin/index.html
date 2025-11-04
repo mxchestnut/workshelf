@@ -312,7 +312,7 @@
             
             try {
                 const response = await fetch(
-                    `${API_BASE}/admin/groups/${currentAction.groupId}/subdomain/approve?admin_user_id=1`,
+                    `${API_BASE}/admin/groups/${currentAction.groupId}/subdomain/approve`,
                     {
                         method: 'POST',
                         headers: {
