@@ -468,6 +468,70 @@
                     </div>
                 </div>
                 
+                <!-- Scholarship/Sliding Scale Section -->
+                <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg shadow p-6 mb-6 border border-orange-200">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-900">Financial Assistance Available</h3>
+                                <p class="text-sm text-gray-600 mt-1">We believe in making Work Shelf accessible to everyone</p>
+                            </div>
+                        </div>
+                        <span id="scholarship-badge" class="hidden px-3 py-1 text-sm font-medium rounded-full"></span>
+                    </div>
+                    
+                    <div id="scholarship-info" class="space-y-4">
+                        <p class="text-gray-700">
+                            If you're unable to afford our standard pricing, you can apply for a scholarship or sliding scale payment option. We review each application individually and work with you to find a sustainable solution.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white rounded-lg p-4 border border-orange-200">
+                                <h4 class="font-semibold text-gray-900 mb-2">💫 Free Scholarship</h4>
+                                <p class="text-sm text-gray-600">100% free access for those in financial hardship</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border border-orange-200">
+                                <h4 class="font-semibold text-gray-900 mb-2">📊 Sliding Scale</h4>
+                                <p class="text-sm text-gray-600">Pay what you can afford (custom pricing)</p>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onclick="openScholarshipModal()" 
+                            class="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-medium rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg">
+                            Apply for Financial Assistance
+                        </button>
+                    </div>
+                    
+                    <!-- Scholarship Status (shown when application exists) -->
+                    <div id="scholarship-status" class="hidden">
+                        <div class="bg-white rounded-lg p-4 border border-orange-200">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Your Application Status</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <p class="text-gray-700"><span class="font-medium">Request Type:</span> <span id="status-type"></span></p>
+                                        <p class="text-gray-700"><span class="font-medium">Status:</span> <span id="status-current" class="font-semibold"></span></p>
+                                        <p class="text-gray-700"><span class="font-medium">Submitted:</span> <span id="status-date"></span></p>
+                                        <div id="status-decision" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                                            <p class="font-medium text-green-900 mb-1">✅ Approved!</p>
+                                            <p class="text-sm text-green-800"><span class="font-medium">Plan:</span> <span id="approved-plan"></span></p>
+                                            <p class="text-sm text-green-800"><span class="font-medium">Price:</span> $<span id="approved-price"></span>/month (<span id="approved-discount"></span>% off)</p>
+                                            <p class="text-sm text-green-800"><span class="font-medium">Expires:</span> <span id="approved-expires"></span></p>
+                                        </div>
+                                        <div id="status-notes" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                                            <p class="text-sm text-blue-900"><strong>Staff Notes:</strong> <span id="notes-text"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Payment Method</h3>
                     <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -665,6 +729,118 @@
         </div>
     </div>
 
+    <!-- Scholarship Application Modal -->
+    <div id="modal-scholarship" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target === this) closeModal('modal-scholarship')">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-2xl font-bold" style="color: var(--color-bg-dark);">Apply for Financial Assistance</h3>
+                <p class="text-gray-600 mt-2">Tell us about your situation so we can find the best solution for you.</p>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Request Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">What are you requesting?</label>
+                    <select id="scholarship-request-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <option value="free">Free Access (100% scholarship)</option>
+                        <option value="sliding_scale">Sliding Scale (Pay what you can)</option>
+                    </select>
+                </div>
+                
+                <!-- Monthly Budget (for sliding scale) -->
+                <div id="budget-field" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">What can you afford per month? (Optional)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                        <input 
+                            type="number" 
+                            id="scholarship-budget" 
+                            min="0" 
+                            step="0.01"
+                            placeholder="0.00"
+                            class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Help us understand your budget. This is not binding.</p>
+                </div>
+                
+                <!-- Current Financial Situation -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Describe your current financial situation <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="scholarship-financial" 
+                        rows="4" 
+                        required
+                        minlength="50"
+                        maxlength="2000"
+                        placeholder="Please share details about your current financial circumstances..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1"><span id="financial-count">0</span>/2000 characters (minimum 50)</p>
+                </div>
+                
+                <!-- Why Important -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Why is Work Shelf important to you and your community? <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="scholarship-why" 
+                        rows="4" 
+                        required
+                        minlength="50"
+                        maxlength="2000"
+                        placeholder="Tell us about your writing community and why this platform matters to you..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1"><span id="why-count">0</span>/2000 characters (minimum 50)</p>
+                </div>
+                
+                <!-- How Will Use -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        How will you use Work Shelf? <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="scholarship-use" 
+                        rows="4" 
+                        required
+                        minlength="50"
+                        maxlength="2000"
+                        placeholder="Describe what you plan to do with your group on Work Shelf..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1"><span id="use-count">0</span>/2000 characters (minimum 50)</p>
+                </div>
+                
+                <!-- Additional Info -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Anything else you'd like us to know? (Optional)
+                    </label>
+                    <textarea 
+                        id="scholarship-additional" 
+                        rows="3" 
+                        maxlength="2000"
+                        placeholder="Any additional context that might help us understand your situation..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1"><span id="additional-count">0</span>/2000 characters</p>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-blue-900">
+                        <strong>💡 Note:</strong> We review all applications individually. Our goal is to make Work Shelf accessible while sustaining the platform. We may suggest alternatives or negotiate pricing that works for both of us.
+                    </p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-scholarship')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="submitScholarship()" class="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-2 rounded-lg font-medium hover:from-orange-700 hover:to-orange-800">
+                    Submit Application
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration
         const KEYCLOAK_URL = 'https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io';
@@ -797,6 +973,7 @@
                     
                     await loadDashboardStats();
                     await loadMembers();
+                    await loadScholarshipStatus();
                 }
             } catch (error) {
                 console.error('Error loading group data:', error);
@@ -969,6 +1146,176 @@
                 }
             });
         });
+
+        // Scholarship functions
+        function openScholarshipModal() {
+            openModal('modal-scholarship');
+            
+            // Setup character counters
+            ['financial', 'why', 'use', 'additional'].forEach(field => {
+                const textarea = document.getElementById(`scholarship-${field}`);
+                const counter = document.getElementById(`${field}-count`);
+                if (textarea && counter) {
+                    textarea.addEventListener('input', () => {
+                        counter.textContent = textarea.value.length;
+                    });
+                }
+            });
+            
+            // Show/hide budget field based on request type
+            const typeSelect = document.getElementById('scholarship-request-type');
+            const budgetField = document.getElementById('budget-field');
+            typeSelect.addEventListener('change', () => {
+                if (typeSelect.value === 'sliding_scale') {
+                    budgetField.classList.remove('hidden');
+                } else {
+                    budgetField.classList.add('hidden');
+                }
+            });
+        }
+
+        async function submitScholarship() {
+            const requestType = document.getElementById('scholarship-request-type').value;
+            const financial = document.getElementById('scholarship-financial').value;
+            const why = document.getElementById('scholarship-why').value;
+            const use = document.getElementById('scholarship-use').value;
+            const additional = document.getElementById('scholarship-additional').value;
+            const budget = document.getElementById('scholarship-budget').value;
+            
+            // Validation
+            if (financial.length < 50) {
+                alert('Please provide more detail about your financial situation (minimum 50 characters)');
+                return;
+            }
+            if (why.length < 50) {
+                alert('Please tell us more about why Work Shelf is important to you (minimum 50 characters)');
+                return;
+            }
+            if (use.length < 50) {
+                alert('Please describe how you plan to use Work Shelf (minimum 50 characters)');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.id}/scholarship`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        group_id: currentGroup.id,
+                        request_type: requestType,
+                        current_financial_situation: financial,
+                        why_important: why,
+                        how_will_use: use,
+                        additional_info: additional || null,
+                        monthly_budget: budget ? parseFloat(budget) : null
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to submit scholarship application');
+                }
+                
+                const result = await response.json();
+                
+                closeModal('modal-scholarship');
+                
+                // Clear form
+                document.getElementById('scholarship-financial').value = '';
+                document.getElementById('scholarship-why').value = '';
+                document.getElementById('scholarship-use').value = '';
+                document.getElementById('scholarship-additional').value = '';
+                document.getElementById('scholarship-budget').value = '';
+                
+                // Reload scholarship status
+                await loadScholarshipStatus();
+                
+                alert('✅ Scholarship application submitted successfully!\n\nOur staff will review your application and get back to you soon. Thank you for sharing your story!');
+            } catch (error) {
+                console.error('Error submitting scholarship:', error);
+                alert('Failed to submit scholarship application: ' + error.message);
+            }
+        }
+
+        async function loadScholarshipStatus() {
+            if (!currentGroup) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.id}/scholarship`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    // No scholarship requests, show application form
+                    document.getElementById('scholarship-info').classList.remove('hidden');
+                    document.getElementById('scholarship-status').classList.add('hidden');
+                    document.getElementById('scholarship-badge').classList.add('hidden');
+                    return;
+                }
+                
+                const requests = await response.json();
+                
+                if (requests.length === 0) {
+                    // No requests, show application form
+                    document.getElementById('scholarship-info').classList.remove('hidden');
+                    document.getElementById('scholarship-status').classList.add('hidden');
+                    document.getElementById('scholarship-badge').classList.add('hidden');
+                    return;
+                }
+                
+                // Get most recent request
+                const latest = requests[0];
+                
+                // Update badge
+                const badge = document.getElementById('scholarship-badge');
+                badge.classList.remove('hidden');
+                
+                if (latest.status === 'pending') {
+                    badge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800';
+                    badge.textContent = '⏳ Pending Review';
+                } else if (latest.status === 'approved') {
+                    badge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800';
+                    badge.textContent = '✅ Approved';
+                } else if (latest.status === 'rejected') {
+                    badge.className = 'px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800';
+                    badge.textContent = '❌ Not Approved';
+                }
+                
+                // Show status instead of application form
+                document.getElementById('scholarship-info').classList.add('hidden');
+                document.getElementById('scholarship-status').classList.remove('hidden');
+                
+                // Update status fields
+                document.getElementById('status-type').textContent = latest.request_type === 'free' ? 'Free Access' : 'Sliding Scale';
+                document.getElementById('status-current').textContent = latest.status.charAt(0).toUpperCase() + latest.status.slice(1);
+                document.getElementById('status-date').textContent = new Date(latest.requested_at).toLocaleDateString();
+                
+                // Show decision if approved
+                if (latest.status === 'approved' && latest.approved_plan) {
+                    document.getElementById('status-decision').classList.remove('hidden');
+                    document.getElementById('approved-plan').textContent = latest.approved_plan.charAt(0).toUpperCase() + latest.approved_plan.slice(1);
+                    document.getElementById('approved-price').textContent = (latest.approved_monthly_price || 0).toFixed(2);
+                    document.getElementById('approved-discount').textContent = latest.approved_discount_percent || 0;
+                    if (latest.expires_at) {
+                        document.getElementById('approved-expires').textContent = new Date(latest.expires_at).toLocaleDateString();
+                    }
+                }
+                
+                // Show staff notes if any
+                if (latest.staff_notes) {
+                    document.getElementById('status-notes').classList.remove('hidden');
+                    document.getElementById('notes-text').textContent = latest.staff_notes;
+                }
+                
+            } catch (error) {
+                console.error('Error loading scholarship status:', error);
+            }
+        }
 
         // Initialize
         async function init() {
