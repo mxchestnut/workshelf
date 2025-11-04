@@ -160,7 +160,7 @@ class GroupService:
                     Group.is_active == True
                 )
             )
-            .order_by(GroupMember.joined_at.desc())
+            .order_by(GroupMember.created_at.desc())
             .limit(limit)
             .offset(offset)
         )
