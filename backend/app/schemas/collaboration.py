@@ -164,6 +164,7 @@ class GroupUpdate(BaseModel):
     is_public: Optional[bool] = None
     avatar_url: Optional[str] = Field(None, max_length=500)
     tags: Optional[List[str]] = None
+    interests: Optional[List[str]] = None
     rules: Optional[str] = None
 
 
@@ -202,6 +203,7 @@ class GroupResponse(BaseModel):
     is_active: bool
     avatar_url: Optional[str]
     tags: Optional[List[str]]
+    interests: Optional[List[str]]
     rules: Optional[str]
     subdomain_requested: Optional[str]
     subdomain_approved: bool = False

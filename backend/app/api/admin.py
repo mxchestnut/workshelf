@@ -73,6 +73,12 @@ class AdminStatsResponse(BaseModel):
     approved_subdomains_today: int
 
 
+class InterestStats(BaseModel):
+    """Interest usage statistics"""
+    interest: str
+    count: int
+
+
 # ============================================================================
 # Admin Endpoints
 # ============================================================================
@@ -138,6 +144,46 @@ async def get_admin_stats(
         total_users=total_users,
         approved_subdomains_today=approved_today
     )
+
+
+@router.get("/interests/top", response_model=List[InterestStats])
+async def get_top_interests(
+    limit: int = Query(10, le=50),
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get the most popular interests across all groups
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    
+    Returns the top N interests by usage count across all groups.
+    This helps staff understand what kinds of templates to create.
+    """
+    # Get all groups with interests
+    result = await db.execute(
+        select(Group.interests).filter(Group.interests.isnot(None))
+    )
+    groups = result.scalars().all()
+    
+    # Count interest occurrences
+    interest_counts = {}
+    for interests_array in groups:
+        if interests_array:
+            for interest in interests_array:
+                interest_counts[interest] = interest_counts.get(interest, 0) + 1
+    
+    # Sort by count and get top N
+    sorted_interests = sorted(
+        interest_counts.items(), 
+        key=lambda x: x[1], 
+        reverse=True
+    )[:limit]
+    
+    return [
+        InterestStats(interest=interest, count=count)
+        for interest, count in sorted_interests
+    ]
 
 
 @router.get("/groups/pending", response_model=List[GroupPendingResponse])

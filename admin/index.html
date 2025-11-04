@@ -145,6 +145,24 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Popular Interests Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-neutral-darkest">Popular Group Interests</h2>
+                    <p class="text-sm text-neutral mt-1">Top 10 most-used interests across all groups - consider creating templates for these</p>
+                </div>
+
+                <div class="px-6 py-6" id="interests-list">
+                    <!-- Interests will be loaded here -->
+                    <div class="text-center text-neutral py-4">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <p>Loading popular interests...</p>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -439,6 +457,7 @@
                 await loadStats();
                 await loadPendingRequests();
                 await loadScholarships();
+                await loadPopularInterests();
             } catch (error) {
                 console.error('Error loading data:', error);
                 if (error.message.includes('401')) {
@@ -841,6 +860,73 @@
             } catch (error) {
                 console.error('Error submitting decision:', error);
                 alert('Failed to submit decision. Please try again.');
+            }
+        }
+
+        async function loadPopularInterests() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/interests/top?limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load interests');
+                
+                const interests = await response.json();
+                
+                const container = document.getElementById('interests-list');
+                
+                if (interests.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-neutral py-4">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <p>No interests data yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Calculate max count for bar width
+                const maxCount = Math.max(...interests.map(i => i.count));
+                
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        ${interests.map((interest, index) => {
+                            const percentage = (interest.count / maxCount) * 100;
+                            return `
+                                <div class="flex items-center gap-4">
+                                    <div class="w-6 text-center font-bold text-gray-400 text-sm">
+                                        ${index + 1}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-sm font-medium text-neutral-darkest">
+                                                ${interest.interest}
+                                            </span>
+                                            <span class="text-xs text-gray-500">
+                                                ${interest.count} ${interest.count === 1 ? 'group' : 'groups'}
+                                            </span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-primary rounded-full h-2 transition-all" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading interests:', error);
+                const container = document.getElementById('interests-list');
+                container.innerHTML = `
+                    <div class="text-center text-red-600 py-4">
+                        <p>Failed to load interests</p>
+                    </div>
+                `;
             }
         }
 
