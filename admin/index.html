@@ -292,9 +292,9 @@
                 
                 const stats = await response.json();
                 
-                document.getElementById('pending-subdomains').textContent = data.pending_group_subdomains;
-                document.getElementById('pending-domains').textContent = data.pending_custom_domains;
-                document.getElementById('approved-today').textContent = data.approved_subdomains_today;
+                document.getElementById('pending-subdomains').textContent = stats.pending_group_subdomains;
+                document.getElementById('pending-domains').textContent = stats.pending_custom_domains;
+                document.getElementById('approved-today').textContent = stats.approved_subdomains_today;
             } catch (error) {
                 console.error('Error loading stats:', error);
             }

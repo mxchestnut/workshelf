@@ -204,9 +204,13 @@ class Group(Base, TimestampMixin):
     subdomain_approved_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     subdomain_rejection_reason = Column(Text, nullable=True)
     
+    # Custom domain capability (unlocked when subdomain approved)
+    can_use_custom_domain = Column(Boolean, default=False, nullable=False)
+    
     # Relationships
     members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan")
     posts = relationship("GroupPost", back_populates="group", cascade="all, delete-orphan")
+    custom_domains = relationship("GroupCustomDomain", back_populates="group", cascade="all, delete-orphan")
 
 
 class GroupMember(Base, TimestampMixin):
@@ -354,3 +358,36 @@ class Message(Base, TimestampMixin):
     __table_args__ = (
         Index('idx_thread_messages', 'thread_id', 'created_at'),
     )
+
+
+class GroupCustomDomain(Base, TimestampMixin):
+    """
+    Group Custom Domain - Custom domain mappings for groups
+    Allows groups to use their own domain (e.g., hieroscope.com) instead of subdomain
+    """
+    __tablename__ = "group_custom_domains"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Domain info
+    domain = Column(String(255), nullable=False, unique=True, index=True)  # e.g., 'hieroscope.com'
+    
+    # Status tracking
+    status = Column(String(50), nullable=False, default='pending', index=True)  # pending, approved, rejected, active
+    dns_verified = Column(Boolean, default=False, nullable=False)
+    dns_verification_token = Column(String(255), nullable=True)  # Token for DNS verification
+    ssl_status = Column(String(50), nullable=True)  # pending, active, failed
+    
+    # Approval tracking
+    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.utcnow())
+    approved_at = Column(DateTime(timezone=True), nullable=True)
+    approved_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    
+    # Relationships
+    group = relationship("Group", back_populates="custom_domains")
+    approver = relationship("User", foreign_keys=[approved_by])
+    
+    def __repr__(self):
+        return f"<GroupCustomDomain(domain='{self.domain}', status='{self.status}')>"

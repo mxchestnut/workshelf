@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Admin - WorkShelf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#B34B0C',
+                            'orange-dark': '#7C3306',
+                            'gray-dark': '#37322E',
+                            'gray-medium': '#524944',
+                            'gray-light': '#6C6A68',
+                            'gray-lighter': '#B3B2B0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #B34B0C;
+            --color-primary-dark: #7C3306;
+            --color-bg-dark: #37322E;
+            --color-bg-medium: #524944;
+            --color-text-light: #6C6A68;
+            --color-border: #B3B2B0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        .sidebar-item {
+            transition: all 0.2s;
+        }
+        
+        .sidebar-item:hover {
+            background-color: rgba(179, 75, 12, 0.1);
+        }
+        
+        .sidebar-item.active {
+            background-color: rgba(179, 75, 12, 0.15);
+            border-left: 3px solid var(--color-primary);
+        }
+        
+        .stat-card {
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tab-button {
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--color-primary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--color-primary);
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-row:hover {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation -->
+    <nav class="bg-white border-b border-gray-200 fixed w-full z-50">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold" style="color: var(--color-primary);">
+                        <span id="group-name">WorkShelf</span>
+                    </h1>
+                    <span class="text-sm px-3 py-1 bg-gray-100 rounded-full text-gray-600" id="subdomain-badge">
+                        Loading...
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showSettings()" class="text-gray-600 hover:text-gray-800">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600" id="user-email">Loading...</span>
+                        <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 fixed h-full overflow-y-auto">
+            <nav class="p-4 space-y-1">
+                <a href="#" onclick="showSection('dashboard'); return false;" class="sidebar-item active flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="dashboard">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="#" onclick="showSection('studios'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="studios">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <span>Studios</span>
+                </a>
+                
+                <a href="#" onclick="showSection('members'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="members">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span>Members</span>
+                </a>
+                
+                <a href="#" onclick="showSection('invitations'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="invitations">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Invitations</span>
+                </a>
+                
+                <a href="#" onclick="showSection('branding'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="branding">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                    </svg>
+                    <span>Branding</span>
+                </a>
+                
+                <a href="#" onclick="showSection('billing'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="billing">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                    <span>Billing</span>
+                </a>
+                
+                <a href="#" onclick="showSection('settings'); return false;" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-lg" data-section="settings">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Dashboard Section -->
+            <div id="section-dashboard" class="section">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-bg-dark);">Dashboard</h2>
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Studios</p>
+                                <p class="text-3xl font-bold mt-2" style="color: var(--color-primary);" id="stat-studios">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <svg class="w-8 h-8" style="color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Members</p>
+                                <p class="text-3xl font-bold mt-2" style="color: var(--color-primary);" id="stat-members">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <svg class="w-8 h-8" style="color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Pending Invites</p>
+                                <p class="text-3xl font-bold mt-2" style="color: var(--color-primary);" id="stat-invites">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <svg class="w-8 h-8" style="color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Active Projects</p>
+                                <p class="text-3xl font-bold mt-2" style="color: var(--color-primary);" id="stat-projects">0</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-lg">
+                                <svg class="w-8 h-8" style="color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow mb-8">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-xl font-semibold" style="color: var(--color-bg-dark);">Recent Activity</h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-activity" class="space-y-4">
+                            <p class="text-gray-500 text-center py-8">No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Studios Section -->
+            <div id="section-studios" class="section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold" style="color: var(--color-bg-dark);">Studios</h2>
+                    <button onclick="showCreateStudioModal()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                        + Create Studio
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6">
+                        <div id="studios-list">
+                            <p class="text-gray-500 text-center py-8">No studios yet. Create your first studio to get started!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members Section -->
+            <div id="section-members" class="section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold" style="color: var(--color-bg-dark);">Members</h2>
+                    <button onclick="showInviteMemberModal()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                        + Invite Member
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">Loading members...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invitations Section -->
+            <div id="section-invitations" class="section hidden">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-bg-dark);">Invitations</h2>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invitations-table" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">No pending invitations</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branding Section -->
+            <div id="section-branding" class="section hidden">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-bg-dark);">Branding & Customization</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Color Scheme -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Color Scheme</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="color" id="color-primary" value="#B34B0C" class="h-10 w-20 rounded cursor-pointer">
+                                    <input type="text" id="color-primary-hex" value="#B34B0C" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Secondary Color</label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="color" id="color-secondary" value="#7C3306" class="h-10 w-20 rounded cursor-pointer">
+                                    <input type="text" id="color-secondary-hex" value="#7C3306" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Background</label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="color" id="color-background" value="#37322E" class="h-10 w-20 rounded cursor-pointer">
+                                    <input type="text" id="color-background-hex" value="#37322E" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+                            <button onclick="saveColors()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium w-full">
+                                Save Colors
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Logo & Images -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Logo & Images</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Group Logo</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500">Drop your logo here or click to browse</p>
+                                    <input type="file" class="hidden" accept="image/*">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Favicon</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                                    <p class="text-sm text-gray-500">Upload favicon (32x32 or 64x64)</p>
+                                    <input type="file" class="hidden" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Domain -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Custom Domain</h3>
+                        <p class="text-sm text-gray-600 mb-4">Your current subdomain: <strong><span id="current-subdomain">loading...</span></strong></p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Custom Domain</label>
+                                <input type="text" placeholder="yourgroup.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                <p class="mt-2 text-xs text-gray-500">Point your domain's DNS to our servers</p>
+                            </div>
+                            <button class="btn-primary text-white px-6 py-2 rounded-lg font-medium w-full">
+                                Request Custom Domain
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Links -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Social Links</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                                <input type="url" placeholder="https://yourwebsite.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
+                                <input type="text" placeholder="@yourgroup" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Discord</label>
+                                <input type="url" placeholder="https://discord.gg/..." class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <button class="btn-primary text-white px-6 py-2 rounded-lg font-medium w-full">
+                                Save Social Links
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Section -->
+            <div id="section-billing" class="section hidden">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-bg-dark);">Billing & Subscription</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-2" style="color: var(--color-bg-dark);">Current Plan</h3>
+                        <p class="text-3xl font-bold mb-2" style="color: var(--color-primary);">Professional</p>
+                        <p class="text-gray-600">$29/month</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-2" style="color: var(--color-bg-dark);">Next Billing Date</h3>
+                        <p class="text-2xl font-bold mb-2" style="color: var(--color-bg-dark);">Dec 4, 2025</p>
+                        <p class="text-gray-600">Auto-renews</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-2" style="color: var(--color-bg-dark);">Member Limit</h3>
+                        <p class="text-2xl font-bold mb-2" style="color: var(--color-bg-dark);"><span id="billing-members">0</span> / 50</p>
+                        <p class="text-gray-600">Members used</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Payment Method</h3>
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <svg class="w-12 h-8" viewBox="0 0 48 32" fill="none">
+                                <rect width="48" height="32" rx="4" fill="#1434CB"/>
+                                <circle cx="18" cy="16" r="8" fill="#EB001B"/>
+                                <circle cx="30" cy="16" r="8" fill="#F79E1B"/>
+                            </svg>
+                            <div>
+                                <p class="font-medium">•••• •••• •••• 4242</p>
+                                <p class="text-sm text-gray-500">Expires 12/25</p>
+                            </div>
+                        </div>
+                        <button class="text-sm" style="color: var(--color-primary);">Update</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-xl font-semibold" style="color: var(--color-bg-dark);">Billing History</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 text-sm text-gray-900">Nov 4, 2025</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">Professional Plan</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">$29.00</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Paid</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <button style="color: var(--color-primary);">Download</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="section-settings" class="section hidden">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-bg-dark);">Group Settings</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">General Settings</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Group Name</label>
+                                <input type="text" id="settings-group-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                <textarea id="settings-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Subdomain</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" id="settings-subdomain" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg" readonly>
+                                    <span class="text-gray-500">.workshelf.dev</span>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Contact support to change your subdomain</p>
+                            </div>
+                            <button onclick="saveSettings()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--color-bg-dark);">Privacy Settings</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Public Group</p>
+                                    <p class="text-sm text-gray-500">Allow anyone to discover your group</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Allow Join Requests</p>
+                                    <p class="text-sm text-gray-500">Let users request to join</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Show Member List</p>
+                                    <p class="text-sm text-gray-500">Display member list publicly</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6 border-2 border-red-200">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">Danger Zone</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900">Delete Group</p>
+                                    <p class="text-sm text-gray-500">Permanently delete this group and all its data</p>
+                                </div>
+                                <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Studio Modal -->
+    <div id="modal-create-studio" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold" style="color: var(--color-bg-dark);">Create New Studio</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Studio Name</label>
+                    <input type="text" id="new-studio-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="My Studio">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="new-studio-description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="What's this studio about?"></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-create-studio')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="createStudio()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                    Create Studio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Member Modal -->
+    <div id="modal-invite-member" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold" style="color: var(--color-bg-dark);">Invite Member</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input type="email" id="invite-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="member@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select id="invite-role" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Message (Optional)</label>
+                    <textarea id="invite-message" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Add a personal message..."></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeModal('modal-invite-member')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="sendInvite()" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                    Send Invite
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const KEYCLOAK_URL = 'https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io';
+        const API_BASE = 'https://api.workshelf.dev/api/v1';
+        
+        let accessToken = null;
+        let currentUser = null;
+        let currentGroup = null;
+
+        // Authentication
+        async function login(username, password) {
+            try {
+                const response = await fetch(`${KEYCLOAK_URL}/realms/workshelf/protocol/openid-connect/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        client_id: 'workshelf-backend',
+                        grant_type: 'password',
+                        username: username,
+                        password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+                accessToken = data.access_token;
+                localStorage.setItem('access_token', accessToken);
+                
+                // Decode token to get user info
+                const tokenParts = accessToken.split('.');
+                const tokenPayload = JSON.parse(atob(tokenParts[1]));
+                currentUser = tokenPayload;
+                
+                return true;
+            } catch (error) {
+                console.error('Login error:', error);
+                return false;
+            }
+        }
+
+        function checkAuth() {
+            accessToken = localStorage.getItem('access_token');
+            if (!accessToken) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            
+            // Decode token
+            const tokenParts = accessToken.split('.');
+            const tokenPayload = JSON.parse(atob(tokenParts[1]));
+            currentUser = tokenPayload;
+            
+            // Check if token is expired
+            if (tokenPayload.exp * 1000 < Date.now()) {
+                logout();
+                return false;
+            }
+            
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login.html';
+        }
+
+        // UI Functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(`section-${sectionName}`).classList.remove('hidden');
+            
+            // Update sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showCreateStudioModal() {
+            showModal('modal-create-studio');
+        }
+
+        function showInviteMemberModal() {
+            showModal('modal-invite-member');
+        }
+
+        function showSettings() {
+            showSection('settings');
+        }
+
+        // API Functions
+        async function loadGroupData() {
+            try {
+                // Get user's groups
+                const response = await fetch(`${API_BASE}/groups/my-groups`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load groups');
+                
+                const groups = await response.json();
+                
+                if (groups.length > 0) {
+                    currentGroup = groups[0]; // For now, use first group
+                    document.getElementById('group-name').textContent = currentGroup.name;
+                    document.getElementById('subdomain-badge').textContent = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
+                    document.getElementById('current-subdomain').textContent = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
+                    document.getElementById('settings-group-name').value = currentGroup.name;
+                    document.getElementById('settings-subdomain').value = currentGroup.subdomain_approved || currentGroup.subdomain_requested;
+                    
+                    await loadDashboardStats();
+                    await loadMembers();
+                }
+            } catch (error) {
+                console.error('Error loading group data:', error);
+            }
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Mock stats for now - replace with actual API calls
+                document.getElementById('stat-studios').textContent = '0';
+                document.getElementById('stat-members').textContent = '1';
+                document.getElementById('stat-invites').textContent = '0';
+                document.getElementById('stat-projects').textContent = '0';
+                document.getElementById('billing-members').textContent = '1';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadMembers() {
+            try {
+                // Mock member data - replace with actual API call
+                const membersTable = document.getElementById('members-table');
+                membersTable.innerHTML = `
+                    <tr class="table-row">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                    ${currentUser.email ? currentUser.email[0].toUpperCase() : 'U'}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-900">${currentUser.preferred_username || 'User'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${currentUser.email}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded">Owner</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${new Date().toLocaleDateString()}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <button class="text-gray-400 cursor-not-allowed">Remove</button>
+                        </td>
+                    </tr>
+                `;
+            } catch (error) {
+                console.error('Error loading members:', error);
+            }
+        }
+
+        async function createStudio() {
+            const name = document.getElementById('new-studio-name').value;
+            const description = document.getElementById('new-studio-description').value;
+            
+            if (!name) {
+                alert('Please enter a studio name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/studios`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        group_id: currentGroup.id
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to create studio');
+                
+                closeModal('modal-create-studio');
+                document.getElementById('new-studio-name').value = '';
+                document.getElementById('new-studio-description').value = '';
+                
+                // Reload studios list
+                showSection('studios');
+                alert('Studio created successfully!');
+            } catch (error) {
+                console.error('Error creating studio:', error);
+                alert('Failed to create studio. Please try again.');
+            }
+        }
+
+        async function sendInvite() {
+            const email = document.getElementById('invite-email').value;
+            const role = document.getElementById('invite-role').value;
+            const message = document.getElementById('invite-message').value;
+            
+            if (!email) {
+                alert('Please enter an email address');
+                return;
+            }
+            
+            try {
+                // Mock API call - replace with actual endpoint
+                console.log('Sending invite:', { email, role, message });
+                
+                closeModal('modal-invite-member');
+                document.getElementById('invite-email').value = '';
+                document.getElementById('invite-message').value = '';
+                
+                alert('Invitation sent successfully!');
+            } catch (error) {
+                console.error('Error sending invite:', error);
+                alert('Failed to send invitation. Please try again.');
+            }
+        }
+
+        async function saveSettings() {
+            const name = document.getElementById('settings-group-name').value;
+            const description = document.getElementById('settings-description').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to save settings');
+                
+                alert('Settings saved successfully!');
+                await loadGroupData();
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Failed to save settings. Please try again.');
+            }
+        }
+
+        function saveColors() {
+            const primary = document.getElementById('color-primary').value;
+            const secondary = document.getElementById('color-secondary').value;
+            const background = document.getElementById('color-background').value;
+            
+            // Update CSS variables
+            document.documentElement.style.setProperty('--color-primary', primary);
+            document.documentElement.style.setProperty('--color-primary-dark', secondary);
+            document.documentElement.style.setProperty('--color-bg-dark', background);
+            
+            alert('Color scheme saved! These will be applied to your group\'s public pages.');
+        }
+
+        // Color picker sync
+        document.addEventListener('DOMContentLoaded', () => {
+            ['primary', 'secondary', 'background'].forEach(type => {
+                const colorInput = document.getElementById(`color-${type}`);
+                const hexInput = document.getElementById(`color-${type}-hex`);
+                
+                if (colorInput && hexInput) {
+                    colorInput.addEventListener('input', (e) => {
+                        hexInput.value = e.target.value;
+                    });
+                    
+                    hexInput.addEventListener('input', (e) => {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                            colorInput.value = e.target.value;
+                        }
+                    });
+                }
+            });
+        });
+
+        // Initialize
+        async function init() {
+            if (!checkAuth()) return;
+            
+            // Display user email
+            document.getElementById('user-email').textContent = currentUser.email || 'User';
+            
+            // Load group data
+            await loadGroupData();
+        }
+
+        // Run on page load
+        init();
+    </script>
+</body>
+</html>

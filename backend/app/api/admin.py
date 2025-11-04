@@ -223,7 +223,10 @@ async def approve_group_subdomain(
         group.subdomain_approved_by = admin_user_id  # Will be None if not provided
         group.subdomain_rejection_reason = None
         
-        message = f"Subdomain '{group.subdomain_requested}' approved for group '{group.name}'"
+        # ✨ Automatically enable custom domain capability for approved groups
+        group.can_use_custom_domain = True
+        
+        message = f"Subdomain '{group.subdomain_requested}' approved for group '{group.name}'. Custom domain capability enabled."
     else:
         group.subdomain_approved = False
         group.subdomain_rejection_reason = request.rejection_reason

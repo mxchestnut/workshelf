@@ -17,6 +17,7 @@ from app.models.collaboration import (
     BetaRequest, BetaFeedback, BetaRequestStatus,
     Group, GroupMember, GroupMemberRole, GroupPrivacyType,
     GroupPost, GroupPostReaction,
+    GroupCustomDomain,
     MessageThread, MessageThreadParticipant, Message, MessageThreadType
 )
 from app.models.studio_customization import (
@@ -76,6 +77,7 @@ __all__ = [
     "GroupPrivacyType",
     "GroupPost",
     "GroupPostReaction",
+    "GroupCustomDomain",
     "MessageThread",
     "MessageThreadParticipant",
     "Message",
