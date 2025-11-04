@@ -196,6 +196,13 @@ class Group(Base, TimestampMixin):
     privacy = Column(SQLEnum(GroupPrivacyType), nullable=False, default=GroupPrivacyType.PUBLIC)
     is_active = Column(Boolean, default=True, nullable=False)
     
+    # Admin approval for custom subdomains
+    subdomain_requested = Column(String(100), nullable=True, index=True)  # Requested subdomain (e.g., 'writers')
+    subdomain_approved = Column(Boolean, default=False, nullable=False)
+    subdomain_approved_at = Column(DateTime(timezone=True), nullable=True)
+    subdomain_approved_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    subdomain_rejection_reason = Column(Text, nullable=True)
+    
     # Stats
     member_count = Column(Integer, default=0, nullable=False)
     

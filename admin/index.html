@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Shelf Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#B34B0C',
+                            dark: '#7C3306',
+                        },
+                        neutral: {
+                            darkest: '#37322E',
+                            dark: '#524944',
+                            DEFAULT: '#6C6A68',
+                            light: '#B3B2B0',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-neutral-darkest">Work Shelf Admin</h1>
+                        <p class="text-sm text-neutral">Platform Administration Dashboard</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-neutral-darkest">Admin User</p>
+                            <p class="text-xs text-neutral">Tailscale Protected</p>
+                        </div>
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                            A
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="stats">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-neutral">Pending Subdomains</p>
+                            <p class="text-3xl font-bold text-neutral-darkest mt-2" id="pending-subdomains">-</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-neutral">Pending Domains</p>
+                            <p class="text-3xl font-bold text-neutral-darkest mt-2" id="pending-domains">-</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-neutral">Approved Today</p>
+                            <p class="text-3xl font-bold text-neutral-darkest mt-2" id="approved-today">-</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-neutral-darkest">Pending Group Subdomain Requests</h2>
+                    <p class="text-sm text-neutral mt-1">Review and approve custom subdomain requests from groups</p>
+                </div>
+
+                <div class="divide-y divide-gray-200" id="pending-list">
+                    <!-- Pending items will be loaded here -->
+                    <div class="px-6 py-8 text-center text-neutral">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p>Loading pending requests...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Approval Modal -->
+    <div id="approval-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-neutral-darkest" id="modal-title">Approve Subdomain</h3>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-neutral mb-4" id="modal-description">
+                    Are you sure you want to approve this subdomain request?
+                </p>
+                <div id="rejection-reason-container" class="hidden">
+                    <label class="block text-sm font-medium text-neutral-darkest mb-2">Rejection Reason</label>
+                    <textarea 
+                        id="rejection-reason" 
+                        rows="3" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Please provide a reason for rejection..."
+                    ></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex gap-3 justify-end">
+                <button 
+                    onclick="closeModal()" 
+                    class="px-4 py-2 text-sm font-medium text-neutral-darkest bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                    Cancel
+                </button>
+                <button 
+                    id="confirm-button"
+                    onclick="confirmAction()" 
+                    class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
+                >
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.workshelf.dev/api/v1';
+        let currentAction = null;
+
+        // Load stats and pending requests on page load
+        async function loadData() {
+            try {
+                await loadStats();
+                await loadPendingRequests();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats`);
+                const data = await response.json();
+                
+                document.getElementById('pending-subdomains').textContent = data.pending_group_subdomains;
+                document.getElementById('pending-domains').textContent = data.pending_custom_domains;
+                document.getElementById('approved-today').textContent = data.approved_subdomains_today;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadPendingRequests() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/groups/pending`);
+                const groups = await response.json();
+                
+                const container = document.getElementById('pending-list');
+                
+                if (groups.length === 0) {
+                    container.innerHTML = `
+                        <div class="px-6 py-8 text-center text-neutral">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p>No pending requests</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = groups.map(group => `
+                    <div class="px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-base font-semibold text-neutral-darkest">${group.name}</h3>
+                                    <span class="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded">
+                                        Pending
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-sm text-neutral">
+                                    <div>
+                                        <span class="font-medium">Requested Subdomain:</span>
+                                        <span class="ml-2 font-mono text-primary">${group.subdomain_requested}.workshelf.dev</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Owner:</span>
+                                        <span class="ml-2">${group.owner_username || 'Unknown'}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Members:</span>
+                                        <span class="ml-2">${group.member_count}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium">Created:</span>
+                                        <span class="ml-2">${new Date(group.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 ml-6">
+                                <button 
+                                    onclick="approveRequest(${group.id}, '${group.name}', '${group.subdomain_requested}')"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+                                >
+                                    Approve
+                                </button>
+                                <button 
+                                    onclick="rejectRequest(${group.id}, '${group.name}', '${group.subdomain_requested}')"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                                >
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pending requests:', error);
+                const container = document.getElementById('pending-list');
+                container.innerHTML = `
+                    <div class="px-6 py-8 text-center text-red-600">
+                        <p>Error loading requests. Please check your connection to the API.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function approveRequest(groupId, groupName, subdomain) {
+            currentAction = {
+                type: 'approve',
+                groupId,
+                approved: true
+            };
+            
+            document.getElementById('modal-title').textContent = 'Approve Subdomain';
+            document.getElementById('modal-description').textContent = 
+                `Are you sure you want to approve the subdomain "${subdomain}.workshelf.dev" for ${groupName}?`;
+            document.getElementById('rejection-reason-container').classList.add('hidden');
+            document.getElementById('confirm-button').textContent = 'Approve';
+            document.getElementById('confirm-button').className = 'px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700';
+            document.getElementById('approval-modal').classList.remove('hidden');
+        }
+
+        function rejectRequest(groupId, groupName, subdomain) {
+            currentAction = {
+                type: 'reject',
+                groupId,
+                approved: false
+            };
+            
+            document.getElementById('modal-title').textContent = 'Reject Subdomain';
+            document.getElementById('modal-description').textContent = 
+                `Are you sure you want to reject the subdomain "${subdomain}.workshelf.dev" for ${groupName}?`;
+            document.getElementById('rejection-reason-container').classList.remove('hidden');
+            document.getElementById('confirm-button').textContent = 'Reject';
+            document.getElementById('confirm-button').className = 'px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700';
+            document.getElementById('approval-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('approval-modal').classList.add('hidden');
+            document.getElementById('rejection-reason').value = '';
+            currentAction = null;
+        }
+
+        async function confirmAction() {
+            if (!currentAction) return;
+            
+            const payload = {
+                approved: currentAction.approved
+            };
+            
+            if (!currentAction.approved) {
+                payload.rejection_reason = document.getElementById('rejection-reason').value;
+                if (!payload.rejection_reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE}/admin/groups/${currentAction.groupId}/subdomain/approve?admin_user_id=1`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
+                
+                if (response.ok) {
+                    closeModal();
+                    await loadData(); // Reload data
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error confirming action:', error);
+                alert('Failed to process request. Please try again.');
+            }
+        }
+
+        // Load data on page load
+        loadData();
+        
+        // Refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>

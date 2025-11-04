@@ -28,7 +28,8 @@ from app.api import (
     content_integrity,
     export,
     accessibility,
-    ai_assist
+    ai_assist,
+    admin  # Admin endpoints for platform staff
 )
 
 api_router = APIRouter()
@@ -103,3 +104,6 @@ api_router.include_router(accessibility.router)
 
 # AI Assistance (helps users CREATE, never writes FOR them)
 api_router.include_router(ai_assist.router)
+
+# Admin endpoints (Tailscale-protected for platform staff)
+api_router.include_router(admin.router)
