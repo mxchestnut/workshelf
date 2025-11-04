@@ -1,7 +1,7 @@
 """Add studio templates and search tracking
 
-Revision ID: 011
-Revises: 010
+Revision ID: 011_add_studio_templates
+Revises: 010_add_scholarship_system
 Create Date: 2025-11-04 12:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '011'
-down_revision = '010'
+revision = '011_add_studio_templates'
+down_revision = '010_add_scholarship_system'
 branch_labels = None
 depends_on = None
 
