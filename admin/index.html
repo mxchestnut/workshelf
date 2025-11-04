@@ -52,7 +52,7 @@
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="stats">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="stats">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -76,6 +76,20 @@
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-neutral">Scholarship Requests</p>
+                            <p class="text-3xl font-bold text-neutral-darkest mt-2" id="pending-scholarships">-</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                     </div>
@@ -110,6 +124,24 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <p>Loading pending requests...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scholarship Requests Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-neutral-darkest">Scholarship & Financial Assistance Requests</h2>
+                    <p class="text-sm text-neutral mt-1">Review applications for free or sliding scale pricing</p>
+                </div>
+
+                <div class="divide-y divide-gray-200" id="scholarship-list">
+                    <!-- Scholarship items will be loaded here -->
+                    <div class="px-6 py-8 text-center text-neutral">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p>Loading scholarship requests...</p>
                     </div>
                 </div>
             </div>
@@ -149,6 +181,147 @@
                     class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
                 >
                     Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scholarship Review Modal -->
+    <div id="scholarship-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white rounded-t-lg">
+                <div>
+                    <h3 class="text-xl font-semibold text-neutral-darkest">Scholarship Application Review</h3>
+                    <p class="text-sm text-neutral mt-1" id="scholarship-modal-group">Group Name</p>
+                </div>
+                <button onclick="closeScholarshipModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="px-6 py-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                <!-- Request Type & Budget -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <p class="text-sm text-purple-600 font-medium">Request Type</p>
+                        <p class="text-lg font-semibold text-purple-900 mt-1" id="scholarship-type">Free Access</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <p class="text-sm text-blue-600 font-medium">Monthly Budget</p>
+                        <p class="text-lg font-semibold text-blue-900 mt-1" id="scholarship-budget">Not specified</p>
+                    </div>
+                </div>
+                
+                <!-- Application Questions -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-neutral-darkest mb-2">Current Financial Situation</h4>
+                        <p class="text-sm text-neutral-dark whitespace-pre-wrap" id="scholarship-financial"></p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-neutral-darkest mb-2">Why Work Shelf is Important</h4>
+                        <p class="text-sm text-neutral-dark whitespace-pre-wrap" id="scholarship-why"></p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-neutral-darkest mb-2">How They'll Use Work Shelf</h4>
+                        <p class="text-sm text-neutral-dark whitespace-pre-wrap" id="scholarship-use"></p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4" id="scholarship-additional-container" style="display: none;">
+                        <h4 class="font-semibold text-neutral-darkest mb-2">Additional Information</h4>
+                        <p class="text-sm text-neutral-dark whitespace-pre-wrap" id="scholarship-additional"></p>
+                    </div>
+                </div>
+                
+                <!-- Decision Form -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h4 class="font-semibold text-neutral-darkest mb-4">Your Decision</h4>
+                    
+                    <div class="space-y-4">
+                        <!-- Approve/Reject Toggle -->
+                        <div class="flex items-center space-x-4">
+                            <button 
+                                id="decision-approve" 
+                                onclick="setScholarshipDecision(true)"
+                                class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition">
+                                ✓ Approve
+                            </button>
+                            <button 
+                                id="decision-reject" 
+                                onclick="setScholarshipDecision(false)"
+                                class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition">
+                                ✗ Reject
+                            </button>
+                        </div>
+                        
+                        <!-- Approval Options -->
+                        <div id="approval-options" class="space-y-4">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-darkest mb-2">Plan</label>
+                                    <select id="approved-plan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                        <option value="free">Free</option>
+                                        <option value="basic">Basic</option>
+                                        <option value="pro">Pro</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-darkest mb-2">Discount %</label>
+                                    <input type="number" id="approved-discount" min="0" max="100" value="100" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-darkest mb-2">Monthly Price ($)</label>
+                                    <input type="number" id="approved-price" min="0" step="0.01" value="0" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-darkest mb-2">Duration (months)</label>
+                                <select id="approved-duration" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <option value="6">6 months</option>
+                                    <option value="12" selected>12 months (1 year)</option>
+                                    <option value="24">24 months (2 years)</option>
+                                    <option value="36">36 months (3 years)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-darkest mb-2">Staff Notes (visible to applicant)</label>
+                                <textarea id="staff-notes" rows="3" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    placeholder="e.g., 'We're excited to support your community! Your scholarship will renew annually based on continued need.'"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Rejection Options -->
+                        <div id="rejection-options" class="hidden">
+                            <label class="block text-sm font-medium text-neutral-darkest mb-2">Rejection Reason (visible to applicant)</label>
+                            <textarea id="rejection-reason-scholarship" rows="4" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                                placeholder="Please provide a clear reason for rejection..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex gap-3 justify-end border-t border-gray-200">
+                <button 
+                    onclick="closeScholarshipModal()" 
+                    class="px-4 py-2 text-sm font-medium text-neutral-darkest bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button 
+                    id="submit-decision"
+                    onclick="submitScholarshipDecision()" 
+                    class="px-6 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
+                    Submit Decision
                 </button>
             </div>
         </div>
@@ -265,6 +438,7 @@
             try {
                 await loadStats();
                 await loadPendingRequests();
+                await loadScholarships();
             } catch (error) {
                 console.error('Error loading data:', error);
                 if (error.message.includes('401')) {
@@ -464,6 +638,209 @@
             } catch (error) {
                 console.error('Error confirming action:', error);
                 alert('Failed to process request. Please try again.');
+            }
+        }
+
+        // Scholarship Functions
+        let currentScholarship = null;
+        let scholarshipDecisionApproved = true;
+
+        async function loadScholarships() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/scholarships/pending`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load scholarships');
+                
+                const scholarships = await response.json();
+                
+                // Update stats
+                document.getElementById('pending-scholarships').textContent = scholarships.length;
+                
+                const container = document.getElementById('scholarship-list');
+                
+                if (scholarships.length === 0) {
+                    container.innerHTML = `
+                        <div class="px-6 py-8 text-center text-neutral">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p>No pending scholarship requests</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = scholarships.map(scholarship => `
+                    <div class="px-6 py-4 hover:bg-gray-50 cursor-pointer transition" onclick="openScholarshipModal(${scholarship.id})">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-base font-semibold text-neutral-darkest">Group ID: ${scholarship.group_id}</h3>
+                                    <span class="px-2 py-1 text-xs font-medium rounded ${
+                                        scholarship.request_type === 'free' 
+                                            ? 'bg-purple-100 text-purple-700' 
+                                            : 'bg-blue-100 text-blue-700'
+                                    }">
+                                        ${scholarship.request_type === 'free' ? '💫 Free Access' : '📊 Sliding Scale'}
+                                    </span>
+                                    ${scholarship.monthly_budget ? `
+                                        <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+                                            Budget: $${scholarship.monthly_budget}/mo
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                <div class="text-sm text-neutral space-y-1">
+                                    <p class="line-clamp-2"><strong>Why important:</strong> ${scholarship.why_important}</p>
+                                    <p class="text-xs text-gray-500">
+                                        Submitted ${new Date(scholarship.requested_at).toLocaleDateString()} at ${new Date(scholarship.requested_at).toLocaleTimeString()}
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onclick="event.stopPropagation(); openScholarshipModal(${scholarship.id})"
+                                class="ml-4 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 whitespace-nowrap">
+                                Review Application
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading scholarships:', error);
+                document.getElementById('pending-scholarships').textContent = '!';
+            }
+        }
+
+        async function openScholarshipModal(scholarshipId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/scholarships/all`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load scholarship');
+                
+                const scholarships = await response.json();
+                const scholarship = scholarships.find(s => s.id === scholarshipId);
+                
+                if (!scholarship) {
+                    alert('Scholarship not found');
+                    return;
+                }
+                
+                currentScholarship = scholarship;
+                
+                // Populate modal
+                document.getElementById('scholarship-modal-group').textContent = `Group ID: ${scholarship.group_id}`;
+                document.getElementById('scholarship-type').textContent = scholarship.request_type === 'free' ? 'Free Access (100%)' : 'Sliding Scale';
+                document.getElementById('scholarship-budget').textContent = scholarship.monthly_budget ? `$${scholarship.monthly_budget}/month` : 'Not specified';
+                document.getElementById('scholarship-financial').textContent = scholarship.current_financial_situation;
+                document.getElementById('scholarship-why').textContent = scholarship.why_important;
+                document.getElementById('scholarship-use').textContent = scholarship.how_will_use;
+                
+                if (scholarship.additional_info) {
+                    document.getElementById('scholarship-additional-container').style.display = 'block';
+                    document.getElementById('scholarship-additional').textContent = scholarship.additional_info;
+                } else {
+                    document.getElementById('scholarship-additional-container').style.display = 'none';
+                }
+                
+                // Set default decision to approve
+                setScholarshipDecision(true);
+                
+                // Show modal
+                document.getElementById('scholarship-modal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error opening scholarship modal:', error);
+                alert('Failed to load scholarship details');
+            }
+        }
+
+        function setScholarshipDecision(approved) {
+            scholarshipDecisionApproved = approved;
+            
+            const approveBtn = document.getElementById('decision-approve');
+            const rejectBtn = document.getElementById('decision-reject');
+            const approvalOptions = document.getElementById('approval-options');
+            const rejectionOptions = document.getElementById('rejection-options');
+            
+            if (approved) {
+                approveBtn.className = 'px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition';
+                rejectBtn.className = 'px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition';
+                approvalOptions.classList.remove('hidden');
+                rejectionOptions.classList.add('hidden');
+            } else {
+                approveBtn.className = 'px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition';
+                rejectBtn.className = 'px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition';
+                approvalOptions.classList.add('hidden');
+                rejectionOptions.classList.remove('hidden');
+            }
+        }
+
+        function closeScholarshipModal() {
+            document.getElementById('scholarship-modal').classList.add('hidden');
+            currentScholarship = null;
+            
+            // Reset form
+            document.getElementById('approved-plan').value = 'free';
+            document.getElementById('approved-discount').value = '100';
+            document.getElementById('approved-price').value = '0';
+            document.getElementById('approved-duration').value = '12';
+            document.getElementById('staff-notes').value = '';
+            document.getElementById('rejection-reason-scholarship').value = '';
+        }
+
+        async function submitScholarshipDecision() {
+            if (!currentScholarship) return;
+            
+            const payload = {
+                approved: scholarshipDecisionApproved
+            };
+            
+            if (scholarshipDecisionApproved) {
+                payload.approved_plan = document.getElementById('approved-plan').value;
+                payload.approved_discount_percent = parseInt(document.getElementById('approved-discount').value);
+                payload.approved_monthly_price = parseFloat(document.getElementById('approved-price').value);
+                payload.duration_months = parseInt(document.getElementById('approved-duration').value);
+                payload.staff_notes = document.getElementById('staff-notes').value || null;
+            } else {
+                payload.rejection_reason = document.getElementById('rejection-reason-scholarship').value;
+                if (!payload.rejection_reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+                payload.staff_notes = document.getElementById('staff-notes').value || null;
+            }
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE}/admin/scholarships/${currentScholarship.id}/review`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    closeScholarshipModal();
+                    alert(result.message || 'Decision submitted successfully!');
+                    await loadData(); // Reload all data
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error submitting decision:', error);
+                alert('Failed to submit decision. Please try again.');
             }
         }
 
