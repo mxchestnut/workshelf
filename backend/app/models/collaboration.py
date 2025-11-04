@@ -2,7 +2,7 @@
 Phase 4 Feedback & Collaboration Models
 Models for comments, beta reading, groups, and messaging
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -207,10 +207,18 @@ class Group(Base, TimestampMixin):
     # Custom domain capability (unlocked when subdomain approved)
     can_use_custom_domain = Column(Boolean, default=False, nullable=False)
     
+    # Scholarship/sliding scale
+    has_scholarship = Column(Boolean, default=False, nullable=False)
+    scholarship_plan = Column(String(50), nullable=True)  # 'free', 'basic', 'pro', 'custom'
+    scholarship_discount_percent = Column(Integer, nullable=True)  # 0-100
+    scholarship_monthly_price = Column(Numeric(10, 2), nullable=True)
+    scholarship_expires_at = Column(DateTime(timezone=True), nullable=True)
+    
     # Relationships
     members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan")
     posts = relationship("GroupPost", back_populates="group", cascade="all, delete-orphan")
     custom_domains = relationship("GroupCustomDomain", back_populates="group", cascade="all, delete-orphan")
+    scholarship_requests = relationship("ScholarshipRequest", back_populates="group", cascade="all, delete-orphan")
 
 
 class GroupMember(Base, TimestampMixin):
@@ -391,3 +399,48 @@ class GroupCustomDomain(Base, TimestampMixin):
     
     def __repr__(self):
         return f"<GroupCustomDomain(domain='{self.domain}', status='{self.status}')>"
+
+
+class ScholarshipRequest(Base, TimestampMixin):
+    """
+    Scholarship and sliding scale payment requests for groups
+    """
+    __tablename__ = "scholarship_requests"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Request details
+    status = Column(String(50), nullable=False, default='pending', index=True)  # pending, approved, rejected, negotiating
+    request_type = Column(String(50), nullable=False)  # 'free', 'sliding_scale'
+    
+    # Application questions
+    current_financial_situation = Column(Text, nullable=False)
+    why_important = Column(Text, nullable=False)
+    how_will_use = Column(Text, nullable=False)
+    additional_info = Column(Text, nullable=True)
+    monthly_budget = Column(Numeric(10, 2), nullable=True)  # What they can afford per month
+    
+    # Staff decision
+    approved_plan = Column(String(50), nullable=True)  # 'free', 'basic', 'pro', 'custom'
+    approved_discount_percent = Column(Integer, nullable=True)  # 0-100
+    approved_monthly_price = Column(Numeric(10, 2), nullable=True)
+    staff_notes = Column(Text, nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    
+    # Timestamps
+    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.utcnow())
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    reviewed_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)  # When scholarship expires (e.g., 1 year)
+    
+    # Relationships
+    group = relationship("Group", back_populates="scholarship_requests")
+    user = relationship("User", foreign_keys=[user_id])
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+    
+    def __repr__(self):
+        return f"<ScholarshipRequest(group_id={self.group_id}, status='{self.status}', type='{self.request_type}')>"
+

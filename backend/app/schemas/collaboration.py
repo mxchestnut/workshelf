@@ -206,6 +206,10 @@ class GroupResponse(BaseModel):
     subdomain_requested: Optional[str]
     subdomain_approved: bool = False
     can_use_custom_domain: bool = False
+    has_scholarship: bool = False
+    scholarship_plan: Optional[str]
+    scholarship_discount_percent: Optional[int]
+    scholarship_monthly_price: Optional[float]
     created_at: datetime
     updated_at: datetime
     
@@ -214,10 +218,65 @@ class GroupResponse(BaseModel):
 
 
 # ============================================================================
+# Scholarship Schemas
+# ============================================================================
+
+class ScholarshipRequestCreate(BaseModel):
+    """Schema for creating a scholarship request."""
+    group_id: int
+    request_type: str = Field(..., pattern="^(free|sliding_scale)$")
+    current_financial_situation: str = Field(..., min_length=50, max_length=2000)
+    why_important: str = Field(..., min_length=50, max_length=2000)
+    how_will_use: str = Field(..., min_length=50, max_length=2000)
+    additional_info: Optional[str] = Field(None, max_length=2000)
+    monthly_budget: Optional[float] = Field(None, ge=0, le=10000)
+
+
+class ScholarshipRequestResponse(BaseModel):
+    """Schema for scholarship request response."""
+    id: int
+    group_id: int
+    user_id: int
+    status: str
+    request_type: str
+    current_financial_situation: str
+    why_important: str
+    how_will_use: str
+    additional_info: Optional[str]
+    monthly_budget: Optional[float]
+    approved_plan: Optional[str]
+    approved_discount_percent: Optional[int]
+    approved_monthly_price: Optional[float]
+    staff_notes: Optional[str]
+    rejection_reason: Optional[str]
+    requested_at: datetime
+    reviewed_at: Optional[datetime]
+    reviewed_by: Optional[int]
+    expires_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class ScholarshipDecision(BaseModel):
+    """Schema for staff decision on scholarship."""
+    approved: bool
+    approved_plan: Optional[str] = Field(None, pattern="^(free|basic|pro|custom)$")
+    approved_discount_percent: Optional[int] = Field(None, ge=0, le=100)
+    approved_monthly_price: Optional[float] = Field(None, ge=0)
+    staff_notes: Optional[str] = Field(None, max_length=2000)
+    rejection_reason: Optional[str] = Field(None, max_length=2000)
+    duration_months: Optional[int] = Field(12, ge=1, le=36)  # Default 1 year
+
+
+# ============================================================================
 # Messaging Schemas
 # ============================================================================
 
 class ConversationCreate(BaseModel):
+
     """Schema for creating a conversation."""
     participant_ids: List[int] = Field(..., min_length=2)
     is_group: bool = False

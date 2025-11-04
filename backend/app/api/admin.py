@@ -14,6 +14,7 @@ from app.core.auth import require_staff
 from app.models.collaboration import Group
 from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
+from app.schemas.collaboration import ScholarshipDecision, ScholarshipRequestResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -331,3 +332,144 @@ async def approve_custom_domain(
             "status": domain.status
         }
     }
+
+
+# ============================================================================
+# Scholarship Management
+# ============================================================================
+
+@router.get("/scholarships/pending", response_model=List[ScholarshipRequestResponse])
+async def get_pending_scholarships(
+    limit: int = Query(50, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: dict = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all pending scholarship requests (staff only)
+    Returns scholarships awaiting review
+    """
+    from app.models.collaboration import ScholarshipRequest
+    
+    result = await db.execute(
+        select(ScholarshipRequest)
+        .where(ScholarshipRequest.status == 'pending')
+        .order_by(ScholarshipRequest.requested_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    
+    return result.scalars().all()
+
+
+@router.get("/scholarships/all", response_model=List[ScholarshipRequestResponse])
+async def get_all_scholarships(
+    status: Optional[str] = Query(None, regex="^(pending|approved|rejected|negotiating)$"),
+    limit: int = Query(50, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: dict = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all scholarship requests with optional status filter (staff only)
+    """
+    from app.models.collaboration import ScholarshipRequest
+    
+    query = select(ScholarshipRequest)
+    
+    if status:
+        query = query.where(ScholarshipRequest.status == status)
+    
+    query = query.order_by(ScholarshipRequest.requested_at.desc()).limit(limit).offset(offset)
+    
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+@router.post("/scholarships/{request_id}/review")
+async def review_scholarship(
+    request_id: int,
+    decision: ScholarshipDecision,
+    current_user: dict = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Approve, reject, or negotiate a scholarship request (staff only)
+    """
+    from app.models.collaboration import ScholarshipRequest
+    from dateutil.relativedelta import relativedelta
+    
+    # Get the scholarship request
+    result = await db.execute(
+        select(ScholarshipRequest).where(ScholarshipRequest.id == request_id)
+    )
+    scholarship = result.scalar_one_or_none()
+    
+    if not scholarship:
+        raise HTTPException(status_code=404, detail="Scholarship request not found")
+    
+    if scholarship.status != 'pending':
+        raise HTTPException(status_code=400, detail=f"Scholarship is already {scholarship.status}")
+    
+    # Get staff user
+    staff_result = await db.execute(
+        select(User).where(User.keycloak_id == current_user.get('sub'))
+    )
+    staff_user = staff_result.scalar_one_or_none()
+    
+    if decision.approved:
+        # Approve scholarship
+        scholarship.status = 'approved'
+        scholarship.approved_plan = decision.approved_plan or 'free'
+        scholarship.approved_discount_percent = decision.approved_discount_percent or 100
+        scholarship.approved_monthly_price = decision.approved_monthly_price or 0.0
+        scholarship.staff_notes = decision.staff_notes
+        scholarship.reviewed_at = datetime.utcnow()
+        scholarship.reviewed_by = staff_user.id if staff_user else None
+        scholarship.expires_at = datetime.utcnow() + relativedelta(months=decision.duration_months or 12)
+        
+        # Update group
+        group_result = await db.execute(
+            select(Group).where(Group.id == scholarship.group_id)
+        )
+        group = group_result.scalar_one_or_none()
+        
+        if group:
+            group.has_scholarship = True
+            group.scholarship_plan = scholarship.approved_plan
+            group.scholarship_discount_percent = scholarship.approved_discount_percent
+            group.scholarship_monthly_price = scholarship.approved_monthly_price
+            group.scholarship_expires_at = scholarship.expires_at
+        
+        message = f"Scholarship approved: {scholarship.approved_plan} plan"
+        if scholarship.approved_discount_percent == 100:
+            message += " (Free)"
+        else:
+            message += f" ({scholarship.approved_discount_percent}% off, ${scholarship.approved_monthly_price}/month)"
+    
+    else:
+        # Reject scholarship
+        scholarship.status = 'rejected'
+        scholarship.rejection_reason = decision.rejection_reason
+        scholarship.staff_notes = decision.staff_notes
+        scholarship.reviewed_at = datetime.utcnow()
+        scholarship.reviewed_by = staff_user.id if staff_user else None
+        
+        message = "Scholarship request rejected"
+    
+    await db.commit()
+    await db.refresh(scholarship)
+    
+    return {
+        "success": True,
+        "message": message,
+        "scholarship": {
+            "id": scholarship.id,
+            "status": scholarship.status,
+            "approved_plan": scholarship.approved_plan,
+            "approved_discount_percent": scholarship.approved_discount_percent,
+            "approved_monthly_price": float(scholarship.approved_monthly_price) if scholarship.approved_monthly_price else None,
+            "expires_at": scholarship.expires_at.isoformat() if scholarship.expires_at else None
+        }
+    }
+

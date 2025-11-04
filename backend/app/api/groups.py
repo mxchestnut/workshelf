@@ -9,7 +9,8 @@ from app.services import user_service
 from app.services.group_service import GroupService
 from app.schemas.collaboration import (
     GroupCreate, GroupUpdate, GroupResponse,
-    GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse
+    GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse,
+    ScholarshipRequestCreate, ScholarshipRequestResponse
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -160,3 +161,90 @@ async def update_member_role(
     if not member:
         raise HTTPException(status_code=404, detail="Member not found or not authorized")
     return member
+
+
+# ============================================================================
+# Scholarship Endpoints
+# ============================================================================
+
+@router.post("/{group_id}/scholarship", response_model=ScholarshipRequestResponse, status_code=status.HTTP_201_CREATED)
+async def request_scholarship(
+    group_id: int,
+    scholarship_data: ScholarshipRequestCreate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Request scholarship/sliding scale pricing for a group."""
+    from app.models.collaboration import ScholarshipRequest
+    from datetime import datetime
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Verify group exists and user is owner/admin
+    group = await GroupService.get_group_by_id(db, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can request scholarships")
+    
+    # Check for existing pending request
+    from sqlalchemy import select
+    result = await db.execute(
+        select(ScholarshipRequest).where(
+            ScholarshipRequest.group_id == group_id,
+            ScholarshipRequest.status == 'pending'
+        )
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=400, detail="A scholarship request is already pending for this group")
+    
+    # Create request
+    request = ScholarshipRequest(
+        group_id=group_id,
+        user_id=user.id,
+        status='pending',
+        request_type=scholarship_data.request_type,
+        current_financial_situation=scholarship_data.current_financial_situation,
+        why_important=scholarship_data.why_important,
+        how_will_use=scholarship_data.how_will_use,
+        additional_info=scholarship_data.additional_info,
+        monthly_budget=scholarship_data.monthly_budget,
+        requested_at=datetime.utcnow()
+    )
+    
+    db.add(request)
+    await db.commit()
+    await db.refresh(request)
+    
+    return request
+
+
+@router.get("/{group_id}/scholarship", response_model=List[ScholarshipRequestResponse])
+async def get_group_scholarship_requests(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get scholarship requests for a group (owner/admin only)."""
+    from app.models.collaboration import ScholarshipRequest
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can view scholarship requests")
+    
+    result = await db.execute(
+        select(ScholarshipRequest)
+        .where(ScholarshipRequest.group_id == group_id)
+        .order_by(ScholarshipRequest.created_at.desc())
+    )
+    
+    return result.scalars().all()
+

@@ -323,3 +323,23 @@ class GroupService:
         
         result = await db.execute(query)
         return result.scalars().all()
+    
+    @staticmethod
+    async def is_group_admin(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> bool:
+        """Check if user is group owner or admin."""
+        result = await db.execute(
+            select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == user_id,
+                    GroupMember.role.in_([GroupMemberRole.OWNER, GroupMemberRole.ADMIN])
+                )
+            )
+        )
+        member = result.scalar_one_or_none()
+        return member is not None
+
