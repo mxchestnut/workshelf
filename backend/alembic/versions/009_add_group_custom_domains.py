@@ -1,7 +1,7 @@
 """Add custom domain support for groups
 
-Revision ID: 002_add_group_custom_domains
-Revises: 001_initial
+Revision ID: 009_add_group_custom_domains
+Revises: 008_add_group_subdomain_approval
 Create Date: 2025-11-04 15:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '002_add_group_custom_domains'
-down_revision = '001_initial'
+revision = '009_add_group_custom_domains'
+down_revision = '008_add_group_subdomain_approval'
 branch_labels = None
 depends_on = None
 
