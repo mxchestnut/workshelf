@@ -8,7 +8,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 import httpx
 from functools import lru_cache
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
+from app.core.database import get_db
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -268,8 +270,8 @@ async def get_current_user_from_db(
 
 
 async def require_staff(
-    db,  # AsyncSession
-    user: Dict[str, Any] = Depends(get_current_user)
+    user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Require user to be platform staff (is_staff=True)
