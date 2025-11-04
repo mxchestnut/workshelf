@@ -27,6 +27,18 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://workshelf:password@localhost:5432/workshelf"
     
+    @property
+    def DATABASE_URL_CLEAN(self) -> str:
+        """Clean DATABASE_URL for asyncpg compatibility"""
+        url = self.DATABASE_URL
+        # Remove sslmode and channel_binding query params that asyncpg doesn't support
+        # asyncpg handles SSL automatically
+        url = url.replace('?sslmode=require&channel_binding=require', '')
+        url = url.replace('?sslmode=require', '')
+        url = url.replace('&sslmode=require', '')
+        url = url.replace('&channel_binding=require', '')
+        return url
+    
     # Azure (optional for local dev)
     AZURE_STORAGE_CONNECTION_STRING: str = ""
     AZURE_STORAGE_CONTAINER_NAME: str = "documents"
