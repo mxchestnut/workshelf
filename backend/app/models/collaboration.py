@@ -190,10 +190,11 @@ class Group(Base, TimestampMixin):
     slug = Column(String(255), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
     avatar_url = Column(String(500), nullable=True)
-    banner_url = Column(String(500), nullable=True)
+    tags = Column(JSON, nullable=True)
+    rules = Column(Text, nullable=True)
     
     # Settings
-    privacy = Column(SQLEnum(GroupPrivacyType), nullable=False, default=GroupPrivacyType.PUBLIC)
+    is_public = Column(Boolean, default=True, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Admin approval for custom subdomains
@@ -202,9 +203,6 @@ class Group(Base, TimestampMixin):
     subdomain_approved_at = Column(DateTime(timezone=True), nullable=True)
     subdomain_approved_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     subdomain_rejection_reason = Column(Text, nullable=True)
-    
-    # Stats
-    member_count = Column(Integer, default=0, nullable=False)
     
     # Relationships
     members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan")
