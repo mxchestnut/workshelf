@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_current_user_from_db
-from app.models.collaboration import Group, GroupMember
+from app.models.collaboration import Group, GroupMember, GroupPost, GroupMemberRole
 from app.models.user import User
 
 router = APIRouter(prefix="/group-admin", tags=["group-admin"])
@@ -42,6 +42,51 @@ class GroupAdminInfo(BaseModel):
 class SubdomainRequest(BaseModel):
     """Request a custom subdomain for a group"""
     subdomain: str  # e.g., 'writers' for writers.workshelf.dev
+
+
+class GroupMemberInfo(BaseModel):
+    """Group member information"""
+    id: int
+    user_id: int
+    username: str
+    email: str
+    role: str
+    joined_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class GroupPostCreate(BaseModel):
+    """Create a new group post"""
+    title: str
+    content: str
+    is_pinned: bool = False
+
+
+class GroupPostInfo(BaseModel):
+    """Group post information"""
+    id: int
+    title: str
+    content: str
+    author_id: int
+    author_username: str
+    is_pinned: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class MemberRoleUpdate(BaseModel):
+    """Update member role"""
+    role: GroupMemberRole
+
+
+class ModerationAction(BaseModel):
+    """Moderation action (ban, suspend, etc)"""
+    reason: Optional[str] = None
 
 
 # ============================================================================
@@ -86,15 +131,62 @@ async def get_group_owner_or_admin(
             detail="You are not a member of this group"
         )
     
-    # For now, only allow owners to manage subdomain
-    # TODO: Add OWNER and ADMIN roles once GroupMemberRole enum is created
-    # if member.role not in [GroupMemberRole.OWNER, GroupMemberRole.ADMIN]:
-    #     raise HTTPException(
-    #         status_code=403,
-    #         detail="Only group owners and admins can manage settings"
-    #     )
+    # Check if user has admin or owner role
+    if member.role not in [GroupMemberRole.OWNER, GroupMemberRole.ADMIN]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only group owners and admins can perform this action"
+        )
     
     return group
+
+
+async def get_group_moderator_or_above(
+    group_id: int,
+    db: AsyncSession,
+    current_user: User
+) -> tuple[Group, GroupMember]:
+    """
+    Verify user is at least a moderator of the group
+    
+    Returns:
+        Tuple of (Group, GroupMember) if user has permission
+        
+    Raises:
+        HTTPException: If group not found or user lacks permission
+    """
+    # Get the group
+    result = await db.execute(select(Group).filter(Group.id == group_id))
+    group = result.scalar_one_or_none()
+    
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Check if user is a member with moderator, admin, or owner role
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == current_user.id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not a member of this group"
+        )
+    
+    # Check if user has moderator, admin, or owner role
+    if member.role not in [GroupMemberRole.OWNER, GroupMemberRole.ADMIN, GroupMemberRole.MODERATOR]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only group moderators, admins, and owners can perform this action"
+        )
+    
+    return group, member
 
 
 # ============================================================================
@@ -240,4 +332,348 @@ async def cancel_subdomain_request(
     return {
         "success": True,
         "message": "Subdomain request cancelled successfully"
+    }
+
+
+# ============================================================================
+# Member Management Endpoints
+# ============================================================================
+
+@router.get("/groups/{group_id}/members", response_model=List[GroupMemberInfo])
+async def get_group_members(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Get all members of the group (requires group membership)
+    
+    **Requires**: Keycloak authentication + group membership
+    """
+    # Verify user is a member
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get all group members with user info
+    result = await db.execute(
+        select(GroupMember, User).join(User).filter(
+            GroupMember.group_id == group_id
+        ).order_by(GroupMember.created_at.desc())
+    )
+    members_with_users = result.all()
+    
+    return [
+        GroupMemberInfo(
+            id=member.id,
+            user_id=member.user_id,
+            username=user.username or user.email.split('@')[0],
+            email=user.email,
+            role=member.role.value,
+            joined_at=member.created_at
+        )
+        for member, user in members_with_users
+    ]
+
+
+@router.put("/groups/{group_id}/members/{user_id}/role")
+async def update_member_role(
+    group_id: int,
+    user_id: int,
+    role_update: MemberRoleUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Update a member's role (owner/admin only)
+    
+    **Requires**: Keycloak authentication + group owner/admin role
+    """
+    group = await get_group_owner_or_admin(group_id, db, current_user)
+    
+    # Get the member to update
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Prevent changing owner role unless you're the owner
+    if member.role == GroupMemberRole.OWNER:
+        # Check if current user is also an owner
+        current_member_result = await db.execute(
+            select(GroupMember).filter(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == current_user.id,
+                    GroupMember.role == GroupMemberRole.OWNER
+                )
+            )
+        )
+        if not current_member_result.scalar_one_or_none():
+            raise HTTPException(
+                status_code=403,
+                detail="Only owners can change other owners' roles"
+            )
+    
+    # Update the role
+    member.role = role_update.role
+    await db.commit()
+    await db.refresh(member)
+    
+    return {
+        "success": True,
+        "message": f"Member role updated to {role_update.role.value}",
+        "member": {
+            "id": member.id,
+            "user_id": member.user_id,
+            "role": member.role.value
+        }
+    }
+
+
+@router.delete("/groups/{group_id}/members/{user_id}")
+async def remove_member(
+    group_id: int,
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Remove a member from the group (moderator/admin/owner only)
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    """
+    group, current_member = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get the member to remove
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Role hierarchy check: can't remove someone with equal or higher role
+    role_hierarchy = {
+        GroupMemberRole.MEMBER: 1,
+        GroupMemberRole.MODERATOR: 2,
+        GroupMemberRole.ADMIN: 3,
+        GroupMemberRole.OWNER: 4
+    }
+    
+    if role_hierarchy[member.role] >= role_hierarchy[current_member.role]:
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot remove a member with equal or higher role"
+        )
+    
+    # Remove the member
+    await db.delete(member)
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": "Member removed successfully"
+    }
+
+
+# ============================================================================
+# Group Posts Management Endpoints
+# ============================================================================
+
+@router.get("/groups/{group_id}/posts", response_model=List[GroupPostInfo])
+async def get_group_posts(
+    group_id: int,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Get all posts in the group (requires group membership)
+    
+    **Requires**: Keycloak authentication + group membership
+    """
+    # Verify user is a member
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get posts with author info
+    result = await db.execute(
+        select(GroupPost, User).join(User, GroupPost.author_id == User.id).filter(
+            GroupPost.group_id == group_id
+        ).order_by(
+            GroupPost.is_pinned.desc(),
+            GroupPost.created_at.desc()
+        ).limit(limit).offset(offset)
+    )
+    posts_with_users = result.all()
+    
+    return [
+        GroupPostInfo(
+            id=post.id,
+            title=post.title,
+            content=post.content,
+            author_id=post.author_id,
+            author_username=user.username or user.email.split('@')[0],
+            is_pinned=post.is_pinned,
+            created_at=post.created_at,
+            updated_at=post.updated_at
+        )
+        for post, user in posts_with_users
+    ]
+
+
+@router.post("/groups/{group_id}/posts")
+async def create_group_post(
+    group_id: int,
+    post_data: GroupPostCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Create a new post in the group (requires group membership)
+    
+    **Requires**: Keycloak authentication + group membership
+    """
+    # Verify user is a member (at least member level can post)
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == current_user.id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(
+            status_code=403,
+            detail="You must be a member of this group to post"
+        )
+    
+    # Create the post
+    new_post = GroupPost(
+        group_id=group_id,
+        author_id=current_user.id,
+        title=post_data.title,
+        content=post_data.content,
+        is_pinned=post_data.is_pinned if member.role in [GroupMemberRole.OWNER, GroupMemberRole.ADMIN, GroupMemberRole.MODERATOR] else False
+    )
+    
+    db.add(new_post)
+    await db.commit()
+    await db.refresh(new_post)
+    
+    return {
+        "success": True,
+        "message": "Post created successfully",
+        "post": {
+            "id": new_post.id,
+            "title": new_post.title,
+            "content": new_post.content,
+            "created_at": new_post.created_at
+        }
+    }
+
+
+@router.put("/groups/{group_id}/posts/{post_id}/pin")
+async def toggle_post_pin(
+    group_id: int,
+    post_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Pin/unpin a post (moderator/admin/owner only)
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    """
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get the post
+    post_result = await db.execute(
+        select(GroupPost).filter(
+            and_(
+                GroupPost.id == post_id,
+                GroupPost.group_id == group_id
+            )
+        )
+    )
+    post = post_result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Toggle pin status
+    post.is_pinned = not post.is_pinned
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": f"Post {'pinned' if post.is_pinned else 'unpinned'} successfully",
+        "post": {
+            "id": post.id,
+            "is_pinned": post.is_pinned
+        }
+    }
+
+
+@router.delete("/groups/{group_id}/posts/{post_id}")
+async def delete_post(
+    group_id: int,
+    post_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Delete a post (author, moderator, admin, or owner)
+    
+    **Requires**: Keycloak authentication + (post author OR group moderator/admin/owner)
+    """
+    # Get the post
+    post_result = await db.execute(
+        select(GroupPost).filter(
+            and_(
+                GroupPost.id == post_id,
+                GroupPost.group_id == group_id
+            )
+        )
+    )
+    post = post_result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Check if user is the author
+    if post.author_id == current_user.id:
+        # Author can delete their own post
+        await db.delete(post)
+        await db.commit()
+        return {
+            "success": True,
+            "message": "Post deleted successfully"
+        }
+    
+    # If not the author, must be moderator/admin/owner
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    await db.delete(post)
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": "Post deleted successfully"
     }
