@@ -927,6 +927,13 @@
                 item.classList.remove('active');
             });
             document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+            
+            // Load data for specific sections
+            if (sectionName === 'studios') {
+                loadStudios();
+            } else if (sectionName === 'members') {
+                loadMembers();
+            }
         }
 
         function showModal(modalId) {
@@ -1000,6 +1007,64 @@
             }
         }
 
+        async function loadStudios() {
+            try {
+                const response = await fetch(`${API_BASE}/studios?page=1&page_size=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load studios');
+                }
+                
+                const data = await response.json();
+                const studios = data.studios || data.items || data;
+                
+                const studiosList = document.getElementById('studios-list');
+                
+                if (!studios || studios.length === 0) {
+                    studiosList.innerHTML = '<p class="text-gray-500 text-center py-8">No studios yet. Create your first studio to get started!</p>';
+                    document.getElementById('stat-studios').textContent = '0';
+                    return;
+                }
+                
+                document.getElementById('stat-studios').textContent = studios.length;
+                
+                studiosList.innerHTML = studios.map(studio => `
+                    <div class="border-b border-gray-200 last:border-0 p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-neutral-darkest mb-1">${studio.name}</h3>
+                                <p class="text-sm text-gray-600 mb-2">${studio.description || 'No description'}</p>
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    <span>Slug: <code class="bg-gray-100 px-2 py-0.5 rounded">${studio.slug}</code></span>
+                                    <span>•</span>
+                                    <span>${studio.is_public ? '🌍 Public' : '🔒 Private'}</span>
+                                    <span>•</span>
+                                    <span>Created ${new Date(studio.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="/studios/${studio.slug}" class="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary-dark" target="_blank">
+                                    View
+                                </a>
+                                <button class="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading studios:', error);
+                document.getElementById('studios-list').innerHTML = `
+                    <p class="text-red-500 text-center py-8">Failed to load studios. ${error.message}</p>
+                `;
+            }
+        }
+
         async function loadMembers() {
             try {
                 // Mock member data - replace with actual API call
@@ -1050,22 +1115,31 @@
                     body: JSON.stringify({
                         name: name,
                         description: description,
-                        group_id: currentGroup.id
+                        is_public: true,
+                        is_active: true
                     })
                 });
                 
-                if (!response.ok) throw new Error('Failed to create studio');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.detail || 'Failed to create studio');
+                }
+                
+                const studio = await response.json();
+                console.log('Studio created:', studio);
                 
                 closeModal('modal-create-studio');
                 document.getElementById('new-studio-name').value = '';
                 document.getElementById('new-studio-description').value = '';
                 
                 // Reload studios list
+                await loadStudios();
                 showSection('studios');
                 alert('Studio created successfully!');
             } catch (error) {
                 console.error('Error creating studio:', error);
-                alert('Failed to create studio. Please try again.');
+                alert(`Failed to create studio: ${error.message}`);
             }
         }
 
