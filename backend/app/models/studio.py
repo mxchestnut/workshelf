@@ -54,10 +54,14 @@ class Studio(Base, TimestampMixin, TenantMixin):
     twitter_handle = Column(String(100))
     website_url = Column(String(500))
     
+    # Template tracking (optional - which template was used to create this)
+    template_id = Column(Integer, ForeignKey('project_templates.id', ondelete='SET NULL'), nullable=True, index=True)
+    
     # Relationships
     tenant = relationship("Tenant", back_populates="studios")
     members = relationship("StudioMember", back_populates="studio", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="studio")
+    template = relationship("ProjectTemplate", back_populates="studios")
     
     # Phase 5: Studio Customization
     theme = relationship("StudioTheme", back_populates="studio", uselist=False, cascade="all, delete-orphan")

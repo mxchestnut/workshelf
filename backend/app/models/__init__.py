@@ -34,6 +34,9 @@ from app.models.advanced import (
     IntegrityCheck, IntegrityCheckType, IntegrityCheckStatus,
     ExportJob, ExportFormat, ExportStatus, ExportType
 )
+from app.models.templates import (
+    ProjectTemplate, TemplateSection, TemplateSearch
+)
 
 __all__ = [
     "Base",
@@ -107,4 +110,8 @@ __all__ = [
     "ExportFormat",
     "ExportStatus",
     "ExportType",
+    # Templates
+    "ProjectTemplate",
+    "TemplateSection",
+    "TemplateSearch",
 ]
