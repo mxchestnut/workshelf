@@ -203,6 +203,9 @@ class GroupResponse(BaseModel):
     avatar_url: Optional[str]
     tags: Optional[List[str]]
     rules: Optional[str]
+    subdomain_requested: Optional[str]
+    subdomain_approved: bool = False
+    can_use_custom_domain: bool = False
     created_at: datetime
     updated_at: datetime
     
