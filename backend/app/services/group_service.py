@@ -157,7 +157,6 @@ class GroupService:
             .where(
                 and_(
                     GroupMember.user_id == user_id,
-                    GroupMember.is_active == True,
                     Group.is_active == True
                 )
             )
