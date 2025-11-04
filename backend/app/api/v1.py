@@ -29,6 +29,7 @@ from app.api import (
     export,
     accessibility,
     ai_assist,
+    ai_templates,  # AI template generation
     admin,  # Admin endpoints for platform staff
     group_admin  # Group admin endpoints for subdomain owners
 )
@@ -63,7 +64,8 @@ async def api_status():
             "content-integrity",
             "export",
             "accessibility",
-            "ai-assistance"
+            "ai-assistance",
+            "ai-templates"
         ]
     }
 
@@ -105,6 +107,9 @@ api_router.include_router(accessibility.router)
 
 # AI Assistance (helps users CREATE, never writes FOR them)
 api_router.include_router(ai_assist.router)
+
+# AI Templates (generate custom templates based on interests)
+api_router.include_router(ai_templates.router)
 
 # Admin endpoints (Keycloak-protected for platform staff)
 api_router.include_router(admin.router)

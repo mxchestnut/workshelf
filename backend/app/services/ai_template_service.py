@@ -279,7 +279,7 @@ Be creative and think about what would genuinely help this user succeed with the
         sections_data = edits.get("sections") if edits else ai_template.sections
         
         # Create TemplateSection records
-        self._create_sections_from_data(db, project_template.id, sections_data)
+        await self._create_sections_from_data(db, project_template.id, sections_data)
         
         # Create interest mappings
         for interest in ai_template.source_interests:
@@ -291,9 +291,10 @@ Be creative and think about what would genuinely help this user succeed with the
             db.add(mapping)
         
         # Update the AI template record
+        from datetime import datetime
         ai_template.status = "approved"
         ai_template.reviewed_by = reviewer_id
-        ai_template.reviewed_at = db.execute("SELECT NOW()").scalar()
+        ai_template.reviewed_at = datetime.utcnow()
         ai_template.review_notes = review_notes
         ai_template.approved_template_id = project_template.id
         
@@ -304,7 +305,7 @@ Be creative and think about what would genuinely help this user succeed with the
         
         return project_template
     
-    def _create_sections_from_data(
+    async def _create_sections_from_data(
         self,
         db: AsyncSession,
         template_id: int,
@@ -324,10 +325,10 @@ Be creative and think about what would genuinely help this user succeed with the
                 ai_prompts=section_data.get("ai_prompts", [])
             )
             db.add(section)
-            db.flush()  # Get the ID for children
+            await db.flush()  # Get the ID for children
             
             # Recursively create children
             if "children" in section_data and section_data["children"]:
-                self._create_sections_from_data(
+                await self._create_sections_from_data(
                     db, template_id, section_data["children"], section.id
                 )
