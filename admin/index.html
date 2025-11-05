@@ -52,7 +52,7 @@
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="stats">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8" id="stats">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -90,6 +90,20 @@
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-neutral">AI Templates</p>
+                            <p class="text-3xl font-bold text-neutral-darkest mt-2" id="pending-templates">-</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                             </svg>
                         </div>
                     </div>
@@ -160,6 +174,24 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
                         <p>Loading popular interests...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI-Generated Templates Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-lg font-semibold text-neutral-darkest">AI-Generated Templates Pending Review</h2>
+                    <p class="text-sm text-neutral mt-1">Review and approve AI-generated templates before making them available to users</p>
+                </div>
+
+                <div class="divide-y divide-gray-200" id="templates-list">
+                    <!-- Templates will be loaded here -->
+                    <div class="px-6 py-8 text-center text-neutral">
+                        <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <p>Loading AI templates...</p>
                     </div>
                 </div>
             </div>
@@ -458,6 +490,7 @@
                 await loadPendingRequests();
                 await loadScholarships();
                 await loadPopularInterests();
+                await loadAITemplates();
             } catch (error) {
                 console.error('Error loading data:', error);
                 if (error.message.includes('401')) {
@@ -927,6 +960,148 @@
                         <p>Failed to load interests</p>
                     </div>
                 `;
+            }
+        }
+
+        async function loadAITemplates() {
+            try {
+                const response = await fetch(`${API_BASE}/ai/pending-templates`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load templates');
+                
+                const templates = await response.json();
+                
+                // Update stats
+                document.getElementById('pending-templates').textContent = templates.length;
+                
+                const container = document.getElementById('templates-list');
+                
+                if (templates.length === 0) {
+                    container.innerHTML = `
+                        <div class="px-6 py-8 text-center text-neutral">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p>No pending AI templates</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = templates.map(template => `
+                    <div class="px-6 py-4 hover:bg-gray-50 transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-base font-semibold text-neutral-darkest">${template.name}</h3>
+                                    <span class="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded">
+                                        🤖 AI Generated
+                                    </span>
+                                </div>
+                                <p class="text-sm text-neutral mb-3">${template.description || 'No description'}</p>
+                                <div class="flex items-center gap-4 text-xs text-gray-500">
+                                    <span>
+                                        <strong>Interests:</strong> ${template.interests.join(', ')}
+                                    </span>
+                                    <span>
+                                        <strong>Sections:</strong> ${template.sections?.length || 0}
+                                    </span>
+                                    <span>
+                                        Generated ${new Date(template.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex gap-2">
+                                <button 
+                                    onclick="previewTemplate(${template.id})"
+                                    class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-orange-50">
+                                    Preview
+                                </button>
+                                <button 
+                                    onclick="approveTemplateModal(${template.id})"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                                    Approve
+                                </button>
+                                <button 
+                                    onclick="rejectTemplateModal(${template.id})"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading AI templates:', error);
+                document.getElementById('pending-templates').textContent = '!';
+            }
+        }
+
+        async function previewTemplate(templateId) {
+            // TODO: Show template preview modal with all sections
+            alert('Template preview coming soon! Template ID: ' + templateId);
+        }
+
+        async function approveTemplateModal(templateId) {
+            if (!confirm('Approve this AI-generated template and make it available to users?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/approve-template`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ai_template_id: templateId
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Template approved successfully!');
+                    await loadData();
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail || 'Failed to approve template'}`);
+                }
+            } catch (error) {
+                console.error('Error approving template:', error);
+                alert('Failed to approve template. Please try again.');
+            }
+        }
+
+        async function rejectTemplateModal(templateId) {
+            const reason = prompt('Why are you rejecting this template? (optional)');
+            if (reason === null) return; // Cancelled
+            
+            try {
+                const response = await fetch(`${API_BASE}/ai/approve-template`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ai_template_id: templateId,
+                        reject: true,
+                        rejection_reason: reason || 'No reason provided'
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Template rejected.');
+                    await loadData();
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail || 'Failed to reject template'}`);
+                }
+            } catch (error) {
+                console.error('Error rejecting template:', error);
+                alert('Failed to reject template. Please try again.');
             }
         }
 
