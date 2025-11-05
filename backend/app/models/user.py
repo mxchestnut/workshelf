@@ -23,6 +23,13 @@ class User(Base, TimestampMixin, TenantMixin):
     email = Column(String(255), nullable=False, index=True)
     username = Column(String(100), nullable=False, index=True)
     display_name = Column(String(255))
+    phone_number = Column(String(20), unique=True, index=True, nullable=True)  # E.164 format: +1234567890
+    
+    # Registration preferences
+    newsletter_opt_in = Column(Boolean, default=False, nullable=False)
+    sms_opt_in = Column(Boolean, default=False, nullable=False)
+    house_rules_accepted = Column(Boolean, default=False, nullable=False)
+    birth_year = Column(Integer, nullable=True)  # For age verification (18+)
     
     # Status
     is_active = Column(Boolean, default=True, nullable=False)

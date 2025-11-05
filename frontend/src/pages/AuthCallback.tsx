@@ -27,9 +27,16 @@ export function AuthCallback() {
       }
 
       try {
-        await authService.handleCallback(code)
-        // Redirect to feed
-        window.location.href = '/feed'
+        const user = await authService.handleCallback(code)
+        
+        // Check if user has completed onboarding (has username and phone)
+        if (!user.username) {
+          // Redirect to onboarding
+          window.location.href = '/onboarding'
+        } else {
+          // Redirect to feed
+          window.location.href = '/feed'
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Authentication failed')
       }

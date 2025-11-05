@@ -21,6 +21,7 @@ import { Projects } from './pages/Projects'
 import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
 import { AuthCallback } from './pages/AuthCallback'
+import Onboarding from './pages/Onboarding'
 import { authService, User } from './services/auth'
 
 interface HealthStatus {
@@ -34,7 +35,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback' | 'onboarding'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -48,6 +49,8 @@ function App() {
     const path = window.location.pathname
     if (path === '/auth/callback') {
       setCurrentPage('auth-callback')
+    } else if (path === '/onboarding') {
+      setCurrentPage('onboarding')
     } else if (path === '/feed') {
       setCurrentPage('feed')
       loadUser()
@@ -78,6 +81,10 @@ function App() {
     // Handle special pages
     if (currentPage === 'auth-callback') {
       return <AuthCallback />
+    }
+    
+    if (currentPage === 'onboarding') {
+      return <Onboarding />
     }
     
     if (currentPage === 'feed') {

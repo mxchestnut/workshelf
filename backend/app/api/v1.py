@@ -5,6 +5,7 @@ Aggregates all v1 endpoints
 from fastapi import APIRouter
 from app.api import (
     auth,
+    registration,  # Registration validation endpoints
     documents,
     studios,
     user_profiles,
@@ -71,6 +72,7 @@ async def api_status():
 
 # Include routers
 api_router.include_router(auth.router)
+api_router.include_router(registration.router)  # Registration validation
 api_router.include_router(documents.router)
 api_router.include_router(studios.router)
 api_router.include_router(user_profiles.router)

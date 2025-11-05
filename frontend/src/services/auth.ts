@@ -200,6 +200,13 @@ class AuthService {
   }
 
   /**
+   * Alias for getAccessToken (for consistency)
+   */
+  getToken(): string | null {
+    return this.getAccessToken()
+  }
+
+  /**
    * Check if user is staff
    */
   isStaff(): boolean {
