@@ -22,6 +22,8 @@ import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
+import TermsOfService from './pages/TermsOfService'
+import HouseRules from './pages/HouseRules'
 import { authService, User } from './services/auth'
 
 interface HealthStatus {
@@ -35,7 +37,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback' | 'onboarding'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -51,6 +53,10 @@ function App() {
       setCurrentPage('auth-callback')
     } else if (path === '/onboarding') {
       setCurrentPage('onboarding')
+    } else if (path === '/legal/terms') {
+      setCurrentPage('terms')
+    } else if (path === '/legal/rules') {
+      setCurrentPage('rules')
     } else if (path === '/feed') {
       setCurrentPage('feed')
       loadUser()
@@ -87,6 +93,14 @@ function App() {
       return <Onboarding />
     }
     
+    if (currentPage === 'terms') {
+      return <TermsOfService />
+    }
+    
+    if (currentPage === 'rules') {
+      return <HouseRules />
+    }
+    
     if (currentPage === 'feed') {
       return <Feed />
     }
@@ -104,9 +118,9 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback page
-  if (currentPage === 'auth-callback') {
-    return <AuthCallback />
+  // Don't render header/menu for auth callback, onboarding, or legal pages
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules') {
+    return renderContent()
   }
 
   // Don't render header/menu for feed page (Feed has its own layout)
