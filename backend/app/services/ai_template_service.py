@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.ai_templates import AIGeneratedTemplate, AIGenerationLog
-from app.models.templates import ProjectTemplate, TemplateSection, TemplateInterestMapping
+from app.models.templates import ProjectTemplate, TemplateSection  # TemplateInterestMapping not yet implemented
 
 
 class AITemplateGenerator:
@@ -282,13 +282,14 @@ Be creative and think about what would genuinely help this user succeed with the
         await self._create_sections_from_data(db, project_template.id, sections_data)
         
         # Create interest mappings
-        for interest in ai_template.source_interests:
-            mapping = TemplateInterestMapping(
-                template_id=project_template.id,
-                interest=interest.lower(),
-                relevance_score=1.0
-            )
-            db.add(mapping)
+        # TODO: Implement TemplateInterestMapping model
+        # for interest in ai_template.source_interests:
+        #     mapping = TemplateInterestMapping(
+        #         template_id=project_template.id,
+        #         interest=interest.lower(),
+        #         relevance_score=1.0
+        #     )
+        #     db.add(mapping)
         
         # Update the AI template record
         from datetime import datetime
