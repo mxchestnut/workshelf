@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     
     # Security
     SECRET_KEY: str = "CHANGE-ME-IN-PRODUCTION"
+    # CORS origins for frontend access
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
