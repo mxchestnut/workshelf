@@ -22,6 +22,17 @@ param postgresAdminPassword string = ''
 @description('Use external database (Neon/Supabase) instead of Azure PostgreSQL')
 param useExternalDatabase bool = false
 
+@description('External database connection string (if using external database)')
+@secure()
+param externalDatabaseUrl string = ''
+
+@description('Claude API Key for AI template generation')
+@secure()
+param claudeApiKey string = ''
+
+@description('Keycloak URL (leave empty for auto-generated)')
+param keycloakUrl string = ''
+
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
@@ -72,6 +83,22 @@ module registry './modules/registry.bicep' = {
   params: {
     location: location
     environment: environment
+  }
+}
+
+// Container Apps (Frontend, Backend, Keycloak)
+module containerApps './modules/container-apps.bicep' = {
+  scope: rg
+  name: 'workshelf-container-apps'
+  params: {
+    location: location
+    environment: environment
+    containerEnvId: containerEnv.outputs.environmentId
+    registryLoginServer: registry.outputs.loginServer
+    registryName: registry.outputs.registryName
+    databaseConnectionString: useExternalDatabase ? externalDatabaseUrl : ''
+    keycloakUrl: keycloakUrl
+    claudeApiKey: claudeApiKey
   }
 }
 

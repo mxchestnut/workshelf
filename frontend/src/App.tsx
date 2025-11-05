@@ -9,12 +9,19 @@ import {
   Search,
   Plus,
   Menu,
-  X
+  X,
+  Shield,
+  Crown,
+  LogIn,
+  LogOut
 } from 'lucide-react'
 import './App.css'
 import { Documents } from './pages/Documents'
 import { Projects } from './pages/Projects'
 import { Community } from './pages/Community'
+import { Feed } from './pages/Feed'
+import { AuthCallback } from './pages/AuthCallback'
+import { authService, User } from './services/auth'
 
 interface HealthStatus {
   status: string
@@ -26,6 +33,8 @@ function App() {
   const [health, setHealth] = useState<HealthStatus | null>(null)
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -34,9 +43,48 @@ function App() {
       .then(res => res.json())
       .then(data => setHealth(data))
       .catch(() => {})
+
+    // Check authentication and route
+    const path = window.location.pathname
+    if (path === '/auth/callback') {
+      setCurrentPage('auth-callback')
+    } else if (path === '/feed') {
+      setCurrentPage('feed')
+      loadUser()
+    } else {
+      setCurrentPage('home')
+      loadUser()
+    }
   }, [API_URL])
 
+  const loadUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (error) {
+      console.error('Failed to load user:', error)
+    }
+  }
+
+  const handleLogin = () => {
+    authService.login()
+  }
+
+  const handleLogout = () => {
+    authService.logout()
+  }
+
   const renderContent = () => {
+    // Handle special pages
+    if (currentPage === 'auth-callback') {
+      return <AuthCallback />
+    }
+    
+    if (currentPage === 'feed') {
+      return <Feed />
+    }
+
+    // Home page tabs
     switch (activeTab) {
       case 'documents':
         return <Documents />
@@ -47,6 +95,16 @@ function App() {
       default:
         return <Documents />
     }
+  }
+
+  // Don't render header/menu for auth callback page
+  if (currentPage === 'auth-callback') {
+    return <AuthCallback />
+  }
+
+  // Don't render header/menu for feed page (Feed has its own layout)
+  if (currentPage === 'feed') {
+    return <Feed />
   }
 
   return (
@@ -78,19 +136,33 @@ function App() {
                 />
               </div>
               
-              <button className="relative p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-              </button>
-              
-              <button className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg hidden md:block">
-                <Settings className="w-5 h-5" />
-              </button>
-              
-              <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                <Plus className="w-5 h-5" />
-                <span className="hidden md:inline">New Document</span>
-              </button>
+              {user && (
+                <>
+                  <button className="relative p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+                  </button>
+                  
+                  <button className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg hidden md:block">
+                    <Settings className="w-5 h-5" />
+                  </button>
+                  
+                  <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                    <Plus className="w-5 h-5" />
+                    <span className="hidden md:inline">New Document</span>
+                  </button>
+                </>
+              )}
+
+              {!user && (
+                <button 
+                  onClick={handleLogin}
+                  className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>Log In</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -159,11 +231,60 @@ function App() {
               <span className="font-medium">Community</span>
             </button>
 
+            {/* Admin Links - Role Based */}
+            {user && (user.is_staff || (user.groups && user.groups.length > 0)) && (
+              <div className="pt-6 mt-6 border-t border-neutral-light">
+                <p className="px-4 text-xs font-semibold text-neutral uppercase mb-2">
+                  Administration
+                </p>
+
+                {/* Staff Dashboard - Only for Kit */}
+                {user.is_staff && (
+                  <a
+                    href="/staff"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span className="font-medium">Staff Dashboard</span>
+                  </a>
+                )}
+
+                {/* Group Admin - For group owners */}
+                {user.groups?.filter(g => g.is_owner).map(group => (
+                  <a
+                    key={group.id}
+                    href={`/group/${group.slug}/admin`}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                  >
+                    <Crown className="w-5 h-5" />
+                    <span className="font-medium">{group.name} Admin</span>
+                  </a>
+                ))}
+              </div>
+            )}
+
             <div className="pt-6 mt-6 border-t border-neutral-light">
+              {user && (
+                <div className="px-4 py-3 mb-2">
+                  <p className="text-sm font-medium text-neutral-darkest">{user.display_name || user.username}</p>
+                  <p className="text-xs text-neutral">{user.email}</p>
+                </div>
+              )}
+
               <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-neutral-light/50 transition-colors">
                 <Settings className="w-5 h-5" />
                 <span className="font-medium">Settings</span>
               </button>
+
+              {user && (
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Log Out</span>
+                </button>
+              )}
             </div>
           </nav>
         </div>
