@@ -3,14 +3,21 @@
  * Handles OAuth callback from Keycloak
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { authService } from '../services/auth'
 import { BookOpen } from 'lucide-react'
 
 export function AuthCallback() {
   const [error, setError] = useState<string | null>(null)
+  const hasHandledCallback = useRef(false)
 
   useEffect(() => {
+    // Prevent duplicate calls (React Strict Mode calls useEffect twice)
+    if (hasHandledCallback.current) {
+      return
+    }
+    hasHandledCallback.current = true
+
     const handleCallback = async () => {
       const params = new URLSearchParams(window.location.search)
       const code = params.get('code')
