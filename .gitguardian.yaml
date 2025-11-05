@@ -1,0 +1,28 @@
+# GitGuardian Configuration
+# https://docs.gitguardian.com/internal-repositories-monitoring/integrations/gitlab/gitlab_webui#gitguardian-configuration-file
+
+# These are NOT actual secrets - they are:
+# 1. PUBLIC URLs (Keycloak and API endpoints that anyone can see)
+# 2. Bicep template parameters (no actual values committed)
+# 3. Frontend environment variables (PUBLIC by design - Vite injects these into client-side code)
+
+paths-ignore:
+  - frontend/src/services/auth.ts  # Contains public Keycloak URL as fallback
+  - infrastructure/bicep/*.bicep   # Infrastructure templates (parameters, not values)
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/*.test.ts'
+  - '**/*.spec.ts'
+
+# Ignore specific patterns that are public by design
+matches-ignore:
+  - name: Public Keycloak URL
+    match: workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io
+  - name: Public API URL  
+    match: api.workshelf.dev
+  - name: Bicep Parameters
+    match: postgresAdminPassword
+  - name: Frontend Client ID (public OAuth client)
+    match: workshelf-frontend
+  - name: Public realm name
+    match: workshelf
