@@ -62,3 +62,4 @@ htmlcov/
 *.backup
 *~
 SECURITY-AUDIT.md
+# Trigger rebuild with correct API URL
