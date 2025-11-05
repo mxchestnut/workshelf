@@ -258,7 +258,17 @@ async def request_subdomain(
             detail="Subdomain must be between 3 and 50 characters"
         )
     
-    # Check if subdomain is already requested or taken
+    # Check if subdomain conflicts with existing usernames (to prevent URL collision)
+    username_check = await db.execute(
+        select(User).filter(User.username == subdomain)
+    )
+    if username_check.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail=f"'{subdomain}' is already taken as a username. Please choose a different subdomain."
+        )
+    
+    # Check if subdomain is already requested or taken by another group
     existing_result = await db.execute(
         select(Group).filter(Group.subdomain_requested == subdomain)
     )

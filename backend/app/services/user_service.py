@@ -46,6 +46,32 @@ async def get_or_create_user_from_keycloak(
     username = keycloak_data.get("preferred_username", email.split("@")[0])
     display_name = keycloak_data.get("name") or keycloak_data.get("preferred_username", username)
     
+    # Check if username conflicts with existing group subdomains
+    from app.models.collaboration import Group
+    from fastapi import HTTPException
+    
+    subdomain_check = await session.execute(
+        select(Group).filter(Group.subdomain_requested == username.lower())
+    )
+    if subdomain_check.scalar_one_or_none():
+        # Try to append a number to make it unique
+        base_username = username
+        counter = 1
+        while True:
+            new_username = f"{base_username}{counter}"
+            subdomain_check = await session.execute(
+                select(Group).filter(Group.subdomain_requested == new_username.lower())
+            )
+            if not subdomain_check.scalar_one_or_none():
+                username = new_username
+                break
+            counter += 1
+            if counter > 999:  # Safety limit
+                raise HTTPException(
+                    status_code=500,
+                    detail="Unable to create unique username"
+                )
+    
     user = User(
         tenant_id=tenant_id,
         keycloak_id=keycloak_id,
