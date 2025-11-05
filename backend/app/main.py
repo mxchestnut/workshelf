@@ -35,7 +35,8 @@ async def add_cors_headers(request: Request, call_next):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
+            response.headers["Access-Control-Max-Age"] = "3600"
         return response
     
     response = await call_next(request)
