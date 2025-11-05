@@ -21,6 +21,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:8080",  # Admin dashboard
+        "https://workshelf.dev",
+        "https://www.workshelf.dev",
         "https://app.workshelf.dev",
         "https://workshelf-frontend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io",
         "https://kits-macbook-pro.tail41ebb6.ts.net"  # Tailscale admin access
