@@ -69,7 +69,12 @@ export default function Onboarding() {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/check-availability`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          },
+          credentials: 'include',
+          mode: 'cors',
           body: JSON.stringify({ username: formData.username })
         });
         const data = await response.json();
@@ -92,7 +97,12 @@ export default function Onboarding() {
         const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/check-availability`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          },
+          credentials: 'include',
+          mode: 'cors',
           body: JSON.stringify({ phone_number: cleanPhone })
         });
         const data = await response.json();
@@ -160,6 +170,8 @@ export default function Onboarding() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify({
           username: formData.username,
           phone_number: cleanPhone,
