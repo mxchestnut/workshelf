@@ -46,6 +46,10 @@ async def add_cors_headers(request: Request, call_next):
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Expose-Headers"] = "*"
     
+    # Add cache control to prevent browser caching CORS issues
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    
     return response
 
 # NOTE: FastAPI CORSMiddleware removed because it was rejecting origins before our custom middleware could handle them
