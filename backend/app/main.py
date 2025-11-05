@@ -36,9 +36,15 @@ async def add_cors_headers(request: Request, call_next):
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["X-Debug-Origin"] = origin or "none"
+        response.headers["X-Debug-Allowed"] = str(origin in allowed_origins)
         return response
     
     response = await call_next(request)
+    
+    # Add debug headers
+    response.headers["X-Debug-Origin"] = origin or "none"
+    response.headers["X-Debug-Allowed"] = str(origin in allowed_origins)
     
     # Add CORS headers to response
     if origin in allowed_origins:
