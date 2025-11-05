@@ -15,13 +15,21 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# Configure CORS
+# Configure CORS - Allow all origins for workshelf.dev domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://workshelf.dev",
+        "https://www.workshelf.dev",
+        "https://app.workshelf.dev",
+        "https://workshelf-frontend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Health check endpoint
