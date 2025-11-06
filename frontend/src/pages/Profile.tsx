@@ -17,7 +17,8 @@ interface UserProfile {
   location: string | null
 }
 
-const INTEREST_OPTIONS = [
+// Default interests if no groups exist yet
+const DEFAULT_INTERESTS = [
   'fiction', 'non-fiction', 'poetry', 
   'sci-fi', 'fantasy', 'romance', 
   'mystery', 'thriller', 'horror', 
@@ -31,6 +32,7 @@ export function Profile() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -48,7 +50,22 @@ export function Profile() {
 
   useEffect(() => {
     loadProfile()
+    loadAvailableInterests()
   }, [])
+
+  const loadAvailableInterests = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/interests`)
+      if (response.ok) {
+        const interests = await response.json()
+        setAvailableInterests(interests)
+      }
+      // If fetch fails, we'll use the default interests
+    } catch (err) {
+      console.error('Failed to load interests:', err)
+      // Keep using DEFAULT_INTERESTS
+    }
+  }
 
   const loadProfile = async () => {
     try {
@@ -332,11 +349,11 @@ export function Profile() {
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <h2 className="text-xl font-semibold text-white mb-4">Your Interests</h2>
           <p className="text-gray-400 text-sm mb-4">
-            Select your interests to get better group recommendations
+            Select interests from active groups to get better recommendations
           </p>
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {INTEREST_OPTIONS.map(interest => (
+            {availableInterests.map((interest: string) => (
               <label
                 key={interest}
                 className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${

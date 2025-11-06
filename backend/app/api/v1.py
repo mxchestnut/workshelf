@@ -33,7 +33,8 @@ from app.api import (
     ai_templates,  # AI template generation
     admin,  # Admin endpoints for platform staff
     group_admin,  # Group admin endpoints for subdomain owners
-    feed  # Personalized feed
+    feed,  # Personalized feed
+    interests  # Dynamic interests from group tags
 )
 
 api_router = APIRouter()
@@ -93,6 +94,7 @@ api_router.include_router(reading.router)
 api_router.include_router(reading_list.router)
 api_router.include_router(discovery.router)
 api_router.include_router(feed.router)  # Personalized feed
+api_router.include_router(interests.router)  # Dynamic interests from groups
 
 # Phase 4: Feedback & Collaboration
 api_router.include_router(comments.router)

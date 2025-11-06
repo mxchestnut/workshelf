@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authService } from '../services/auth';
 
 // Use same fallback pattern as auth.ts
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
+
+// Default interests if no groups exist yet
+const DEFAULT_INTERESTS = [
+  'fiction', 'non-fiction', 'poetry', 'sci-fi', 'fantasy', 'romance',
+  'mystery', 'thriller', 'horror', 'memoir', 'creative-writing', 'screenwriting'
+];
 
 interface OnboardingFormData {
   username: string;
@@ -24,8 +30,28 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError[]>([]);
+  const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS);
   
   console.log('[Onboarding] Component loaded, API_URL:', API_URL);
+  
+  // Load available interests on mount
+  useEffect(() => {
+    loadAvailableInterests();
+  }, []);
+
+  const loadAvailableInterests = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/interests`);
+      if (response.ok) {
+        const interests = await response.json();
+        setAvailableInterests(interests);
+      }
+      // If fetch fails, we'll use the default interests
+    } catch (err) {
+      console.error('Failed to load interests:', err);
+      // Keep using DEFAULT_INTERESTS
+    }
+  };
   
   // Manual navigation function (same pattern as rest of app)
   const navigateTo = (path: string) => {
@@ -330,8 +356,11 @@ export default function Onboarding() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   What are you interested in? (Optional)
                 </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Select interests from active groups to find communities you'll love
+                </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {['fiction', 'non-fiction', 'poetry', 'sci-fi', 'fantasy', 'romance', 'mystery', 'thriller', 'horror', 'memoir', 'creative-writing', 'screenwriting'].map(interest => (
+                  {availableInterests.map((interest: string) => (
                     <label key={interest} className="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50">
                       <input
                         type="checkbox"
