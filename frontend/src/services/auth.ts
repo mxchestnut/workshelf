@@ -54,6 +54,8 @@ class AuthService {
   async handleCallback(code: string): Promise<User> {
     const redirectUri = window.location.origin + '/auth/callback'
     
+    console.log('[AuthService] Exchanging authorization code for tokens...')
+    
     const response = await fetch(`${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`, {
       method: 'POST',
       headers: {
@@ -68,10 +70,14 @@ class AuthService {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to exchange authorization code for token')
+      const errorData = await response.json().catch(() => ({}))
+      console.error('[AuthService] Token exchange failed:', response.status, errorData)
+      throw new Error(errorData.error_description || 'Failed to exchange authorization code for token')
     }
 
     const data = await response.json()
+    console.log('[AuthService] Token exchange successful')
+    
     this.accessToken = data.access_token
     this.refreshToken = data.refresh_token
 

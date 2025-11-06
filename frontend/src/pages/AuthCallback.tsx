@@ -12,6 +12,23 @@ export function AuthCallback() {
   const hasHandledCallback = useRef(false)
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    
+    // CRITICAL: Check sessionStorage FIRST, before any other checks
+    // This must happen synchronously to prevent race conditions
+    if (code) {
+      const processedCodeKey = `oauth_code_${code}`
+      if (sessionStorage.getItem(processedCodeKey)) {
+        console.error('[AuthCallback] Code already processed, aborting')
+        setError('This login link has already been used. Please try logging in again.')
+        return
+      }
+      // Mark as processing IMMEDIATELY, before any async work
+      sessionStorage.setItem(processedCodeKey, 'true')
+      console.log('[AuthCallback] Marked code as processing:', code.substring(0, 10) + '...')
+    }
+    
     // Prevent duplicate calls (React Strict Mode calls useEffect twice)
     if (hasHandledCallback.current) {
       console.log('[AuthCallback] Already handled in this component instance, skipping')
@@ -20,8 +37,6 @@ export function AuthCallback() {
     hasHandledCallback.current = true
 
     const handleCallback = async () => {
-      const params = new URLSearchParams(window.location.search)
-      const code = params.get('code')
       const error = params.get('error')
 
       if (error) {
@@ -34,18 +49,7 @@ export function AuthCallback() {
         return
       }
 
-      // CRITICAL: Check if this exact code has already been processed
-      // This prevents duplicate attempts even across page reloads
-      const processedCodeKey = `oauth_code_${code}`
-      if (sessionStorage.getItem(processedCodeKey)) {
-        console.error('[AuthCallback] This authorization code has already been used!')
-        setError('This login link has already been used. Please try logging in again.')
-        return
-      }
-
-      // Mark this code as being processed
-      sessionStorage.setItem(processedCodeKey, 'true')
-      console.log('[AuthCallback] Processing authorization code:', code.substring(0, 10) + '...')
+      console.log('[AuthCallback] Processing authorization code...')
 
       try {
         const user = await authService.handleCallback(code)
@@ -53,6 +57,7 @@ export function AuthCallback() {
         console.log('[AuthCallback] Successfully authenticated user:', user.email)
         
         // Clean up the processed code marker (optional, but keeps sessionStorage clean)
+        const processedCodeKey = `oauth_code_${code}`
         sessionStorage.removeItem(processedCodeKey)
         
         // Check if user has completed onboarding (has username and phone)
