@@ -22,9 +22,11 @@ async def get_user_info(
     
     Requires: Valid JWT token in Authorization header
     
-    Returns user information from database including owned groups
+    Returns user information from database including owned groups.
+    If user doesn't exist in database, auto-creates them from Keycloak token.
     """
     keycloak_id = user.get("sub")
+    email = user.get("email")
     
     # Fetch user from database
     result = await db.execute(
@@ -32,11 +34,20 @@ async def get_user_info(
     )
     db_user = result.scalar_one_or_none()
     
+    # Auto-create user if they don't exist (first time login after Keycloak registration)
     if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found in database"
+        db_user = User(
+            keycloak_id=keycloak_id,
+            email=email,
+            username=None,  # Will be set during onboarding
+            display_name=user.get("name") or user.get("preferred_username") or email.split("@")[0],
+            is_staff=False,
+            is_active=True,
+            is_verified=user.get("email_verified", False)
         )
+        db.add(db_user)
+        await db.commit()
+        await db.refresh(db_user)
     
     # Fetch user's groups where they are a member
     group_members_result = await db.execute(
