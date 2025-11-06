@@ -99,21 +99,39 @@ class AuthService {
       throw new Error('No access token available')
     }
 
-    const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-      },
-      credentials: 'include',
-      mode: 'cors',
-    })
+    console.log('[AuthService] Fetching user info from:', `${API_URL}/api/v1/auth/me`)
+    console.log('[AuthService] Using token:', this.accessToken.substring(0, 20) + '...')
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch user info')
+    try {
+      const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        mode: 'cors',
+      })
+
+      console.log('[AuthService] Response status:', response.status)
+      console.log('[AuthService] Response headers:', {
+        'content-type': response.headers.get('content-type'),
+        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[AuthService] Error response:', errorText)
+        throw new Error(`Failed to fetch user info: ${response.status} - ${errorText}`)
+      }
+
+      this.user = await response.json()
+      console.log('[AuthService] User info fetched successfully:', this.user?.email)
+      return this.user!
+    } catch (error) {
+      console.error('[AuthService] Fetch failed:', error)
+      throw error
     }
-
-    this.user = await response.json()
-    return this.user!
   }
 
   /**
