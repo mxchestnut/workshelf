@@ -2,7 +2,7 @@
 User Models
 Users belong to tenants and can have multiple roles
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, JSON, ARRAY
 from sqlalchemy.orm import relationship
 from app.models.base import Base, TimestampMixin, TenantMixin
 
@@ -30,6 +30,7 @@ class User(Base, TimestampMixin, TenantMixin):
     sms_opt_in = Column(Boolean, default=False, nullable=False)
     house_rules_accepted = Column(Boolean, default=False, nullable=False)
     birth_year = Column(Integer, nullable=True)  # For age verification (18+)
+    interests = Column(ARRAY(String), nullable=True)  # User interests for group suggestions
     
     # Status
     is_active = Column(Boolean, default=True, nullable=False)

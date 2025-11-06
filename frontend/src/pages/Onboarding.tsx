@@ -8,6 +8,7 @@ interface OnboardingFormData {
   username: string;
   phoneNumber: string;
   birthYear: string;
+  interests: string[];
   newsletterOptIn: boolean;
   smsOptIn: boolean;
   houseRulesAccepted: boolean;
@@ -36,6 +37,7 @@ export default function Onboarding() {
     username: '',
     phoneNumber: '',
     birthYear: '',
+    interests: [],
     newsletterOptIn: false,
     smsOptIn: false,
     houseRulesAccepted: false,
@@ -186,6 +188,7 @@ export default function Onboarding() {
           username: formData.username,
           phone_number: cleanPhone,
           birth_year: parseInt(formData.birthYear),
+          interests: formData.interests,
           newsletter_opt_in: formData.newsletterOptIn,
           sms_opt_in: formData.smsOptIn,
           house_rules_accepted: formData.houseRulesAccepted,
@@ -320,6 +323,33 @@ export default function Onboarding() {
                   <p className="mt-1 text-sm text-red-600">{getFieldError('birthYear')}</p>
                 )}
                 <p className="mt-1 text-xs text-gray-500">You must be 18 or older</p>
+              </div>
+
+              {/* Interests */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What are you interested in? (Optional)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['fiction', 'non-fiction', 'poetry', 'sci-fi', 'fantasy', 'romance', 'mystery', 'thriller', 'horror', 'memoir', 'creative-writing', 'screenwriting'].map(interest => (
+                    <label key={interest} className="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={formData.interests.includes(interest)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({ ...prev, interests: [...prev.interests, interest] }))
+                          } else {
+                            setFormData(prev => ({ ...prev, interests: prev.interests.filter(i => i !== interest) }))
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm capitalize">{interest.replace('-', ' ')}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">We'll suggest groups based on your interests</p>
               </div>
 
               <button

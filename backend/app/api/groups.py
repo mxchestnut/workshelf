@@ -248,3 +248,92 @@ async def get_group_scholarship_requests(
     
     return result.scalars().all()
 
+
+@router.get("/suggestions", response_model=List[GroupResponse])
+async def get_suggested_groups(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 10
+):
+    """
+    Get group suggestions based on user interests
+    Matches user interests with group tags and interests
+    """
+    from app.models.collaboration import Group, GroupMember
+    from app.models.user import User
+    from sqlalchemy import select, and_, or_, func
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Get groups user is already a member of
+    member_query = select(GroupMember.group_id).where(GroupMember.user_id == user.id)
+    member_result = await db.execute(member_query)
+    member_group_ids = [row[0] for row in member_result.all()]
+    
+    # If user has no interests, return popular public groups
+    if not user.interests or len(user.interests) == 0:
+        query = (
+            select(Group, func.count(GroupMember.id).label('member_count'))
+            .outerjoin(GroupMember, Group.id == GroupMember.group_id)
+            .where(
+                and_(
+                    Group.is_public == True,
+                    Group.is_active == True,
+                    Group.id.notin_(member_group_ids) if member_group_ids else True
+                )
+            )
+            .group_by(Group.id)
+            .order_by(func.count(GroupMember.id).desc())
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return [row[0] for row in result.all()]
+    
+    # Find groups matching user interests (tags or interests field)
+    # This is a simple keyword match - could be enhanced with better matching logic
+    interest_conditions = []
+    for interest in user.interests:
+        # Check if interest appears in group tags (JSON) or interests (ARRAY)
+        interest_conditions.append(Group.tags.contains(interest.lower()))
+        interest_conditions.append(Group.interests.contains([interest.lower()]))
+    
+    query = (
+        select(Group)
+        .where(
+            and_(
+                Group.is_public == True,
+                Group.is_active == True,
+                Group.id.notin_(member_group_ids) if member_group_ids else True,
+                or_(*interest_conditions) if interest_conditions else True
+            )
+        )
+        .limit(limit)
+    )
+    
+    result = await db.execute(query)
+    suggested_groups = result.scalars().all()
+    
+    # If not enough matches, fill with popular groups
+    if len(suggested_groups) < limit:
+        remaining = limit - len(suggested_groups)
+        suggested_ids = [g.id for g in suggested_groups]
+        exclude_ids = member_group_ids + suggested_ids
+        
+        popular_query = (
+            select(Group, func.count(GroupMember.id).label('member_count'))
+            .outerjoin(GroupMember, Group.id == GroupMember.group_id)
+            .where(
+                and_(
+                    Group.is_public == True,
+                    Group.is_active == True,
+                    Group.id.notin_(exclude_ids) if exclude_ids else True
+                )
+            )
+            .group_by(Group.id)
+            .order_by(func.count(GroupMember.id).desc())
+            .limit(remaining)
+        )
+        popular_result = await db.execute(popular_query)
+        suggested_groups.extend([row[0] for row in popular_result.all()])
+    
+    return suggested_groups

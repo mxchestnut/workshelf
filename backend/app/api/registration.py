@@ -33,6 +33,7 @@ class CompleteOnboardingRequest(BaseModel):
     username: str
     phone_number: Optional[str] = None
     birth_year: int
+    interests: list[str] = []
     newsletter_opt_in: bool = False
     sms_opt_in: bool = False
     house_rules_accepted: bool
@@ -245,6 +246,7 @@ async def complete_onboarding(
     user.username = request.username
     user.phone_number = request.phone_number
     user.birth_year = request.birth_year
+    user.interests = request.interests if request.interests else []
     user.newsletter_opt_in = request.newsletter_opt_in
     user.sms_opt_in = request.sms_opt_in
     user.house_rules_accepted = request.house_rules_accepted
