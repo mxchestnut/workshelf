@@ -193,6 +193,19 @@ export default function Onboarding() {
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('[Onboarding] API error response:', error);
+        
+        // Handle validation errors
+        if (error.detail && Array.isArray(error.detail)) {
+          // Pydantic validation errors
+          const validationErrors = error.detail.map((err: any) => ({
+            field: err.loc ? err.loc[err.loc.length - 1] : 'general',
+            message: err.msg
+          }));
+          setErrors(validationErrors);
+          return;
+        }
+        
         throw new Error(error.detail || 'Failed to complete onboarding');
       }
 
