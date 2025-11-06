@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
-import { BookOpen, Users, Pin, Clock, Search } from 'lucide-react'
+import { BookOpen, Users, Pin, Clock, Search, User as UserIcon } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -123,9 +123,18 @@ export function Feed() {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-neutral-darkest">Feed</h1>
-            <button className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors">
-              <Search className="w-5 h-5 text-neutral" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => window.location.href = '/profile'}
+                className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors"
+                title="Profile"
+              >
+                <UserIcon className="w-5 h-5 text-neutral" />
+              </button>
+              <button className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors">
+                <Search className="w-5 h-5 text-neutral" />
+              </button>
+            </div>
           </div>
           
           {/* Tabs */}

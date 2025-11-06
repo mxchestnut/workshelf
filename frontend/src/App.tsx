@@ -13,13 +13,15 @@ import {
   Shield,
   Crown,
   LogIn,
-  LogOut
+  LogOut,
+  User as UserIcon
 } from 'lucide-react'
 import './App.css'
 import { Documents } from './pages/Documents'
 import { Projects } from './pages/Projects'
 import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
+import { Profile } from './pages/Profile'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
@@ -37,7 +39,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -59,6 +61,9 @@ function App() {
       setCurrentPage('rules')
     } else if (path === '/feed') {
       setCurrentPage('feed')
+      loadUser()
+    } else if (path === '/profile') {
+      setCurrentPage('profile')
       loadUser()
     } else {
       setCurrentPage('home')
@@ -104,6 +109,10 @@ function App() {
     if (currentPage === 'feed') {
       return <Feed />
     }
+    
+    if (currentPage === 'profile') {
+      return <Profile />
+    }
 
     // Home page tabs
     switch (activeTab) {
@@ -123,9 +132,11 @@ function App() {
     return renderContent()
   }
 
-  // Don't render header/menu for feed page (Feed has its own layout)
-  if (currentPage === 'feed') {
-    return <Feed />
+  // Don't render header/menu for feed and profile pages (they have their own layouts)
+  if (currentPage === 'feed' || currentPage === 'profile') {
+    return <div className="min-h-screen bg-gray-900">
+      {currentPage === 'feed' ? <Feed /> : <Profile />}
+    </div>
   }
 
   return (
