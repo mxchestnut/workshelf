@@ -95,31 +95,32 @@ export default function Onboarding() {
       }
     }
 
-    // Phone number validation
-    if (!formData.phoneNumber.trim()) {
-      newErrors.push({ field: 'phoneNumber', message: 'Phone number is required' });
-    } else if (!/^\+?[1-9]\d{9,14}$/.test(formData.phoneNumber.replace(/[\s()-]/g, ''))) {
-      newErrors.push({ field: 'phoneNumber', message: 'Please enter a valid phone number (e.g., +1234567890)' });
-    } else {
-      // Check if phone is available
-      try {
-        const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
-        const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          },
-          credentials: 'include',
-          mode: 'cors',
-          body: JSON.stringify({ phone_number: cleanPhone })
-        });
-        const data = await response.json();
-        if (!data.available) {
-          newErrors.push({ field: 'phoneNumber', message: data.message || 'Phone number is already registered' });
+    // Phone number validation (optional now)
+    if (formData.phoneNumber.trim()) {
+      // Only validate if provided
+      if (!/^\+?[1-9]\d{9,14}$/.test(formData.phoneNumber.replace(/[\s()-]/g, ''))) {
+        newErrors.push({ field: 'phoneNumber', message: 'Please enter a valid phone number (e.g., +1234567890)' });
+      } else {
+        // Check if phone is available
+        try {
+          const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
+          const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            credentials: 'include',
+            mode: 'cors',
+            body: JSON.stringify({ phone_number: cleanPhone })
+          });
+          const data = await response.json();
+          if (!data.available) {
+            newErrors.push({ field: 'phoneNumber', message: data.message || 'Phone number is already registered' });
+          }
+        } catch (error) {
+          console.error('Error checking phone:', error);
         }
-      } catch (error) {
-        console.error('Error checking phone:', error);
       }
     }
 
@@ -171,7 +172,7 @@ export default function Onboarding() {
 
     try {
       const token = authService.getToken();
-      const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
+      const cleanPhone = formData.phoneNumber.trim() ? formData.phoneNumber.replace(/[\s()-]/g, '') : null;
 
       const response = await fetch(`${API_URL}/api/v1/auth/complete-onboarding`, {
         method: 'POST',
@@ -277,7 +278,7 @@ export default function Onboarding() {
               {/* Phone Number */}
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
+                  Phone Number (Optional)
                 </label>
                 <input
                   type="tel"
@@ -285,7 +286,7 @@ export default function Onboarding() {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  placeholder="+1234567890"
+                  placeholder="+1234567890 (optional)"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     getFieldError('phoneNumber') ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`}
@@ -293,7 +294,7 @@ export default function Onboarding() {
                 {getFieldError('phoneNumber') && (
                   <p className="mt-1 text-sm text-red-600">{getFieldError('phoneNumber')}</p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Include country code (e.g., +1 for US)</p>
+                <p className="mt-1 text-xs text-gray-500">Can be added later in settings</p>
               </div>
 
               {/* Birth Year */}

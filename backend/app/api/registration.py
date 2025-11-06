@@ -2,6 +2,7 @@
 Registration validation endpoints
 Helps prevent duplicate registrations and provides better UX
 """
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -30,7 +31,7 @@ class AvailabilityResponse(BaseModel):
 class CompleteOnboardingRequest(BaseModel):
     """Request body for completing onboarding"""
     username: str
-    phone_number: str
+    phone_number: Optional[str] = None
     birth_year: int
     newsletter_opt_in: bool = False
     sms_opt_in: bool = False
@@ -46,6 +47,8 @@ class CompleteOnboardingRequest(BaseModel):
     
     @validator('phone_number')
     def validate_phone(cls, v):
+        if v is None or v == '':
+            return None
         # Remove common formatting characters
         cleaned = v.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
         if not cleaned.startswith('+'):
@@ -227,15 +230,16 @@ async def complete_onboarding(
             detail=f"Username '{request.username}' is already taken"
         )
     
-    # Check phone number availability
-    phone_check = await db.execute(
-        select(User).where(User.phone_number == request.phone_number)
-    )
-    if phone_check.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Phone number is already registered"
+    # Check phone number availability (only if provided)
+    if request.phone_number:
+        phone_check = await db.execute(
+            select(User).where(User.phone_number == request.phone_number)
         )
+        if phone_check.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Phone number is already registered"
+            )
     
     # Update user with onboarding data
     user.username = request.username
