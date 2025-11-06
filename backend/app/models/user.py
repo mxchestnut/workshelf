@@ -21,7 +21,7 @@ class User(Base, TimestampMixin, TenantMixin):
     
     # Basic info
     email = Column(String(255), nullable=False, index=True)
-    username = Column(String(100), nullable=False, index=True)
+    username = Column(String(100), nullable=True, index=True)  # Nullable - set during onboarding
     display_name = Column(String(255))
     phone_number = Column(String(20), unique=True, index=True, nullable=True)  # E.164 format: +1234567890
     
