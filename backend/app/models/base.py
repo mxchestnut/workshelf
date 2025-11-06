@@ -22,4 +22,5 @@ class TenantMixin:
     @declared_attr
     def tenant_id(cls):
         from sqlalchemy import Column, Integer, ForeignKey
-        return Column(Integer, ForeignKey('tenants.id', ondelete='CASCADE'), nullable=False, index=True)
+        # nullable=True for MVP - users can create/join tenants later
+        return Column(Integer, ForeignKey('tenants.id', ondelete='CASCADE'), nullable=True, index=True)
