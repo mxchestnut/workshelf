@@ -26,6 +26,8 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError[]>([]);
   
+  console.log('[Onboarding] Component loaded, API_URL:', API_URL);
+  
   const [formData, setFormData] = useState<OnboardingFormData>({
     username: '',
     phoneNumber: '',
