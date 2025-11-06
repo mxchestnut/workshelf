@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 
 // Use same fallback pattern as auth.ts
@@ -21,12 +20,17 @@ interface FieldError {
 }
 
 export default function Onboarding() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError[]>([]);
   
   console.log('[Onboarding] Component loaded, API_URL:', API_URL);
+  
+  // Manual navigation function (same pattern as rest of app)
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, '', path);
+    window.location.href = path;
+  };
   
   const [formData, setFormData] = useState<OnboardingFormData>({
     username: '',
@@ -193,7 +197,7 @@ export default function Onboarding() {
       }
 
       // Success! Redirect to personal feed
-      navigate('/feed');
+      navigateTo('/feed');
     } catch (error: any) {
       console.error('Onboarding error:', error);
       setErrors([{ field: 'general', message: error.message || 'Something went wrong. Please try again.' }]);
