@@ -107,10 +107,7 @@ class AuthService {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
         },
-        credentials: 'include',
-        mode: 'cors',
       })
 
       console.log('[AuthService] Response status:', response.status)
