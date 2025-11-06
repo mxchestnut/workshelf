@@ -5,22 +5,52 @@
 
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
-import { BookOpen, FileText, Users, TrendingUp } from 'lucide-react'
+import { BookOpen, Users, Pin, Clock, Search } from 'lucide-react'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+
+interface PostAuthor {
+  id: number
+  username: string | null
+  display_name: string
+  avatar_url: string | null
+}
+
+interface GroupInfo {
+  id: number
+  name: string
+  slug: string
+  avatar_url: string | null
+}
+
+interface FeedPost {
+  id: number
+  title: string
+  content: string
+  created_at: string
+  is_pinned: boolean
+  author: PostAuthor
+  group: GroupInfo
+}
 
 export function Feed() {
   const [user, setUser] = useState<User | null>(null)
+  const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'feed' | 'discover'>('feed')
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadData = async () => {
       try {
         const currentUser = await authService.getCurrentUser()
         if (!currentUser) {
-          // Not logged in, redirect to home
           window.location.href = '/'
           return
         }
         setUser(currentUser)
+        
+        // Load feed posts
+        await loadFeed()
       } catch (error) {
         console.error('Failed to load user:', error)
         window.location.href = '/'
@@ -29,8 +59,51 @@ export function Feed() {
       }
     }
 
-    loadUser()
+    loadData()
   }, [])
+
+  const loadFeed = async () => {
+    try {
+      const token = authService.getToken()
+      const endpoint = activeTab === 'feed' ? '/api/v1/feed' : '/api/v1/feed/discover'
+      
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        mode: 'cors'
+      })
+
+      if (response.ok) {
+        const feedPosts = await response.json()
+        setPosts(feedPosts)
+      } else {
+        console.error('Failed to load feed:', response.status)
+      }
+    } catch (error) {
+      console.error('Error loading feed:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      loadFeed()
+    }
+  }, [activeTab])
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (seconds < 60) return 'just now'
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+    return date.toLocaleDateString()
+  }
 
   if (loading) {
     return (
@@ -45,62 +118,135 @@ export function Feed() {
 
   return (
     <div className="min-h-screen bg-neutral-lightest">
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Welcome Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-8 mb-8">
-          <h1 className="text-3xl font-bold text-neutral-darkest mb-2">
-            Welcome back, {user?.display_name || user?.username}! 👋
-          </h1>
-          <p className="text-neutral">
-            Here's what's happening in your workspace
-          </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <FileText className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-neutral-darkest">Your Documents</h3>
-            </div>
-            <p className="text-3xl font-bold text-neutral-darkest">0</p>
-            <p className="text-sm text-neutral mt-1">No documents yet</p>
+      {/* Header */}
+      <div className="bg-white border-b border-neutral-light sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-neutral-darkest">Feed</h1>
+            <button className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors">
+              <Search className="w-5 h-5 text-neutral" />
+            </button>
           </div>
+          
+          {/* Tabs */}
+          <div className="flex gap-1 mt-4">
+            <button
+              onClick={() => setActiveTab('feed')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'feed'
+                  ? 'bg-primary text-white'
+                  : 'text-neutral hover:bg-neutral-lightest'
+              }`}
+            >
+              Your Feed
+            </button>
+            <button
+              onClick={() => setActiveTab('discover')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'discover'
+                  ? 'bg-primary text-white'
+                  : 'text-neutral hover:bg-neutral-lightest'
+              }`}
+            >
+              Discover
+            </button>
+          </div>
+        </div>
+      </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-neutral-darkest">Groups</h3>
-            </div>
-            <p className="text-3xl font-bold text-neutral-darkest">
-              {user?.groups?.length || 0}
+      {/* Feed Content */}
+      <div className="max-w-4xl mx-auto px-6 py-6">
+        {posts.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-12 text-center">
+            <BookOpen className="w-16 h-16 text-neutral-light mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-neutral-darkest mb-2">
+              {activeTab === 'feed' ? 'Your feed is empty' : 'No posts to discover'}
+            </h2>
+            <p className="text-neutral mb-6">
+              {activeTab === 'feed' 
+                ? 'Join groups to see posts from your communities.' 
+                : 'Check back later for new posts from public groups.'}
             </p>
-            <p className="text-sm text-neutral mt-1">
-              {user?.groups?.length === 0 ? 'Join a group' : 'Active groups'}
-            </p>
+            {activeTab === 'feed' && (
+              <button 
+                onClick={() => setActiveTab('discover')}
+                className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition-colors"
+              >
+                Discover Groups
+              </button>
+            )}
           </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <article 
+                key={post.id}
+                className="bg-white rounded-lg shadow-sm border border-neutral-light p-6 hover:shadow-md transition-shadow"
+              >
+                {/* Post Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-semibold">
+                        {post.author.display_name[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-neutral-darkest">
+                          {post.author.display_name}
+                        </span>
+                        {post.author.username && (
+                          <span className="text-neutral text-sm">@{post.author.username}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-neutral">
+                        <span>in</span>
+                        <span className="font-medium text-primary hover:underline cursor-pointer">
+                          {post.group.name}
+                        </span>
+                        <span>·</span>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatTimeAgo(post.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {post.is_pinned && (
+                    <div className="flex items-center gap-1 text-primary text-sm">
+                      <Pin className="w-4 h-4" />
+                      <span>Pinned</span>
+                    </div>
+                  )}
+                </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-neutral-darkest">Activity</h3>
-            </div>
-            <p className="text-3xl font-bold text-neutral-darkest">0</p>
-            <p className="text-sm text-neutral mt-1">Recent interactions</p>
+                {/* Post Content */}
+                <h3 className="text-xl font-bold text-neutral-darkest mb-2">
+                  {post.title}
+                </h3>
+                <p className="text-neutral whitespace-pre-wrap mb-4">
+                  {post.content.length > 300 
+                    ? post.content.substring(0, 300) + '...' 
+                    : post.content}
+                </p>
+
+                {/* Post Actions */}
+                <div className="flex items-center gap-4 pt-4 border-t border-neutral-light">
+                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                    Reply
+                  </button>
+                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                    React
+                  </button>
+                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                    Share
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
-
-        {/* Feed Placeholder */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-12 text-center">
-          <BookOpen className="w-16 h-16 text-neutral-light mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-neutral-darkest mb-2">Your feed is empty</h2>
-          <p className="text-neutral mb-6">
-            Start creating documents, join groups, or interact with the community to see activity here.
-          </p>
-          <button className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition-colors">
-            Explore Groups
-          </button>
-        </div>
+        )}
 
         {/* User Info (for debugging) */}
         {user?.is_staff && (
