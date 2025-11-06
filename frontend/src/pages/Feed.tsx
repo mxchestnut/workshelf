@@ -125,7 +125,7 @@ export function Feed() {
             <h1 className="text-2xl font-bold text-neutral-darkest">Feed</h1>
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => window.location.href = '/profile'}
+                onClick={() => window.location.href = '/me'}
                 className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors"
                 title="Profile"
               >

@@ -61,7 +61,7 @@ function App() {
     } else if (path === '/feed') {
       setCurrentPage('feed')
       loadUser()
-    } else if (path === '/profile') {
+    } else if (path === '/me') {
       setCurrentPage('profile')
       loadUser()
     } else {
