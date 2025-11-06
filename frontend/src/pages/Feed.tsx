@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
-import { BookOpen, Users, Pin, Clock, Search, User as UserIcon } from 'lucide-react'
+import { BookOpen, Pin, Clock, Search, User as UserIcon } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 

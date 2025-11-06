@@ -13,8 +13,7 @@ import {
   Shield,
   Crown,
   LogIn,
-  LogOut,
-  User as UserIcon
+  LogOut
 } from 'lucide-react'
 import './App.css'
 import { Documents } from './pages/Documents'
