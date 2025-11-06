@@ -14,6 +14,7 @@ export function AuthCallback() {
   useEffect(() => {
     // Prevent duplicate calls (React Strict Mode calls useEffect twice)
     if (hasHandledCallback.current) {
+      console.log('[AuthCallback] Already handled in this component instance, skipping')
       return
     }
     hasHandledCallback.current = true
@@ -33,18 +34,40 @@ export function AuthCallback() {
         return
       }
 
+      // CRITICAL: Check if this exact code has already been processed
+      // This prevents duplicate attempts even across page reloads
+      const processedCodeKey = `oauth_code_${code}`
+      if (sessionStorage.getItem(processedCodeKey)) {
+        console.error('[AuthCallback] This authorization code has already been used!')
+        setError('This login link has already been used. Please try logging in again.')
+        return
+      }
+
+      // Mark this code as being processed
+      sessionStorage.setItem(processedCodeKey, 'true')
+      console.log('[AuthCallback] Processing authorization code:', code.substring(0, 10) + '...')
+
       try {
         const user = await authService.handleCallback(code)
+        
+        console.log('[AuthCallback] Successfully authenticated user:', user.email)
+        
+        // Clean up the processed code marker (optional, but keeps sessionStorage clean)
+        sessionStorage.removeItem(processedCodeKey)
         
         // Check if user has completed onboarding (has username and phone)
         if (!user.username) {
           // Redirect to onboarding
+          console.log('[AuthCallback] Redirecting to onboarding (no username)')
           window.location.href = '/onboarding'
         } else {
           // Redirect to feed
+          console.log('[AuthCallback] Redirecting to feed (user complete)')
           window.location.href = '/feed'
         }
       } catch (err) {
+        console.error('[AuthCallback] Authentication failed:', err)
+        // Don't remove the marker on error - prevent retrying same code
         setError(err instanceof Error ? err.message : 'Authentication failed')
       }
     }
