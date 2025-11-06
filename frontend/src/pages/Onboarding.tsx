@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 
+// Use same fallback pattern as auth.ts
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
+
 interface OnboardingFormData {
   username: string;
   phoneNumber: string;
@@ -67,7 +70,7 @@ export default function Onboarding() {
     } else {
       // Check if username is available
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/check-availability`, {
+        const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -95,7 +98,7 @@ export default function Onboarding() {
       // Check if phone is available
       try {
         const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/check-availability`, {
+        const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -164,7 +167,7 @@ export default function Onboarding() {
       const token = authService.getToken();
       const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/complete-onboarding`, {
+      const response = await fetch(`${API_URL}/api/v1/auth/complete-onboarding`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
