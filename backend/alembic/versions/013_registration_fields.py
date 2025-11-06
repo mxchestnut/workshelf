@@ -17,7 +17,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '013_registration_fields'
-down_revision = '012_ai_templates'
+down_revision = '012_ai_generated_templates'
 branch_labels = None
 depends_on = None
 
