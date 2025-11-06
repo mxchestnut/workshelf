@@ -1,7 +1,7 @@
 """add user interests
 
-Revision ID: 016
-Revises: 015
+Revision ID: 016_add_user_interests
+Revises: 015_make_username_nullable
 Create Date: 2025-11-06
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 
 # revision identifiers
-revision = '016'
-down_revision = '015'
+revision = '016_add_user_interests'
+down_revision = '015_make_username_nullable'
 branch_labels = None
 depends_on = None
 
