@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ShoppingCart, BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles } from 'lucide-react'
+import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -60,42 +60,6 @@ export default function Store() {
       console.error('Error fetching books:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handlePurchase = async (book: StoreBook) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        window.location.href = '/login'
-        return
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/store/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          store_item_id: book.id,
-          success_url: `${window.location.origin}/store/success`,
-          cancel_url: `${window.location.origin}/store`
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        alert(error.detail || 'Failed to create checkout')
-        return
-      }
-
-      const data = await response.json()
-      // Redirect to Stripe Checkout
-      window.location.href = data.checkout_url
-    } catch (error) {
-      console.error('Error creating checkout:', error)
-      alert('Failed to start checkout process')
     }
   }
 
@@ -221,7 +185,7 @@ export default function Store() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredBooks.slice(0, 4).map(book => (
-                <BookCard key={book.id} book={book} onPurchase={handlePurchase} featured />
+                <BookCard key={book.id} book={book} featured />
               ))}
             </div>
           </section>
@@ -236,7 +200,7 @@ export default function Store() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {bestsellers.slice(0, 4).map(book => (
-                <BookCard key={book.id} book={book} onPurchase={handlePurchase} />
+                <BookCard key={book.id} book={book} />
               ))}
             </div>
           </section>
@@ -260,7 +224,7 @@ export default function Store() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {books.map(book => (
-                <BookCard key={book.id} book={book} onPurchase={handlePurchase} />
+                <BookCard key={book.id} book={book} />
               ))}
             </div>
           )}
@@ -272,11 +236,10 @@ export default function Store() {
 
 interface BookCardProps {
   book: StoreBook
-  onPurchase: (book: StoreBook) => void
   featured?: boolean
 }
 
-function BookCard({ book, onPurchase, featured }: BookCardProps) {
+function BookCard({ book, featured }: BookCardProps) {
   const handleCardClick = () => {
     // Navigate to book detail page with store item ID
     window.location.href = `/book/store-${book.id}`
