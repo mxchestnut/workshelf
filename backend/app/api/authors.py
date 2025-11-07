@@ -5,9 +5,11 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from app.core.deps import get_current_user, get_db
+from app.core.auth import get_current_user
+from app.core.database import get_db
 from app.models import User, AuthorFollow, AuthorFollowStatus
 from app.services import user_service
 

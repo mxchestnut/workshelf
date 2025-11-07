@@ -58,6 +58,8 @@ function App() {
 
     // Check authentication and route
     const path = window.location.pathname
+    console.log('Current path:', path, 'Length:', path.length)  // Debug logging
+    
     if (path === '/auth/callback') {
       setCurrentPage('auth-callback')
     } else if (path === '/onboarding') {
@@ -90,10 +92,11 @@ function App() {
     } else if (path === '/upload-book') {
       setCurrentPage('upload-book')
       loadUser()
-    } else if (path === '/store/success') {
+    } else if (path === '/store/success' || path === '/store/success/') {
       setCurrentPage('store-success')
       loadUser()
-    } else if (path === '/store') {
+    } else if (path === '/store' || path === '/store/') {
+      console.log('Matched /store route!')  // Debug logging
       setCurrentPage('store')
       loadUser()
     } else if (path === '/' || path === '') {
@@ -102,6 +105,7 @@ function App() {
     } else {
       // If path doesn't match any known route, treat as username
       // Example: /warpxth -> public profile
+      console.log('Falling through to public profile for path:', path)  // Debug logging
       setCurrentPage('public-profile')
     }
   }, [API_URL])

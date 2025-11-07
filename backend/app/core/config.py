@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     KEYCLOAK_CLIENT_ID: str = "workshelf-backend"
     KEYCLOAK_CLIENT_SECRET: str = ""
     
+    # Stripe Payment Processing
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
