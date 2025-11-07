@@ -7,11 +7,11 @@ from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, and_, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, desc, and_, or_, func
 from pydantic import BaseModel, Field
 
-from app.core.database import get_db
+from app.core.database import get_async_db
 from app.core.auth import get_current_user
 from app.models.user import User
 from app.models.store import StoreItem, Purchase, StoreItemStatus, PurchaseStatus
@@ -105,7 +105,7 @@ async def browse_store(
     sort_by: str = "published_at",  # published_at, price_asc, price_desc, popular
     limit: int = 50,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Browse books available in the store.
@@ -117,12 +117,13 @@ async def browse_store(
     - featured/bestseller/new_release: Special flags
     - sort_by: Sort order
     """
-    query = db.query(StoreItem).filter(StoreItem.status == StoreItemStatus.ACTIVE)
+    # Build query using select()
+    query = select(StoreItem).where(StoreItem.status == StoreItemStatus.ACTIVE)
     
     # Apply filters
     if search:
         search_term = f"%{search}%"
-        query = query.filter(
+        query = query.where(
             or_(
                 StoreItem.title.ilike(search_term),
                 StoreItem.author_name.ilike(search_term)
@@ -131,22 +132,22 @@ async def browse_store(
     
     if genre:
         # PostgreSQL JSON array contains
-        query = query.filter(StoreItem.genres.contains([genre]))
+        query = query.where(StoreItem.genres.contains([genre]))
     
     if min_price is not None:
-        query = query.filter(StoreItem.price_usd >= min_price)
+        query = query.where(StoreItem.price_usd >= min_price)
     
     if max_price is not None:
-        query = query.filter(StoreItem.price_usd <= max_price)
+        query = query.where(StoreItem.price_usd <= max_price)
     
     if featured is not None:
-        query = query.filter(StoreItem.is_featured == featured)
+        query = query.where(StoreItem.is_featured == featured)
     
     if bestseller is not None:
-        query = query.filter(StoreItem.is_bestseller == bestseller)
+        query = query.where(StoreItem.is_bestseller == bestseller)
     
     if new_release is not None:
-        query = query.filter(StoreItem.is_new_release == new_release)
+        query = query.where(StoreItem.is_new_release == new_release)
     
     # Apply sorting
     if sort_by == "price_asc":
@@ -159,7 +160,11 @@ async def browse_store(
         query = query.order_by(desc(StoreItem.published_at))
     
     # Pagination
-    items = query.offset(offset).limit(limit).all()
+    query = query.offset(offset).limit(limit)
+    
+    # Execute query
+    result = await db.execute(query)
+    items = result.scalars().all()
     
     # Calculate final prices
     response = []
@@ -198,7 +203,7 @@ async def browse_store(
 @router.get("/{item_id}", response_model=StoreItemResponse)
 async def get_store_item(
     item_id: int,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """Get detailed information about a specific store item"""
     item = db.query(StoreItem).filter(
@@ -251,7 +256,7 @@ async def get_store_item(
 async def create_checkout_session(
     request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Create a Stripe checkout session for purchasing a book.
@@ -295,7 +300,7 @@ async def create_checkout_session(
 async def get_my_purchases(
     status: Optional[str] = None,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """Get all purchases for the current user"""
     query = db.query(Purchase).filter(Purchase.user_id == current_user.id)
@@ -363,7 +368,7 @@ async def get_my_purchases(
 async def stripe_webhook(
     request: Request,
     stripe_signature: str = Header(None, alias="Stripe-Signature"),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Handle Stripe webhook events.
