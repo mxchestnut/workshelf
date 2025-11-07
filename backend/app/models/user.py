@@ -62,6 +62,7 @@ class User(Base, TimestampMixin, TenantMixin):
     reading_lists = relationship("ReadingList", back_populates="user", cascade="all, delete-orphan")
     reading_progress = relationship("ReadingProgress", back_populates="user", cascade="all, delete-orphan")
     bookshelf_items = relationship("BookshelfItem", back_populates="user", cascade="all, delete-orphan")
+    author_follows = relationship("AuthorFollow", back_populates="user", cascade="all, delete-orphan")
     
     # Phase 4: Collaboration
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")

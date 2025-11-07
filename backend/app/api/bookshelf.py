@@ -15,6 +15,7 @@ from anthropic import Anthropic
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.bookshelf import BookshelfItem, BookshelfItemType, BookshelfStatus
+from app.models.author_follows import AuthorFollow
 from app.models import User
 from app.services import user_service
 
@@ -257,6 +258,30 @@ async def add_to_bookshelf(
         # Update interests if we have new genres
         if new_genres:
             user_obj.interests = current_interests + new_genres
+            await db.commit()
+    
+    # Auto-add author to author_follows if book has an author
+    if item_data.item_type == 'book' and item_data.author:
+        # Check if author is already followed
+        author_check = await db.execute(
+            select(AuthorFollow).where(
+                AuthorFollow.user_id == user.id,
+                AuthorFollow.author_name == item_data.author
+            )
+        )
+        existing_author = author_check.scalar_one_or_none()
+        
+        if not existing_author:
+            # Auto-create author follow with "reading" status
+            author_follow = AuthorFollow(
+                user_id=user.id,
+                author_name=item_data.author,
+                genres=item_data.genres,  # Same genres as the book
+                status='reading',  # They're reading this author's work
+                discovery_source='bookshelf',
+                is_favorite=False
+            )
+            db.add(author_follow)
             await db.commit()
     
     # Convert to response (would need to fetch document data if document_id)
