@@ -128,7 +128,9 @@ export function Document() {
         },
         body: JSON.stringify({
           title,
-          content: document.content
+          content: document.content,
+          status: document.status,
+          visibility: document.visibility
         })
       })
 
@@ -194,6 +196,32 @@ export function Document() {
 
   return (
     <div className="h-screen flex flex-col">
+      {/* Info Banner */}
+      {document.status === 'published' && document.visibility === 'public' && (
+        <div className="bg-green-50 border-b border-green-200 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-sm text-green-800">
+            <span className="text-lg">✅</span>
+            <span>This document is <strong>published and public</strong> - it will appear on your public profile!</span>
+          </div>
+        </div>
+      )}
+      {document.status === 'draft' && document.visibility === 'public' && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-sm text-yellow-800">
+            <span className="text-lg">⚠️</span>
+            <span>This document is set to public, but it's still a <strong>draft</strong>. Change status to "Published" to show it on your profile.</span>
+          </div>
+        </div>
+      )}
+      {document.status === 'published' && document.visibility === 'private' && (
+        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-sm text-blue-800">
+            <span className="text-lg">🔒</span>
+            <span>This document is published but <strong>private</strong>. Change visibility to "Public" to show it on your profile.</span>
+          </div>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="border-b border-neutral-light bg-white px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -212,10 +240,11 @@ export function Document() {
                   setDocument({ ...document, status: e.target.value as any })
                 }}
                 className="px-3 py-1.5 border border-neutral-light rounded-lg text-sm bg-white"
+                title="Document status"
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="archived">Archived</option>
+                <option value="draft">📝 Draft</option>
+                <option value="published">✅ Published</option>
+                <option value="archived">📦 Archived</option>
               </select>
               <select
                 value={document.visibility}
@@ -223,10 +252,11 @@ export function Document() {
                   setDocument({ ...document, visibility: e.target.value as any })
                 }}
                 className="px-3 py-1.5 border border-neutral-light rounded-lg text-sm bg-white"
+                title="Who can see this document"
               >
-                <option value="private">Private</option>
-                <option value="public">Public</option>
-                <option value="studio">Studio</option>
+                <option value="private">🔒 Private (only you)</option>
+                <option value="public">🌐 Public (on your profile)</option>
+                <option value="studio">👥 Studio (shared)</option>
               </select>
             </div>
           </div>
