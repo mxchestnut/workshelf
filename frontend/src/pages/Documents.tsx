@@ -1,118 +1,205 @@
-import { 
-  FileText, 
-  Clock, 
-  Users, 
-  MoreVertical,
-  TrendingUp,
-  Star
-} from 'lucide-react'
+/**
+ * Documents List Page - View and manage all user documents
+ */
+
+import { useEffect, useState } from 'react'
+import { FileText, Plus, Search, Clock, TrendingUp } from 'lucide-react'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Document {
-  id: string
+  id: number
   title: string
-  type: string
-  updatedAt: string
-  collaborators: number
-  status: 'draft' | 'review' | 'published'
+  content: any
+  status: 'draft' | 'published' | 'archived'
+  visibility: 'private' | 'public' | 'studio'
+  word_count: number
+  created_at: string
+  updated_at: string
 }
 
 export function Documents() {
-  const recentDocuments: Document[] = [
-    { id: '1', title: 'The Wandering Moon', type: 'Novel', updatedAt: '2 hours ago', collaborators: 3, status: 'draft' },
-    { id: '2', title: 'Character Development Guide', type: 'Notes', updatedAt: '1 day ago', collaborators: 1, status: 'draft' },
-    { id: '3', title: 'Chapter 5: The Storm', type: 'Novel', updatedAt: '3 days ago', collaborators: 5, status: 'review' },
-    { id: '4', title: 'World Building Notes', type: 'Notes', updatedAt: '1 week ago', collaborators: 2, status: 'draft' },
-    { id: '5', title: 'Poetry Collection 2025', type: 'Poetry', updatedAt: '2 weeks ago', collaborators: 1, status: 'published' },
-  ]
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-neutral-light text-neutral-darkest'
-      case 'review': return 'bg-primary/20 text-primary-dark'
-      case 'published': return 'bg-green-100 text-green-800'
-      default: return 'bg-neutral-light'
+  useEffect(() => {
+    loadDocuments()
+  }, [])
+
+  const loadDocuments = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        window.location.href = '/'
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/documents?page=1&page_size=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/'
+          return
+        }
+        throw new Error('Failed to load documents')
+      }
+
+      const data = await response.json()
+      setDocuments(data.documents)
+      setLoading(false)
+    } catch (err) {
+      console.error('Error loading documents:', err)
+      setLoading(false)
     }
   }
 
+  const createNewDocument = () => {
+    window.location.href = '/document'
+  }
+
+  const openDocument = (id: number) => {
+    window.location.href = `/document?id=${id}`
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published': return 'text-success bg-success-light'
+      case 'draft': return 'text-warning bg-warning-light'
+      case 'archived': return 'text-neutral bg-neutral-lightest'
+      default: return 'text-neutral bg-neutral-lightest'
+    }
+  }
+
+  const filteredDocuments = documents.filter(doc =>
+    doc.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-pulse text-neutral">Loading documents...</div>
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-primary to-primary-dark text-white p-6 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <TrendingUp className="w-8 h-8 opacity-80" />
-            <span className="text-sm opacity-80">This Month</span>
+    <div className="min-h-screen bg-neutral-lightest">
+      {/* Header */}
+      <div className="bg-white border-b border-neutral-light">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-darkest mb-2">Documents</h1>
+              <p className="text-neutral">Your writing workspace</p>
+            </div>
+            <button
+              onClick={createNewDocument}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              New Document
+            </button>
           </div>
-          <div className="text-3xl font-bold mb-1">24</div>
-          <div className="text-sm opacity-90">Documents Created</div>
-        </div>
 
-        <div className="bg-white border border-neutral-light p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <Users className="w-8 h-8 text-primary" />
-            <span className="text-sm text-neutral">Active</span>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search documents..."
+              className="w-full pl-10 pr-4 py-2 border border-neutral-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
-          <div className="text-3xl font-bold text-neutral-darkest mb-1">12</div>
-          <div className="text-sm text-neutral">Collaborators</div>
-        </div>
-
-        <div className="bg-white border border-neutral-light p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <Star className="w-8 h-8 text-primary" />
-            <span className="text-sm text-neutral">Total</span>
-          </div>
-          <div className="text-3xl font-bold text-neutral-darkest mb-1">156</div>
-          <div className="text-sm text-neutral">Pages Written</div>
         </div>
       </div>
 
-      <div className="bg-white border border-neutral-light rounded-xl shadow-sm">
-        <div className="px-6 py-4 border-b border-neutral-light">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-neutral-darkest">Recent Documents</h2>
-            <button className="text-primary hover:text-primary-dark text-sm font-medium">
-              View All
-            </button>
+      {/* Documents Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {filteredDocuments.length === 0 ? (
+          <div className="text-center py-16">
+            <FileText className="w-16 h-16 text-neutral-light mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-neutral-darkest mb-2">
+              {searchQuery ? 'No documents found' : 'No documents yet'}
+            </h3>
+            <p className="text-neutral mb-6">
+              {searchQuery
+                ? 'Try a different search term'
+                : 'Start writing your first document'}
+            </p>
+            {!searchQuery && (
+              <button
+                onClick={createNewDocument}
+                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                Create Your First Document
+              </button>
+            )}
           </div>
-        </div>
-
-        <div className="divide-y divide-neutral-light">
-          {recentDocuments.map((doc) => (
-            <div key={doc.id} className="px-6 py-4 hover:bg-neutral-light/30 transition-colors cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-primary" />
-                  </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDocuments.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => openDocument(doc.id)}
+                className="bg-white rounded-lg border border-neutral-light p-6 hover:shadow-lg hover:border-primary transition-all cursor-pointer group"
+              >
+                {/* Title */}
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-darkest mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                    {doc.title}
+                  </h3>
                   
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-darkest mb-1">{doc.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-neutral">
-                      <span>{doc.type}</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {doc.updatedAt}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {doc.collaborators}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doc.status)}`}>
+                  {/* Status badge */}
+                  <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getStatusColor(doc.status)}`}>
                     {doc.status}
                   </span>
-                  <button className="p-2 hover:bg-neutral-light rounded-lg">
-                    <MoreVertical className="w-5 h-5 text-neutral" />
-                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="flex items-center gap-4 text-sm text-neutral mb-4">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>{doc.word_count.toLocaleString()} words</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{Math.ceil(doc.word_count / 200)} min</span>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="pt-4 border-t border-neutral-lightest">
+                  <p className="text-xs text-neutral">
+                    Updated {formatDate(doc.updated_at)}
+                  </p>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
 }
+

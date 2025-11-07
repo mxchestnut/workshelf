@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import './App.css'
 import { Documents } from './pages/Documents'
+import { Document } from './pages/Document'
 import { Projects } from './pages/Projects'
 import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
@@ -38,7 +39,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -63,6 +64,12 @@ function App() {
       loadUser()
     } else if (path === '/me') {
       setCurrentPage('profile')
+      loadUser()
+    } else if (path === '/documents') {
+      setCurrentPage('documents')
+      loadUser()
+    } else if (path === '/document') {
+      setCurrentPage('document')
       loadUser()
     } else {
       setCurrentPage('home')
@@ -112,6 +119,14 @@ function App() {
     if (currentPage === 'profile') {
       return <Profile />
     }
+    
+    if (currentPage === 'documents') {
+      return <Documents />
+    }
+    
+    if (currentPage === 'document') {
+      return <Document />
+    }
 
     // Home page tabs
     switch (activeTab) {
@@ -126,8 +141,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, or legal pages
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, documents, or document editor
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document') {
     return renderContent()
   }
 
