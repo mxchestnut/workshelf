@@ -84,6 +84,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
   const [updating, setUpdating] = useState(false)
   const [showReader, setShowReader] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
+  const [userOwnsBook, setUserOwnsBook] = useState(false)
 
   const isStoreItem = bookId.startsWith('store-')
   const actualId = isStoreItem ? bookId.replace('store-', '') : bookId
@@ -94,24 +95,75 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
   const loadBook = async () => {
     try {
+      const token = localStorage.getItem('access_token')
+      
       if (isStoreItem) {
-        // Load from store API (no auth required)
-        const response = await fetch(`${API_URL}/api/v1/store/${actualId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setStoreItem(data)
+        // Loading a store item - check if user owns it first
+        const storeId = actualId
+        
+        // Try to load from store
+        const storeResponse = await fetch(`${API_URL}/api/v1/store/${storeId}`)
+        if (storeResponse.ok) {
+          const storeData = await storeResponse.json()
+          setStoreItem(storeData)
+          
+          // Check if user owns this book (check by ISBN or title match)
+          if (token) {
+            try {
+              const bookshelfResponse = await fetch(`${API_URL}/api/v1/bookshelf`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              })
+              if (bookshelfResponse.ok) {
+                const bookshelfData = await bookshelfResponse.json()
+                // Check if user owns a book with matching ISBN or title
+                const ownedBook = bookshelfData.items?.find((item: BookshelfItem) => 
+                  item.isbn === storeData.isbn || 
+                  (item.title === storeData.title && item.author === storeData.author_name)
+                )
+                if (ownedBook) {
+                  setBook(ownedBook)
+                  setUserOwnsBook(true)
+                }
+              }
+            } catch (err) {
+              console.log('User not logged in or bookshelf check failed')
+            }
+          }
         }
       } else {
-        // Load from bookshelf API (auth required)
-        const token = localStorage.getItem('access_token')
+        // Loading a bookshelf item by ID
+        if (!token) {
+          // User not logged in - redirect to login
+          window.location.href = '/login'
+          return
+        }
+        
         const response = await fetch(`${API_URL}/api/v1/bookshelf/${actualId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         })
+        
         if (response.ok) {
           const data = await response.json()
           setBook(data)
+          setUserOwnsBook(true)
+          
+          // Also check if this book is in the store
+          if (data.isbn) {
+            try {
+              const storeResponse = await fetch(`${API_URL}/api/v1/store?search=${encodeURIComponent(data.isbn)}`)
+              if (storeResponse.ok) {
+                const storeData = await storeResponse.json()
+                const matchingStoreItem = storeData.items?.find((item: StoreItem) => 
+                  item.isbn === data.isbn
+                )
+                if (matchingStoreItem) {
+                  setStoreItem(matchingStoreItem)
+                }
+              }
+            } catch (err) {
+              console.log('Store check failed')
+            }
+          }
         }
       }
     } catch (error) {
@@ -294,20 +346,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
-                  {/* Store Item: Buy Now Button */}
-                  {isStoreItem && storeItem && (
-                    <button
-                      onClick={handlePurchase}
-                      disabled={purchasing}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                      {purchasing ? 'Processing...' : `Buy Now - $${storeItem.final_price.toFixed(2)}`}
-                    </button>
-                  )}
-
-                  {/* Bookshelf Item: Read Book Button - Only show if epub_url exists */}
-                  {!isStoreItem && book?.epub_url && (
+                  {/* If user owns the book: Show Read/Favorite/Status controls */}
+                  {userOwnsBook && book?.epub_url && (
                     <button
                       onClick={() => setShowReader(true)}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
@@ -320,8 +360,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </button>
                   )}
 
-                  {/* Bookshelf Item: Favorite Button */}
-                  {!isStoreItem && book && (
+                  {userOwnsBook && book && (
                     <button
                       onClick={toggleFavorite}
                       disabled={updating}
@@ -336,8 +375,20 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </button>
                   )}
 
-                  {/* Google Books Link */}
-                  {!isStoreItem && book && getGoogleBooksUrl(book.isbn, book.title) && (
+                  {/* If user doesn't own the book BUT it's available in store: Show Buy Now */}
+                  {!userOwnsBook && storeItem && (
+                    <button
+                      onClick={handlePurchase}
+                      disabled={purchasing}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {purchasing ? 'Processing...' : `Buy Now - $${storeItem.final_price.toFixed(2)}`}
+                    </button>
+                  )}
+
+                  {/* Google Books Link - only for bookshelf items */}
+                  {userOwnsBook && book && getGoogleBooksUrl(book.isbn, book.title) && (
                     <a
                       href={getGoogleBooksUrl(book.isbn, book.title)!}
                       target="_blank"
@@ -397,8 +448,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   </div>
                 )}
 
-                {/* Status Selector - Only for bookshelf items */}
-                {!isStoreItem && book && (
+                {/* Status Selector - Only show if user owns the book */}
+                {userOwnsBook && book && (
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Reading Status
@@ -417,8 +468,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   </div>
                 )}
 
-                {/* Metadata - Only for bookshelf items */}
-                {!isStoreItem && book && (
+                {/* Metadata - Only show if user owns the book */}
+                {userOwnsBook && book && (
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     {book.publisher && (
                       <div className="flex items-center gap-2 text-gray-700">
@@ -447,8 +498,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   </div>
                 )}
 
-                {/* Store Item: Price and Sales Info */}
-                {isStoreItem && storeItem && (
+                {/* Store Item: Price and Sales Info - Only show if NOT owned */}
+                {!userOwnsBook && storeItem && (
                   <div className="mb-6 p-4 bg-purple-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-3xl font-bold text-purple-600">
@@ -492,16 +543,16 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   </div>
                 )}
 
-                {/* Notes - Only for bookshelf items */}
-                {!isStoreItem && book?.notes && (
+                {/* Notes - Only show if user owns the book */}
+                {userOwnsBook && book?.notes && (
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">My Notes</h3>
                     <p className="text-gray-700 leading-relaxed">{book.notes}</p>
                   </div>
                 )}
 
-                {/* Review - Only for bookshelf items */}
-                {!isStoreItem && book?.review && (
+                {/* Review - Only show if user owns the book */}
+                {userOwnsBook && book?.review && (
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">My Review</h3>
                     <p className="text-gray-700 leading-relaxed">{book.review}</p>
