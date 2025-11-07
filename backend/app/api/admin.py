@@ -14,7 +14,11 @@ from app.core.auth import require_staff
 from app.models.collaboration import Group
 from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
+from app.models.store import StoreItem, StoreItemStatus
 from app.schemas.collaboration import ScholarshipDecision, ScholarshipRequestResponse
+from app.services.price_scraper import PriceScraper
+from app.services.pricing_engine import PricingEngine
+from decimal import Decimal
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -518,4 +522,274 @@ async def review_scholarship(
             "expires_at": scholarship.expires_at.isoformat() if scholarship.expires_at else None
         }
     }
+
+
+# ============================================================================
+# Price Management Endpoints
+# ============================================================================
+
+class PriceUpdateRequest(BaseModel):
+    """Request to update prices"""
+    store_item_ids: Optional[List[int]] = None  # If None, updates all items
+    force_update: bool = False  # Update even if price change is small
+
+
+class PriceAnalysisResponse(BaseModel):
+    """Response with price analysis"""
+    store_item_id: int
+    title: str
+    current_price: float
+    recommended_price: float
+    price_change: Optional[float]
+    market_prices: dict
+    reason: str
+    cost_breakdown: dict
+    should_update: bool
+
+
+class BulkPriceUpdateResponse(BaseModel):
+    """Response from bulk price update"""
+    total_items: int
+    items_analyzed: int
+    items_updated: int
+    items_skipped: int
+    items_failed: int
+    updates: List[PriceAnalysisResponse]
+
+
+@router.post("/prices/analyze", response_model=List[PriceAnalysisResponse])
+async def analyze_prices(
+    request: PriceUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Analyze market prices for store items without updating
+    
+    This endpoint scrapes competitor prices and calculates optimal pricing
+    but doesn't make any changes. Use this to preview what would happen.
+    """
+    try:
+        # Get store items to analyze
+        if request.store_item_ids:
+            result = await db.execute(
+                select(StoreItem).where(
+                    StoreItem.id.in_(request.store_item_ids),
+                    StoreItem.status == StoreItemStatus.ACTIVE
+                )
+            )
+        else:
+            # Analyze all active items
+            result = await db.execute(
+                select(StoreItem).where(StoreItem.status == StoreItemStatus.ACTIVE)
+            )
+        
+        items = result.scalars().all()
+        
+        if not items:
+            raise HTTPException(status_code=404, detail="No store items found")
+        
+        analyses = []
+        
+        for item in items:
+            try:
+                # Scrape market prices
+                market_prices = await PriceScraper.get_market_prices(
+                    isbn=item.isbn,
+                    title=item.title,
+                    author=item.author_name
+                )
+                
+                # Calculate optimal price
+                pricing_result = PricingEngine.calculate_optimal_price(
+                    market_prices=market_prices,
+                    current_price=item.price_usd
+                )
+                
+                analyses.append(PriceAnalysisResponse(
+                    store_item_id=item.id,
+                    title=item.title,
+                    current_price=float(item.price_usd),
+                    recommended_price=float(pricing_result['recommended_price']),
+                    price_change=float(pricing_result['price_change']) if pricing_result['price_change'] else None,
+                    market_prices={k: float(v) if v else None for k, v in pricing_result['market_prices'].items()},
+                    reason=pricing_result['reason'],
+                    cost_breakdown={k: float(v) if isinstance(v, (int, float)) else v 
+                                   for k, v in pricing_result['cost_breakdown'].items()},
+                    should_update=pricing_result['should_update']
+                ))
+                
+            except Exception as e:
+                print(f"Error analyzing price for item {item.id}: {e}")
+                continue
+        
+        return analyses
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in price analysis: {e}")
+        raise HTTPException(status_code=500, detail=f"Price analysis failed: {str(e)}")
+
+
+@router.post("/prices/update", response_model=BulkPriceUpdateResponse)
+async def update_prices(
+    request: PriceUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Update prices for store items based on market analysis
+    
+    This endpoint:
+    1. Scrapes competitor prices
+    2. Calculates optimal pricing with minimum margin protection
+    3. Updates prices in database
+    4. Returns detailed report
+    """
+    try:
+        # Get store items to update
+        if request.store_item_ids:
+            result = await db.execute(
+                select(StoreItem).where(
+                    StoreItem.id.in_(request.store_item_ids),
+                    StoreItem.status == StoreItemStatus.ACTIVE
+                )
+            )
+        else:
+            # Update all active items
+            result = await db.execute(
+                select(StoreItem).where(StoreItem.status == StoreItemStatus.ACTIVE)
+            )
+        
+        items = result.scalars().all()
+        
+        if not items:
+            raise HTTPException(status_code=404, detail="No store items found")
+        
+        total_items = len(items)
+        items_analyzed = 0
+        items_updated = 0
+        items_skipped = 0
+        items_failed = 0
+        updates = []
+        
+        for item in items:
+            try:
+                items_analyzed += 1
+                
+                # Scrape market prices
+                market_prices = await PriceScraper.get_market_prices(
+                    isbn=item.isbn,
+                    title=item.title,
+                    author=item.author_name
+                )
+                
+                # Calculate optimal price
+                pricing_result = PricingEngine.calculate_optimal_price(
+                    market_prices=market_prices,
+                    current_price=item.price_usd
+                )
+                
+                # Decide whether to update
+                should_update = request.force_update or pricing_result['should_update']
+                
+                if should_update:
+                    # Update price in database
+                    new_price = pricing_result['recommended_price']
+                    
+                    # Calculate discount if applicable
+                    if new_price < item.price_usd:
+                        discount_pct = ((item.price_usd - new_price) / item.price_usd * 100)
+                        item.discount_percentage = int(discount_pct)
+                    else:
+                        item.discount_percentage = 0
+                    
+                    item.price_usd = new_price
+                    item.final_price = new_price
+                    
+                    items_updated += 1
+                    print(f"Updated price for '{item.title}' from ${item.price_usd} to ${new_price}")
+                else:
+                    items_skipped += 1
+                    print(f"Skipped price update for '{item.title}' - change too small")
+                
+                updates.append(PriceAnalysisResponse(
+                    store_item_id=item.id,
+                    title=item.title,
+                    current_price=float(item.price_usd),
+                    recommended_price=float(pricing_result['recommended_price']),
+                    price_change=float(pricing_result['price_change']) if pricing_result['price_change'] else None,
+                    market_prices={k: float(v) if v else None for k, v in pricing_result['market_prices'].items()},
+                    reason=pricing_result['reason'],
+                    cost_breakdown={k: float(v) if isinstance(v, (int, float)) else v 
+                                   for k, v in pricing_result['cost_breakdown'].items()},
+                    should_update=should_update
+                ))
+                
+            except Exception as e:
+                items_failed += 1
+                print(f"Error updating price for item {item.id}: {e}")
+                continue
+        
+        # Commit all changes
+        await db.commit()
+        
+        return BulkPriceUpdateResponse(
+            total_items=total_items,
+            items_analyzed=items_analyzed,
+            items_updated=items_updated,
+            items_skipped=items_skipped,
+            items_failed=items_failed,
+            updates=updates
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in bulk price update: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Bulk price update failed: {str(e)}")
+
+
+@router.get("/prices/minimum")
+async def get_minimum_price(
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Get the absolute minimum price we can charge
+    
+    This is the floor price that covers all costs plus minimum margin
+    """
+    minimum = PricingEngine.calculate_minimum_price()
+    costs = PricingEngine.calculate_platform_costs(minimum)
+    
+    return {
+        'minimum_price': float(minimum),
+        'cost_breakdown': {k: float(v) if isinstance(v, (int, float)) else v 
+                          for k, v in costs.items()},
+        'explanation': 'This is the absolute minimum price that covers author split (70%), Stripe fees (2.9% + $0.30), and maintains minimum profit margin'
+    }
+
+
+@router.post("/prices/validate")
+async def validate_price(
+    price: float,
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Validate if a price is acceptable and get detailed feedback
+    """
+    result = PricingEngine.validate_price(Decimal(str(price)))
+    
+    return {
+        'is_valid': result['is_valid'],
+        'price': float(result['price']),
+        'minimum_price': float(result['minimum_price']),
+        'cost_breakdown': {k: float(v) if isinstance(v, (int, float)) else v 
+                          for k, v in result['cost_breakdown'].items()},
+        'warnings': [w for w in result['warnings'] if w],
+        'recommendations': [r for r in result['recommendations'] if r]
+    }
+
 
