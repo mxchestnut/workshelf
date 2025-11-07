@@ -29,6 +29,7 @@ import FreeBooks from './pages/FreeBooks'
 import UploadBook from './pages/UploadBook'
 import Store from './pages/Store'
 import StoreSuccess from './pages/StoreSuccess'
+import BookDetail from './pages/BookDetail'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
@@ -46,7 +47,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -96,6 +97,10 @@ function App() {
       loadUser()
     } else if (path === '/store' || path === '/store/') {
       setCurrentPage('store')
+      loadUser()
+    } else if (path.startsWith('/book/')) {
+      // Book detail page: /book/:id or /book/store-:id
+      setCurrentPage('book-detail')
       loadUser()
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
@@ -186,6 +191,10 @@ function App() {
 
     if (currentPage === 'store-success') {
       return <StoreSuccess />
+    }
+
+    if (currentPage === 'book-detail') {
+      return <BookDetail />
     }
 
     // Home page tabs

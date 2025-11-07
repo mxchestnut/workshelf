@@ -57,11 +57,27 @@ interface StoreItem {
 }
 
 interface BookDetailProps {
-  bookId: string
-  onBack: () => void
+  bookId?: string
+  onBack?: () => void
 }
 
-export default function BookDetail({ bookId, onBack }: BookDetailProps) {
+export default function BookDetail({ bookId: propBookId, onBack }: BookDetailProps) {
+  // Get bookId from props or URL
+  const urlPath = window.location.pathname
+  const urlBookId = urlPath.startsWith('/book/') ? urlPath.substring(6) : null
+  const bookId = propBookId || urlBookId || ''
+  
+  // Default onBack handler
+  const handleBack = () => {
+    if (onBack) {
+      onBack()
+    } else {
+      // If called from URL, determine where to go back to
+      const isStoreItem = bookId.startsWith('store-')
+      window.location.href = isStoreItem ? '/store' : '/bookshelf'
+    }
+  }
+  
   const [book, setBook] = useState<BookshelfItem | null>(null)
   const [storeItem, setStoreItem] = useState<StoreItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -229,7 +245,7 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Book not found</h2>
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="text-purple-600 hover:text-purple-700"
           >
             Return to {isStoreItem ? 'Store' : 'Bookshelf'}
@@ -252,7 +268,7 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
