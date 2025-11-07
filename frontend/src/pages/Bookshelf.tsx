@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
 import AddBookModal from '../components/AddBookModal'
+import BookDetail from './BookDetail'
 
 interface BookshelfItem {
   id: number
@@ -58,6 +59,7 @@ export default function Bookshelf() {
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -201,6 +203,16 @@ export default function Bookshelf() {
   }
 
   return (
+    <>
+      {selectedBookId ? (
+        <BookDetail 
+          bookId={selectedBookId} 
+          onBack={() => {
+            setSelectedBookId(null)
+            loadBookshelf() // Refresh in case anything changed
+          }} 
+        />
+      ) : (
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 pb-8">
@@ -442,7 +454,8 @@ export default function Bookshelf() {
             {filteredBooks.map((book) => (
               <div
                 key={book.id}
-                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-purple-500 transition-all hover:shadow-lg hover:shadow-purple-500/20"
+                onClick={() => setSelectedBookId(book.id.toString())}
+                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-purple-500 transition-all hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
               >
                 {/* Book Cover */}
                 <div className="aspect-[2/3] bg-gradient-to-br from-purple-900 to-indigo-900 relative">
@@ -516,5 +529,7 @@ export default function Bookshelf() {
         }}
       />
     </div>
+      )}
+    </>
   )
 }
