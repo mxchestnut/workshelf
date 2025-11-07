@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from typing import List
 
 from app.core.database import get_db
-from app.models.collaboration import Group, GroupPrivacyType
+from app.models.collaboration import Group
 
 
 router = APIRouter(prefix="/interests", tags=["interests"])
@@ -27,7 +27,7 @@ async def get_available_interests(
     # Get all public groups with tags
     result = await db.execute(
         select(Group.tags).where(
-            Group.privacy == GroupPrivacyType.PUBLIC,
+            Group.is_public == True,
             Group.tags.isnot(None)
         )
     )
