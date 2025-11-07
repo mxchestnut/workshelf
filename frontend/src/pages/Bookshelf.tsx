@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
 import AddBookModal from '../components/AddBookModal'
 
 interface BookshelfItem {
@@ -26,6 +26,20 @@ interface BookshelfItem {
   added_at: string
 }
 
+interface BookRecommendation {
+  title: string
+  author: string
+  isbn?: string
+  cover_url?: string
+  description?: string
+  publisher?: string
+  publish_year?: number
+  page_count?: number
+  genres?: string[]
+  reason: string
+  favorite_author: string
+}
+
 interface BookshelfStats {
   total_books: number
   currently_reading: number
@@ -37,8 +51,10 @@ interface BookshelfStats {
 
 export default function Bookshelf() {
   const [books, setBooks] = useState<BookshelfItem[]>([])
+  const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
   const [stats, setStats] = useState<BookshelfStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingRecs, setLoadingRecs] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -48,6 +64,9 @@ export default function Bookshelf() {
   useEffect(() => {
     loadBookshelf()
     loadStats()
+    if (activeTab === 'recommendations') {
+      loadRecommendations()
+    }
   }, [activeTab])
 
   const loadBookshelf = async () => {
@@ -103,6 +122,32 @@ export default function Bookshelf() {
       }
     } catch (err) {
       console.error('Failed to load stats:', err)
+    }
+  }
+
+  const loadRecommendations = async () => {
+    setLoadingRecs(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setLoadingRecs(false)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/bookshelf/recommendations/by-favorite-authors?limit=20`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setRecommendations(data.recommendations || [])
+      }
+      setLoadingRecs(false)
+    } catch (err) {
+      console.error('Failed to load recommendations:', err)
+      setLoadingRecs(false)
     }
   }
 
@@ -290,11 +335,89 @@ export default function Bookshelf() {
               <ThumbsDown className="w-4 h-4" />
               DNF
             </button>
+            <button
+              onClick={() => setActiveTab('recommendations')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                activeTab === 'recommendations'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              Recommendations
+            </button>
           </div>
         </div>
 
         {/* Books Grid */}
-        {filteredBooks.length === 0 ? (
+        {activeTab === 'recommendations' ? (
+          loadingRecs ? (
+            <div className="text-center text-gray-400 py-12">Loading recommendations...</div>
+          ) : recommendations.length === 0 ? (
+            <div className="text-center py-12">
+              <Star className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">No Recommendations Yet</h3>
+              <p className="text-gray-400 mb-4">
+                Mark some authors as favorites on the Authors page to get personalized book recommendations!
+              </p>
+              <button
+                onClick={() => window.location.href = '/authors'}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+              >
+                Go to Authors
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">Recommendations from Your Favorite Authors</h2>
+                <p className="text-gray-400">Books we think you'll love based on authors you've favorited</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {recommendations.map((rec, idx) => (
+                  <div key={idx} className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-purple-500 transition-all">
+                    {rec.cover_url && (
+                      <img
+                        src={rec.cover_url}
+                        alt={rec.title}
+                        className="w-full h-64 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-white mb-1 line-clamp-2">{rec.title}</h3>
+                      <p className="text-sm text-gray-400 mb-2">{rec.author}</p>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Star className="w-4 h-4 text-yellow-400" />
+                        <span className="text-xs text-purple-300">{rec.reason}</span>
+                      </div>
+                      {rec.description && (
+                        <p className="text-xs text-gray-500 mb-3 line-clamp-3">{rec.description}</p>
+                      )}
+                      {rec.genres && rec.genres.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {rec.genres.slice(0, 2).map((genre, gidx) => (
+                            <span key={gidx} className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
+                              {genre}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          // TODO: Add to bookshelf functionality
+                          console.log('Add to bookshelf:', rec)
+                        }}
+                        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                      >
+                        Add to Bookshelf
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )
+        ) : filteredBooks.length === 0 ? (
           <div className="text-center py-16">
             <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-400 mb-2">

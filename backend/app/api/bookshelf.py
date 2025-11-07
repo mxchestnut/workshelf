@@ -448,6 +448,125 @@ async def get_bookshelf_stats(
     )
 
 
+@router.get("/recommendations/by-favorite-authors")
+async def get_recommendations_by_favorite_authors(
+    limit: int = Query(10, description="Maximum number of recommendations"),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get book recommendations based on your favorite authors.
+    Uses Google Books API to find books by authors you've marked as favorites.
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Get favorite authors
+    favorite_authors_result = await db.execute(
+        select(AuthorFollow).where(
+            AuthorFollow.user_id == user.id,
+            AuthorFollow.is_favorite == True
+        )
+    )
+    favorite_authors = favorite_authors_result.scalars().all()
+    
+    if not favorite_authors:
+        return {
+            "message": "Mark some authors as favorites to get personalized recommendations!",
+            "recommendations": []
+        }
+    
+    # Get books already in user's bookshelf (to exclude from recommendations)
+    existing_books_result = await db.execute(
+        select(BookshelfItem.isbn, BookshelfItem.title, BookshelfItem.author).where(
+            BookshelfItem.user_id == user.id,
+            BookshelfItem.item_type == 'book'
+        )
+    )
+    existing_books = existing_books_result.all()
+    existing_isbns = {book.isbn for book in existing_books if book.isbn}
+    existing_titles = {(book.title.lower(), book.author.lower()) for book in existing_books if book.title and book.author}
+    
+    recommendations = []
+    
+    # Search Google Books for each favorite author
+    import httpx
+    
+    async with httpx.AsyncClient() as client:
+        for author in favorite_authors[:5]:  # Limit to first 5 favorite authors
+            try:
+                # Search Google Books API
+                response = await client.get(
+                    "https://www.googleapis.com/books/v1/volumes",
+                    params={
+                        "q": f"inauthor:{author.author_name}",
+                        "maxResults": 10,
+                        "orderBy": "relevance"
+                    },
+                    timeout=10.0
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    items = data.get("items", [])
+                    
+                    for item in items:
+                        volume_info = item.get("volumeInfo", {})
+                        
+                        # Extract book data
+                        title = volume_info.get("title", "")
+                        authors = volume_info.get("authors", [])
+                        author_name = authors[0] if authors else ""
+                        
+                        # Get ISBN
+                        isbn = None
+                        for identifier in volume_info.get("industryIdentifiers", []):
+                            if identifier.get("type") == "ISBN_13":
+                                isbn = identifier.get("identifier")
+                                break
+                            elif identifier.get("type") == "ISBN_10":
+                                isbn = identifier.get("identifier")
+                        
+                        # Skip if already in bookshelf
+                        if isbn and isbn in existing_isbns:
+                            continue
+                        if (title.lower(), author_name.lower()) in existing_titles:
+                            continue
+                        
+                        # Skip if author doesn't match (sometimes API returns related authors)
+                        if author_name.lower() != author.author_name.lower():
+                            continue
+                        
+                        # Add to recommendations
+                        recommendations.append({
+                            "title": title,
+                            "author": author_name,
+                            "isbn": isbn,
+                            "cover_url": volume_info.get("imageLinks", {}).get("thumbnail", "").replace("http://", "https://"),
+                            "description": volume_info.get("description", ""),
+                            "publisher": volume_info.get("publisher", ""),
+                            "publish_year": int(volume_info.get("publishedDate", "")[:4]) if volume_info.get("publishedDate") else None,
+                            "page_count": volume_info.get("pageCount"),
+                            "genres": volume_info.get("categories", []),
+                            "reason": f"By your favorite author: {author.author_name}",
+                            "favorite_author": author.author_name
+                        })
+                        
+                        if len(recommendations) >= limit:
+                            break
+                        
+            except Exception as e:
+                print(f"Error fetching recommendations for {author.author_name}: {e}")
+                continue
+            
+            if len(recommendations) >= limit:
+                break
+    
+    return {
+        "favorite_authors": [author.author_name for author in favorite_authors],
+        "recommendations": recommendations[:limit]
+    }
+
+
 @router.get("/{item_id}", response_model=BookshelfItemResponse)
 async def get_bookshelf_item(
     item_id: int,
