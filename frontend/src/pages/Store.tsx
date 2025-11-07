@@ -277,10 +277,18 @@ interface BookCardProps {
 }
 
 function BookCard({ book, onPurchase, featured }: BookCardProps) {
+  const handleCardClick = () => {
+    // Navigate to book detail page with store item ID
+    window.location.href = `/book/store-${book.id}`
+  }
+
   return (
-    <div className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col ${
-      featured ? 'ring-2 ring-yellow-400' : ''
-    }`}>
+    <div 
+      onClick={handleCardClick}
+      className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col cursor-pointer ${
+        featured ? 'ring-2 ring-yellow-400' : ''
+      }`}
+    >
       {/* Cover Image */}
       <div className="relative h-64 bg-gradient-to-br from-purple-100 to-pink-100">
         {book.cover_url ? (
@@ -369,14 +377,6 @@ function BookCard({ book, onPurchase, featured }: BookCardProps) {
             )}
             <p className="text-xs text-gray-500 mt-1">{book.total_sales} sold</p>
           </div>
-
-          <button
-            onClick={() => onPurchase(book)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Buy Now
-          </button>
         </div>
       </div>
     </div>
