@@ -64,7 +64,7 @@ async def get_my_profile(
         display_name=user.display_name,
         bio=profile.bio if profile else None,
         avatar_url=profile.avatar_url if profile else None,
-        website_url=profile.website_url if profile else None,
+        website_url=profile.website if profile else None,
         twitter_handle=profile.twitter_handle if profile else None,
         location=profile.location if profile else None
     )
@@ -93,7 +93,7 @@ async def update_my_profile(
         display_name=user.display_name,
         bio=profile.bio if profile else None,
         avatar_url=profile.avatar_url if profile else None,
-        website_url=profile.website_url if profile else None,
+        website_url=profile.website if profile else None,
         twitter_handle=profile.twitter_handle if profile else None,
         location=profile.location if profile else None
     )
@@ -146,7 +146,7 @@ async def update_my_account(
         display_name=user.display_name,
         bio=profile.bio if profile else None,
         avatar_url=profile.avatar_url if profile else None,
-        website_url=profile.website_url if profile else None,
+        website_url=profile.website if profile else None,
         twitter_handle=profile.twitter_handle if profile else None,
         location=profile.location if profile else None
     )
