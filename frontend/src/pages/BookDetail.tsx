@@ -126,11 +126,6 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
     }
   }
 
-  const getAmazonSearchUrl = (title?: string, author?: string) => {
-    const query = `${title || ''} ${author || ''}`.trim()
-    return `https://www.amazon.com/s?k=${encodeURIComponent(query)}&i=digital-text`
-  }
-
   const getGoogleBooksUrl = (isbn?: string, title?: string) => {
     if (isbn) {
       return `https://www.google.com/books/edition/_/${isbn}`
@@ -223,15 +218,10 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
                     {book.is_favorite ? 'Favorited' : 'Add to Favorites'}
                   </button>
 
-                  <a
-                    href={getAmazonSearchUrl(book.title, book.author)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-                  >
+                  <div className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg opacity-60 cursor-not-allowed">
                     <ShoppingCart className="w-5 h-5" />
-                    Buy on Amazon
-                  </a>
+                    WorkShelf Store Coming Soon
+                  </div>
 
                   {getGoogleBooksUrl(book.isbn, book.title) && (
                     <a

@@ -64,6 +64,8 @@ class User(Base, TimestampMixin, TenantMixin):
     bookshelf_items = relationship("BookshelfItem", back_populates="user", cascade="all, delete-orphan")
     author_follows = relationship("AuthorFollow", back_populates="user", cascade="all, delete-orphan")
     epub_submissions = relationship("EpubSubmission", foreign_keys="EpubSubmission.user_id", back_populates="user", cascade="all, delete-orphan")
+    store_items = relationship("StoreItem", foreign_keys="StoreItem.seller_id", back_populates="seller", cascade="all, delete-orphan")
+    purchases = relationship("Purchase", back_populates="user", cascade="all, delete-orphan")
     
     # Collaboration
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
