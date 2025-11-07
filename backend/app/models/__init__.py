@@ -12,6 +12,7 @@ from app.models.project import Project
 from app.models.folder import Folder
 from app.models.social import UserFollow, ShareLink, Notification, ActivityEvent
 from app.models.reading import Bookmark, ReadingList, ReadingListItem, ReadingProgress, Category
+from app.models.bookshelf import BookshelfItem  # Personal bookshelf (Goodreads-style)
 from app.models.collaboration import (
     Comment, CommentReaction,
     BetaRequest, BetaFeedback, BetaRequestStatus,

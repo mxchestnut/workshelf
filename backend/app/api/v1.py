@@ -19,6 +19,7 @@ from app.api import (
     activity,
     reading,
     reading_list,
+    bookshelf,  # Personal bookshelf (Goodreads-style)
     discovery,
     comments,
     beta_reading,
@@ -92,6 +93,7 @@ api_router.include_router(activity.router)
 # Phase 3: Reading & Discovery
 api_router.include_router(reading.router)
 api_router.include_router(reading_list.router)
+api_router.include_router(bookshelf.router)  # Personal bookshelf
 api_router.include_router(discovery.router)
 api_router.include_router(feed.router)  # Personalized feed
 api_router.include_router(interests.router)  # Dynamic interests from groups
