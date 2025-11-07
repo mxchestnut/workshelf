@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, Upload, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
 
@@ -223,6 +223,13 @@ export default function Bookshelf() {
               <p className="text-purple-100">Track your reading journey</p>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => window.location.href = '/upload-book'}
+                className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                <Upload className="w-5 h-5" />
+                Upload EPUB
+              </button>
               <button
                 onClick={() => window.location.href = '/free-books'}
                 className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
