@@ -3,6 +3,7 @@ import {
   BookOpen, Star, Heart, ArrowLeft, Calendar, 
   User, Building2, Hash, FileText, Tag, ShoppingCart 
 } from 'lucide-react'
+import EpubReader from '../components/EpubReader'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -26,6 +27,9 @@ interface BookshelfItem {
   started_reading?: string
   finished_reading?: string
   added_at: string
+  epub_url?: string // URL to EPUB file
+  reading_progress?: number // Percentage read
+  last_location?: string // EPUB CFI location
 }
 
 interface BookDetailProps {
@@ -37,6 +41,7 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
   const [book, setBook] = useState<BookshelfItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [showReader, setShowReader] = useState(false)
 
   useEffect(() => {
     loadBook()
@@ -100,6 +105,25 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
 
   const updateRating = (newRating: number) => {
     updateBook({ rating: newRating })
+  }
+
+  const saveReadingProgress = async (location: string, progress: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      await fetch(`${API_URL}/api/v1/bookshelf/${bookId}/progress`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          last_location: location,
+          reading_progress: progress
+        })
+      })
+    } catch (error) {
+      console.error('Failed to save reading progress:', error)
+    }
   }
 
   const getAmazonSearchUrl = (title?: string, author?: string) => {
@@ -172,6 +196,20 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
 
                 {/* Action Buttons */}
                 <div className="mt-4 space-y-2">
+                  {/* Read Book Button - Only show if epub_url exists */}
+                  {book.epub_url && (
+                    <button
+                      onClick={() => setShowReader(true)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      {book.reading_progress && book.reading_progress > 0 
+                        ? `Continue Reading (${Math.round(book.reading_progress)}%)` 
+                        : 'Start Reading'
+                      }
+                    </button>
+                  )}
+
                   <button
                     onClick={toggleFavorite}
                     disabled={updating}
@@ -339,6 +377,17 @@ export default function BookDetail({ bookId, onBack }: BookDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* EPUB Reader Modal */}
+      {showReader && book.epub_url && (
+        <EpubReader
+          epubUrl={book.epub_url}
+          bookTitle={book.title || 'Book'}
+          onClose={() => setShowReader(false)}
+          onProgressChange={saveReadingProgress}
+          initialLocation={book.last_location}
+        />
+      )}
     </div>
   )
 }
