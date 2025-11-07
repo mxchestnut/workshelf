@@ -14,6 +14,7 @@ from app.models.social import UserFollow, ShareLink, Notification, ActivityEvent
 from app.models.reading import Bookmark, ReadingList, ReadingListItem, ReadingProgress, Category
 from app.models.bookshelf import BookshelfItem  # Personal bookshelf (Goodreads-style)
 from app.models.author_follows import AuthorFollow, AuthorFollowStatus  # Author tracking
+from app.models.epub_submission import EpubSubmission, VerificationLog, SubmissionStatus  # EPUB uploads
 from app.models.collaboration import (
     Comment, CommentReaction,
     BetaRequest, BetaFeedback, BetaRequestStatus,

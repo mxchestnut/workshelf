@@ -63,8 +63,9 @@ class User(Base, TimestampMixin, TenantMixin):
     reading_progress = relationship("ReadingProgress", back_populates="user", cascade="all, delete-orphan")
     bookshelf_items = relationship("BookshelfItem", back_populates="user", cascade="all, delete-orphan")
     author_follows = relationship("AuthorFollow", back_populates="user", cascade="all, delete-orphan")
+    epub_submissions = relationship("EpubSubmission", foreign_keys="EpubSubmission.user_id", back_populates="user", cascade="all, delete-orphan")
     
-    # Phase 4: Collaboration
+    # Collaboration
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
     comment_reactions = relationship("CommentReaction", back_populates="user", cascade="all, delete-orphan")
     beta_requests_sent = relationship("BetaRequest", foreign_keys="BetaRequest.author_id", back_populates="author", cascade="all, delete-orphan")

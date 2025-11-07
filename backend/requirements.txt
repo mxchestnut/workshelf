@@ -24,6 +24,10 @@ stripe==7.10.0
 # AI Services
 anthropic==0.39.0  # Claude API for creative writing assistance
 
+# EPUB Processing
+ebooklib==0.18
+html2text==2020.1.16
+
 # Azure SDK
 azure-storage-blob==12.19.0
 azure-identity==1.15.0
