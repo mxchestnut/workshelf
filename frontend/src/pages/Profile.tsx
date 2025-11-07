@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink } from 'lucide-react'
 import { authService } from '../services/auth'
 
 interface UserProfile {
@@ -223,6 +223,25 @@ export function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* Navigation Bar */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-700">
+        <button
+          onClick={() => window.location.href = '/feed'}
+          className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Feed
+        </button>
+        
+        <button
+          onClick={() => window.location.href = `/${profile.username}`}
+          className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <ExternalLink className="w-4 h-4" />
+          View Public Profile
+        </button>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
