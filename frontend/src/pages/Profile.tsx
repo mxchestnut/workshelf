@@ -234,7 +234,7 @@ export function Profile() {
         </button>
         
         <button
-          onClick={() => window.location.href = `/${profile.username}`}
+          onClick={() => window.location.href = `/users/${profile.username}`}
           className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
         >
           <ExternalLink className="w-4 h-4" />

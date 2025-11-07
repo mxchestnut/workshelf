@@ -62,9 +62,17 @@ export default function PublicProfile() {
 
   const loadProfile = async () => {
     try {
-      // Extract username from URL path
+      // Extract username from URL path: /users/:username
       const path = window.location.pathname
-      const username = path.substring(1) // Remove leading slash
+      const parts = path.split('/').filter(p => p) // Remove empty strings
+      
+      if (parts.length < 2 || parts[0] !== 'users') {
+        setError('Invalid profile URL')
+        setLoading(false)
+        return
+      }
+      
+      const username = parts[1]
       
       if (!username) {
         setError('Invalid profile URL')

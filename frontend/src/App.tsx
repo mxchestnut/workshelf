@@ -58,7 +58,6 @@ function App() {
 
     // Check authentication and route
     const path = window.location.pathname
-    console.log('Current path:', path, 'Length:', path.length)  // Debug logging
     
     if (path === '/auth/callback') {
       setCurrentPage('auth-callback')
@@ -96,17 +95,17 @@ function App() {
       setCurrentPage('store-success')
       loadUser()
     } else if (path === '/store' || path === '/store/') {
-      console.log('Matched /store route!')  // Debug logging
       setCurrentPage('store')
       loadUser()
+    } else if (path.startsWith('/users/')) {
+      // Public profile: /users/:username
+      setCurrentPage('public-profile')
     } else if (path === '/' || path === '') {
       setCurrentPage('home')
       loadUser()
     } else {
-      // If path doesn't match any known route, treat as username
-      // Example: /warpxth -> public profile
-      console.log('Falling through to public profile for path:', path)  // Debug logging
-      setCurrentPage('public-profile')
+      // Unknown route - redirect to home
+      window.location.href = '/'
     }
   }, [API_URL])
 
