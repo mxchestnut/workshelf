@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Users, Star, Heart, Search, BookOpen, Clock, TrendingUp, Plus, X } from 'lucide-react'
+import { Users, Star, Heart, Search, BookOpen, Clock, TrendingUp, Plus, X, Loader } from 'lucide-react'
+
+interface BookResult {
+  title: string
+  author: string
+  isbn?: string
+  cover_url?: string
+  description?: string
+  publisher?: string
+  publish_year?: number
+  page_count?: number
+  genres?: string[]
+}
 
 interface AuthorFollow {
   id: number
@@ -35,6 +47,13 @@ export default function Authors() {
   const [newAuthorName, setNewAuthorName] = useState('')
   const [newAuthorStatus, setNewAuthorStatus] = useState('want-to-read')
   const [addingAuthor, setAddingAuthor] = useState(false)
+  
+  // Books modal state
+  const [showBooksModal, setShowBooksModal] = useState(false)
+  const [selectedAuthor, setSelectedAuthor] = useState<string>('')
+  const [authorBooks, setAuthorBooks] = useState<BookResult[]>([])
+  const [loadingBooks, setLoadingBooks] = useState(false)
+  const [addingBook, setAddingBook] = useState<string | null>(null)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -185,6 +204,83 @@ export default function Authors() {
       alert('Failed to add author')
     } finally {
       setAddingAuthor(false)
+    }
+  }
+
+  const loadAuthorBooks = async (authorName: string) => {
+    setSelectedAuthor(authorName)
+    setShowBooksModal(true)
+    setLoadingBooks(true)
+    setAuthorBooks([])
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(
+        `${API_URL}/api/v1/authors/search/${encodeURIComponent(authorName)}/books?max_results=20`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        setAuthorBooks(data.books || [])
+      } else {
+        alert('Failed to load books')
+      }
+    } catch (err) {
+      console.error('Failed to load author books:', err)
+      alert('Failed to load books')
+    } finally {
+      setLoadingBooks(false)
+    }
+  }
+
+  const addBookToShelf = async (book: BookResult) => {
+    setAddingBook(book.title)
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          item_type: 'book',
+          title: book.title,
+          author: book.author,
+          isbn: book.isbn,
+          cover_url: book.cover_url,
+          description: book.description,
+          publisher: book.publisher,
+          publish_year: book.publish_year,
+          page_count: book.page_count,
+          genres: book.genres,
+          status: 'want-to-read'
+        })
+      })
+
+      if (response.ok) {
+        // Remove from books list
+        setAuthorBooks(prev => prev.filter(b => b.title !== book.title))
+        alert('Book added to your bookshelf!')
+      } else {
+        const error = await response.json()
+        alert(error.detail || 'Failed to add book')
+      }
+    } catch (err) {
+      console.error('Failed to add book:', err)
+      alert('Failed to add book')
+    } finally {
+      setAddingBook(null)
     }
   }
 
@@ -487,12 +583,12 @@ export default function Authors() {
                         <option value="want-to-read">Want to Read</option>
                         <option value="favorites">Favorites</option>
                       </select>
-                      <a
-                        href={`/bookshelf/search?author=${encodeURIComponent(author.author_name)}`}
+                      <button
+                        onClick={() => loadAuthorBooks(author.author_name)}
                         className="w-full px-3 py-2 bg-blue-600 text-white text-center rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
                         View Books
-                      </a>
+                      </button>
                     </div>
 
                     {/* Notes */}
@@ -505,6 +601,106 @@ export default function Authors() {
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Books Modal */}
+        {showBooksModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Books by {selectedAuthor}</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {loadingBooks ? 'Searching...' : `${authorBooks.length} books found`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBooksModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                {loadingBooks ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader className="w-8 h-8 text-blue-600 animate-spin" />
+                  </div>
+                ) : authorBooks.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No books found</h3>
+                    <p className="text-gray-600">
+                      We couldn't find any books by this author that aren't already in your bookshelf.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {authorBooks.map((book, idx) => (
+                      <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                        {book.cover_url && (
+                          <img
+                            src={book.cover_url}
+                            alt={book.title}
+                            className="w-full h-64 object-cover"
+                          />
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 min-h-[3rem]">
+                            {book.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-3">{book.author}</p>
+                          
+                          {book.description && (
+                            <p className="text-xs text-gray-500 mb-3 line-clamp-3">
+                              {book.description}
+                            </p>
+                          )}
+                          
+                          {book.genres && book.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {book.genres.slice(0, 2).map((genre, gidx) => (
+                                <span
+                                  key={gidx}
+                                  className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
+                                >
+                                  {genre}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            {book.publish_year && <span>{book.publish_year}</span>}
+                            {book.page_count && <span>{book.page_count} pages</span>}
+                          </div>
+                          
+                          <button
+                            onClick={() => addBookToShelf(book)}
+                            disabled={addingBook === book.title}
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {addingBook === book.title ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader className="w-4 h-4 animate-spin" />
+                                Adding...
+                              </span>
+                            ) : (
+                              <span className="flex items-center justify-center gap-2">
+                                <Plus className="w-4 h-4" />
+                                Add to Bookshelf
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
