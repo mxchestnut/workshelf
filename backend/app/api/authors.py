@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from app.core.deps import get_current_user, get_db
 from app.models import User, AuthorFollow, AuthorFollowStatus
+from app.services import user_service
 
 router = APIRouter(prefix="/authors", tags=["authors"])
 
@@ -316,6 +317,10 @@ async def create_author_follow(
     await db.commit()
     await db.refresh(author)
 
+    # Add genres to user interests
+    if author_data.genres:
+        await user_service.add_genres_to_interests(db, user, author_data.genres)
+
     return AuthorFollowResponse(
         id=author.id,
         user_id=author.user_id,
@@ -332,3 +337,101 @@ async def create_author_follow(
         created_at=author.created_at.isoformat(),
         updated_at=author.updated_at.isoformat()
     )
+
+
+@router.get("/search/{author_name}/books")
+async def search_author_books(
+    author_name: str,
+    max_results: int = Query(20, description="Maximum number of books to return"),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Search for books by a specific author using Google Books API.
+    Returns books that are not already in the user's bookshelf.
+    """
+    import httpx
+    from app.models.bookshelf import BookshelfItem
+    
+    # Get books already in user's bookshelf (to exclude from results)
+    existing_books_result = await db.execute(
+        select(BookshelfItem.isbn, BookshelfItem.title, BookshelfItem.author).where(
+            BookshelfItem.user_id == user.id,
+            BookshelfItem.item_type == 'book'
+        )
+    )
+    existing_books = existing_books_result.all()
+    existing_isbns = {book.isbn for book in existing_books if book.isbn}
+    existing_titles = {(book.title.lower(), book.author.lower()) for book in existing_books if book.title and book.author}
+    
+    books = []
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            # Search Google Books API
+            response = await client.get(
+                "https://www.googleapis.com/books/v1/volumes",
+                params={
+                    "q": f"inauthor:{author_name}",
+                    "maxResults": 40,  # Request more to filter out existing books
+                    "orderBy": "relevance"
+                },
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get("items", [])
+                
+                for item in items:
+                    volume_info = item.get("volumeInfo", {})
+                    
+                    # Extract book data
+                    title = volume_info.get("title", "")
+                    authors = volume_info.get("authors", [])
+                    author = authors[0] if authors else ""
+                    
+                    # Get ISBN
+                    isbn = None
+                    for identifier in volume_info.get("industryIdentifiers", []):
+                        if identifier.get("type") == "ISBN_13":
+                            isbn = identifier.get("identifier")
+                            break
+                        elif identifier.get("type") == "ISBN_10":
+                            isbn = identifier.get("identifier")
+                    
+                    # Skip if already in bookshelf
+                    if isbn and isbn in existing_isbns:
+                        continue
+                    if (title.lower(), author.lower()) in existing_titles:
+                        continue
+                    
+                    # Skip if author doesn't match (case-insensitive)
+                    if author.lower() != author_name.lower():
+                        continue
+                    
+                    # Add to results
+                    books.append({
+                        "title": title,
+                        "author": author,
+                        "isbn": isbn,
+                        "cover_url": volume_info.get("imageLinks", {}).get("thumbnail", "").replace("http://", "https://"),
+                        "description": volume_info.get("description", ""),
+                        "publisher": volume_info.get("publisher", ""),
+                        "publish_year": int(volume_info.get("publishedDate", "")[:4]) if volume_info.get("publishedDate") else None,
+                        "page_count": volume_info.get("pageCount"),
+                        "genres": volume_info.get("categories", [])
+                    })
+                    
+                    if len(books) >= max_results:
+                        break
+                        
+        except Exception as e:
+            print(f"Error searching books for {author_name}: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to search for books: {str(e)}")
+    
+    return {
+        "author_name": author_name,
+        "total_books": len(books),
+        "books": books
+    }

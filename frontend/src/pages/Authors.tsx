@@ -476,17 +476,23 @@ export default function Authors() {
                     </div>
 
                     {/* Status Change Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                       <select
                         value={author.status}
                         onChange={(e) => updateStatus(author.id, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="reading">Reading</option>
                         <option value="read">Read</option>
                         <option value="want-to-read">Want to Read</option>
                         <option value="favorites">Favorites</option>
                       </select>
+                      <a
+                        href={`/bookshelf/search?author=${encodeURIComponent(author.author_name)}`}
+                        className="w-full px-3 py-2 bg-blue-600 text-white text-center rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        View Books
+                      </a>
                     </div>
 
                     {/* Notes */}
