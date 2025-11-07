@@ -91,7 +91,7 @@ class StoreItem(Base):
     # Relationships
     seller = relationship("User", foreign_keys=[seller_id], back_populates="store_items")
     moderator = relationship("User", foreign_keys=[moderator_id])
-    author = relationship("Author", foreign_keys=[author_id], back_populates="store_items")
+    author = relationship("Author", foreign_keys=[author_id], back_populates="books")
     purchases = relationship("Purchase", back_populates="store_item", cascade="all, delete-orphan")
     
     # Indexes for common queries
