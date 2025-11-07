@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Plus, Search, TrendingUp, BookMarked, Clock, Heart, ThumbsDown } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp } from 'lucide-react'
+import AddBookModal from '../components/AddBookModal'
 
 interface BookshelfItem {
   id: number
@@ -382,23 +383,15 @@ export default function Bookshelf() {
         )}
       </div>
 
-      {/* Add Book Modal - Placeholder */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-white mb-4">Add Book</h2>
-            <p className="text-gray-400 mb-6">
-              Coming soon: Search by ISBN or add manually!
-            </p>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Add Book Modal */}
+      <AddBookModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onBookAdded={() => {
+          loadBookshelf()
+          loadStats()
+        }}
+      />
     </div>
   )
 }
