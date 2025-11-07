@@ -255,8 +255,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
           author: storeItem.author_name,
           cover_url: storeItem.cover_url,
           description: storeItem.description || storeItem.long_description,
-          genres: storeItem.genres,
-          status: 'want-to-read' // Default to want-to-read
+          genres: storeItem.genres
+          // No status field - user will set it after adding
         })
       })
 
@@ -269,7 +269,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
       const newBook = await response.json()
       setBook(newBook)
       setUserOwnsBook(true)
-      alert('Added to your bookshelf!')
+      alert('Added to your bookshelf! Set your reading status using the dropdown below.')
     } catch (error) {
       console.error('Error adding to bookshelf:', error)
       alert('Failed to add to bookshelf')
@@ -381,6 +381,17 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     src={coverUrl}
                     alt={title}
                     className="w-64 h-96 object-cover rounded-lg shadow-md"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.parentElement!.innerHTML = `
+                        <div class="w-64 h-96 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg shadow-md flex items-center justify-center">
+                          <svg class="w-24 h-24 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                          </svg>
+                        </div>
+                      `
+                    }}
                   />
                 ) : (
                   <div className="w-64 h-96 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg shadow-md flex items-center justify-center">
@@ -463,7 +474,13 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                 {author && (
                   <div className="flex items-center gap-2 text-xl text-gray-600 mb-4">
                     <User className="w-5 h-5" />
-                    <span>by {author}</span>
+                    <span>by </span>
+                    <a 
+                      href={`/store?author=${encodeURIComponent(author)}`}
+                      className="text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                    >
+                      {author}
+                    </a>
                   </div>
                 )}
 

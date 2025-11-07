@@ -36,6 +36,15 @@ export default function Store() {
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
 
+  // Check for author query parameter on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const authorParam = urlParams.get('author')
+    if (authorParam) {
+      setSearchQuery(authorParam)
+    }
+  }, [])
+
   useEffect(() => {
     fetchBooks()
   }, [searchQuery, selectedGenre, sortBy, priceRange])
