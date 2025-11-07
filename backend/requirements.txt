@@ -1,13 +1,13 @@
 # Core Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
+pydantic==2.10.6
 pydantic-settings==2.1.0
 email-validator==2.1.0
 
 # Database
-sqlalchemy[asyncio]==2.0.23
-asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
 psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
 alembic==1.12.1
 
@@ -22,7 +22,7 @@ python-multipart==0.0.6
 stripe==7.10.0
 
 # AI Services
-anthropic==0.39.0  # Claude API for creative writing assistance
+anthropic==0.72.0  # Claude API for creative writing assistance
 
 # EPUB Processing
 ebooklib==0.18
