@@ -19,10 +19,10 @@ interface BookSearchResult {
 }
 
 export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookModalProps) {
-  const [searchMode, setSearchMode] = useState<'isbn' | 'manual'>('isbn')
-  const [isbnQuery, setIsbnQuery] = useState('')
+  const [searchMode, setSearchMode] = useState<'search' | 'manual'>('search')
+  const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
-  const [searchResult, setSearchResult] = useState<BookSearchResult | null>(null)
+  const [searchResults, setSearchResults] = useState<BookSearchResult[]>([])
   const [adding, setAdding] = useState(false)
 
   // Manual entry form state
@@ -41,46 +41,52 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-  const handleSearchISBN = async () => {
-    if (!isbnQuery.trim()) return
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return
 
     setSearching(true)
-    setSearchResult(null)
+    setSearchResults([])
 
     try {
-      // Try Google Books API
+      // Search Google Books API
+      // Support ISBN, title, author, or any combination
       const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnQuery}`
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=10`
       )
       const data = await response.json()
 
       if (data.items && data.items.length > 0) {
-        const book = data.items[0].volumeInfo
-        const result: BookSearchResult = {
-          isbn: isbnQuery,
-          title: book.title || '',
-          author: book.authors?.join(', ') || '',
-          cover_url: book.imageLinks?.thumbnail || book.imageLinks?.smallThumbnail || '',
-          publisher: book.publisher || '',
-          publish_year: book.publishedDate ? parseInt(book.publishedDate.substring(0, 4)) : undefined,
-          page_count: book.pageCount || undefined,
-          description: book.description || '',
-        }
-        setSearchResult(result)
+        const results: BookSearchResult[] = data.items.map((item: any) => {
+          const book = item.volumeInfo
+          const industryIdentifiers = book.industryIdentifiers || []
+          const isbn13 = industryIdentifiers.find((id: any) => id.type === 'ISBN_13')?.identifier
+          const isbn10 = industryIdentifiers.find((id: any) => id.type === 'ISBN_10')?.identifier
+          
+          return {
+            isbn: isbn13 || isbn10 || '',
+            title: book.title || '',
+            author: book.authors?.join(', ') || '',
+            cover_url: book.imageLinks?.thumbnail?.replace('http://', 'https://') || 
+                       book.imageLinks?.smallThumbnail?.replace('http://', 'https://') || '',
+            publisher: book.publisher || '',
+            publish_year: book.publishedDate ? parseInt(book.publishedDate.substring(0, 4)) : undefined,
+            page_count: book.pageCount || undefined,
+            description: book.description || '',
+          }
+        })
+        setSearchResults(results)
       } else {
-        alert('No book found with this ISBN. Try manual entry instead.')
+        alert('No books found. Try a different search or use manual entry.')
       }
     } catch (error) {
-      console.error('Failed to search ISBN:', error)
-      alert('Failed to search for book. Please try manual entry.')
+      console.error('Failed to search books:', error)
+      alert('Failed to search for books. Please try manual entry.')
     } finally {
       setSearching(false)
     }
   }
 
-  const handleAddFromSearch = async () => {
-    if (!searchResult) return
-
+  const handleAddFromSearch = async (book: BookSearchResult) => {
     setAdding(true)
     try {
       const token = localStorage.getItem('access_token')
@@ -92,14 +98,14 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
         },
         body: JSON.stringify({
           item_type: 'book',
-          isbn: searchResult.isbn,
-          title: searchResult.title,
-          author: searchResult.author,
-          cover_url: searchResult.cover_url,
-          publisher: searchResult.publisher,
-          publish_year: searchResult.publish_year,
-          page_count: searchResult.page_count,
-          description: searchResult.description,
+          isbn: book.isbn || undefined,
+          title: book.title,
+          author: book.author,
+          cover_url: book.cover_url || undefined,
+          publisher: book.publisher || undefined,
+          publish_year: book.publish_year,
+          page_count: book.page_count,
+          description: book.description || undefined,
           status: 'want-to-read',
         }),
       })
@@ -110,8 +116,8 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
       }
 
       // Reset and close
-      setSearchResult(null)
-      setIsbnQuery('')
+      setSearchResults([])
+      setSearchQuery('')
       onBookAdded()
       onClose()
     } catch (error: any) {
@@ -205,15 +211,15 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
         <div className="px-6 pt-6">
           <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
             <button
-              onClick={() => setSearchMode('isbn')}
+              onClick={() => setSearchMode('search')}
               className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
-                searchMode === 'isbn'
+                searchMode === 'search'
                   ? 'bg-white text-purple-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Search className="w-4 h-4 inline mr-2" />
-              ISBN Search
+              Search Books
             </button>
             <button
               onClick={() => setSearchMode('manual')}
@@ -231,25 +237,25 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
 
         {/* Content */}
         <div className="p-6">
-          {searchMode === 'isbn' ? (
+          {searchMode === 'search' ? (
             <div className="space-y-4">
-              {/* ISBN Search */}
+              {/* Book Search */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ISBN Number
+                  Search for a Book
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={isbnQuery}
-                    onChange={(e) => setIsbnQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearchISBN()}
-                    placeholder="Enter ISBN-10 or ISBN-13"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="ISBN, title, author, or keywords..."
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                   <button
-                    onClick={handleSearchISBN}
-                    disabled={searching || !isbnQuery.trim()}
+                    onClick={handleSearch}
+                    disabled={searching || !searchQuery.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                   >
                     {searching ? (
@@ -266,65 +272,75 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   </button>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  We'll search Google Books for this ISBN
+                  Powered by Google Books - Search by ISBN, title, author, or any keywords
                 </p>
               </div>
 
-              {/* Search Result */}
-              {searchResult && (
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div className="flex gap-4">
-                    {searchResult.cover_url ? (
-                      <img
-                        src={searchResult.cover_url}
-                        alt={searchResult.title}
-                        className="w-24 h-32 object-cover rounded-lg shadow-md"
-                      />
-                    ) : (
-                      <div className="w-24 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <BookOpen className="w-8 h-8 text-gray-400" />
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                  <p className="text-sm font-medium text-gray-700">
+                    Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                  </p>
+                  {searchResults.map((book, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex gap-4">
+                        {book.cover_url ? (
+                          <img
+                            src={book.cover_url}
+                            alt={book.title}
+                            className="w-20 h-28 object-cover rounded-lg shadow-md flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-20 h-28 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-base text-gray-900 mb-1 line-clamp-2">
+                            {book.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-1">{book.author || 'Unknown Author'}</p>
+                          {book.publisher && (
+                            <p className="text-xs text-gray-500">
+                              {book.publisher}
+                              {book.publish_year && ` (${book.publish_year})`}
+                            </p>
+                          )}
+                          {book.page_count && (
+                            <p className="text-xs text-gray-500">
+                              {book.page_count} pages
+                            </p>
+                          )}
+                          {book.isbn && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              ISBN: {book.isbn}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-900 mb-1">
-                        {searchResult.title}
-                      </h3>
-                      <p className="text-gray-600 mb-2">{searchResult.author}</p>
-                      {searchResult.publisher && (
-                        <p className="text-sm text-gray-500">
-                          {searchResult.publisher}
-                          {searchResult.publish_year && ` (${searchResult.publish_year})`}
-                        </p>
-                      )}
-                      {searchResult.page_count && (
-                        <p className="text-sm text-gray-500">
-                          {searchResult.page_count} pages
-                        </p>
-                      )}
-                      {searchResult.description && (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-3">
-                          {searchResult.description}
-                        </p>
-                      )}
+                      <button
+                        onClick={() => handleAddFromSearch(book)}
+                        disabled={adding}
+                        className="w-full mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                      >
+                        {adding ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4" />
+                            Add to Bookshelf
+                          </>
+                        )}
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={handleAddFromSearch}
-                    disabled={adding}
-                    className="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
-                  >
-                    {adding ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-5 h-5" />
-                        Add to Bookshelf
-                      </>
-                    )}
-                  </button>
+                  ))}
                 </div>
               )}
             </div>
