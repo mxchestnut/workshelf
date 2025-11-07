@@ -232,6 +232,50 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
     }
   }
 
+  const addToBookshelf = async () => {
+    if (!storeItem) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        window.location.href = '/login'
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          item_type: 'book',
+          isbn: storeItem.isbn,
+          title: storeItem.title,
+          author: storeItem.author_name,
+          cover_url: storeItem.cover_url,
+          description: storeItem.description || storeItem.long_description,
+          genres: storeItem.genres,
+          status: 'want-to-read' // Default to want-to-read
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.detail || 'Failed to add to bookshelf')
+        return
+      }
+
+      const newBook = await response.json()
+      setBook(newBook)
+      setUserOwnsBook(true)
+      alert('Added to your bookshelf!')
+    } catch (error) {
+      console.error('Error adding to bookshelf:', error)
+      alert('Failed to add to bookshelf')
+    }
+  }
+
   const handlePurchase = async () => {
     if (!storeItem) return
 
@@ -377,14 +421,24 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
                   {/* If user doesn't own the book BUT it's available in store: Show Buy Now */}
                   {!userOwnsBook && storeItem && (
-                    <button
-                      onClick={handlePurchase}
-                      disabled={purchasing}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                      {purchasing ? 'Processing...' : `Buy Now - $${storeItem.final_price.toFixed(2)}`}
-                    </button>
+                    <>
+                      <button
+                        onClick={handlePurchase}
+                        disabled={purchasing}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                        {purchasing ? 'Processing...' : `Buy Now - $${storeItem.final_price.toFixed(2)}`}
+                      </button>
+                      
+                      <button
+                        onClick={addToBookshelf}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                      >
+                        <BookOpen className="w-5 h-5" />
+                        Add to Bookshelf
+                      </button>
+                    </>
                   )}
 
                   {/* Google Books Link - only for bookshelf items */}
