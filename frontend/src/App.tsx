@@ -22,6 +22,7 @@ import { Projects } from './pages/Projects'
 import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
 import { Profile } from './pages/Profile'
+import PublicProfile from './pages/PublicProfile'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
@@ -39,7 +40,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'auth-callback' | 'onboarding' | 'terms' | 'rules'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -71,9 +72,13 @@ function App() {
     } else if (path === '/document') {
       setCurrentPage('document')
       loadUser()
-    } else {
+    } else if (path === '/' || path === '') {
       setCurrentPage('home')
       loadUser()
+    } else {
+      // If path doesn't match any known route, treat as username
+      // Example: /warpxth -> public profile
+      setCurrentPage('public-profile')
     }
   }, [API_URL])
 
@@ -120,6 +125,10 @@ function App() {
       return <Profile />
     }
     
+    if (currentPage === 'public-profile') {
+      return <PublicProfile />
+    }
+    
     if (currentPage === 'documents') {
       return <Documents />
     }
@@ -141,8 +150,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, documents, or document editor
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'public-profile') {
     return renderContent()
   }
 

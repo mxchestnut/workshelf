@@ -157,7 +157,7 @@ async def get_public_profile(
     user_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get public user profile"""
+    """Get public user profile by user ID"""
     
     user = await user_profile_service.get_public_profile(db, user_id)
     if not user:
@@ -172,3 +172,87 @@ async def get_public_profile(
         location=user.profile.location if user.profile else None,
         created_at=user.created_at
     )
+
+
+@router.get("/username/{username}")
+async def get_public_profile_by_username(
+    username: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get public user profile by username"""
+    from sqlalchemy import select
+    from app.models import User, UserProfile
+    
+    # Find user by username
+    result = await db.execute(
+        select(User).where(User.username == username)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get profile
+    profile_result = await db.execute(
+        select(UserProfile).where(UserProfile.user_id == user.id)
+    )
+    profile = profile_result.scalar_one_or_none()
+    
+    # Get public document count
+    from app.models import Document, DocumentVisibility
+    doc_result = await db.execute(
+        select(Document).where(
+            Document.user_id == user.id,
+            Document.visibility == DocumentVisibility.PUBLIC
+        )
+    )
+    public_docs = doc_result.scalars().all()
+    
+    return {
+        "id": user.id,
+        "username": user.username,
+        "display_name": user.display_name,
+        "bio": profile.bio if profile else None,
+        "avatar_url": profile.avatar_url if profile else None,
+        "location": profile.location if profile else None,
+        "website": profile.website if profile else None,
+        "twitter_handle": profile.twitter_handle if profile else None,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "interests": user.interests or [],
+        "public_document_count": len(public_docs)
+    }
+
+
+@router.get("/{user_id}/documents/public")
+async def get_user_public_documents(
+    user_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get user's public documents"""
+    from sqlalchemy import select
+    from app.models import Document, DocumentVisibility, DocumentStatus
+    
+    result = await db.execute(
+        select(Document).where(
+            Document.user_id == user_id,
+            Document.visibility == DocumentVisibility.PUBLIC,
+            Document.status == DocumentStatus.PUBLISHED
+        ).order_by(Document.updated_at.desc())
+    )
+    documents = result.scalars().all()
+    
+    return {
+        "documents": [
+            {
+                "id": doc.id,
+                "title": doc.title,
+                "description": doc.description,
+                "word_count": doc.word_count or 0,
+                "reading_time": doc.reading_time or 0,
+                "updated_at": doc.updated_at.isoformat() if doc.updated_at else None,
+                "status": doc.status.value if doc.status else "draft"
+            }
+            for doc in documents
+        ]
+    }
+
