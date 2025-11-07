@@ -18,7 +18,7 @@ from app.models.store import StoreItem, Purchase, StoreItemStatus, PurchaseStatu
 from app.services.stripe_service import StripeService
 
 
-router = APIRouter(prefix="/api/v1/store", tags=["store"])
+router = APIRouter(prefix="/store", tags=["store"])
 
 
 # ============================================================================
