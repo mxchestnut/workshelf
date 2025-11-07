@@ -68,6 +68,12 @@ class BookshelfItemUpdate(BaseModel):
     finished_reading: Optional[datetime] = None
 
 
+class ReadingProgressUpdate(BaseModel):
+    """Update reading progress for EPUB books"""
+    last_location: str = Field(..., description="EPUB CFI location")
+    reading_progress: float = Field(..., ge=0.0, le=100.0, description="Percentage read (0-100)")
+
+
 class BookshelfItemResponse(BaseModel):
     """Bookshelf item response"""
     id: int
@@ -89,6 +95,11 @@ class BookshelfItemResponse(BaseModel):
     page_count: Optional[int]
     description: Optional[str]
     genres: Optional[List[str]]
+    
+    # EPUB reading support
+    epub_url: Optional[str]
+    reading_progress: Optional[float]
+    last_location: Optional[str]
     
     # Reading data
     status: str
@@ -301,6 +312,9 @@ async def add_to_bookshelf(
         page_count=bookshelf_item.page_count,
         description=bookshelf_item.description,
         genres=bookshelf_item.genres,
+        epub_url=bookshelf_item.epub_url,
+        reading_progress=bookshelf_item.reading_progress,
+        last_location=bookshelf_item.last_location,
         status=bookshelf_item.status,
         rating=bookshelf_item.rating,
         review=bookshelf_item.review,
@@ -361,6 +375,9 @@ async def get_my_bookshelf(
             page_count=item.page_count,
             description=item.description,
             genres=item.genres,
+            epub_url=item.epub_url,
+            reading_progress=item.reading_progress,
+            last_location=item.last_location,
             status=item.status,
             rating=item.rating,
             review=item.review,
@@ -603,6 +620,9 @@ async def get_bookshelf_item(
         page_count=item.page_count,
         description=item.description,
         genres=item.genres,
+        epub_url=item.epub_url,
+        reading_progress=item.reading_progress,
+        last_location=item.last_location,
         status=item.status,
         rating=item.rating,
         review=item.review,
@@ -675,6 +695,9 @@ async def update_bookshelf_item(
         page_count=item.page_count,
         description=item.description,
         genres=item.genres,
+        epub_url=item.epub_url,
+        reading_progress=item.reading_progress,
+        last_location=item.last_location,
         status=item.status,
         rating=item.rating,
         review=item.review,
@@ -711,6 +734,48 @@ async def delete_bookshelf_item(
     
     await db.delete(item)
     await db.commit()
+
+
+@router.put("/{item_id}/progress")
+async def update_reading_progress(
+    item_id: int,
+    progress_data: ReadingProgressUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update reading progress for an EPUB book"""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    result = await db.execute(
+        select(BookshelfItem).where(
+            BookshelfItem.id == item_id,
+            BookshelfItem.user_id == user.id
+        )
+    )
+    item = result.scalar_one_or_none()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Bookshelf item not found")
+    
+    # Update reading progress
+    item.last_location = progress_data.last_location
+    item.reading_progress = progress_data.reading_progress
+    
+    # Auto-update status if starting to read for the first time
+    if item.status == "want-to-read" and progress_data.reading_progress > 0:
+        item.status = "reading"
+        if not item.started_reading:
+            item.started_reading = datetime.utcnow()
+    
+    await db.commit()
+    await db.refresh(item)
+    
+    return {
+        "id": item.id,
+        "last_location": item.last_location,
+        "reading_progress": item.reading_progress,
+        "status": item.status
+    }
 
 
 # ============================================================================
@@ -771,6 +836,9 @@ async def get_public_bookshelf(
             page_count=item.page_count,
             description=item.description,
             genres=item.genres,
+            epub_url=item.epub_url,
+            reading_progress=item.reading_progress,
+            last_location=item.last_location,
             status=item.status,
             rating=item.rating,
             review=item.review,
