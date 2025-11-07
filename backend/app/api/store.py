@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, and_, or_, func
 from pydantic import BaseModel, Field
 
-from app.core.database import get_async_db
+from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.user import User
 from app.models.store import StoreItem, Purchase, StoreItemStatus, PurchaseStatus
@@ -105,7 +105,7 @@ async def browse_store(
     sort_by: str = "published_at",  # published_at, price_asc, price_desc, popular
     limit: int = 50,
     offset: int = 0,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Browse books available in the store.
@@ -203,7 +203,7 @@ async def browse_store(
 @router.get("/{item_id}", response_model=StoreItemResponse)
 async def get_store_item(
     item_id: int,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get detailed information about a specific store item"""
     result = await db.execute(
@@ -259,7 +259,7 @@ async def get_store_item(
 async def create_checkout_session(
     request: CheckoutRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Create a Stripe checkout session for purchasing a book.
@@ -309,7 +309,7 @@ async def create_checkout_session(
 async def get_my_purchases(
     status: Optional[str] = None,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get all purchases for the current user"""
     query = select(Purchase).where(Purchase.user_id == current_user.id)
@@ -379,7 +379,7 @@ async def get_my_purchases(
 async def stripe_webhook(
     request: Request,
     stripe_signature: str = Header(None, alias="Stripe-Signature"),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Handle Stripe webhook events.
