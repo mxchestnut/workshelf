@@ -26,6 +26,7 @@ import PublicProfile from './pages/PublicProfile'
 import Bookshelf from './pages/Bookshelf'
 import Authors from './pages/Authors'
 import Author from './pages/Author'
+import AdminModeration from './pages/AdminModeration'
 import FreeBooks from './pages/FreeBooks'
 import UploadBook from './pages/UploadBook'
 import Store from './pages/Store'
@@ -48,7 +49,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -90,6 +91,9 @@ function App() {
     } else if (path.startsWith('/authors/')) {
       // Author profile page: /authors/:id
       setCurrentPage('author-profile')
+      loadUser()
+    } else if (path === '/admin/moderation') {
+      setCurrentPage('admin-moderation')
       loadUser()
     } else if (path === '/free-books') {
       setCurrentPage('free-books')
@@ -186,6 +190,10 @@ function App() {
       return <Author />
     }
 
+    if (currentPage === 'admin-moderation') {
+      return <AdminModeration />
+    }
+
     if (currentPage === 'free-books') {
       return <FreeBooks />
     }
@@ -219,8 +227,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'public-profile') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
     return renderContent()
   }
 
