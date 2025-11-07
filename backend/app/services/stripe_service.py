@@ -17,8 +17,9 @@ from app.models.authors import Author
 
 
 # Initialize Stripe with secret key
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+# Support both local (.env) and Azure naming conventions
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY") or os.getenv("stripe-secret-key")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET") or os.getenv("stripe-webhook-secret")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
