@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Search, BookOpen, Plus, Loader2 } from 'lucide-react'
+import { X, Search, BookOpen, Plus, Loader2, Sparkles } from 'lucide-react'
 
 interface AddBookModalProps {
   isOpen: boolean
@@ -16,6 +16,16 @@ interface BookSearchResult {
   publish_year?: number
   page_count?: number
   description?: string
+  genres?: string[]
+}
+
+interface EnhancedData {
+  isbn?: string
+  page_count?: number
+  description?: string
+  genres?: string[]
+  ai_enhanced: boolean
+  fields_enhanced: string[]
 }
 
 export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookModalProps) {
@@ -24,6 +34,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([])
   const [adding, setAdding] = useState(false)
+  const [enhancing, setEnhancing] = useState<number | null>(null)
 
   // Manual entry form state
   const [formData, setFormData] = useState({
@@ -72,6 +83,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
             publish_year: book.publishedDate ? parseInt(book.publishedDate.substring(0, 4)) : undefined,
             page_count: book.pageCount || undefined,
             description: book.description || '',
+            genres: book.categories || [],
           }
         })
         setSearchResults(results)
@@ -106,6 +118,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
           publish_year: book.publish_year,
           page_count: book.page_count,
           description: book.description || undefined,
+          genres: book.genres || undefined,
           status: 'want-to-read',
         }),
       })
@@ -125,6 +138,62 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
       alert(error.message || 'Failed to add book to shelf')
     } finally {
       setAdding(false)
+    }
+  }
+
+  const handleEnhanceBook = async (book: BookSearchResult, index: number) => {
+    setEnhancing(index)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/bookshelf/enhance-book-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: book.title,
+          author: book.author,
+          publisher: book.publisher,
+          publish_year: book.publish_year,
+          isbn: book.isbn || null,
+          page_count: book.page_count || null,
+          description: book.description || null,
+          genres: book.genres || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to enhance book data')
+      }
+
+      const enhanced: EnhancedData = await response.json()
+
+      if (enhanced.ai_enhanced) {
+        // Update the book in search results with enhanced data
+        const updatedResults = [...searchResults]
+        updatedResults[index] = {
+          ...book,
+          isbn: enhanced.isbn || book.isbn,
+          page_count: enhanced.page_count || book.page_count,
+          description: enhanced.description || book.description,
+          genres: enhanced.genres || book.genres,
+        }
+        setSearchResults(updatedResults)
+
+        // Show which fields were enhanced
+        alert(
+          `✨ AI Enhanced!\n\nImproved fields: ${enhanced.fields_enhanced.join(', ')}\n\nThe book data has been updated with more complete information.`
+        )
+      } else {
+        alert('This book already has complete data!')
+      }
+    } catch (error: any) {
+      console.error('Failed to enhance book:', error)
+      alert(error.message || 'Failed to enhance book data. Please try again.')
+    } finally {
+      setEnhancing(null)
     }
   }
 
@@ -339,6 +408,35 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                           </>
                         )}
                       </button>
+
+                      {/* AI Enhancement Button - Show if data is incomplete */}
+                      {(!book.isbn || !book.page_count || !book.description || (book.description && book.description.length < 100) || !book.genres || book.genres.length === 0) && (
+                        <button
+                          onClick={() => handleEnhanceBook(book, index)}
+                          disabled={enhancing === index}
+                          className="w-full mt-2 px-4 py-2 bg-purple-100 text-purple-700 border-2 border-purple-300 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                        >
+                          {enhancing === index ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Enhancing with AI...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4" />
+                              ✨ Enhance with AI
+                              <span className="text-xs ml-1">
+                                (Missing: {[
+                                  !book.isbn && 'ISBN',
+                                  !book.page_count && 'pages',
+                                  (!book.description || book.description.length < 100) && 'description',
+                                  (!book.genres || book.genres.length === 0) && 'genres'
+                                ].filter(Boolean).join(', ')})
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -8,6 +8,9 @@ from sqlalchemy import select, func
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from datetime import datetime
+import json
+import os
+from anthropic import Anthropic
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -111,6 +114,28 @@ class BookshelfStats(BaseModel):
     want_to_read: int
     favorites: int
     books_read_this_year: int
+
+
+class BookEnhanceRequest(BaseModel):
+    """Request to enhance book data with AI"""
+    title: str
+    author: Optional[str] = None
+    publisher: Optional[str] = None
+    publish_year: Optional[int] = None
+    isbn: Optional[str] = None
+    page_count: Optional[int] = None
+    description: Optional[str] = None
+    genres: Optional[List[str]] = None
+
+
+class BookEnhanceResponse(BaseModel):
+    """Enhanced book data from AI"""
+    isbn: Optional[str] = None
+    page_count: Optional[int] = None
+    description: Optional[str] = None
+    genres: Optional[List[str]] = None
+    ai_enhanced: bool = True
+    fields_enhanced: List[str] = []
 
 
 # ============================================================================
@@ -593,3 +618,145 @@ async def get_public_bookshelf(
         )
         for item in items
     ]
+
+
+@router.post("/enhance-book-data", response_model=BookEnhanceResponse)
+async def enhance_book_data(
+    book_data: BookEnhanceRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Use AI (Claude) to fill in missing book information
+    
+    **Hybrid Approach:**
+    - Automatically fills critical fields: ISBN, page count
+    - Available for manual enhancement: description, genres
+    
+    **What gets enhanced:**
+    - Missing ISBN (searches for ISBN-13)
+    - Missing page count (exact number)
+    - Incomplete description (rich, compelling summary)
+    - Missing genres (accurate categorization)
+    
+    **Use cases:**
+    - Google Books API returns incomplete data
+    - Older books without standardized ISBNs
+    - Books with minimal descriptions
+    - Self-published or international editions
+    """
+    # Check if Anthropic API key is configured
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=503, 
+            detail="AI enhancement unavailable - API key not configured"
+        )
+    
+    # Determine what fields need enhancement
+    missing_fields = []
+    if not book_data.isbn:
+        missing_fields.append("ISBN-13")
+    if not book_data.page_count:
+        missing_fields.append("page count")
+    if not book_data.description or len(book_data.description) < 100:
+        missing_fields.append("description")
+    if not book_data.genres or len(book_data.genres) == 0:
+        missing_fields.append("genres")
+    
+    if not missing_fields:
+        return BookEnhanceResponse(
+            isbn=book_data.isbn,
+            page_count=book_data.page_count,
+            description=book_data.description,
+            genres=book_data.genres,
+            ai_enhanced=False,
+            fields_enhanced=[]
+        )
+    
+    # Build prompt for Claude
+    prompt = f"""I need you to find accurate information for this book:
+
+Title: {book_data.title}
+Author: {book_data.author or 'Unknown'}
+Publisher: {book_data.publisher or 'Unknown'}
+Published: {book_data.publish_year or 'Unknown'}
+
+Current data:
+- ISBN: {book_data.isbn or 'MISSING'}
+- Page Count: {book_data.page_count or 'MISSING'}
+- Description: {book_data.description[:100] + '...' if book_data.description and len(book_data.description) > 100 else book_data.description or 'MISSING'}
+- Genres: {', '.join(book_data.genres) if book_data.genres else 'MISSING'}
+
+Please search for this book and provide the missing information. Return your response as valid JSON with this exact structure:
+{{
+  "isbn": "ISBN-13 number (13 digits with hyphens) or null if not found",
+  "page_count": exact number of pages as integer or null if not found,
+  "description": "A compelling 2-3 paragraph description (200-300 words)" or null if not found,
+  "genres": ["genre1", "genre2", "genre3"] array of 2-5 accurate genre tags or empty array if not found
+}}
+
+Important:
+- Only include data you're confident is accurate
+- For ISBN, prefer ISBN-13 over ISBN-10
+- For genres, use common book categories like: fiction, non-fiction, mystery, romance, sci-fi, fantasy, biography, history, etc.
+- Return ONLY the JSON object, no other text"""
+    
+    try:
+        # Call Claude API
+        client = Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        # Parse Claude's response
+        response_text = message.content[0].text.strip()
+        
+        # Extract JSON from response (Claude sometimes wraps it in markdown)
+        if response_text.startswith("```"):
+            # Remove markdown code blocks
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+            response_text = response_text.strip()
+        
+        enhanced_data = json.loads(response_text)
+        
+        # Determine which fields were enhanced
+        fields_enhanced = []
+        result_isbn = enhanced_data.get("isbn") or book_data.isbn
+        result_page_count = enhanced_data.get("page_count") or book_data.page_count
+        result_description = enhanced_data.get("description") or book_data.description
+        result_genres = enhanced_data.get("genres") or book_data.genres
+        
+        if enhanced_data.get("isbn") and not book_data.isbn:
+            fields_enhanced.append("ISBN")
+        if enhanced_data.get("page_count") and not book_data.page_count:
+            fields_enhanced.append("page_count")
+        if enhanced_data.get("description") and (not book_data.description or len(book_data.description) < 100):
+            fields_enhanced.append("description")
+        if enhanced_data.get("genres") and (not book_data.genres or len(book_data.genres) == 0):
+            fields_enhanced.append("genres")
+        
+        return BookEnhanceResponse(
+            isbn=result_isbn,
+            page_count=result_page_count,
+            description=result_description,
+            genres=result_genres,
+            ai_enhanced=len(fields_enhanced) > 0,
+            fields_enhanced=fields_enhanced
+        )
+        
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse AI response: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI enhancement failed: {str(e)}"
+        )
