@@ -222,13 +222,22 @@ export default function Bookshelf() {
               <h1 className="text-4xl font-bold text-white mb-2">My Bookshelf</h1>
               <p className="text-purple-100">Track your reading journey</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              Add Book
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.href = '/free-books'}
+                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+              >
+                <BookOpen className="w-5 h-5" />
+                Free Books
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Add Book
+              </button>
+            </div>
           </div>
 
           {/* Stats */}

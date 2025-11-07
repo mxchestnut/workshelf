@@ -2,7 +2,7 @@
 Bookshelf Models
 Track books and Work Shelf documents in user's personal library
 """
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint, Index
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Float, ForeignKey, CheckConstraint, Index
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -64,6 +64,11 @@ class BookshelfItem(Base, TimestampMixin):
     page_count = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)
     genres = Column(ARRAY(String), nullable=True)
+    
+    # EPUB reading support
+    epub_url = Column(String(1000), nullable=True)  # URL to EPUB file for reading
+    reading_progress = Column(Float, nullable=True)  # Percentage read (0-100)
+    last_location = Column(String(500), nullable=True)  # EPUB CFI location for resuming
     
     # ========================================================================
     # Reading status and user data (applies to both types)

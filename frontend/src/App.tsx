@@ -25,6 +25,7 @@ import { Profile } from './pages/Profile'
 import PublicProfile from './pages/PublicProfile'
 import Bookshelf from './pages/Bookshelf'
 import Authors from './pages/Authors'
+import FreeBooks from './pages/FreeBooks'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
@@ -42,7 +43,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'free-books' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -79,6 +80,9 @@ function App() {
       loadUser()
     } else if (path === '/authors') {
       setCurrentPage('authors')
+      loadUser()
+    } else if (path === '/free-books') {
+      setCurrentPage('free-books')
       loadUser()
     } else if (path === '/' || path === '') {
       setCurrentPage('home')
@@ -153,6 +157,10 @@ function App() {
       return <Authors />
     }
 
+    if (currentPage === 'free-books') {
+      return <FreeBooks />
+    }
+
     // Home page tabs
     switch (activeTab) {
       case 'documents':
@@ -166,8 +174,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, authors, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'public-profile') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, authors, free-books, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'free-books' || currentPage === 'public-profile') {
     return renderContent()
   }
 
