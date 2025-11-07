@@ -206,17 +206,20 @@ async def get_store_item(
     db: AsyncSession = Depends(get_async_db)
 ):
     """Get detailed information about a specific store item"""
-    item = db.query(StoreItem).filter(
-        StoreItem.id == item_id,
-        StoreItem.status == StoreItemStatus.ACTIVE
-    ).first()
+    result = await db.execute(
+        select(StoreItem).where(
+            StoreItem.id == item_id,
+            StoreItem.status == StoreItemStatus.ACTIVE
+        )
+    )
+    item = result.scalar_one_or_none()
     
     if not item:
         raise HTTPException(status_code=404, detail="Store item not found")
     
     # Increment view count
     item.view_count += 1
-    db.commit()
+    await db.commit()
     
     # Calculate final price
     final_price = float(item.price_usd)
@@ -264,22 +267,28 @@ async def create_checkout_session(
     Returns a checkout URL that the frontend should redirect to.
     """
     # Get store item
-    store_item = db.query(StoreItem).filter(
-        StoreItem.id == request.store_item_id,
-        StoreItem.status == StoreItemStatus.ACTIVE
-    ).first()
+    result = await db.execute(
+        select(StoreItem).where(
+            StoreItem.id == request.store_item_id,
+            StoreItem.status == StoreItemStatus.ACTIVE
+        )
+    )
+    store_item = result.scalar_one_or_none()
     
     if not store_item:
         raise HTTPException(status_code=404, detail="Store item not found or not available")
     
     # Check if user already owns this book
-    existing_purchase = db.query(Purchase).filter(
-        and_(
-            Purchase.user_id == current_user.id,
-            Purchase.store_item_id == store_item.id,
-            Purchase.status == PurchaseStatus.COMPLETED
+    result = await db.execute(
+        select(Purchase).where(
+            and_(
+                Purchase.user_id == current_user.id,
+                Purchase.store_item_id == store_item.id,
+                Purchase.status == PurchaseStatus.COMPLETED
+            )
         )
-    ).first()
+    )
+    existing_purchase = result.scalar_one_or_none()
     
     if existing_purchase:
         raise HTTPException(status_code=400, detail="You already own this book")
@@ -303,17 +312,19 @@ async def get_my_purchases(
     db: AsyncSession = Depends(get_async_db)
 ):
     """Get all purchases for the current user"""
-    query = db.query(Purchase).filter(Purchase.user_id == current_user.id)
+    query = select(Purchase).where(Purchase.user_id == current_user.id)
     
     if status:
-        query = query.filter(Purchase.status == status)
+        query = query.where(Purchase.status == status)
     
-    purchases = query.order_by(desc(Purchase.created_at)).all()
+    result = await db.execute(query.order_by(desc(Purchase.created_at)))
+    purchases = result.scalars().all()
     
     response = []
     for purchase in purchases:
         # Get store item details
-        store_item = db.query(StoreItem).filter(StoreItem.id == purchase.store_item_id).first()
+        result = await db.execute(select(StoreItem).where(StoreItem.id == purchase.store_item_id))
+        store_item = result.scalar_one_or_none()
         if not store_item:
             continue
         
