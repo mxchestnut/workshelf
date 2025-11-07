@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     def DATABASE_URL_CLEAN(self) -> str:
         """Clean DATABASE_URL for asyncpg compatibility"""
         url = self.DATABASE_URL
+        # Replace postgresql:// with postgresql+asyncpg:// for async driver
+        if url.startswith('postgresql://'):
+            url = url.replace('postgresql://', 'postgresql+asyncpg://', 1)
         # Remove sslmode and channel_binding query params that asyncpg doesn't support
         # asyncpg handles SSL automatically
         url = url.replace('?sslmode=require&channel_binding=require', '')

@@ -35,6 +35,12 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([])
   const [adding, setAdding] = useState(false)
   const [enhancing, setEnhancing] = useState<number | null>(null)
+  
+  // Recommendations state
+  const [showRecommendations, setShowRecommendations] = useState(false)
+  const [recommendedBooks, setRecommendedBooks] = useState<BookSearchResult[]>([])
+  const [lastAddedBook, setLastAddedBook] = useState<BookSearchResult | null>(null)
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false)
 
   // Manual entry form state
   const [formData, setFormData] = useState({
@@ -128,16 +134,45 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
         throw new Error(error.detail || 'Failed to add book')
       }
 
-      // Reset and close
+      // Show recommendations instead of closing
+      setLastAddedBook(book)
       setSearchResults([])
-      setSearchQuery('')
-      onBookAdded()
-      onClose()
+      await loadRecommendations(book)
+      
     } catch (error: any) {
       console.error('Failed to add book:', error)
       alert(error.message || 'Failed to add book to shelf')
     } finally {
       setAdding(false)
+    }
+  }
+
+  const loadRecommendations = async (book: BookSearchResult) => {
+    setShowRecommendations(true)
+    setLoadingRecommendations(true)
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      
+      // Load more books by the same author
+      const authorResponse = await fetch(
+        `${API_URL}/api/v1/authors/search/${encodeURIComponent(book.author)}/books?max_results=10`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+      
+      if (authorResponse.ok) {
+        const authorData = await authorResponse.json()
+        setRecommendedBooks(authorData.books || [])
+      }
+      
+    } catch (error) {
+      console.error('Failed to load recommendations:', error)
+    } finally {
+      setLoadingRecommendations(false)
     }
   }
 
@@ -439,6 +474,117 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Recommendations Section */}
+              {showRecommendations && lastAddedBook && (
+                <div className="mt-6 border-t-2 border-purple-200 pt-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      ✨ Book Added Successfully!
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Added "{lastAddedBook.title}" by {lastAddedBook.author}
+                    </p>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5" />
+                      More by {lastAddedBook.author}
+                    </h4>
+                    {loadingRecommendations ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                      </div>
+                    ) : recommendedBooks.length > 0 ? (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                        {recommendedBooks.map((book, index) => (
+                          <div key={index} className="bg-white rounded-lg p-3 border border-purple-100">
+                            <div className="flex gap-3">
+                              {book.cover_url ? (
+                                <img
+                                  src={book.cover_url}
+                                  alt={book.title}
+                                  className="w-12 h-16 object-cover rounded flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                                  <BookOpen className="w-4 h-4 text-gray-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h5 className="font-medium text-sm text-gray-900 line-clamp-1">
+                                  {book.title}
+                                </h5>
+                                {book.publish_year && (
+                                  <p className="text-xs text-gray-500">{book.publish_year}</p>
+                                )}
+                                {book.genres && book.genres.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {book.genres.slice(0, 2).map((genre, gidx) => (
+                                      <span key={gidx} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">
+                                        {genre}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleAddFromSearch(book)}
+                              disabled={adding}
+                              className="w-full mt-2 px-3 py-1.5 bg-purple-600 text-white rounded text-xs font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-1"
+                            >
+                              {adding ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Adding...
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  Add to Shelf
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-600 text-center py-4">
+                        No other books found by this author
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowRecommendations(false)
+                        setRecommendedBooks([])
+                        setLastAddedBook(null)
+                        setSearchQuery('')
+                        onBookAdded()
+                        onClose()
+                      }}
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+                    >
+                      Done
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowRecommendations(false)
+                        setRecommendedBooks([])
+                        setLastAddedBook(null)
+                        setSearchQuery('')
+                      }}
+                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+                    >
+                      Add Another Book
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
