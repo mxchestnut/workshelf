@@ -52,7 +52,7 @@ export default function Bookshelf() {
 
   const loadBookshelf = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) {
         setLoading(false)
         return
@@ -88,7 +88,7 @@ export default function Bookshelf() {
 
   const loadStats = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) return
 
       const response = await fetch(`${API_URL}/api/v1/bookshelf/stats`, {
