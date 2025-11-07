@@ -224,6 +224,13 @@ export default function Bookshelf() {
             </div>
             <div className="flex gap-3">
               <button
+                onClick={() => window.location.href = '/authors'}
+                className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+              >
+                <Heart className="w-5 h-5" />
+                Authors
+              </button>
+              <button
                 onClick={() => window.location.href = '/upload-book'}
                 className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
               >
