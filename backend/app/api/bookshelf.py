@@ -236,6 +236,29 @@ async def add_to_bookshelf(
     await db.commit()
     await db.refresh(bookshelf_item)
     
+    # Auto-sync book genres to user interests
+    if item_data.genres and len(item_data.genres) > 0:
+        # Get user's profile
+        profile_result = await db.execute(
+            select(user.__class__).where(user.__class__.id == user.id)
+        )
+        user_obj = profile_result.scalar_one()
+        
+        # Get current interests (or initialize empty array)
+        current_interests = user_obj.interests or []
+        
+        # Add new genres that aren't already in interests (case-insensitive)
+        current_interests_lower = [i.lower() for i in current_interests]
+        new_genres = [
+            genre for genre in item_data.genres 
+            if genre.lower() not in current_interests_lower
+        ]
+        
+        # Update interests if we have new genres
+        if new_genres:
+            user_obj.interests = current_interests + new_genres
+            await db.commit()
+    
     # Convert to response (would need to fetch document data if document_id)
     return BookshelfItemResponse(
         id=bookshelf_item.id,

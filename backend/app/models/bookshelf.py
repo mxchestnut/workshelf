@@ -95,7 +95,7 @@ class BookshelfItem(Base, TimestampMixin):
         # Ensure valid item types
         CheckConstraint(
             "(item_type = 'document' AND document_id IS NOT NULL) OR "
-            "(item_type = 'book' AND isbn IS NOT NULL AND title IS NOT NULL)",
+            "(item_type = 'book' AND title IS NOT NULL)",
             name='check_bookshelf_item_valid'
         ),
         # Rating must be 1-5 or null
