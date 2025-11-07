@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText } from 'lucide-react'
+import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star } from 'lucide-react'
 
 interface PublicProfileData {
   id: number
@@ -26,12 +26,33 @@ interface Document {
   status: string
 }
 
+interface BookshelfItem {
+  id: number
+  item_type: 'document' | 'book'
+  document_id?: number
+  document_title?: string
+  isbn?: string
+  title?: string
+  author?: string
+  cover_url?: string
+  publisher?: string
+  publish_year?: number
+  page_count?: number
+  description?: string
+  status: string
+  rating?: number
+  review?: string
+  is_favorite: boolean
+  finished_reading?: string
+}
+
 export default function PublicProfile() {
   const [profile, setProfile] = useState<PublicProfileData | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
+  const [bookshelf, setBookshelf] = useState<BookshelfItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'about' | 'documents'>('about')
+  const [activeTab, setActiveTab] = useState<'about' | 'documents' | 'bookshelf'>('about')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -76,6 +97,17 @@ export default function PublicProfile() {
         }
       } catch (err) {
         console.error('Failed to load documents:', err)
+      }
+
+      // Fetch public bookshelf
+      try {
+        const bookshelfResponse = await fetch(`${API_URL}/api/v1/bookshelf/public/${username}`)
+        if (bookshelfResponse.ok) {
+          const bookshelfData = await bookshelfResponse.json()
+          setBookshelf(bookshelfData || [])
+        }
+      } catch (err) {
+        console.error('Failed to load bookshelf:', err)
       }
 
       setLoading(false)
@@ -266,6 +298,19 @@ export default function PublicProfile() {
                   Public Documents ({documents.length})
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab('bookshelf')}
+                className={`py-4 border-b-2 font-medium transition-colors ${
+                  activeTab === 'bookshelf'
+                    ? 'border-indigo-500 text-white'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Book className="w-4 h-4" />
+                  Bookshelf ({bookshelf.length})
+                </div>
+              </button>
             </div>
           </div>
 
@@ -310,6 +355,88 @@ export default function PublicProfile() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'bookshelf' && (
+              <div>
+                {bookshelf.length === 0 ? (
+                  <div className="text-center text-gray-400 py-12">
+                    <Book className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No public book reviews yet</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {bookshelf.map((item) => {
+                      const bookTitle = item.title || item.document_title || 'Untitled'
+                      const bookAuthor = item.author || 'Unknown Author'
+                      
+                      return (
+                        <div
+                          key={item.id}
+                          className="bg-gray-700 rounded-lg overflow-hidden hover:bg-gray-650 transition-colors"
+                        >
+                          {/* Book Cover */}
+                          {item.cover_url ? (
+                            <img
+                              src={item.cover_url}
+                              alt={bookTitle}
+                              className="w-full h-64 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-64 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                              <BookOpen className="w-16 h-16 text-white opacity-50" />
+                            </div>
+                          )}
+
+                          {/* Book Info */}
+                          <div className="p-4">
+                            <h3 className="font-semibold text-white mb-1 line-clamp-2 text-sm">
+                              {bookTitle}
+                            </h3>
+                            <p className="text-xs text-gray-400 mb-2 line-clamp-1">
+                              {bookAuthor}
+                            </p>
+
+                            {/* Rating */}
+                            {item.rating && (
+                              <div className="flex items-center gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-3 h-3 ${
+                                      star <= item.rating!
+                                        ? 'text-yellow-400 fill-yellow-400'
+                                        : 'text-gray-600'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Review */}
+                            {item.review && (
+                              <p className="text-xs text-gray-300 line-clamp-3 mt-2 italic">
+                                "{item.review}"
+                              </p>
+                            )}
+
+                            {/* Status Badge */}
+                            <div className="mt-3">
+                              <span className="inline-block px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">
+                                {item.status === 'read' && '✅ Read'}
+                                {item.status === 'reading' && '📖 Reading'}
+                                {item.status === 'want-to-read' && '📚 Want to Read'}
+                                {item.status === 'favorites' && '⭐ Favorite'}
+                                {item.status === 'dnf' && '❌ DNF'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
