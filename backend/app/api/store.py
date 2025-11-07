@@ -294,7 +294,7 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail="You already own this book")
     
     # Create checkout session
-    result = StripeService.create_checkout_session(
+    result = await StripeService.create_checkout_session(
         store_item=store_item,
         user_id=current_user.id,
         db=db,
@@ -392,7 +392,7 @@ async def stripe_webhook(
     
     payload = await request.body()
     
-    result = StripeService.handle_webhook(
+    result = await StripeService.handle_webhook(
         payload=payload,
         signature=stripe_signature,
         db=db

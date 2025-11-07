@@ -8,7 +8,8 @@ from typing import Optional, Dict, Any
 from decimal import Decimal
 from datetime import datetime
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException
 
 from app.models.store import StoreItem, Purchase, PurchaseStatus, AuthorEarnings
@@ -27,10 +28,10 @@ class StripeService:
     """Service for handling Stripe payment operations"""
     
     @staticmethod
-    def create_checkout_session(
+    async def create_checkout_session(
         store_item: StoreItem,
         user_id: int,
-        db: Session,
+        db: AsyncSession,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None
     ) -> Dict[str, str]:
@@ -63,8 +64,8 @@ class StripeService:
                 status=PurchaseStatus.PENDING
             )
             db.add(purchase)
-            db.commit()
-            db.refresh(purchase)
+            await db.commit()
+            await db.refresh(purchase)
             
             # Default URLs
             if not success_url:
@@ -114,7 +115,7 @@ class StripeService:
             raise HTTPException(status_code=500, detail=f"Failed to create checkout: {str(e)}")
     
     @staticmethod
-    def handle_webhook(payload: bytes, signature: str, db: Session) -> Dict[str, Any]:
+    async def handle_webhook(payload: bytes, signature: str, db: AsyncSession) -> Dict[str, Any]:
         """
         Handle Stripe webhook events.
         
@@ -143,21 +144,21 @@ class StripeService:
         event_type = event['type']
         
         if event_type == 'checkout.session.completed':
-            return StripeService._handle_checkout_completed(event['data']['object'], db)
+            return await StripeService._handle_checkout_completed(event['data']['object'], db)
         
         elif event_type == 'payment_intent.succeeded':
-            return StripeService._handle_payment_succeeded(event['data']['object'], db)
+            return await StripeService._handle_payment_succeeded(event['data']['object'], db)
         
         elif event_type == 'payment_intent.payment_failed':
-            return StripeService._handle_payment_failed(event['data']['object'], db)
+            return await StripeService._handle_payment_failed(event['data']['object'], db)
         
         elif event_type == 'charge.refunded':
-            return StripeService._handle_refund(event['data']['object'], db)
+            return await StripeService._handle_refund(event['data']['object'], db)
         
         return {'status': 'unhandled_event', 'type': event_type}
     
     @staticmethod
-    def _handle_checkout_completed(session: Dict, db: Session) -> Dict[str, Any]:
+    async def _handle_checkout_completed(session: Dict, db: AsyncSession) -> Dict[str, Any]:
         """Handle successful checkout session completion"""
         try:
             purchase_id = int(session['metadata']['purchase_id'])
@@ -165,7 +166,8 @@ class StripeService:
             store_item_id = int(session['metadata']['store_item_id'])
             
             # Get the purchase record
-            purchase = db.query(Purchase).filter(Purchase.id == purchase_id).first()
+            result = await db.execute(select(Purchase).where(Purchase.id == purchase_id))
+            purchase = result.scalar_one_or_none()
             if not purchase:
                 return {'status': 'error', 'message': 'Purchase not found'}
             
@@ -176,7 +178,8 @@ class StripeService:
             purchase.payment_method = session.get('payment_method_types', ['card'])[0]
             
             # Get store item
-            store_item = db.query(StoreItem).filter(StoreItem.id == store_item_id).first()
+            result = await db.execute(select(StoreItem).where(StoreItem.id == store_item_id))
+            store_item = result.scalar_one_or_none()
             if not store_item:
                 return {'status': 'error', 'message': 'Store item not found'}
             
@@ -194,7 +197,7 @@ class StripeService:
                 purchase_date=datetime.utcnow()
             )
             db.add(bookshelf_item)
-            db.flush()
+            await db.flush()
             
             # Link bookshelf item to purchase
             purchase.bookshelf_item_id = bookshelf_item.id
@@ -230,11 +233,12 @@ class StripeService:
                 db.add(earnings)
                 
                 # Update author stats
-                author = db.query(Author).filter(Author.id == store_item.author_id).first()
+                result = await db.execute(select(Author).where(Author.id == store_item.author_id))
+                author = result.scalar_one_or_none()
                 if author:
                     author.total_sales += 1
             
-            db.commit()
+            await db.commit()
             
             return {
                 'status': 'success',
@@ -244,41 +248,43 @@ class StripeService:
             }
             
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             return {'status': 'error', 'message': str(e)}
     
     @staticmethod
-    def _handle_payment_succeeded(payment_intent: Dict, db: Session) -> Dict[str, Any]:
+    async def _handle_payment_succeeded(payment_intent: Dict, db: AsyncSession) -> Dict[str, Any]:
         """Handle successful payment intent"""
         # Additional processing if needed
         return {'status': 'success', 'type': 'payment_succeeded'}
     
     @staticmethod
-    def _handle_payment_failed(payment_intent: Dict, db: Session) -> Dict[str, Any]:
+    async def _handle_payment_failed(payment_intent: Dict, db: AsyncSession) -> Dict[str, Any]:
         """Handle failed payment"""
         try:
             # Find purchase by payment intent ID
-            purchase = db.query(Purchase).filter(
-                Purchase.stripe_payment_intent_id == payment_intent['id']
-            ).first()
+            result = await db.execute(
+                select(Purchase).where(Purchase.stripe_payment_intent_id == payment_intent['id'])
+            )
+            purchase = result.scalar_one_or_none()
             
             if purchase:
                 purchase.status = PurchaseStatus.FAILED
-                db.commit()
+                await db.commit()
             
             return {'status': 'success', 'type': 'payment_failed'}
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             return {'status': 'error', 'message': str(e)}
     
     @staticmethod
-    def _handle_refund(charge: Dict, db: Session) -> Dict[str, Any]:
+    async def _handle_refund(charge: Dict, db: AsyncSession) -> Dict[str, Any]:
         """Handle refunded charge"""
         try:
             # Find purchase by charge ID
-            purchase = db.query(Purchase).filter(
-                Purchase.stripe_charge_id == charge['id']
-            ).first()
+            result = await db.execute(
+                select(Purchase).where(Purchase.stripe_charge_id == charge['id'])
+            )
+            purchase = result.scalar_one_or_none()
             
             if purchase:
                 purchase.status = PurchaseStatus.REFUNDED
@@ -286,18 +292,19 @@ class StripeService:
                 
                 # Optionally remove from bookshelf or mark as no longer accessible
                 if purchase.bookshelf_item_id:
-                    bookshelf_item = db.query(BookshelfItem).filter(
-                        BookshelfItem.id == purchase.bookshelf_item_id
-                    ).first()
+                    result = await db.execute(
+                        select(BookshelfItem).where(BookshelfItem.id == purchase.bookshelf_item_id)
+                    )
+                    bookshelf_item = result.scalar_one_or_none()
                     if bookshelf_item:
                         bookshelf_item.is_owned = False
                         bookshelf_item.epub_url = None  # Remove EPUB access
                 
-                db.commit()
+                await db.commit()
             
             return {'status': 'success', 'type': 'refunded'}
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             return {'status': 'error', 'message': str(e)}
     
     @staticmethod
