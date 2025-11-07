@@ -16,8 +16,6 @@ from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
 from app.models.store import StoreItem, StoreItemStatus
 from app.schemas.collaboration import ScholarshipDecision, ScholarshipRequestResponse
-from app.services.price_scraper import PriceScraper
-from app.services.pricing_engine import PricingEngine
 from decimal import Decimal
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -569,6 +567,10 @@ async def analyze_prices(
     This endpoint scrapes competitor prices and calculates optimal pricing
     but doesn't make any changes. Use this to preview what would happen.
     """
+    # Lazy import to avoid startup errors if packages not installed yet
+    from app.services.price_scraper import PriceScraper
+    from app.services.pricing_engine import PricingEngine
+    
     try:
         # Get store items to analyze
         if request.store_item_ids:
@@ -647,6 +649,10 @@ async def update_prices(
     3. Updates prices in database
     4. Returns detailed report
     """
+    # Lazy import to avoid startup errors if packages not installed yet
+    from app.services.price_scraper import PriceScraper
+    from app.services.pricing_engine import PricingEngine
+    
     try:
         # Get store items to update
         if request.store_item_ids:
@@ -761,6 +767,9 @@ async def get_minimum_price(
     
     This is the floor price that covers all costs plus minimum margin
     """
+    # Lazy import to avoid startup errors if packages not installed yet
+    from app.services.pricing_engine import PricingEngine
+    
     minimum = PricingEngine.calculate_minimum_price()
     costs = PricingEngine.calculate_platform_costs(minimum)
     
@@ -780,6 +789,9 @@ async def validate_price(
     """
     Validate if a price is acceptable and get detailed feedback
     """
+    # Lazy import to avoid startup errors if packages not installed yet
+    from app.services.pricing_engine import PricingEngine
+    
     result = PricingEngine.validate_price(Decimal(str(price)))
     
     return {
