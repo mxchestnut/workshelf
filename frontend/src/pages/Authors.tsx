@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Star, Heart, Search, BookOpen, Clock, TrendingUp } from 'lucide-react'
+import { Users, Star, Heart, Search, BookOpen, Clock, TrendingUp, Plus, X } from 'lucide-react'
 
 interface AuthorFollow {
   id: number
@@ -31,6 +31,10 @@ export default function Authors() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newAuthorName, setNewAuthorName] = useState('')
+  const [newAuthorStatus, setNewAuthorStatus] = useState('want-to-read')
+  const [addingAuthor, setAddingAuthor] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -145,6 +149,45 @@ export default function Authors() {
     }
   }
 
+  const addAuthor = async () => {
+    if (!newAuthorName.trim()) return
+
+    setAddingAuthor(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/authors`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          author_name: newAuthorName.trim(),
+          status: newAuthorStatus,
+          discovery_source: 'manual'
+        })
+      })
+
+      if (response.ok) {
+        setShowAddModal(false)
+        setNewAuthorName('')
+        setNewAuthorStatus('want-to-read')
+        loadAuthors()
+        loadStats()
+      } else {
+        const error = await response.json()
+        alert(error.detail || 'Failed to add author')
+      }
+    } catch (err) {
+      console.error('Failed to add author:', err)
+      alert('Failed to add author')
+    } finally {
+      setAddingAuthor(false)
+    }
+  }
+
   const filteredAuthors = authors.filter(author =>
     author.author_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -179,15 +222,93 @@ export default function Authors() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Users className="w-8 h-8 text-blue-600" />
-            My Authors
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Track your favorite authors and discover new voices
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Users className="w-8 h-8 text-blue-600" />
+              My Authors
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Track your favorite authors and discover new voices
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Author
+          </button>
         </div>
+
+        {/* Add Author Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Add Author</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Author Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newAuthorName}
+                    onChange={(e) => setNewAuthorName(e.target.value)}
+                    placeholder="e.g., Anne Rice"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addAuthor()
+                      }
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={newAuthorStatus}
+                    onChange={(e) => setNewAuthorStatus(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="want-to-read">Want to Read</option>
+                    <option value="reading">Reading</option>
+                    <option value="read">Read</option>
+                    <option value="favorites">Favorites</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addAuthor}
+                    disabled={addingAuthor || !newAuthorName.trim()}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {addingAuthor ? 'Adding...' : 'Add Author'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         {stats && (
