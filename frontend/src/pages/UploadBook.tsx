@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Upload, BookOpen, CheckCircle, AlertCircle, Loader2, Shield, FileText } from 'lucide-react'
+import { Upload, CheckCircle, AlertCircle, Loader2, Shield, FileText } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -18,7 +18,7 @@ export default function UploadBook() {
     copyright_holder: false,
     original_work: false,
   })
-  const [submissionId, setSubmissionId] = useState<number | null>(null)
+  const [_submissionId, setSubmissionId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [verificationScore, setVerificationScore] = useState<number | null>(null)
 
