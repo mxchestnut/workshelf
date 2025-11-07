@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, Upload, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, Upload, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, ShoppingCart } from 'lucide-react'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
 
@@ -229,6 +229,13 @@ export default function Bookshelf() {
               >
                 <Heart className="w-5 h-5" />
                 Authors
+              </button>
+              <button
+                onClick={() => window.location.href = '/store'}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-colors shadow-md"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Store
               </button>
               <button
                 onClick={() => window.location.href = '/upload-book'}
