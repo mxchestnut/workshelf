@@ -23,6 +23,7 @@ import { Community } from './pages/Community'
 import { Feed } from './pages/Feed'
 import { Profile } from './pages/Profile'
 import PublicProfile from './pages/PublicProfile'
+import Bookshelf from './pages/Bookshelf'
 import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
@@ -40,7 +41,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -71,6 +72,9 @@ function App() {
       loadUser()
     } else if (path === '/document') {
       setCurrentPage('document')
+      loadUser()
+    } else if (path === '/bookshelf') {
+      setCurrentPage('bookshelf')
       loadUser()
     } else if (path === '/' || path === '') {
       setCurrentPage('home')
@@ -136,6 +140,10 @@ function App() {
     if (currentPage === 'document') {
       return <Document />
     }
+    
+    if (currentPage === 'bookshelf') {
+      return <Bookshelf />
+    }
 
     // Home page tabs
     switch (activeTab) {
@@ -150,8 +158,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'public-profile') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'public-profile') {
     return renderContent()
   }
 
