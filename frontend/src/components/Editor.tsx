@@ -14,7 +14,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
 import Typography from '@tiptap/extension-typography'
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { 
   Bold, 
   Italic, 
@@ -53,7 +53,7 @@ export function Editor({
   const [immersiveMode, setImmersiveMode] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [saveTimeout, setSaveTimeout] = useState<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
     extensions: [
@@ -74,7 +74,7 @@ export function Editor({
         class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] px-8 py-6',
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: any }) => {
       const json = editor.getJSON()
       onContentChange(json)
       
