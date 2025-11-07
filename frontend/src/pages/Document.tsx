@@ -42,7 +42,8 @@ export function Document() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        window.location.href = '/'
+        setError('Please log in to edit documents')
+        setLoading(false)
         return
       }
 
@@ -54,7 +55,9 @@ export function Document() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          window.location.href = '/'
+          localStorage.removeItem('token')
+          setError('Please log in to edit documents')
+          setLoading(false)
           return
         }
         throw new Error('Failed to load document')
@@ -75,7 +78,8 @@ export function Document() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        window.location.href = '/'
+        setError('Please log in to create documents')
+        setLoading(false)
         return
       }
 

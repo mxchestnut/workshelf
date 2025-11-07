@@ -31,7 +31,8 @@ export function Documents() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        window.location.href = '/'
+        // No token - show empty state instead of redirecting
+        setDocuments([])
         return
       }
 
@@ -43,7 +44,9 @@ export function Documents() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          window.location.href = '/'
+          // Unauthorized - clear token and show empty state
+          localStorage.removeItem('token')
+          setDocuments([])
           return
         }
         throw new Error('Failed to load documents')

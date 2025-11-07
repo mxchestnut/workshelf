@@ -43,17 +43,14 @@ export function Feed() {
     const loadData = async () => {
       try {
         const currentUser = await authService.getCurrentUser()
-        if (!currentUser) {
-          window.location.href = '/'
-          return
-        }
         setUser(currentUser)
         
-        // Load feed posts
-        await loadFeed()
+        // Only load feed if we have a user
+        if (currentUser) {
+          await loadFeed()
+        }
       } catch (error) {
         console.error('Failed to load user:', error)
-        window.location.href = '/'
       } finally {
         setLoading(false)
       }
