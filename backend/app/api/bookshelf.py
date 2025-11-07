@@ -157,18 +157,30 @@ async def add_to_bookshelf(
     
     # Validate book item
     if item_data.item_type == 'book':
-        if not item_data.isbn or not item_data.title:
-            raise HTTPException(status_code=400, detail="isbn and title required for book items")
+        if not item_data.title:
+            raise HTTPException(status_code=400, detail="title required for book items")
         
-        # Check if already in bookshelf
-        result = await db.execute(
-            select(BookshelfItem).where(
-                BookshelfItem.user_id == user.id,
-                BookshelfItem.isbn == item_data.isbn
+        # Check if already in bookshelf by ISBN (if provided) or by title+author
+        if item_data.isbn:
+            result = await db.execute(
+                select(BookshelfItem).where(
+                    BookshelfItem.user_id == user.id,
+                    BookshelfItem.isbn == item_data.isbn
+                )
             )
-        )
-        if result.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="Book already in bookshelf")
+            if result.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Book already in bookshelf")
+        else:
+            # Check by title and author to avoid duplicates
+            result = await db.execute(
+                select(BookshelfItem).where(
+                    BookshelfItem.user_id == user.id,
+                    BookshelfItem.title == item_data.title,
+                    BookshelfItem.author == item_data.author
+                )
+            )
+            if result.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Book already in bookshelf")
     
     # Create bookshelf item
     bookshelf_item = BookshelfItem(
