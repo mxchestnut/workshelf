@@ -1,6 +1,6 @@
 # Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi==0.121.0
+uvicorn[standard]==0.38.0
 pydantic==2.10.6
 pydantic-settings==2.1.0
 email-validator==2.1.0
@@ -9,20 +9,19 @@ email-validator==2.1.0
 sqlalchemy[asyncio]==2.0.36
 asyncpg==0.30.0
 psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
-alembic==1.12.1
+alembic==1.14.1
 
 # Authentication & Security
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.4.0
 cryptography>=41.0.0
-pyasn1>=0.6.1
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+python-multipart==0.0.18
 
 # Payment Processing
 stripe==11.3.0
 
 # Price Scraping & Web Requests
-aiohttp==3.9.1
+aiohttp==3.12.14
 beautifulsoup4==4.12.2
 lxml==4.9.3
 
@@ -35,7 +34,7 @@ html2text==2020.1.16
 
 # Azure SDK
 azure-storage-blob==12.19.0
-azure-identity==1.15.0
+azure-identity==1.16.1
 
 # Testing
 pytest==7.4.3
@@ -44,4 +43,4 @@ httpx==0.25.2
 
 # Development
 python-dotenv==1.0.0
-requests==2.31.0  # For Keycloak setup script
+requests==2.32.4  # For Keycloak setup script
