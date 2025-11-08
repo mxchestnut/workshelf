@@ -14,7 +14,7 @@ from fastapi import HTTPException
 
 from app.models.store import StoreItem, Purchase, PurchaseStatus, AuthorEarnings
 from app.models.bookshelf import BookshelfItem
-from app.models.authors import Author
+from app.models.author import Author
 
 
 # Initialize Stripe with secret key
