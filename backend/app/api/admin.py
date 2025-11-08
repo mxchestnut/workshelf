@@ -5,13 +5,14 @@ Secured via Keycloak authentication with is_staff check
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
+from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.auth import require_staff
-from app.models.collaboration import Group
+from app.models.collaboration import Group, GroupMember, GroupMemberRole
 from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
 from app.models.store import StoreItem, StoreItemStatus
@@ -211,6 +212,32 @@ async def get_pending_group_subdomains(
     )
     groups = result.scalars().all()
     
+    # Get member counts and owner info for all groups efficiently
+    group_ids = [group.id for group in groups]
+    
+    # Count members for each group
+    member_counts_result = await db.execute(
+        select(GroupMember.group_id, func.count(GroupMember.id))
+        .where(GroupMember.group_id.in_(group_ids))
+        .group_by(GroupMember.group_id)
+    )
+    member_counts = dict(member_counts_result.all())
+    
+    # Get owners (users with OWNER role) for each group
+    owners_result = await db.execute(
+        select(GroupMember)
+        .where(
+            GroupMember.group_id.in_(group_ids),
+            GroupMember.role == GroupMemberRole.OWNER
+        )
+        .options(joinedload(GroupMember.user))
+    )
+    owners_by_group = {
+        member.group_id: member.user.username 
+        for member in owners_result.scalars().unique().all()
+        if member.user
+    }
+    
     results = []
     for group in groups:
         results.append(GroupPendingResponse(
@@ -219,8 +246,8 @@ async def get_pending_group_subdomains(
             slug=group.slug,
             subdomain_requested=group.subdomain_requested,
             created_at=group.created_at,
-            member_count=0,  # TODO: Calculate member count when group_members table is available
-            owner_username=None  # TODO: Add owner lookup when GroupMemberRole enum exists
+            member_count=member_counts.get(group.id, 0),
+            owner_username=owners_by_group.get(group.id)
         ))
     
     return results

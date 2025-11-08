@@ -304,16 +304,66 @@ class CreatorEarningsService:
                 payout.paid_at = datetime.utcnow()
             
             elif payout.payout_method == "paypal":
-                # TODO: Implement PayPal payout
-                # For now, mark as processing (admin would handle manually)
+                # PayPal Payout Implementation
+                # PayPal payouts require manual processing or PayPal API integration
+                # For now, we mark as PROCESSING and provide details for admin
+                
+                # Get user info for payout details
+                user_result = await db.execute(
+                    select(User).where(User.id == earnings.user_id)
+                )
+                user = user_result.scalar_one_or_none()
+                
+                # Build detailed note for admin processing
+                payout_details = [
+                    "PayPal Payout Details:",
+                    f"User ID: {earnings.user_id}",
+                    f"Username: {user.username if user else 'N/A'}",
+                    f"Email: {user.email if user else 'N/A'}",
+                    f"Amount: ${payout.net_amount_cents / 100:.2f} USD",
+                    f"Request Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}",
+                    "",
+                    "Action Required: Process PayPal payout manually",
+                    "PayPal API integration pending - requires PayPal Business account setup"
+                ]
+                
                 payout.status = PayoutStatus.PROCESSING
-                payout.notes = (payout.notes or "") + "\nPayPal payout - requires manual processing"
+                payout.notes = "\n".join(payout_details)
+                
+                # TODO: Future enhancement - integrate PayPal Payouts API
+                # See: https://developer.paypal.com/docs/payouts/
+                # Requires: PayPal Business account, API credentials
             
             elif payout.payout_method == "bank_transfer":
-                # TODO: Implement bank transfer
-                # For now, mark as processing (admin would handle manually)
+                # Bank Transfer Implementation
+                # Bank transfers require manual processing or banking API integration (e.g., Plaid, Stripe)
+                # For now, we mark as PROCESSING and provide details for admin
+                
+                # Get user info for payout details
+                user_result = await db.execute(
+                    select(User).where(User.id == earnings.user_id)
+                )
+                user = user_result.scalar_one_or_none()
+                
+                # Build detailed note for admin processing
+                payout_details = [
+                    "Bank Transfer Payout Details:",
+                    f"User ID: {earnings.user_id}",
+                    f"Username: {user.username if user else 'N/A'}",
+                    f"Email: {user.email if user else 'N/A'}",
+                    f"Amount: ${payout.net_amount_cents / 100:.2f} USD",
+                    f"Request Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}",
+                    "",
+                    "Action Required: Process bank transfer manually",
+                    "Note: User must provide bank account details separately",
+                    "Future: Integrate with Stripe Connect for direct bank transfers"
+                ]
+                
                 payout.status = PayoutStatus.PROCESSING
-                payout.notes = (payout.notes or "") + "\nBank transfer - requires manual processing"
+                payout.notes = "\n".join(payout_details)
+                
+                # TODO: Future enhancement - use Stripe Connect for bank transfers
+                # Or integrate ACH/wire transfer API (e.g., Plaid, Dwolla)
             
             # Update earnings
             earnings.paid_out_cents += payout.amount_cents
