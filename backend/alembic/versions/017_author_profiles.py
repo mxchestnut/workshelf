@@ -1,7 +1,7 @@
 """add author wiki-style editing and follows
 
-Revision ID: 002
-Revises: 001
+Revision ID: 017
+Revises: 016_add_user_interests
 Create Date: 2025-11-07
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
-revision = '002'
-down_revision = '001'
+revision = '017'
+down_revision = '016_add_user_interests'
 branch_labels = None
 depends_on = None
 
