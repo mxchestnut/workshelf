@@ -62,7 +62,7 @@ class User(Base, TimestampMixin, TenantMixin):
     reading_lists = relationship("ReadingList", back_populates="user", cascade="all, delete-orphan")
     reading_progress = relationship("ReadingProgress", back_populates="user", cascade="all, delete-orphan")
     bookshelf_items = relationship("BookshelfItem", back_populates="user", cascade="all, delete-orphan")
-    author_follows = relationship("AuthorFollow", back_populates="user", cascade="all, delete-orphan")
+    # author_follows replaced by UserFollowsAuthor in author.py (consolidated system)
     epub_submissions = relationship("EpubSubmission", foreign_keys="EpubSubmission.user_id", back_populates="user", cascade="all, delete-orphan")
     store_items = relationship("StoreItem", foreign_keys="StoreItem.seller_id", back_populates="seller", cascade="all, delete-orphan")
     purchases = relationship("Purchase", back_populates="user", cascade="all, delete-orphan")

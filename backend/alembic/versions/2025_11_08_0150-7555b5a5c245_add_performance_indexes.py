@@ -76,14 +76,8 @@ def upgrade() -> None:
             unique=False
         )
     
-    # Index for store visibility filtering (e.g., "show only visible items")
-    if not conn.dialect.has_index(conn, 'store_items', 'idx_store_items_visibility'):
-        op.create_index(
-            'idx_store_items_visibility',
-            'store_items',
-            ['is_visible'],
-            unique=False
-        )
+    # Index for store status filtering (e.g., "show only active items")
+    # Note: status column already has an index from the model definition
     
     # Index for purchase status queries (e.g., "show completed purchases")
     if not conn.dialect.has_index(conn, 'purchases', 'idx_purchases_status'):
@@ -98,10 +92,9 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Remove performance indexes."""
     
-    op.drop_index('idx_purchases_status', table_name='purchases')
-    op.drop_index('idx_store_items_visibility', table_name='store_items')
-    op.drop_index('idx_store_items_author', table_name='store_items')
-    op.drop_index('idx_bookshelf_user_status', table_name='bookshelf_items')
-    op.drop_index('idx_user_follows_author', table_name='user_follows_authors')
-    op.drop_index('idx_purchases_user_item', table_name='purchases')
-    op.drop_index('idx_author_edits_status_created', table_name='author_edits')
+    op.drop_index('idx_purchases_status', 'purchases')
+    op.drop_index('idx_store_items_author', 'store_items')
+    op.drop_index('idx_bookshelf_user_status', 'bookshelf_items')
+    op.drop_index('idx_user_follows_author', 'user_follows_authors')
+    op.drop_index('idx_purchases_user_item', 'purchases')
+    op.drop_index('idx_author_edits_status_created', 'author_edits')

@@ -56,13 +56,25 @@ class AuthorEdit(Base):
 
 
 class UserFollowsAuthor(Base):
-    """Users can follow authors for new release notifications."""
+    """Users can follow authors for new release notifications.
+    
+    Consolidated from old AuthorFollow model - tracks user's relationship with author.
+    """
     __tablename__ = "user_follows_authors"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     author_id = Column(Integer, ForeignKey("authors.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Follow preferences
     notify_new_releases = Column(Boolean, default=True)
+    is_favorite = Column(Boolean, default=False, index=True)  # For recommendations
+    
+    # Reading status tracking (from old AuthorFollow)
+    status = Column(String(20), nullable=False, default="want-to-read", index=True)  # reading, read, want-to-read, favorites
+    notes = Column(Text, nullable=True)  # Private notes about this author
+    discovery_source = Column(String(100), nullable=True)  # e.g., "bookshelf", "ai-recommendation"
+    
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

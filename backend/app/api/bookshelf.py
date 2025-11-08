@@ -15,7 +15,7 @@ from anthropic import Anthropic
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.bookshelf import BookshelfItem, BookshelfItemType, BookshelfStatus
-from app.models.author_follows import AuthorFollow
+from app.models.author import Author, UserFollowsAuthor
 from app.models import User
 from app.services import user_service
 
@@ -271,29 +271,50 @@ async def add_to_bookshelf(
             user_obj.interests = current_interests + new_genres
             await db.commit()
     
-    # Auto-add author to author_follows if book has an author
+    # Auto-follow author if book has an author (using new consolidated system)
     if item_data.item_type == 'book' and item_data.author:
-        # Check if author is already followed
-        author_check = await db.execute(
-            select(AuthorFollow).where(
-                AuthorFollow.user_id == user.id,
-                AuthorFollow.author_name == item_data.author
+        # Get or create Author record
+        author_result = await db.execute(
+            select(Author).where(Author.name == item_data.author)
+        )
+        author = author_result.scalar_one_or_none()
+        
+        if not author:
+            # Create new author profile
+            author = Author(
+                name=item_data.author,
+                genres=item_data.genres,  # Store as JSONB
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(author)
+            await db.flush()  # Get the author ID
+        
+        # Check if user already follows this author
+        follow_check = await db.execute(
+            select(UserFollowsAuthor).where(
+                UserFollowsAuthor.user_id == user.id,
+                UserFollowsAuthor.author_id == author.id
             )
         )
-        existing_author = author_check.scalar_one_or_none()
+        existing_follow = follow_check.scalar_one_or_none()
         
-        if not existing_author:
-            # Auto-create author follow with "reading" status
-            author_follow = AuthorFollow(
+        if not existing_follow:
+            # Auto-create follow relationship with "reading" status
+            author_follow = UserFollowsAuthor(
                 user_id=user.id,
-                author_name=item_data.author,
-                genres=item_data.genres,  # Same genres as the book
+                author_id=author.id,
                 status='reading',  # They're reading this author's work
                 discovery_source='bookshelf',
-                is_favorite=False
+                is_favorite=False,
+                notify_new_releases=True
             )
             db.add(author_follow)
-            await db.commit()
+        
+        # Link bookshelf item to author
+        bookshelf_item.author_id = author.id
+        
+        await db.commit()
     
     # Convert to response (would need to fetch document data if document_id)
     return BookshelfItemResponse(
@@ -477,20 +498,27 @@ async def get_recommendations_by_favorite_authors(
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    # Get favorite authors
-    favorite_authors_result = await db.execute(
-        select(AuthorFollow).where(
-            AuthorFollow.user_id == user.id,
-            AuthorFollow.is_favorite == True
+    # Get favorite authors using new consolidated system
+    favorite_follows_result = await db.execute(
+        select(UserFollowsAuthor).where(
+            UserFollowsAuthor.user_id == user.id,
+            UserFollowsAuthor.is_favorite == True
         )
     )
-    favorite_authors = favorite_authors_result.scalars().all()
+    favorite_follows = favorite_follows_result.scalars().all()
     
-    if not favorite_authors:
+    if not favorite_follows:
         return {
             "message": "Mark some authors as favorites to get personalized recommendations!",
             "recommendations": []
         }
+    
+    # Load author data
+    author_ids = [follow.author_id for follow in favorite_follows]
+    authors_result = await db.execute(
+        select(Author).where(Author.id.in_(author_ids))
+    )
+    favorite_authors = authors_result.scalars().all()
     
     # Get books already in user's bookshelf (to exclude from recommendations)
     existing_books_result = await db.execute(
@@ -515,7 +543,7 @@ async def get_recommendations_by_favorite_authors(
                 response = await client.get(
                     "https://www.googleapis.com/books/v1/volumes",
                     params={
-                        "q": f"inauthor:{author.author_name}",
+                        "q": f"inauthor:{author.name}",  # Use author.name from Author table
                         "maxResults": 10,
                         "orderBy": "relevance"
                     },

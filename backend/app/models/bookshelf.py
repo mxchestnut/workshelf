@@ -57,7 +57,8 @@ class BookshelfItem(Base, TimestampMixin):
     # ========================================================================
     isbn = Column(String(20), nullable=True, index=True)  # ISBN-10 or ISBN-13
     title = Column(String(500), nullable=True)
-    author = Column(String(500), nullable=True)
+    author = Column(String(500), nullable=True)  # Keep for backwards compatibility
+    author_id = Column(Integer, ForeignKey('authors.id', ondelete='SET NULL'), nullable=True, index=True)  # Link to Author table
     cover_url = Column(String(1000), nullable=True)
     publisher = Column(String(255), nullable=True)
     publish_year = Column(Integer, nullable=True)

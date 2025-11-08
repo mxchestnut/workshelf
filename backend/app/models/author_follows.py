@@ -1,6 +1,22 @@
 """
-Author Follows Model
-Track authors/creators users are interested in or following
+Author Follows Model - DEPRECATED
+=================================
+
+⚠️ DEPRECATED: This model has been consolidated into the Author + UserFollowsAuthor system.
+See: app/models/author.py
+
+This file is kept temporarily for reference during migration.
+After migration a57f855a8f73 runs successfully, this file can be deleted.
+
+Migration Strategy:
+- AuthorFollow.author_name → Author.name (normalized, central table)
+- AuthorFollow.is_favorite → UserFollowsAuthor.is_favorite
+- AuthorFollow.status → UserFollowsAuthor.status
+- AuthorFollow.notes → UserFollowsAuthor.notes
+- AuthorFollow.discovery_source → UserFollowsAuthor.discovery_source
+
+OLD: Track authors/creators users are interested in or following (denormalized, per-user)
+NEW: Use Author table (normalized) + UserFollowsAuthor (relationship tracking)
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint, Index
 from sqlalchemy.dialects.postgresql import ARRAY
