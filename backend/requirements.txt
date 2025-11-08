@@ -19,7 +19,7 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
 
 # Payment Processing
-stripe==7.10.0
+stripe==11.3.0
 
 # Price Scraping & Web Requests
 aiohttp==3.9.1
