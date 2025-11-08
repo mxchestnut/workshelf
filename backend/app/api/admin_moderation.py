@@ -51,14 +51,11 @@ class ModerationStats(BaseModel):
 # Helper to check if user is admin
 def require_admin(current_user: User) -> User:
     """Verify that the current user is an admin."""
-    if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
-        # Check if user has admin role
-        if not hasattr(current_user, 'email') or not current_user.email:
-            raise HTTPException(status_code=403, detail="Admin access required")
-        
-        # For now, you can be admin - we'll add proper role checking later
-        # TODO: Check user roles table
-    
+    if not hasattr(current_user, 'is_staff') or not current_user.is_staff:
+        raise HTTPException(
+            status_code=403, 
+            detail="Admin access required. You must be a staff member to access this resource."
+        )
     return current_user
 
 

@@ -4,10 +4,12 @@ Endpoints for creator earnings and payouts
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Dict, Any
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
+from app.models.user import User
 from app.schemas.monetization import (
     CreatorEarningsResponse,
     PayoutRequest,
@@ -139,8 +141,8 @@ async def get_payout_history(
 
 # ==================== Admin Endpoints ====================
 
-@router.post("/admin/payout/{payout_id}/process")
-async def process_payout_admin(
+@router.post("/payouts/{payout_id}/process")
+async def process_payout(
     payout_id: int,
     current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -148,10 +150,19 @@ async def process_payout_admin(
     """
     Process a payout request (Admin only)
     
-    TODO: Add admin role check
+    Requires staff/admin privileges to process payouts.
     """
-    # TODO: Check if user is admin
-    # For now, anyone can process (should be restricted in production)
+    # Verify admin access
+    user_result = await db.execute(
+        select(User).where(User.keycloak_id == current_user.get("sub"))
+    )
+    user = user_result.scalar_one_or_none()
+    
+    if not user or not user.is_staff:
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access required. Only staff members can process payouts."
+        )
     
     result = await CreatorEarningsService.process_payout(
         db=db,
