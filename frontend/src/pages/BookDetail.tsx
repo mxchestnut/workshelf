@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   BookOpen, Star, Heart, ArrowLeft, Calendar, 
   User, Building2, Hash, FileText, Tag, ShoppingCart 
 } from 'lucide-react'
-import EpubReader from '../components/EpubReader'
+
+// Lazy load the EPUB reader (large dependency)
+const EpubReader = lazy(() => import('../components/EpubReader'))
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -637,13 +639,15 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
       {/* EPUB Reader Modal - Only for bookshelf items with EPUB */}
       {showReader && book?.epub_url && (
-        <EpubReader
-          epubUrl={book.epub_url}
-          bookTitle={book.title || 'Book'}
-          onClose={() => setShowReader(false)}
-          onProgressChange={saveReadingProgress}
-          initialLocation={book.last_location}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"><div className="text-white text-lg">Loading reader...</div></div>}>
+          <EpubReader
+            epubUrl={book.epub_url}
+            bookTitle={book.title || 'Book'}
+            onClose={() => setShowReader(false)}
+            onProgressChange={saveReadingProgress}
+            initialLocation={book.last_location}
+          />
+        </Suspense>
       )}
     </div>
   )

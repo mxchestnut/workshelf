@@ -150,6 +150,47 @@ async def get_current_user_id(
     return user["sub"]
 
 
+async def get_current_tenant(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> int:
+    """
+    Get the tenant ID for the current authenticated user
+    
+    Args:
+        current_user: Decoded JWT payload
+        db: Database session
+        
+    Returns:
+        Tenant ID
+        
+    Raises:
+        HTTPException: If user not found or has no tenant
+    """
+    from sqlalchemy import select
+    from app.models.user import User
+    
+    # Get user from database
+    result = await db.execute(
+        select(User).where(User.keycloak_id == current_user["sub"])
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if not user.tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User has no associated tenant"
+        )
+    
+    return user.tenant_id
+
+
 async def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
 ) -> Optional[Dict[str, Any]]:

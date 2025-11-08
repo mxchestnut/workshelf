@@ -59,7 +59,8 @@ def count_words(content: Union[str, dict, None]) -> int:
 async def create_document(
     session: AsyncSession,
     document_data: DocumentCreate,
-    owner_id: int
+    owner_id: int,
+    tenant_id: int
 ) -> Document:
     """
     Create a new document
@@ -68,6 +69,7 @@ async def create_document(
         session: Database session
         document_data: Document creation data
         owner_id: ID of the document owner
+        tenant_id: ID of the tenant
         
     Returns:
         Created document
@@ -82,7 +84,7 @@ async def create_document(
     
     document = Document(
         owner_id=owner_id,
-        tenant_id=1,  # TODO: Get from user's tenant
+        tenant_id=tenant_id,
         title=document_data.title,
         content=content_str,
         description=document_data.description,

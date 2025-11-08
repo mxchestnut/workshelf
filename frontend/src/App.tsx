@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   BookOpen, 
   FileText, 
@@ -25,11 +25,8 @@ import { Profile } from './pages/Profile'
 import PublicProfile from './pages/PublicProfile'
 import Bookshelf from './pages/Bookshelf'
 import Authors from './pages/Authors'
-import Author from './pages/Author'
-import AdminModeration from './pages/AdminModeration'
 import FreeBooks from './pages/FreeBooks'
 import UploadBook from './pages/UploadBook'
-import Store from './pages/Store'
 import StoreSuccess from './pages/StoreSuccess'
 import BookDetail from './pages/BookDetail'
 import { AuthCallback } from './pages/AuthCallback'
@@ -37,6 +34,11 @@ import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
 import HouseRules from './pages/HouseRules'
 import { authService, User } from './services/auth'
+
+// Lazy load large components
+const Author = lazy(() => import('./pages/Author'))
+const AdminModeration = lazy(() => import('./pages/AdminModeration'))
+const Store = lazy(() => import('./pages/Store'))
 
 interface HealthStatus {
   status: string
@@ -187,11 +189,19 @@ function App() {
     }
 
     if (currentPage === 'author-profile') {
-      return <Author />
+      return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading author profile...</div></div>}>
+          <Author />
+        </Suspense>
+      )
     }
 
     if (currentPage === 'admin-moderation') {
-      return <AdminModeration />
+      return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading moderation panel...</div></div>}>
+          <AdminModeration />
+        </Suspense>
+      )
     }
 
     if (currentPage === 'free-books') {
@@ -203,7 +213,11 @@ function App() {
     }
 
     if (currentPage === 'store') {
-      return <Store />
+      return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading store...</div></div>}>
+          <Store />
+        </Suspense>
+      )
     }
 
     if (currentPage === 'store-success') {

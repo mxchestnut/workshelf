@@ -37,7 +37,7 @@ async def create_document(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Create document
-    document = await document_service.create_document(db, document_data, user.id)
+    document = await document_service.create_document(db, document_data, user.id, user.tenant_id)
     
     return document
 
