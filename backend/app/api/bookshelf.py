@@ -5,6 +5,7 @@ Manage user's book collection (both Work Shelf documents and external books)
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -16,6 +17,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.bookshelf import BookshelfItem, BookshelfItemType, BookshelfStatus
 from app.models.author import Author, UserFollowsAuthor
+from app.models.document import Document
 from app.models import User
 from app.services import user_service
 
@@ -316,14 +318,27 @@ async def add_to_bookshelf(
         
         await db.commit()
     
-    # Convert to response (would need to fetch document data if document_id)
+    # Fetch document info if this is a document type
+    document_title = None
+    document_author = None
+    if bookshelf_item.item_type == 'document' and bookshelf_item.document_id:
+        doc_result = await db.execute(
+            select(Document).where(Document.id == bookshelf_item.document_id)
+            .options(joinedload(Document.owner))
+        )
+        document = doc_result.scalar_one_or_none()
+        if document:
+            document_title = document.title
+            document_author = document.owner.display_name if document.owner else None
+    
+    # Convert to response
     return BookshelfItemResponse(
         id=bookshelf_item.id,
         user_id=bookshelf_item.user_id,
         item_type=bookshelf_item.item_type,
         document_id=bookshelf_item.document_id,
-        document_title=None,  # TODO: Fetch from document if needed
-        document_author=None,
+        document_title=document_title,
+        document_author=document_author,
         isbn=bookshelf_item.isbn,
         title=bookshelf_item.title,
         author=bookshelf_item.author,
@@ -366,7 +381,9 @@ async def get_my_bookshelf(
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    query = select(BookshelfItem).where(BookshelfItem.user_id == user.id)
+    # Eager load documents with their owners for efficient fetching
+    query = select(BookshelfItem).where(BookshelfItem.user_id == user.id) \
+        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
     
     if status:
         query = query.where(BookshelfItem.status == status)
@@ -377,7 +394,7 @@ async def get_my_bookshelf(
     query = query.order_by(BookshelfItem.added_at.desc())
     
     result = await db.execute(query)
-    items = result.scalars().all()
+    items = result.scalars().unique().all()  # unique() needed with joinedload
     
     return [
         BookshelfItemResponse(
@@ -385,8 +402,8 @@ async def get_my_bookshelf(
             user_id=item.user_id,
             item_type=item.item_type,
             document_id=item.document_id,
-            document_title=None,  # TODO: Fetch from document
-            document_author=None,
+            document_title=item.document.title if item.document else None,
+            document_author=item.document.owner.display_name if item.document and item.document.owner else None,
             isbn=item.isbn,
             title=item.title,
             author=item.author,
@@ -626,6 +643,7 @@ async def get_bookshelf_item(
             BookshelfItem.id == item_id,
             BookshelfItem.user_id == user.id
         )
+        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
     )
     item = result.scalar_one_or_none()
     
@@ -637,8 +655,8 @@ async def get_bookshelf_item(
         user_id=item.user_id,
         item_type=item.item_type,
         document_id=item.document_id,
-        document_title=None,
-        document_author=None,
+        document_title=item.document.title if item.document else None,
+        document_author=item.document.owner.display_name if item.document and item.document.owner else None,
         isbn=item.isbn,
         title=item.title,
         author=item.author,
@@ -680,6 +698,7 @@ async def update_bookshelf_item(
             BookshelfItem.id == item_id,
             BookshelfItem.user_id == user.id
         )
+        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
     )
     item = result.scalar_one_or_none()
     
@@ -712,8 +731,8 @@ async def update_bookshelf_item(
         user_id=item.user_id,
         item_type=item.item_type,
         document_id=item.document_id,
-        document_title=None,
-        document_author=None,
+        document_title=item.document.title if item.document else None,
+        document_author=item.document.owner.display_name if item.document and item.document.owner else None,
         isbn=item.isbn,
         title=item.title,
         author=item.author,
@@ -834,7 +853,7 @@ async def get_public_bookshelf(
     query = select(BookshelfItem).where(
         BookshelfItem.user_id == user.id,
         BookshelfItem.review_public == True
-    )
+    ).options(joinedload(BookshelfItem.document).joinedload(Document.owner))
     
     if status:
         query = query.where(BookshelfItem.status == status)
@@ -845,7 +864,7 @@ async def get_public_bookshelf(
     query = query.order_by(BookshelfItem.added_at.desc())
     
     result = await db.execute(query)
-    items = result.scalars().all()
+    items = result.scalars().unique().all()
     
     return [
         BookshelfItemResponse(
@@ -853,8 +872,8 @@ async def get_public_bookshelf(
             user_id=item.user_id,
             item_type=item.item_type,
             document_id=item.document_id,
-            document_title=None,
-            document_author=None,
+            document_title=item.document.title if item.document else None,
+            document_author=item.document.owner.display_name if item.document and item.document.owner else None,
             isbn=item.isbn,
             title=item.title,
             author=item.author,
