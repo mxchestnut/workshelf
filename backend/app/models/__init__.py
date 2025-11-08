@@ -13,8 +13,7 @@ from app.models.folder import Folder
 from app.models.social import UserFollow, ShareLink, Notification, ActivityEvent
 from app.models.reading import Bookmark, ReadingList, ReadingListItem, ReadingProgress, Category
 from app.models.bookshelf import BookshelfItem  # Personal bookshelf (Goodreads-style)
-from app.models.authors import Author  # Author profiles
-from app.models.author_follows import AuthorFollow, AuthorFollowStatus  # Author tracking
+from app.models.author import Author, AuthorEdit, UserFollowsAuthor  # Wiki-style author profiles
 from app.models.epub_submission import EpubSubmission, VerificationLog, SubmissionStatus  # EPUB uploads
 from app.models.store import StoreItem, Purchase, AuthorEarnings, StoreItemStatus, PurchaseStatus  # WorkShelf Store
 from app.models.collaboration import (
@@ -78,8 +77,8 @@ __all__ = [
     "Category",
     "BookshelfItem",
     "Author",
-    "AuthorFollow",
-    "AuthorFollowStatus",
+    "AuthorEdit",
+    "UserFollowsAuthor",
     "EpubSubmission",
     "VerificationLog",
     "SubmissionStatus",
