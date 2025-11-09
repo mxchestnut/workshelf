@@ -12,7 +12,10 @@ import {
   Flag,
   TrendingUp,
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  BookOpen,
+  Settings,
+  AlertCircle
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -37,7 +40,8 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [managedGroups, setManagedGroups] = useState<Group[]>([])
-  const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation' | 'site-admin'>('overview')
+  const [isStaff, setIsStaff] = useState(false)
 
   useEffect(() => {
     loadUser()
@@ -59,9 +63,13 @@ export function AdminDashboard() {
 
       setUser(currentUser)
 
+      // Check if user is staff or group admin
+      const staffUser = currentUser.is_staff || false
+      setIsStaff(staffUser)
+
       // Check if user is a group admin
-      if (!currentUser.groups || currentUser.groups.length === 0) {
-        console.warn('[AdminDashboard] User is not a group admin')
+      if (!staffUser && (!currentUser.groups || currentUser.groups.length === 0)) {
+        console.warn('[AdminDashboard] User is not a group admin or staff')
         // Redirect to home or show error
         window.location.href = '/'
         return
@@ -185,6 +193,22 @@ export function AdminDashboard() {
                 Moderation
               </div>
             </button>
+            {/* Site Admin tab - only for staff */}
+            {isStaff && (
+              <button
+                onClick={() => setActiveTab('site-admin')}
+                className={`px-4 py-3 border-b-2 transition-colors ${
+                  activeTab === 'site-admin'
+                    ? 'border-[#B34B0C] text-white font-semibold'
+                    : 'border-transparent text-[#B3B2B0] hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Site Admin
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -323,6 +347,114 @@ export function AdminDashboard() {
               <Flag className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
               <p className="text-lg font-semibold text-white mb-2">No flagged content</p>
               <p style={{ color: '#B3B2B0' }}>All clear! No reports to review at this time.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Site Admin Tab - Staff Only */}
+        {activeTab === 'site-admin' && isStaff && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Site Administration</h2>
+              <a
+                href="http://100.124.184.58:8081"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors flex items-center gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                Open Keycloak Console
+              </a>
+            </div>
+
+            {/* Site-Wide Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                </div>
+                <p className="text-3xl font-bold text-white mb-1">--</p>
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Users</p>
+              </div>
+
+              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <BookOpen className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                </div>
+                <p className="text-3xl font-bold text-white mb-1">--</p>
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Books</p>
+              </div>
+
+              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                </div>
+                <p className="text-3xl font-bold text-white mb-1">{managedGroups.length}</p>
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Groups</p>
+              </div>
+
+              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <Shield className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                </div>
+                <p className="text-3xl font-bold text-white mb-1">--</p>
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Staff</p>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => console.log('Manage users')}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <Users className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">Manage All Users</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>View and manage user accounts</p>
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/groups'}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <Users className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">View All Groups</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Browse and manage all groups</p>
+                </button>
+
+                <button
+                  onClick={() => console.log('Global moderation')}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <Flag className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">Global Moderation</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Review all flagged content</p>
+                </button>
+
+                <button
+                  onClick={() => console.log('System settings')}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <Settings className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">System Settings</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Configure site-wide settings</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <h3 className="text-xl font-bold text-white mb-4">Recent Site Activity</h3>
+              <div className="text-center py-8">
+                <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
+                <p style={{ color: '#B3B2B0' }}>Activity feed coming soon</p>
+              </div>
             </div>
           </div>
         )}

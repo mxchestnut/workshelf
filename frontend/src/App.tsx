@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import './App.css'
 
+// Cache bust: 2025-11-09 14:00
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#37322E' }}>
