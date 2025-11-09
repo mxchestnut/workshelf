@@ -104,16 +104,16 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   </button>
 
                   <button 
-                    onClick={() => navigateTo('/store')}
+                    onClick={() => navigateTo('/studio')}
                     className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                      isActive('/store') 
+                      isActive('/studio') 
                         ? 'text-white font-medium' 
                         : 'text-white hover:bg-opacity-20'
                     }`}
-                    style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
+                    style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                   >
-                    <ShoppingBag className="w-5 h-5" />
-                    <span>Ebooks</span>
+                    <PenTool className="w-5 h-5" />
+                    <span>My Studio</span>
                   </button>
 
                   {/* Notifications */}
@@ -123,14 +123,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   >
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: '#B34B0C' }}></span>
-                  </button>
-
-                  {/* Profile Button */}
-                  <button 
-                    onClick={() => navigateTo('/me')}
-                    className="flex items-center gap-2 p-2 rounded-lg transition-colors hover:bg-opacity-20 text-white"
-                  >
-                    <UserCircle className="w-8 h-8" />
                   </button>
                 </>
               ) : (

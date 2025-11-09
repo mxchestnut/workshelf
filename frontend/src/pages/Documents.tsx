@@ -42,7 +42,7 @@ export function Documents() {
 
   const loadDocuments = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) {
         // No token - show empty state instead of redirecting
         setDocuments([])
@@ -58,7 +58,8 @@ export function Documents() {
       if (!response.ok) {
         if (response.status === 401) {
           // Unauthorized - clear token and show empty state
-          localStorage.removeItem('token')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
           setDocuments([])
           return
         }

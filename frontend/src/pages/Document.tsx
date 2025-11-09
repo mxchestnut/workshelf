@@ -40,7 +40,7 @@ export function Document() {
 
   const loadDocument = async (id: string) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) {
         setError('Please log in to edit documents')
         setLoading(false)
@@ -55,7 +55,8 @@ export function Document() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('token')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
           setError('Please log in to edit documents')
           setLoading(false)
           return
@@ -76,7 +77,7 @@ export function Document() {
 
   const createNewDocument = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) {
         setError('Please log in to create documents')
         setLoading(false)
@@ -119,7 +120,7 @@ export function Document() {
     if (!document) return
 
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents/${document.id}`, {
         method: 'PUT',
         headers: {
@@ -153,7 +154,7 @@ export function Document() {
     }
 
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents/${document.id}`, {
         method: 'DELETE',
         headers: {

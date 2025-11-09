@@ -112,6 +112,22 @@ export default function Bookshelf() {
       if (response.ok) {
         const data = await response.json()
         setBooks(data)
+      } else {
+        // Handle non-OK responses (don't try to parse as JSON if HTML error)
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json()
+          console.error('Bookshelf API error:', errorData)
+        } else {
+          console.error('Bookshelf API error:', response.status, response.statusText)
+        }
+        
+        // If unauthorized, clear token and redirect
+        if (response.status === 401) {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          window.location.href = '/'
+        }
       }
       setLoading(false)
     } catch (err) {
