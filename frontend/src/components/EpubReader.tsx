@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { ReactReader } from 'react-reader'
 import { 
   X, ChevronLeft, ChevronRight, Settings, 
-  Sun, Moon, ZoomIn, ZoomOut
+  Sun, Moon, ZoomIn, ZoomOut, Volume2, VolumeX, Pause, Play
 } from 'lucide-react'
 
 interface EpubReaderProps {
@@ -26,6 +26,35 @@ export default function EpubReader({
   const [fontSize, setFontSize] = useState(100)
   const [theme, setTheme] = useState<'light' | 'dark' | 'sepia'>('light')
   const renditionRef = useRef<any>(null)
+  
+  // Text-to-Speech state
+  const [isReading, setIsReading] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [readingSpeed, setReadingSpeed] = useState(1.0)
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices()
+      setAvailableVoices(voices)
+      // Select first English voice by default
+      const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0]
+      setSelectedVoice(englishVoice)
+    }
+
+    loadVoices()
+    window.speechSynthesis.onvoiceschanged = loadVoices
+  }, [])
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel()
+    }
+  }, [])
 
   const locationChanged = useCallback((epubcfi: string) => {
     setLocation(epubcfi)
@@ -87,6 +116,77 @@ export default function EpubReader({
     }
   }
 
+  // Text-to-Speech functions
+  const extractTextFromPage = (): string => {
+    if (!renditionRef.current) return ''
+    
+    try {
+      const iframe = document.querySelector('iframe')
+      if (!iframe?.contentDocument) return ''
+      
+      const body = iframe.contentDocument.body
+      return body.innerText || body.textContent || ''
+    } catch (error) {
+      console.error('Error extracting text:', error)
+      return ''
+    }
+  }
+
+  const startReading = () => {
+    const text = extractTextFromPage()
+    if (!text) {
+      alert('No text found on this page')
+      return
+    }
+
+    // Cancel any existing speech
+    window.speechSynthesis.cancel()
+
+    // Create new utterance
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = readingSpeed
+    utterance.pitch = 1
+    utterance.volume = 1
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+
+    utterance.onend = () => {
+      setIsReading(false)
+      setIsPaused(false)
+    }
+
+    utterance.onerror = (error) => {
+      console.error('Speech error:', error)
+      setIsReading(false)
+      setIsPaused(false)
+    }
+
+    utteranceRef.current = utterance
+    window.speechSynthesis.speak(utterance)
+    setIsReading(true)
+    setIsPaused(false)
+  }
+
+  const toggleReading = () => {
+    if (!isReading) {
+      startReading()
+    } else if (isPaused) {
+      window.speechSynthesis.resume()
+      setIsPaused(false)
+    } else {
+      window.speechSynthesis.pause()
+      setIsPaused(true)
+    }
+  }
+
+  const stopReading = () => {
+    window.speechSynthesis.cancel()
+    setIsReading(false)
+    setIsPaused(false)
+  }
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Top Bar */}
@@ -105,6 +205,39 @@ export default function EpubReader({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Read Aloud Controls */}
+          {!isReading ? (
+            <button
+              onClick={toggleReading}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-white font-medium"
+              title="Read aloud"
+            >
+              <Volume2 className="w-5 h-5" />
+              <span className="hidden sm:inline">Read Aloud</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleReading}
+                className="p-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                title={isPaused ? "Resume reading" : "Pause reading"}
+              >
+                {isPaused ? (
+                  <Play className="w-5 h-5 text-white" />
+                ) : (
+                  <Pause className="w-5 h-5 text-white" />
+                )}
+              </button>
+              <button
+                onClick={stopReading}
+                className="p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                title="Stop reading"
+              >
+                <VolumeX className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          )}
+
           {/* Font Size Controls */}
           <button
             onClick={() => changeFontSize(-10)}
@@ -200,7 +333,7 @@ export default function EpubReader({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="absolute top-16 right-4 bg-gray-900 rounded-lg shadow-2xl border border-gray-700 p-4 w-80 z-10">
+        <div className="absolute top-16 right-4 bg-gray-900 rounded-lg shadow-2xl border border-gray-700 p-4 w-80 z-10 max-h-[80vh] overflow-y-auto">
           <h3 className="text-white font-semibold mb-4">Reader Settings</h3>
           
           <div className="space-y-4">
@@ -256,6 +389,53 @@ export default function EpubReader({
                   <div className="w-5 h-5 mx-auto rounded-full bg-amber-600" />
                   <span className="text-xs text-amber-900 mt-1 block">Sepia</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Text-to-Speech Settings */}
+            <div className="pt-4 border-t border-gray-700">
+              <h4 className="text-gray-300 text-sm font-semibold mb-3">Read Aloud Settings</h4>
+              
+              {/* Reading Speed */}
+              <div className="mb-4">
+                <label className="text-gray-300 text-sm block mb-2">
+                  Reading Speed: {readingSpeed.toFixed(1)}x
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value={readingSpeed}
+                  onChange={(e) => setReadingSpeed(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Slower</span>
+                  <span>Faster</span>
+                </div>
+              </div>
+
+              {/* Voice Selection */}
+              <div>
+                <label className="text-gray-300 text-sm block mb-2">Voice</label>
+                <select
+                  value={selectedVoice?.name || ''}
+                  onChange={(e) => {
+                    const voice = availableVoices.find(v => v.name === e.target.value)
+                    setSelectedVoice(voice || null)
+                  }}
+                  className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700"
+                >
+                  {availableVoices.map((voice) => (
+                    <option key={voice.name} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-2">
+                  Voice quality depends on your device. iOS/Mac have the best voices.
+                </p>
               </div>
             </div>
           </div>
