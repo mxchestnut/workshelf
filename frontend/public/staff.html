@@ -68,17 +68,17 @@
         <div class="spinner"></div>
         <p class="note">
             If you're not redirected automatically,
-            <a href="http://localhost:8081/" id="manual-link">click here</a>.
+            <a href="http://100.124.184.58:8081/" id="manual-link">click here</a>.
             <br><br>
-            <small>Staff Only: Keycloak Admin Console (admin/admin)</small>
+            <small>Staff Only: Requires Tailscale connection. Login: admin/admin</small>
         </p>
     </div>
 
     <script>
         // Redirect after 2 seconds
-        // Updated to use localhost - Keycloak must be running locally
+        // Using Tailscale IP address for remote access
         setTimeout(function() {
-            window.location.href = 'http://localhost:8081/';
+            window.location.href = 'http://100.124.184.58:8081/';
         }, 2000);
     </script>
 </body>
