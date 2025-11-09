@@ -29,8 +29,25 @@ interface StoreBook {
   published_at?: string
 }
 
+interface FreeBook {
+  id: string
+  title: string
+  author: string
+  cover_url?: string
+  epub_url?: string
+  source: string
+  source_id: string
+  is_free: boolean
+  license: string
+  download_count: number
+  genres: string[]
+  language: string
+  description?: string
+}
+
 export default function Store() {
   const [books, setBooks] = useState<StoreBook[]>([])
+  const [freeBooks, setFreeBooks] = useState<FreeBook[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGenre, setSelectedGenre] = useState<string>('')
@@ -38,6 +55,7 @@ export default function Store() {
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
   const [user, setUser] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all')
 
   // Load user
   useEffect(() => {
@@ -64,6 +82,7 @@ export default function Store() {
 
   useEffect(() => {
     fetchBooks()
+    fetchFreeBooks()
   }, [searchQuery, selectedGenre, sortBy, priceRange])
 
   const fetchBooks = async () => {
@@ -89,6 +108,22 @@ export default function Store() {
     }
   }
 
+  const fetchFreeBooks = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/free-books/popular?limit=20`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setFreeBooks(data.results || [])
+      }
+    } catch (error) {
+      console.error('Failed to load free books:', error)
+    }
+  }
+
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedGenre('')
@@ -109,12 +144,45 @@ export default function Store() {
         background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
       }}>
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">WorkShelf Store</h1>
-          <p className="text-xl" style={{ color: '#B3B2B0' }}>Discover and purchase quality ebooks. Read instantly in our beautiful EPUB reader.</p>
+          <h1 className="text-5xl font-bold mb-4">eBooks</h1>
+          <p className="text-xl" style={{ color: '#B3B2B0' }}>Discover free classics and purchase quality ebooks. Read instantly in our beautiful EPUB reader.</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Tab Selector */}
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('all')}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'all' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
+          >
+            All Books
+          </button>
+          <button
+            onClick={() => setActiveTab('free')}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'free' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
+          >
+            Free Classics ({freeBooks.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('paid')}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'paid' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
+          >
+            Premium Books ({books.length})
+          </button>
+        </div>
         {/* Search and Filters */}
         <div className="rounded-xl shadow-lg p-6 mb-8" style={{ 
           backgroundColor: '#524944',
@@ -246,7 +314,7 @@ export default function Store() {
         </div>
 
         {/* Featured Books */}
-        {featuredBooks.length > 0 && !searchQuery && !selectedGenre && (
+        {(activeTab === 'all' || activeTab === 'paid') && featuredBooks.length > 0 && !searchQuery && !selectedGenre && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="w-6 h-6" style={{ color: '#B34B0C' }} />
@@ -261,7 +329,7 @@ export default function Store() {
         )}
 
         {/* Bestsellers */}
-        {bestsellers.length > 0 && !searchQuery && !selectedGenre && (
+        {(activeTab === 'all' || activeTab === 'paid') && bestsellers.length > 0 && !searchQuery && !selectedGenre && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="w-6 h-6" style={{ color: '#B34B0C' }} />
@@ -275,11 +343,27 @@ export default function Store() {
           </section>
         )}
 
+        {/* Free Classics */}
+        {(activeTab === 'all' || activeTab === 'free') && freeBooks.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <BookOpen className="w-6 h-6" style={{ color: '#B34B0C' }} />
+              <h2 className="text-3xl font-bold text-white">Free Classics from Project Gutenberg</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {freeBooks.slice(0, activeTab === 'free' ? freeBooks.length : 8).map(book => (
+                <FreeBookCard key={book.id} book={book} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* All Books / Search Results */}
-        <section>
-          <h2 className="text-3xl font-bold text-white mb-6">
-            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Books'}
-          </h2>
+        {(activeTab === 'all' || activeTab === 'paid') && (
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6">
+              {searchQuery ? `Search Results for "${searchQuery}"` : activeTab === 'paid' ? 'Premium Books' : 'All Premium Books'}
+            </h2>
           
           {loading ? (
             <div className="flex justify-center items-center py-20">
@@ -304,6 +388,7 @@ export default function Store() {
             </div>
           )}
         </section>
+        )}
       </div>
     </div>
   )
@@ -418,6 +503,114 @@ function BookCard({ book, featured }: BookCardProps) {
             <span className="text-sm font-bold" style={{ color: '#B34B0C' }}>
               {book.price_usd === 0 ? 'Free' : `$${book.price_usd.toFixed(2)}`}
             </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface FreeBookCardProps {
+  book: FreeBook
+}
+
+function FreeBookCard({ book }: FreeBookCardProps) {
+  const handleAddToShelf = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(
+        `${API_URL}/api/v1/free-books/add-to-shelf/${book.id}?status=want-to-read`,
+        {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        }
+      )
+
+      if (response.ok) {
+        alert(`"${book.title}" added to your bookshelf!`)
+      } else {
+        const error = await response.json()
+        alert(error.detail || 'Failed to add book')
+      }
+    } catch (error) {
+      console.error('Failed to add book:', error)
+      alert('Failed to add book to shelf')
+    }
+  }
+
+  return (
+    <div 
+      className="rounded-lg overflow-hidden transition-all duration-300 cursor-pointer hover:scale-105 border group"
+      style={{ 
+        backgroundColor: '#524944',
+        borderColor: '#6C6A68',
+        borderWidth: '1px'
+      }}
+    >
+      {/* Book Cover */}
+      <div className="relative aspect-[2/3]" style={{ 
+        background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)'
+      }}>
+        {book.cover_url ? (
+          <img 
+            src={book.cover_url} 
+            alt={book.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpen className="w-16 h-16" style={{ color: '#B3B2B0' }} />
+          </div>
+        )}
+        
+        {/* Free Badge */}
+        <div className="absolute top-2 left-2">
+          <span className="text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#B34B0C' }}>
+            FREE
+          </span>
+        </div>
+
+        {/* Add Button Overlay */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <button
+            onClick={handleAddToShelf}
+            className="px-4 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#B34B0C' }}
+          >
+            Add to Shelf
+          </button>
+        </div>
+      </div>
+
+      {/* Book Info */}
+      <div className="p-3">
+        <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2 text-left">
+          {book.title}
+        </h3>
+        <p className="text-xs mb-2 text-left" style={{ color: '#B3B2B0' }}>
+          {book.author}
+        </p>
+        
+        {/* Genres */}
+        {book.genres && book.genres.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {book.genres.slice(0, 2).map((genre, idx) => (
+              <span key={idx} className="text-xs px-1.5 py-0.5 rounded" style={{ 
+                backgroundColor: 'rgba(179, 75, 12, 0.2)',
+                color: '#B34B0C'
+              }}>
+                {genre.length > 15 ? genre.substring(0, 15) + '...' : genre}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Source */}
+        <div className="flex items-center justify-between text-xs" style={{ color: '#B3B2B0' }}>
+          <span>{book.source}</span>
+          {book.epub_url && (
+            <span className="font-medium" style={{ color: '#B34B0C' }}>EPUB</span>
           )}
         </div>
       </div>
