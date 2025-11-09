@@ -5,12 +5,14 @@ Handles JWT token validation and user authentication
 from typing import Optional, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
+from jose import jwt, JWTError, jwk
+from jose.backends import RSAKey
 import httpx
 from functools import lru_cache
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
+import json
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -23,7 +25,7 @@ class KeycloakAuth:
         self.server_url = settings.KEYCLOAK_SERVER_URL
         self.realm = settings.KEYCLOAK_REALM
         self.client_id = settings.KEYCLOAK_CLIENT_ID
-        self._public_key: Optional[str] = None
+        self._jwks: Optional[Dict] = None
     
     @property
     def realm_url(self) -> str:
@@ -35,40 +37,80 @@ class KeycloakAuth:
         """Get the JWKS URL for public keys"""
         return f"{self.realm_url}/protocol/openid-connect/certs"
     
-    async def get_public_key(self) -> str:
+    @property
+    def issuer(self) -> str:
+        """Get the expected token issuer"""
+        return self.realm_url
+    
+    async def get_jwks(self) -> Dict:
         """
-        Fetch Keycloak's public key for JWT verification
+        Fetch Keycloak's JWKS (JSON Web Key Set) for JWT verification
         Cached to avoid repeated requests
         """
-        if self._public_key:
-            return self._public_key
+        if self._jwks:
+            return self._jwks
         
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(self.certs_url)
                 response.raise_for_status()
-                keys = response.json()
+                self._jwks = response.json()
+                return self._jwks
                 
-                # Get the first key (Keycloak typically uses one active key)
-                if keys.get("keys"):
-                    # Convert JWK to PEM format (simplified - in production use python-jose's jwk_to_pem)
-                    # For now, we'll use the key directly
-                    self._public_key = keys["keys"][0]
-                    return self._public_key
-                
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Could not retrieve Keycloak public keys"
-                )
         except httpx.HTTPError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error connecting to Keycloak: {str(e)}"
             )
     
+    def clear_jwks_cache(self):
+        """Clear the cached JWKS (useful when keys are rotated)"""
+        self._jwks = None
+    
+    def get_signing_key(self, token: str, jwks: Dict) -> str:
+        """
+        Get the public key from JWKS that matches the token's kid (key ID)
+        
+        Args:
+            token: JWT token string
+            jwks: JSON Web Key Set from Keycloak
+            
+        Returns:
+            Public key in PEM format
+        """
+        try:
+            # Get the key ID from token header
+            unverified_header = jwt.get_unverified_header(token)
+            kid = unverified_header.get("kid")
+            
+            if not kid:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token missing 'kid' in header"
+                )
+            
+            # Find the matching key in JWKS
+            for key in jwks.get("keys", []):
+                if key.get("kid") == kid:
+                    # Convert JWK to RSA public key using python-jose
+                    public_key = RSAKey(key, algorithm='RS256')
+                    # Return the key in PEM format
+                    return public_key.to_pem().decode('utf-8')
+            
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Unable to find matching key for kid: {kid}"
+            )
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Error processing token key: {str(e)}"
+            )
+    
     async def verify_token(self, token: str) -> Dict[str, Any]:
         """
-        Verify and decode a JWT token from Keycloak
+        Verify and decode a JWT token from Keycloak with full signature verification
         
         Args:
             token: JWT token string
@@ -80,26 +122,28 @@ class KeycloakAuth:
             HTTPException: If token is invalid
         """
         try:
-            # Decode without verification first to get the algorithm
-            unverified = jwt.get_unverified_claims(token)
+            # Get JWKS from Keycloak
+            jwks = await self.get_jwks()
             
-            # For development, we can skip signature verification
-            # In production, you'd verify against Keycloak's public key
-            if settings.DEBUG:
-                # Development mode - decode without verification
-                payload = jwt.get_unverified_claims(token)
-            else:
-                # Production mode - verify signature
-                await self.get_public_key()
-                # Note: Full verification would require converting JWK to PEM
-                # and using jwt.decode with the public key
-                payload = jwt.get_unverified_claims(token)
+            # Get the public key for this specific token
+            public_key = self.get_signing_key(token, jwks)
             
-            # Validate token claims
-            if "exp" in payload:
-                # Token expiration is checked automatically by jose
-                pass
+            # Verify and decode the token with full validation
+            payload = jwt.decode(
+                token,
+                public_key,
+                algorithms=["RS256"],
+                audience=self.client_id,  # Verify audience matches our client
+                issuer=self.issuer,  # Verify issuer matches our realm
+                options={
+                    "verify_signature": True,
+                    "verify_exp": True,  # Verify expiration
+                    "verify_aud": True,  # Verify audience
+                    "verify_iss": True,  # Verify issuer
+                }
+            )
             
+            # Additional validation
             if "sub" not in payload:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -108,6 +152,18 @@ class KeycloakAuth:
             
             return payload
             
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        except jwt.JWTClaimsError as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token claims: {str(e)}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
