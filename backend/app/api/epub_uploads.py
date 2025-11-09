@@ -25,10 +25,40 @@ router = APIRouter(prefix="/epub-uploads", tags=["epub-uploads"])
 
 
 # ============================================================================
-# Schemas
+# Helper Functions - Authorization
 # ============================================================================
 
-class SubmissionCreate(BaseModel):
+async def require_moderator(
+    db: AsyncSession,
+    current_user: dict
+) -> User:
+    """
+    Verify that the current user has moderator/staff privileges.
+    
+    Args:
+        db: Database session
+        current_user: Current authenticated user from JWT
+        
+    Returns:
+        User object if authorized
+        
+    Raises:
+        HTTPException: 403 if user is not staff/moderator
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    if not user.is_staff:
+        raise HTTPException(
+            status_code=403,
+            detail="Moderator privileges required. Only staff members can perform this action."
+        )
+    
+    return user
+
+
+# ============================================================================
+# Schemas
+# ============================================================================class SubmissionCreate(BaseModel):
     """Create new EPUB submission"""
     title: str = Field(..., min_length=1, max_length=500)
     author_name: str = Field(..., min_length=1, max_length=200)
@@ -345,9 +375,14 @@ async def get_pending_reviews(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Get submissions requiring manual review (moderators only)"""
-    # TODO: Add proper role check for moderators
-    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    """
+    Get submissions requiring manual review (moderators only)
+    
+    Returns list of EPUB submissions awaiting moderation.
+    Only accessible to users with staff/moderator privileges.
+    """
+    # Verify moderator privileges
+    user = await require_moderator(db, current_user)
     
     result = await db.execute(
         select(EpubSubmission).where(
@@ -386,9 +421,25 @@ async def moderate_submission(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Approve or reject submission (moderators only)"""
-    # TODO: Add proper role check for moderators
-    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    """
+    Approve or reject an EPUB submission (moderators only)
+    
+    Allows staff/moderators to approve or reject EPUB submissions
+    after manual review. Sets moderator notes and timestamps.
+    
+    Args:
+        submission_id: ID of submission to moderate
+        action: ModeratorAction with action type and notes
+        
+    Returns:
+        Success message with action taken
+        
+    Raises:
+        403: If user is not a moderator
+        404: If submission not found
+    """
+    # Verify moderator privileges
+    user = await require_moderator(db, current_user)
     
     result = await db.execute(
         select(EpubSubmission).where(EpubSubmission.id == submission_id)
