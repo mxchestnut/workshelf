@@ -196,8 +196,8 @@ export default function Bookshelf() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading bookshelf...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
+        <div className="text-lg" style={{ color: 'white' }}>Loading bookshelf...</div>
       </div>
     )
   }
@@ -213,47 +213,52 @@ export default function Bookshelf() {
           }} 
         />
       ) : (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 pb-8">
+      <div className="pb-8" style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">My Bookshelf</h1>
-              <p className="text-purple-100">Track your reading journey</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Track your reading journey</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => window.location.href = '/authors'}
-                className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-white border-2 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(4px)' }}
               >
                 <Heart className="w-5 h-5" />
                 Authors
               </button>
               <button
                 onClick={() => window.location.href = '/store'}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-colors shadow-md"
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold transition-opacity hover:opacity-90 shadow-md"
+                style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}
               >
                 <ShoppingCart className="w-5 h-5" />
                 Store
               </button>
               <button
                 onClick={() => window.location.href = '/upload-book'}
-                className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#524944' }}
               >
                 <Upload className="w-5 h-5" />
                 Upload EPUB
               </button>
               <button
                 onClick={() => window.location.href = '/free-books'}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#524944', color: 'white' }}
               >
                 <BookOpen className="w-5 h-5" />
                 Free Books
               </button>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#524944', color: 'white' }}
               >
                 <Plus className="w-5 h-5" />
                 Add Book
@@ -264,32 +269,32 @@ export default function Bookshelf() {
           {/* Stats */}
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="text-3xl font-bold text-white">{stats.total_books}</div>
-                <div className="text-sm text-purple-100">Total Books</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Total Books</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="text-3xl font-bold text-white">{stats.currently_reading}</div>
-                <div className="text-sm text-purple-100">Reading</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Reading</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="text-3xl font-bold text-white">{stats.books_read}</div>
-                <div className="text-sm text-purple-100">Read</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Read</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="text-3xl font-bold text-white">{stats.want_to_read}</div>
-                <div className="text-sm text-purple-100">Want to Read</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Want to Read</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="text-3xl font-bold text-white">{stats.favorites}</div>
-                <div className="text-sm text-purple-100">Favorites</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Favorites</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
                 <div className="flex items-center gap-2 text-3xl font-bold text-white">
                   {stats.books_read_this_year}
                   <TrendingUp className="w-6 h-6" />
                 </div>
-                <div className="text-sm text-purple-100">This Year</div>
+                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>This Year</div>
               </div>
             </div>
           )}
@@ -301,78 +306,79 @@ export default function Bookshelf() {
         {/* Search and Tabs */}
         <div className="mb-8">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#B3B2B0' }} />
             <input
               type="text"
               placeholder="Search your books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+              className="w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none"
+              style={{ backgroundColor: '#524944', borderColor: '#6C6A68', color: 'white' }}
             />
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-2">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'all'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'all' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               All Books
             </button>
             <button
               onClick={() => setActiveTab('reading')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'reading'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'reading' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               <Clock className="w-4 h-4" />
               Currently Reading
             </button>
             <button
               onClick={() => setActiveTab('read')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'read'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'read' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               <BookMarked className="w-4 h-4" />
               Read
             </button>
             <button
               onClick={() => setActiveTab('want-to-read')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'want-to-read'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'want-to-read' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               <BookOpen className="w-4 h-4" />
               Want to Read
             </button>
             <button
               onClick={() => setActiveTab('favorites')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'favorites'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'favorites' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               <Heart className="w-4 h-4" />
               Favorites
             </button>
             <button
               onClick={() => setActiveTab('dnf')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'dnf'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'dnf' ? '#B34B0C' : '#524944',
+                color: 'white'
+              }}
             >
               <ThumbsDown className="w-4 h-4" />
               DNF

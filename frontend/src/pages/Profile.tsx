@@ -204,8 +204,8 @@ export function Profile() {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-          <p className="text-gray-400 mt-4">Loading profile...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#B34B0C' }}></div>
+          <p className="mt-4" style={{ color: '#B3B2B0' }}>Loading profile...</p>
         </div>
       </div>
     )
@@ -215,7 +215,7 @@ export function Profile() {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center py-12">
-          <p className="text-red-400">{error || 'Profile not found'}</p>
+          <p style={{ color: '#B34B0C' }}>{error || 'Profile not found'}</p>
         </div>
       </div>
     )
@@ -224,10 +224,11 @@ export function Profile() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Navigation Bar */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-700">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: '#6C6A68' }}>
         <button
           onClick={() => window.location.href = '/feed'}
-          className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
+          style={{ color: '#B3B2B0' }}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
@@ -235,7 +236,8 @@ export function Profile() {
         
         <button
           onClick={() => window.location.href = `/users/${profile.username}`}
-          className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
+          style={{ color: '#B3B2B0' }}
         >
           <ExternalLink className="w-4 h-4" />
           View Public Profile
@@ -245,19 +247,20 @@ export function Profile() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}>
             <User className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{profile.display_name}</h1>
-            <p className="text-gray-400">@{profile.username}</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'white' }}>{profile.display_name}</h1>
+            <p style={{ color: '#B3B2B0' }}>@{profile.username}</p>
           </div>
         </div>
 
         {!editing ? (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#B34B0C', color: 'white' }}
           >
             <Edit2 className="w-4 h-4" />
             Edit Profile
@@ -267,7 +270,8 @@ export function Profile() {
             <button
               onClick={handleCancel}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: '#6C6A68', color: 'white' }}
             >
               <X className="w-4 h-4" />
               Cancel
@@ -275,7 +279,8 @@ export function Profile() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: '#B34B0C', color: 'white' }}
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save Changes'}
@@ -300,27 +305,28 @@ export function Profile() {
       {/* Profile Form */}
       <div className="space-y-6">
         {/* Account Information */}
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Account Information</h2>
+        <div className="rounded-lg p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <h2 className="text-xl font-semibold mb-4" style={{ color: 'white' }}>Account Information</h2>
           
           <div className="space-y-4">
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Email
               </label>
               <input
                 type="email"
                 value={profile.email}
                 disabled
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed"
+                className="w-full px-4 py-2 border rounded-lg cursor-not-allowed"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: '#B3B2B0' }}
               />
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              <p className="text-xs mt-1" style={{ color: '#B3B2B0' }}>Email cannot be changed</p>
             </div>
 
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Username *
               </label>
               <input
@@ -328,13 +334,14 @@ export function Profile() {
                 value={formData.username}
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                 disabled={!editing}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
 
             {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Phone Number
               </label>
               <input
@@ -343,13 +350,14 @@ export function Profile() {
                 onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
                 disabled={!editing}
                 placeholder="+1234567890"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
 
             {/* Birth Year */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Birth Year
               </label>
               <input
@@ -358,16 +366,17 @@ export function Profile() {
                 onChange={(e) => setFormData(prev => ({ ...prev, birth_year: e.target.value }))}
                 disabled={!editing}
                 placeholder="1990"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
           </div>
         </div>
 
         {/* Interests */}
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Your Interests</h2>
-          <p className="text-gray-400 text-sm mb-4">
+        <div className="rounded-lg p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <h2 className="text-xl font-semibold mb-4" style={{ color: 'white' }}>Your Interests</h2>
+          <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
             Select interests from active groups to get better recommendations
           </p>
           
@@ -375,18 +384,24 @@ export function Profile() {
             {availableInterests.map((interest: string) => (
               <label
                 key={interest}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
                   formData.interests.includes(interest)
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-500'
+                    ? 'opacity-100'
+                    : 'opacity-75 hover:opacity-100'
                 } ${!editing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{
+                  backgroundColor: formData.interests.includes(interest) ? 'rgba(179, 75, 12, 0.2)' : '#37322E',
+                  borderColor: formData.interests.includes(interest) ? '#B34B0C' : '#6C6A68',
+                  color: formData.interests.includes(interest) ? '#B34B0C' : '#B3B2B0'
+                }}
               >
                 <input
                   type="checkbox"
                   checked={formData.interests.includes(interest)}
                   onChange={() => toggleInterest(interest)}
                   disabled={!editing}
-                  className="w-4 h-4 text-amber-500 bg-gray-700 border-gray-600 rounded focus:ring-amber-500"
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: '#B34B0C' }}
                 />
                 <span className="text-sm capitalize">{interest.replace('-', ' ')}</span>
               </label>
@@ -395,13 +410,13 @@ export function Profile() {
         </div>
 
         {/* Profile Details */}
-        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Profile Details</h2>
+        <div className="rounded-lg p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <h2 className="text-xl font-semibold mb-4" style={{ color: 'white' }}>Profile Details</h2>
           
           <div className="space-y-4">
             {/* Bio */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Bio
               </label>
               <textarea
@@ -411,16 +426,17 @@ export function Profile() {
                 rows={4}
                 maxLength={500}
                 placeholder="Tell us about yourself..."
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50 resize-none"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50 resize-none"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs mt-1" style={{ color: '#B3B2B0' }}>
                 {formData.bio.length}/500 characters
               </p>
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Location
               </label>
               <input
@@ -429,13 +445,14 @@ export function Profile() {
                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                 disabled={!editing}
                 placeholder="City, Country"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
 
             {/* Website */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Website
               </label>
               <input
@@ -444,13 +461,14 @@ export function Profile() {
                 onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
                 disabled={!editing}
                 placeholder="https://yourwebsite.com"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
 
             {/* Twitter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
                 Twitter Handle
               </label>
               <input
@@ -459,7 +477,8 @@ export function Profile() {
                 onChange={(e) => setFormData(prev => ({ ...prev, twitter_handle: e.target.value }))}
                 disabled={!editing}
                 placeholder="@username"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white disabled:opacity-50"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
           </div>

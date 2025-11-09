@@ -104,32 +104,32 @@ export function Feed() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
         <div className="text-center">
-          <BookOpen className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-neutral">Loading your feed...</p>
+          <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: '#B34B0C' }} />
+          <p style={{ color: '#B3B2B0' }}>Loading your feed...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-lightest">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       {/* Header */}
-      <div className="bg-white border-b border-neutral-light sticky top-0 z-10">
+      <div className="border-b sticky top-0 z-10" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-neutral-darkest">Feed</h1>
+            <h1 className="text-2xl font-bold text-white">Feed</h1>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => window.location.href = '/me'}
-                className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors"
+                className="p-2 rounded-lg transition-colors text-white hover:bg-opacity-20"
                 title="Profile"
               >
-                <UserIcon className="w-5 h-5 text-neutral" />
+                <UserIcon className="w-5 h-5" />
               </button>
-              <button className="p-2 hover:bg-neutral-lightest rounded-lg transition-colors">
-                <Search className="w-5 h-5 text-neutral" />
+              <button className="p-2 rounded-lg transition-colors text-white hover:bg-opacity-20">
+                <Search className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -140,9 +140,10 @@ export function Feed() {
               onClick={() => setActiveTab('feed')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'feed'
-                  ? 'bg-primary text-white'
-                  : 'text-neutral hover:bg-neutral-lightest'
+                  ? 'text-white'
+                  : 'text-white hover:bg-opacity-20'
               }`}
+              style={activeTab === 'feed' ? { backgroundColor: '#B34B0C' } : {}}
             >
               Your Feed
             </button>
@@ -150,9 +151,10 @@ export function Feed() {
               onClick={() => setActiveTab('discover')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'discover'
-                  ? 'bg-primary text-white'
-                  : 'text-neutral hover:bg-neutral-lightest'
+                  ? 'text-white'
+                  : 'text-white hover:bg-opacity-20'
               }`}
+              style={activeTab === 'discover' ? { backgroundColor: '#B34B0C' } : {}}
             >
               Discover
             </button>
@@ -163,12 +165,12 @@ export function Feed() {
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
         {posts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-light p-12 text-center">
-            <BookOpen className="w-16 h-16 text-neutral-light mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-neutral-darkest mb-2">
+          <div className="rounded-lg shadow-sm border p-12 text-center" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
+            <h2 className="text-xl font-bold text-white mb-2">
               {activeTab === 'feed' ? 'Your feed is empty' : 'No posts to discover'}
             </h2>
-            <p className="text-neutral mb-6">
+            <p className="mb-6" style={{ color: '#B3B2B0' }}>
               {activeTab === 'feed' 
                 ? 'Join groups to see posts from your communities.' 
                 : 'Check back later for new posts from public groups.'}
@@ -176,7 +178,8 @@ export function Feed() {
             {activeTab === 'feed' && (
               <button 
                 onClick={() => setActiveTab('discover')}
-                className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition-colors"
+                className="text-white px-6 py-3 rounded-lg transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#B34B0C' }}
               >
                 Discover Groups
               </button>
@@ -187,28 +190,29 @@ export function Feed() {
             {posts.map((post) => (
               <article 
                 key={post.id}
-                className="bg-white rounded-lg shadow-sm border border-neutral-light p-6 hover:shadow-md transition-shadow"
+                className="rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
               >
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-primary font-semibold">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
+                      <span className="font-semibold" style={{ color: '#B34B0C' }}>
                         {post.author.display_name[0].toUpperCase()}
                       </span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-neutral-darkest">
+                        <span className="font-semibold text-white">
                           {post.author.display_name}
                         </span>
                         {post.author.username && (
-                          <span className="text-neutral text-sm">@{post.author.username}</span>
+                          <span className="text-sm" style={{ color: '#B3B2B0' }}>@{post.author.username}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-neutral">
+                      <div className="flex items-center gap-2 text-sm" style={{ color: '#B3B2B0' }}>
                         <span>in</span>
-                        <span className="font-medium text-primary hover:underline cursor-pointer">
+                        <span className="font-medium hover:underline cursor-pointer" style={{ color: '#B34B0C' }}>
                           {post.group.name}
                         </span>
                         <span>·</span>
@@ -220,7 +224,7 @@ export function Feed() {
                     </div>
                   </div>
                   {post.is_pinned && (
-                    <div className="flex items-center gap-1 text-primary text-sm">
+                    <div className="flex items-center gap-1 text-sm" style={{ color: '#B34B0C' }}>
                       <Pin className="w-4 h-4" />
                       <span>Pinned</span>
                     </div>
@@ -228,24 +232,24 @@ export function Feed() {
                 </div>
 
                 {/* Post Content */}
-                <h3 className="text-xl font-bold text-neutral-darkest mb-2">
+                <h3 className="text-xl font-bold text-white mb-2">
                   {post.title}
                 </h3>
-                <p className="text-neutral whitespace-pre-wrap mb-4">
+                <p className="whitespace-pre-wrap mb-4" style={{ color: '#B3B2B0' }}>
                   {post.content.length > 300 
                     ? post.content.substring(0, 300) + '...' 
                     : post.content}
                 </p>
 
                 {/* Post Actions */}
-                <div className="flex items-center gap-4 pt-4 border-t border-neutral-light">
-                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: '#6C6A68' }}>
+                  <button className="transition-colors text-sm font-medium text-white hover:opacity-80" style={{ color: '#B3B2B0' }}>
                     Reply
                   </button>
-                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                  <button className="transition-colors text-sm font-medium hover:opacity-80" style={{ color: '#B3B2B0' }}>
                     React
                   </button>
-                  <button className="text-neutral hover:text-primary transition-colors text-sm font-medium">
+                  <button className="transition-colors text-sm font-medium hover:opacity-80" style={{ color: '#B3B2B0' }}>
                     Share
                   </button>
                 </div>
@@ -256,8 +260,8 @@ export function Feed() {
 
         {/* User Info (for debugging) */}
         {user?.is_staff && (
-          <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <p className="text-sm text-indigo-800">
+          <div className="mt-6 border rounded-lg p-4" style={{ backgroundColor: 'rgba(179, 75, 12, 0.1)', borderColor: '#B34B0C' }}>
+            <p className="text-sm" style={{ color: '#B34B0C' }}>
               <strong>Staff Account:</strong> You have platform administration access
             </p>
           </div>

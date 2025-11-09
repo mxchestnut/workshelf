@@ -98,25 +98,26 @@ export function Documents() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-pulse text-neutral">Loading documents...</div>
+      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#37322E' }}>
+        <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-lightest">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       {/* Header */}
-      <div className="bg-white border-b border-neutral-light">
+      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-neutral-darkest mb-2">Documents</h1>
-              <p className="text-neutral">Your writing workspace</p>
+              <h1 className="text-3xl font-bold mb-2" style={{ color: 'white' }}>Documents</h1>
+              <p style={{ color: '#B3B2B0' }}>Your writing workspace</p>
             </div>
             <button
               onClick={createNewDocument}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#B34B0C', color: 'white' }}
             >
               <Plus className="w-5 h-5" />
               New Document
@@ -125,13 +126,18 @@ export function Documents() {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#B3B2B0' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search documents..."
-              className="w-full pl-10 pr-4 py-2 border border-neutral-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none"
+              style={{ 
+                backgroundColor: '#37322E', 
+                borderColor: '#6C6A68', 
+                color: 'white'
+              }}
             />
           </div>
         </div>
@@ -141,11 +147,11 @@ export function Documents() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {filteredDocuments.length === 0 ? (
           <div className="text-center py-16">
-            <FileText className="w-16 h-16 text-neutral-light mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-neutral-darkest mb-2">
+            <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
+            <h3 className="text-xl font-semibold mb-2" style={{ color: 'white' }}>
               {searchQuery ? 'No documents found' : 'No documents yet'}
             </h3>
-            <p className="text-neutral mb-6">
+            <p className="mb-6" style={{ color: '#B3B2B0' }}>
               {searchQuery
                 ? 'Try a different search term'
                 : 'Start writing your first document'}
@@ -153,7 +159,8 @@ export function Documents() {
             {!searchQuery && (
               <button
                 onClick={createNewDocument}
-                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                className="px-6 py-3 rounded-lg transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#B34B0C', color: 'white' }}
               >
                 Create Your First Document
               </button>
@@ -165,11 +172,15 @@ export function Documents() {
               <div
                 key={doc.id}
                 onClick={() => openDocument(doc.id)}
-                className="bg-white rounded-lg border border-neutral-light p-6 hover:shadow-lg hover:border-primary transition-all cursor-pointer group"
+                className="rounded-lg border p-6 transition-all cursor-pointer group hover:shadow-lg"
+                style={{ 
+                  backgroundColor: '#524944', 
+                  borderColor: '#6C6A68' 
+                }}
               >
                 {/* Title */}
                 <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-neutral-darkest mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="text-lg font-semibold mb-2 transition-colors line-clamp-2 group-hover:opacity-80" style={{ color: 'white' }}>
                     {doc.title}
                   </h3>
                   
@@ -180,7 +191,7 @@ export function Documents() {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 text-sm text-neutral mb-4">
+                <div className="flex items-center gap-4 text-sm mb-4" style={{ color: '#B3B2B0' }}>
                   <div className="flex items-center gap-1">
                     <TrendingUp className="w-4 h-4" />
                     <span>{doc.word_count.toLocaleString()} words</span>
@@ -192,8 +203,8 @@ export function Documents() {
                 </div>
 
                 {/* Footer */}
-                <div className="pt-4 border-t border-neutral-lightest">
-                  <p className="text-xs text-neutral">
+                <div className="pt-4 border-t" style={{ borderColor: '#6C6A68' }}>
+                  <p className="text-xs" style={{ color: '#B3B2B0' }}>
                     Updated {formatDate(doc.updated_at)}
                   </p>
                 </div>
