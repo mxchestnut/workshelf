@@ -13,6 +13,7 @@ from app.models.folder import Folder
 from app.models.social import UserFollow, ShareLink, Notification, ActivityEvent
 from app.models.reading import Bookmark, ReadingList, ReadingListItem, ReadingProgress, Category
 from app.models.bookshelf import BookshelfItem  # Personal bookshelf (Goodreads-style)
+from app.models.book_suggestion import BookSuggestion, SuggestionStatus  # User book suggestions
 from app.models.author import Author, AuthorEdit, UserFollowsAuthor  # Wiki-style author profiles
 from app.models.epub_submission import EpubSubmission, VerificationLog, SubmissionStatus  # EPUB uploads
 from app.models.store import StoreItem, Purchase, AuthorEarnings, StoreItemStatus, PurchaseStatus  # WorkShelf Store
@@ -69,13 +70,15 @@ __all__ = [
     "ShareLink",
     "Notification",
     "ActivityEvent",
-    # Phase 3: Reading
+    # Phase 3: Reading & Discovery
     "Bookmark",
     "ReadingList",
     "ReadingListItem",
     "ReadingProgress",
     "Category",
     "BookshelfItem",
+    "BookSuggestion",
+    "SuggestionStatus",
     "Author",
     "AuthorEdit",
     "UserFollowsAuthor",

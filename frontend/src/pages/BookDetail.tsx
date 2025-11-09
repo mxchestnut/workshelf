@@ -345,7 +345,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B34B0C]"></div>
       </div>
     )
   }
@@ -357,7 +357,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Book not found</h2>
           <button
             onClick={handleBack}
-            className="text-purple-600 hover:text-purple-700"
+            className="text-[#B34B0C] hover:text-[#8A3809]"
           >
             Return to {isStoreItem ? 'Store' : 'Bookshelf'}
           </button>
@@ -420,7 +420,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   {userOwnsBook && book?.epub_url && (
                     <button
                       onClick={() => setShowReader(true)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#B34B0C] text-white rounded-lg hover:bg-[#8A3809] transition-colors font-semibold"
                     >
                       <BookOpen className="w-5 h-5" />
                       {book.reading_progress && book.reading_progress > 0 
@@ -456,7 +456,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                               onClick={() => setSelectedFormat('ebook')}
                               className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all ${
                                 selectedFormat === 'ebook'
-                                  ? 'bg-white text-purple-600 shadow-sm'
+                                  ? 'bg-white text-[#B34B0C] shadow-sm'
                                   : 'text-gray-600 hover:text-gray-900'
                               }`}
                             >
@@ -468,7 +468,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                               onClick={() => setSelectedFormat('audiobook')}
                               className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all ${
                                 selectedFormat === 'audiobook'
-                                  ? 'bg-white text-purple-600 shadow-sm'
+                                  ? 'bg-white text-[#B34B0C] shadow-sm'
                                   : 'text-gray-600 hover:text-gray-900'
                               }`}
                             >
@@ -481,7 +481,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       <button
                         onClick={handlePurchase}
                         disabled={purchasing}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#B34B0C] to-pink-600 text-white rounded-lg font-semibold hover:from-[#8A3809] hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
                       >
                         <ShoppingCart className="w-5 h-5" />
                         {purchasing ? 'Processing...' : `Buy ${selectedFormat === 'audiobook' ? 'Audiobook' : 'Ebook'} - $${
@@ -493,11 +493,24 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       
                       <button
                         onClick={addToBookshelf}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-[#B34B0C] text-[#B34B0C] rounded-lg font-semibold hover:bg-orange-50 transition-colors"
                       >
                         <BookOpen className="w-5 h-5" />
                         Add to Bookshelf
                       </button>
+                      
+                      {/* Library Checkout - Opens Libby or WorldCat */}
+                      {book?.isbn && (
+                        <a
+                          href={`https://www.overdrive.com/search?q=${encodeURIComponent(book.title || '')}%20${encodeURIComponent(book.author || '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                        >
+                          <BookOpen className="w-5 h-5" />
+                          Check Out from Library (Libby)
+                        </a>
+                      )}
                     </>
                   )}
 
@@ -526,7 +539,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     <span>by </span>
                     <a 
                       href={`/store?author=${encodeURIComponent(author)}`}
-                      className="text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                      className="text-[#B34B0C] hover:text-[#8A3809] hover:underline font-medium"
                     >
                       {author}
                     </a>
@@ -574,7 +587,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     <div className="space-y-2">
                       {storeItem.audiobook_narrator && (
                         <div className="flex items-start gap-2 text-gray-700">
-                          <User className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <User className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
                             <span className="text-sm font-medium text-gray-600">Narrated by:</span>
                             <p className="text-base font-semibold">{storeItem.audiobook_narrator}</p>
@@ -583,7 +596,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       )}
                       {storeItem.audiobook_duration_minutes && (
                         <div className="flex items-start gap-2 text-gray-700">
-                          <FileText className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <FileText className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
                             <span className="text-sm font-medium text-gray-600">Duration:</span>
                             <p className="text-base font-semibold">
@@ -594,7 +607,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       )}
                       {storeItem.audiobook_file_format && (
                         <div className="flex items-start gap-2 text-gray-700">
-                          <FileText className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <FileText className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
                             <span className="text-sm font-medium text-gray-600">Format:</span>
                             <p className="text-base font-semibold uppercase">{storeItem.audiobook_file_format}</p>
@@ -659,7 +672,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                 {!userOwnsBook && storeItem && (
                   <div className="mb-6 p-4 bg-purple-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-3xl font-bold text-purple-600">
+                      <span className="text-3xl font-bold text-[#B34B0C]">
                         ${storeItem.final_price.toFixed(2)}
                       </span>
                       {storeItem.discount_percentage > 0 && (

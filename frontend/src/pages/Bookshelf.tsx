@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, Upload, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, ShoppingCart } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
@@ -266,30 +266,6 @@ export default function Bookshelf() {
                 Authors
               </button>
               <button
-                onClick={() => window.location.href = '/store'}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold transition-opacity hover:opacity-90 shadow-md"
-                style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                Store
-              </button>
-              <button
-                onClick={() => window.location.href = '/upload-book'}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#524944' }}
-              >
-                <Upload className="w-5 h-5" />
-                Upload EPUB
-              </button>
-              <button
-                onClick={() => window.location.href = '/free-books'}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#524944', color: 'white' }}
-              >
-                <BookOpen className="w-5 h-5" />
-                Free Books
-              </button>
-              <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#524944', color: 'white' }}
@@ -421,7 +397,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('recommendations')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 activeTab === 'recommendations'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-[#B34B0C] text-white'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
@@ -444,7 +420,7 @@ export default function Bookshelf() {
               </p>
               <button
                 onClick={() => window.location.href = '/authors'}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="px-6 py-3 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
               >
                 Go to Authors
               </button>
@@ -457,7 +433,7 @@ export default function Bookshelf() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {recommendations.map((rec, idx) => (
-                  <div key={idx} className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-purple-500 transition-all">
+                  <div key={idx} className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-[#B34B0C] transition-all">
                     {rec.cover_url && (
                       <img
                         src={rec.cover_url}
@@ -470,7 +446,7 @@ export default function Bookshelf() {
                       <p className="text-sm text-gray-400 mb-2">{rec.author}</p>
                       <div className="flex items-center gap-2 mb-3">
                         <Star className="w-4 h-4 text-yellow-400" />
-                        <span className="text-xs text-purple-300">{rec.reason}</span>
+                        <span className="text-xs text-orange-300">{rec.reason}</span>
                       </div>
                       {rec.description && (
                         <p className="text-xs text-gray-500 mb-3 line-clamp-3">{rec.description}</p>
@@ -489,7 +465,7 @@ export default function Bookshelf() {
                           // TODO: Add to bookshelf functionality
                           console.log('Add to bookshelf:', rec)
                         }}
-                        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                        className="w-full px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-medium hover:bg-[#8A3809] transition-colors"
                       >
                         Add to Bookshelf
                       </button>
@@ -513,7 +489,7 @@ export default function Bookshelf() {
             {!searchQuery && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                className="px-6 py-3 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
               >
                 Add Your First Book
               </button>
@@ -525,10 +501,10 @@ export default function Bookshelf() {
               <div
                 key={book.id}
                 onClick={() => setSelectedBookId(book.id.toString())}
-                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-purple-500 transition-all hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
+                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-[#B34B0C] transition-all hover:shadow-lg hover:shadow-[#B34B0C]/20 cursor-pointer"
               >
                 {/* Book Cover */}
-                <div className="aspect-[2/3] bg-gradient-to-br from-purple-900 to-indigo-900 relative">
+                <div className="aspect-[2/3] bg-gradient-to-br from-[#524944] to-[#37322E] relative">
                   {book.cover_url ? (
                     <img
                       src={book.cover_url}
@@ -537,7 +513,7 @@ export default function Bookshelf() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <BookOpen className="w-16 h-16 text-purple-300 opacity-50" />
+                      <BookOpen className="w-16 h-16 text-orange-300 opacity-50" />
                     </div>
                   )}
                   {book.is_favorite && (

@@ -20,6 +20,7 @@ from app.api import (
     reading,
     reading_list,
     bookshelf,  # Personal bookshelf (Goodreads-style)
+    book_suggestions,  # Book suggestions from users
     authors,  # Author tracking (follows from books)
     free_books,  # Free legal ebooks (Gutenberg, Standard Ebooks)
     epub_uploads,  # Self-published EPUB uploads with verification
@@ -101,6 +102,7 @@ api_router.include_router(activity.router)
 api_router.include_router(reading.router)
 api_router.include_router(reading_list.router)
 api_router.include_router(bookshelf.router)  # Personal bookshelf
+api_router.include_router(book_suggestions.router)  # Book suggestions from users
 api_router.include_router(authors.router)  # Author tracking
 api_router.include_router(free_books.router)  # Free legal ebooks
 api_router.include_router(epub_uploads.router)  # Self-published EPUB uploads

@@ -33,8 +33,10 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([])
+  const [searchPerformed, setSearchPerformed] = useState(false)
   const [adding, setAdding] = useState(false)
   const [enhancing, setEnhancing] = useState<number | null>(null)
+  const [suggesting, setSuggesting] = useState(false)
   
   // Recommendations state
   const [showRecommendations, setShowRecommendations] = useState(false)
@@ -63,6 +65,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
 
     setSearching(true)
     setSearchResults([])
+    setSearchPerformed(false)
 
     try {
       // Search Google Books API
@@ -93,14 +96,45 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
           }
         })
         setSearchResults(results)
-      } else {
-        alert('No books found. Try a different search or use manual entry.')
       }
+      setSearchPerformed(true)
     } catch (error) {
       console.error('Failed to search books:', error)
       alert('Failed to search for books. Please try manual entry.')
     } finally {
       setSearching(false)
+    }
+  }
+
+  const handleSuggestBook = async () => {
+    setSuggesting(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/book-suggestions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          reason: 'Not found in search results'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to submit suggestion')
+      }
+
+      alert('Thank you! Your book suggestion has been submitted for review by our staff.')
+      setSearchQuery('')
+      setSearchResults([])
+      setSearchPerformed(false)
+    } catch (error) {
+      console.error('Failed to suggest book:', error)
+      alert('Failed to submit suggestion. Please try again.')
+    } finally {
+      setSuggesting(false)
     }
   }
 
@@ -298,7 +332,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
+        <div className="sticky top-0 bg-gradient-to-r from-[#524944] to-[#37322E] text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
           <div className="flex items-center gap-2">
             <BookOpen className="w-6 h-6" />
             <h2 className="text-xl font-bold">Add Book to Shelf</h2>
@@ -318,7 +352,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
               onClick={() => setSearchMode('search')}
               className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
                 searchMode === 'search'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-[#B34B0C] shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -329,7 +363,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
               onClick={() => setSearchMode('manual')}
               className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
                 searchMode === 'manual'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-[#B34B0C] shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -355,12 +389,12 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     placeholder="ISBN, title, author, or keywords..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={searching || !searchQuery.trim()}
-                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                    className="px-6 py-2 bg-[#B34B0C] text-white rounded-lg hover:bg-[#8A3809] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                   >
                     {searching ? (
                       <>
@@ -449,7 +483,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                         <button
                           onClick={() => handleEnhanceBook(book, index)}
                           disabled={enhancing === index}
-                          className="w-full mt-2 px-4 py-2 bg-purple-100 text-purple-700 border-2 border-purple-300 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm font-medium"
+                          className="w-full mt-2 px-4 py-2 bg-orange-50 text-[#B34B0C] border-2 border-[#B34B0C]/30 rounded-lg hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm font-medium"
                         >
                           {enhancing === index ? (
                             <>
@@ -477,9 +511,53 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                 </div>
               )}
 
+              {/* No Results - Show Suggest Book */}
+              {searchPerformed && searchResults.length === 0 && !searching && (
+                <div className="mt-4 p-6 bg-orange-50 border-2 border-[#B34B0C]/30 rounded-lg">
+                  <div className="text-center">
+                    <BookOpen className="w-12 h-12 text-[#B34B0C] mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No books found for "{searchQuery}"
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      We couldn't find any books matching your search. You can:
+                    </p>
+                    <div className="space-y-2">
+                      <button
+                        onClick={handleSuggestBook}
+                        disabled={suggesting}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors disabled:opacity-50"
+                      >
+                        {suggesting ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Submitting Suggestion...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-5 h-5" />
+                            Suggest This Book to Staff
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setSearchMode('manual')}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-[#B34B0C] text-[#B34B0C] rounded-lg font-semibold hover:bg-orange-50 transition-colors"
+                      >
+                        <Plus className="w-5 h-5" />
+                        Add Book Manually
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-3">
+                      Book suggestions are reviewed by staff and added to our library if approved.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Recommendations Section */}
               {showRecommendations && lastAddedBook && (
-                <div className="mt-6 border-t-2 border-purple-200 pt-6">
+                <div className="mt-6 border-t-2 border-[#B34B0C]/30 pt-6">
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
                       ✨ Book Added Successfully!
@@ -489,19 +567,19 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                     </p>
                   </div>
 
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-[#524944] mb-2 flex items-center gap-2">
                       <BookOpen className="w-5 h-5" />
                       More by {lastAddedBook.author}
                     </h4>
                     {loadingRecommendations ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
+                        <Loader2 className="w-6 h-6 text-[#B34B0C] animate-spin" />
                       </div>
                     ) : recommendedBooks.length > 0 ? (
                       <div className="space-y-3 max-h-[400px] overflow-y-auto">
                         {recommendedBooks.map((book, index) => (
-                          <div key={index} className="bg-white rounded-lg p-3 border border-purple-100">
+                          <div key={index} className="bg-white rounded-lg p-3 border border-[#B34B0C]/20">
                             <div className="flex gap-3">
                               {book.cover_url ? (
                                 <img
@@ -524,7 +602,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                                 {book.genres && book.genres.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-1">
                                     {book.genres.slice(0, 2).map((genre, gidx) => (
-                                      <span key={gidx} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">
+                                      <span key={gidx} className="px-2 py-0.5 bg-orange-100 text-[#B34B0C] text-xs rounded">
                                         {genre}
                                       </span>
                                     ))}
@@ -535,7 +613,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                             <button
                               onClick={() => handleAddFromSearch(book)}
                               disabled={adding}
-                              className="w-full mt-2 px-3 py-1.5 bg-purple-600 text-white rounded text-xs font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-1"
+                              className="w-full mt-2 px-3 py-1.5 bg-[#B34B0C] text-white rounded text-xs font-medium hover:bg-[#8A3809] disabled:opacity-50 flex items-center justify-center gap-1"
                             >
                               {adding ? (
                                 <>
@@ -600,7 +678,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Book title"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                   required
                 />
               </div>
@@ -615,7 +693,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.author}
                   onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                   placeholder="Author name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                   required
                 />
               </div>
@@ -630,7 +708,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.isbn}
                   onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
                   placeholder="ISBN-10 or ISBN-13"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                 />
               </div>
 
@@ -642,7 +720,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                 >
                   <option value="want-to-read">📚 Want to Read</option>
                   <option value="reading">📖 Currently Reading</option>
@@ -663,7 +741,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.rating}
                   onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
                   placeholder="Optional rating"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                 />
               </div>
 
@@ -677,7 +755,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.cover_url}
                   onChange={(e) => setFormData({ ...formData, cover_url: e.target.value })}
                   placeholder="https://example.com/cover.jpg"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                 />
               </div>
 
@@ -692,7 +770,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                     value={formData.publisher}
                     onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
                     placeholder="Publisher"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -706,7 +784,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                     value={formData.publish_year}
                     onChange={(e) => setFormData({ ...formData, publish_year: e.target.value })}
                     placeholder="2024"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -722,7 +800,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   value={formData.page_count}
                   onChange={(e) => setFormData({ ...formData, page_count: e.target.value })}
                   placeholder="Number of pages"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent"
                 />
               </div>
 
@@ -736,7 +814,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Book description or synopsis"
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B34B0C] focus:border-transparent resize-none"
                 />
               </div>
 
@@ -744,7 +822,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
               <button
                 type="submit"
                 disabled={adding}
-                className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors font-medium"
+                className="w-full px-4 py-3 bg-[#B34B0C] text-white rounded-lg hover:bg-[#8A3809] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors font-medium"
               >
                 {adding ? (
                   <>
