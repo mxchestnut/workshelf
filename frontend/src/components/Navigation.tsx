@@ -223,13 +223,13 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/documents')}
+                  onClick={() => navigateTo('/studio')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/documents')
+                    isActive('/studio')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/documents') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <FileText className="w-5 h-5" />
                   <span>Studio</span>
