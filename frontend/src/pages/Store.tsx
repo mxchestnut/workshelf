@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles } from 'lucide-react'
+import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles, Library, ExternalLink } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+interface LibraryAvailability {
+  openLibrary: boolean
+  openLibraryUrl?: string
+  openLibraryBorrowUrl?: string
+}
 
 interface StoreBook {
   id: number
@@ -27,6 +33,7 @@ interface StoreBook {
   is_bestseller: boolean
   is_new_release: boolean
   published_at?: string
+  libraryAvailability?: LibraryAvailability
 }
 
 interface FreeBook {
@@ -100,11 +107,50 @@ export default function Store() {
       if (!response.ok) throw new Error('Failed to fetch books')
       
       const data = await response.json()
-      setBooks(data)
+      
+      // Check library availability for each book
+      const booksWithLibrary = await Promise.all(
+        data.map(async (book: StoreBook) => {
+          const availability = await checkLibraryAvailability(book.isbn, book.title, book.author_name)
+          return { ...book, libraryAvailability: availability }
+        })
+      )
+      
+      setBooks(booksWithLibrary)
     } catch (error) {
       console.error('Error fetching books:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Check Open Library availability
+  const checkLibraryAvailability = async (isbn: string | undefined, _title: string, _author: string): Promise<LibraryAvailability> => {
+    if (!isbn) {
+      return { openLibrary: false }
+    }
+
+    try {
+      // Check Open Library API
+      const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`)
+      const data = await response.json()
+      const bookData = data[`ISBN:${isbn}`]
+      
+      if (bookData) {
+        // Check if borrowing is available
+        const borrowUrl = `https://openlibrary.org/borrow/ia/${isbn}`
+        
+        return {
+          openLibrary: true,
+          openLibraryUrl: bookData.url || `https://openlibrary.org/isbn/${isbn}`,
+          openLibraryBorrowUrl: borrowUrl
+        }
+      }
+      
+      return { openLibrary: false }
+    } catch (error) {
+      console.error('Error checking library availability:', error)
+      return { openLibrary: false }
     }
   }
 
@@ -405,6 +451,20 @@ function BookCard({ book, featured }: BookCardProps) {
     window.location.href = `/book/store-${book.id}`
   }
 
+  const handleBorrowClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (book.libraryAvailability?.openLibraryBorrowUrl) {
+      window.open(book.libraryAvailability.openLibraryBorrowUrl, '_blank')
+    }
+  }
+
+  const handleLocalLibraryClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // Search Libby for this book
+    const libbyUrl = `https://libbyapp.com/search/instant-digital/search?query=${encodeURIComponent(book.title)}`
+    window.open(libbyUrl, '_blank')
+  }
+
   return (
     <div 
       onClick={handleCardClick}
@@ -433,6 +493,12 @@ function BookCard({ book, featured }: BookCardProps) {
         
         {/* Badges */}
         <div className="absolute top-2 right-2 flex flex-col gap-1">
+          {book.libraryAvailability?.openLibrary && (
+            <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Library className="w-3 h-3" />
+              Borrow
+            </span>
+          )}
           {book.is_featured && (
             <span className="text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#B34B0C' }}>
               Featured
@@ -492,18 +558,49 @@ function BookCard({ book, featured }: BookCardProps) {
           </div>
         )}
 
-        {/* Price */}
-        <div>
-          {book.discount_percentage > 0 ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold" style={{ color: '#B34B0C' }}>${book.final_price.toFixed(2)}</span>
-              <span className="text-xs line-through" style={{ color: '#6C6A68' }}>${book.price_usd.toFixed(2)}</span>
-            </div>
-          ) : (
-            <span className="text-sm font-bold" style={{ color: '#B34B0C' }}>
-              {book.price_usd === 0 ? 'Free' : `$${book.price_usd.toFixed(2)}`}
-            </span>
+        {/* Library & Purchase Options */}
+        <div className="space-y-2 mt-3">
+          {/* Open Library Borrow Button */}
+          {book.libraryAvailability?.openLibrary && (
+            <button
+              onClick={handleBorrowClick}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Library className="w-3 h-3" />
+              Borrow from Open Library
+            </button>
           )}
+
+          {/* Check Local Library Button */}
+          <button
+            onClick={handleLocalLibraryClick}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors"
+            style={{ 
+              backgroundColor: 'rgba(37, 99, 235, 0.8)',
+              color: '#FFFFFF'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.8)'}
+          >
+            <ExternalLink className="w-3 h-3" />
+            Check Local Library
+          </button>
+
+          {/* Price - now styled as purchase button */}
+          <div className="flex items-center justify-center px-3 py-2 rounded-lg" style={{ 
+            backgroundColor: '#B34B0C',
+          }}>
+            {book.discount_percentage > 0 ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">${book.final_price.toFixed(2)}</span>
+                <span className="text-xs line-through" style={{ color: '#FED7AA' }}>${book.price_usd.toFixed(2)}</span>
+              </div>
+            ) : (
+              <span className="text-sm font-bold text-white">
+                {book.price_usd === 0 ? 'Free' : `Buy for $${book.price_usd.toFixed(2)}`}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
