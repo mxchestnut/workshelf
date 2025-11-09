@@ -138,9 +138,9 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-900">
+      <div className="min-h-screen bg-gray-900">
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center justify-center h-96">
           <div className="text-gray-400">Loading your workspace...</div>
         </div>
       </div>
@@ -148,15 +148,16 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="home" />
       
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Hero Section */}
           <div className="mb-12">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 md:p-12 text-white">
+            <div className="rounded-2xl p-8 md:p-12 text-white" style={{ 
+              background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
+            }}>
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-6 h-6" />
                 <span className="text-sm font-medium uppercase tracking-wide">Welcome to Work Shelf</span>
@@ -164,27 +165,27 @@ export default function Home() {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Writing Hub'}
               </h1>
-              <p className="text-xl text-blue-100 mb-6 max-w-2xl">
+              <p className="text-xl mb-6 max-w-2xl" style={{ color: '#B3B2B0' }}>
                 Write, publish, and discover amazing stories. Join a community of authors and readers building the future of independent publishing.
               </p>
               
               {/* Platform Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <div className="text-3xl font-bold">{stats.totalBooks.toLocaleString()}</div>
-                  <div className="text-sm text-blue-100">Books Published</div>
+                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Books Published</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <div className="text-3xl font-bold">{stats.totalAuthors.toLocaleString()}</div>
-                  <div className="text-sm text-blue-100">Active Authors</div>
+                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Active Authors</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <div className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                  <div className="text-sm text-blue-100">Community Members</div>
+                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Community Members</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
                   <div className="text-3xl font-bold">{stats.totalDocuments.toLocaleString()}</div>
-                  <div className="text-sm text-blue-100">Works in Progress</div>
+                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Works in Progress</div>
                 </div>
               </div>
             </div>
@@ -198,14 +199,15 @@ export default function Home() {
               {/* Start Writing */}
               <button
                 onClick={() => handleNavigation('/documents')}
-                className="bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl p-6 text-left transition-all hover:scale-105 group"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
               >
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
                   <PenTool className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Start Writing</h3>
-                <p className="text-sm text-gray-400 mb-3">Create a new document with AI assistance</p>
-                <div className="flex items-center text-blue-400 text-sm font-medium">
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Create a new document with AI assistance</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Get started <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -213,14 +215,15 @@ export default function Home() {
               {/* Browse Books */}
               <button
                 onClick={() => handleNavigation('/store')}
-                className="bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl p-6 text-left transition-all hover:scale-105 group"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
               >
-                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-500 transition-colors">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
                   <StoreIcon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Browse Store</h3>
-                <p className="text-sm text-gray-400 mb-3">Discover books from independent authors</p>
-                <div className="flex items-center text-purple-400 text-sm font-medium">
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Discover books from independent authors</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Explore now <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -228,14 +231,15 @@ export default function Home() {
               {/* Free Books */}
               <button
                 onClick={() => handleNavigation('/free-books')}
-                className="bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl p-6 text-left transition-all hover:scale-105 group"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
               >
-                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-500 transition-colors">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
                   <BookMarked className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Free Books</h3>
-                <p className="text-sm text-gray-400 mb-3">Access thousands of classic literature</p>
-                <div className="flex items-center text-green-400 text-sm font-medium">
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Access thousands of classic literature</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Browse free <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -243,14 +247,15 @@ export default function Home() {
               {/* Discover Authors */}
               <button
                 onClick={() => handleNavigation('/authors')}
-                className="bg-gray-800 hover:bg-gray-750 border border-gray-700 rounded-xl p-6 text-left transition-all hover:scale-105 group"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
               >
-                <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500 transition-colors">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Discover Authors</h3>
-                <p className="text-sm text-gray-400 mb-3">Find and follow your favorite writers</p>
-                <div className="flex items-center text-orange-400 text-sm font-medium">
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Find and follow your favorite writers</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Find authors <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -265,7 +270,8 @@ export default function Home() {
                 <h2 className="text-2xl font-bold text-white">Featured Books</h2>
                 <button
                   onClick={() => handleNavigation('/store')}
-                  className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-1"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  style={{ color: '#B34B0C' }}
                 >
                   View all <ArrowRight className="w-4 h-4" />
                 </button>
@@ -276,7 +282,8 @@ export default function Home() {
                   <button
                     key={book.id}
                     onClick={() => handleNavigation(`/book/${book.id}`)}
-                    className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden hover:border-blue-500 transition-all group"
+                    className="rounded-lg overflow-hidden transition-all group border"
+                    style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
                   >
                     {book.cover_image_url ? (
                       <img 
@@ -285,8 +292,10 @@ export default function Home() {
                         className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className="w-full aspect-[2/3] bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                        <BookOpen className="w-12 h-12 text-gray-600" />
+                      <div className="w-full aspect-[2/3] flex items-center justify-center" style={{ 
+                        background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)'
+                      }}>
+                        <BookOpen className="w-12 h-12" style={{ color: '#B3B2B0' }} />
                       </div>
                     )}
                     <div className="p-3">
@@ -294,12 +303,12 @@ export default function Home() {
                         {book.title}
                       </h3>
                       {book.author_name && (
-                        <p className="text-xs text-gray-400 mb-2 text-left">
+                        <p className="text-xs mb-2 text-left" style={{ color: '#B3B2B0' }}>
                           {book.author_name}
                         </p>
                       )}
                       {book.price !== undefined && (
-                        <p className="text-sm font-bold text-blue-400 text-left">
+                        <p className="text-sm font-bold text-left" style={{ color: '#B34B0C' }}>
                           {book.price === 0 ? 'Free' : `$${book.price.toFixed(2)}`}
                         </p>
                       )}
@@ -313,19 +322,27 @@ export default function Home() {
           {/* Getting Started Guide (for new users) */}
           {user && !user.bio && (
             <div className="mb-12">
-              <div className="bg-gradient-to-r from-orange-600 to-pink-600 rounded-2xl p-8 text-white">
+              <div className="rounded-2xl p-8 text-white" style={{
+                background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
+              }}>
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold mb-2">New here? Let's get you started!</h3>
-                    <p className="text-orange-100 mb-4">
+                    <p className="mb-4" style={{ color: '#B3B2B0' }}>
                       Complete your profile to unlock the full Work Shelf experience.
                     </p>
                     <button
                       onClick={() => handleNavigation('/me')}
-                      className="bg-white text-orange-600 px-6 py-2 rounded-lg font-medium hover:bg-orange-50 transition-colors"
+                      className="px-6 py-2 rounded-lg font-medium transition-colors"
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#7C3306'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B3B2B0'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                     >
                       Complete Your Profile
                     </button>
@@ -341,51 +358,54 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Feed */}
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#B34B0C' }}>
                   <MessagesSquare className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Community Feed</h3>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
                   Stay updated with posts, discussions, and updates from authors and groups you follow.
                 </p>
                 <button
                   onClick={() => handleNavigation('/feed')}
-                  className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-1"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  style={{ color: '#B34B0C' }}
                 >
                   View feed <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Your Bookshelf */}
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#7C3306' }}>
                   <BookMarked className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Your Bookshelf</h3>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
                   Access your purchased books and reading list all in one place.
                 </p>
                 <button
                   onClick={() => handleNavigation('/bookshelf')}
-                  className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  style={{ color: '#B34B0C' }}
                 >
                   View bookshelf <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
               {/* For Authors */}
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#B34B0C' }}>
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Publish Your Work</h3>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
                   Upload your EPUB and start selling to readers around the world.
                 </p>
                 <button
                   onClick={() => handleNavigation('/upload-book')}
-                  className="text-green-400 hover:text-green-300 text-sm font-medium flex items-center gap-1"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+                  style={{ color: '#B34B0C' }}
                 >
                   Upload book <ArrowRight className="w-4 h-4" />
                 </button>
@@ -400,48 +420,48 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <PenTool className="w-6 h-6 text-blue-400" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
+                  <PenTool className="w-6 h-6" style={{ color: '#B34B0C' }} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">AI-Powered Writing</h3>
-                  <p className="text-gray-400">
+                  <p style={{ color: '#B3B2B0' }}>
                     Write faster with intelligent AI assistance that helps with structure, style, and creativity.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <StoreIcon className="w-6 h-6 text-purple-400" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(124, 51, 6, 0.2)' }}>
+                  <StoreIcon className="w-6 h-6" style={{ color: '#7C3306' }} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Direct to Reader</h3>
-                  <p className="text-gray-400">
+                  <p style={{ color: '#B3B2B0' }}>
                     Sell your books directly to readers with instant payouts and no middlemen taking huge cuts.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="w-6 h-6 text-green-400" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
+                  <Users className="w-6 h-6" style={{ color: '#B34B0C' }} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Vibrant Community</h3>
-                  <p className="text-gray-400">
+                  <p style={{ color: '#B3B2B0' }}>
                     Connect with other writers and readers, join groups, and build your following.
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-orange-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BookMarked className="w-6 h-6 text-orange-400" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(124, 51, 6, 0.2)' }}>
+                  <BookMarked className="w-6 h-6" style={{ color: '#7C3306' }} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Quality Curated</h3>
-                  <p className="text-gray-400">
+                  <p style={{ color: '#B3B2B0' }}>
                     Discover high-quality independent books and support authors you believe in.
                   </p>
                 </div>
@@ -450,7 +470,6 @@ export default function Home() {
             </div>
           </div>
 
-        </div>
       </main>
     </div>
   )
