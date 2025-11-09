@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X, ArrowLeft, ExternalLink } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+
+type ProfileTab = 'general' | 'beta' | 'writer'
 
 interface UserProfile {
   id: number
@@ -34,6 +36,7 @@ export function Profile() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
+  const [activeTab, setActiveTab] = useState<ProfileTab>('general')
 
   // Form state
   const [formData, setFormData] = useState({
@@ -254,7 +257,7 @@ export function Profile() {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}>
             <User className="w-8 h-8 text-white" />
@@ -275,21 +278,21 @@ export function Profile() {
             Edit Profile
           </button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#6C6A68', color: 'white' }}
+              disabled={saving}
             >
               <X className="w-4 h-4" />
               Cancel
             </button>
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#B34B0C', color: 'white' }}
+              disabled={saving}
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save Changes'}
@@ -298,18 +301,69 @@ export function Profile() {
         )}
       </div>
 
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-lg text-green-400">
-          Profile updated successfully!
-        </div>
-      )}
+      {/* Profile Tabs */}
+      <div className="border-b mb-6" style={{ borderColor: '#6C6A68' }}>
+        <nav className="flex gap-1">
+          <button
+            onClick={() => setActiveTab('general')}
+            className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'general' 
+                ? 'text-white' 
+                : 'text-[#B3B2B0] hover:text-white'
+            }`}
+            style={{ 
+              borderColor: activeTab === 'general' ? '#B34B0C' : 'transparent'
+            }}
+          >
+            General Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('writer')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'writer' 
+                ? 'text-white' 
+                : 'text-[#B3B2B0] hover:text-white'
+            }`}
+            style={{ 
+              borderColor: activeTab === 'writer' ? '#B34B0C' : 'transparent'
+            }}
+          >
+            <Edit2 className="w-4 h-4" />
+            Writer Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('beta')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'beta' 
+                ? 'text-white' 
+                : 'text-[#B3B2B0] hover:text-white'
+            }`}
+            style={{ 
+              borderColor: activeTab === 'beta' ? '#B34B0C' : 'transparent'
+            }}
+          >
+            <BookOpen className="w-4 h-4" />
+            Beta Reader Profile
+          </button>
+        </nav>
+      </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-400">
-          {error}
-        </div>
-      )}
+      {/* Tab Content */}
+      <div>
+        {activeTab === 'general' && (
+        <div>
+          {/* Success/Error Messages */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-lg text-green-400">
+              Profile updated successfully!
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-400">
+              {error}
+            </div>
+          )}
 
       {/* Profile Form */}
       <div className="space-y-6">
@@ -492,6 +546,46 @@ export function Profile() {
             </div>
           </div>
         </div>
+      </div>
+        </div>
+        )}
+
+        {activeTab === 'writer' && (
+        <div className="rounded-lg border p-8" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <div className="text-center py-12">
+            <Edit2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
+            <h3 className="text-xl font-semibold mb-2 text-white">Writer Profile</h3>
+            <p className="mb-4" style={{ color: '#B3B2B0' }}>
+              Showcase your published works, writing style, and connect with readers.
+            </p>
+            <p className="text-sm" style={{ color: '#B3B2B0' }}>
+              Coming soon: Writer bio, published works, writing genres, and reader engagement stats.
+            </p>
+          </div>
+        </div>
+        )}
+
+        {activeTab === 'beta' && (
+        <div className="rounded-lg border p-8" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <div className="text-center py-12">
+            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
+            <h3 className="text-xl font-semibold mb-2 text-white">Beta Reader Profile</h3>
+            <p className="mb-4" style={{ color: '#B3B2B0' }}>
+              Set up your beta reading profile to offer feedback services to writers.
+            </p>
+            <button
+              onClick={() => window.location.href = '/my-beta-profile'}
+              className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#B34B0C' }}
+            >
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Configure Beta Profile
+              </div>
+            </button>
+          </div>
+        </div>
+        )}
       </div>
     </div>
     </div>

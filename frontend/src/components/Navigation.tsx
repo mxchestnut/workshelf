@@ -17,9 +17,9 @@ import {
   BookMarked,
   PenTool,
   ShoppingBag,
-  Upload,
   UserCircle,
-  Search
+  Users,
+  BarChart
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -113,7 +113,20 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <PenTool className="w-5 h-5" />
-                    <span>My Studio</span>
+                    <span>Studio</span>
+                  </button>
+
+                  <button 
+                    onClick={() => navigateTo('/groups')}
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      isActive('/groups') 
+                        ? 'text-white font-medium' 
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/groups') ? { backgroundColor: '#B34B0C' } : {}}
+                  >
+                    <Users className="w-5 h-5" />
+                    <span>Groups</span>
                   </button>
 
                   {/* Notifications */}
@@ -202,49 +215,23 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/discover')}
+                  onClick={() => navigateTo('/groups')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/discover')
+                    isActive('/groups')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/discover') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/groups') ? { backgroundColor: '#B34B0C' } : {}}
                 >
-                  <Search className="w-5 h-5" />
-                  <span>Discover</span>
-                </button>
-
-                <button 
-                  onClick={() => navigateTo('/studio')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/studio')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Studio</span>
-                </button>
-
-                <button 
-                  onClick={() => navigateTo('/me')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/me')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/me') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <UserCircle className="w-5 h-5" />
-                  <span>Profile</span>
+                  <Users className="w-5 h-5" />
+                  <span>Groups</span>
                 </button>
               </div>
 
-              {/* Reading & Discovery */}
+              {/* My Bookshelf */}
               <div className="mb-6">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                  Reading
+                  My Bookshelf
                 </p>
                 
                 <button 
@@ -257,20 +244,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   style={isActive('/bookshelf') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <BookMarked className="w-5 h-5" />
-                  <span>My Bookshelf</span>
-                </button>
-
-                <button 
-                  onClick={() => navigateTo('/beta-feed')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/beta-feed')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/beta-feed') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <BookOpen className="w-5 h-5" />
-                  <span>Beta Feed</span>
+                  <span>Bookshelf</span>
                 </button>
 
                 <button 
@@ -285,60 +259,40 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <BookOpen className="w-5 h-5" />
                   <span>Free Books</span>
                 </button>
-
-                <button 
-                  onClick={() => navigateTo('/authors')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/authors')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/authors') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <PenTool className="w-5 h-5" />
-                  <span>Authors</span>
-                </button>
               </div>
 
-              {/* Store & Publishing */}
+              {/* My Studio */}
               <div className="mb-6">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                  Publishing
+                  My Studio
                 </p>
                 
                 <button 
-                  onClick={() => navigateTo('/store')}
+                  onClick={() => navigateTo('/studio')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/store')
+                    isActive('/studio')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                 >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Ebooks</span>
+                  <FileText className="w-5 h-5" />
+                  <span>Studio</span>
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/upload-book')}
+                  onClick={() => navigateTo('/projects')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/upload-book')
+                    isActive('/projects')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/upload-book') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/projects') ? { backgroundColor: '#B34B0C' } : {}}
                 >
-                  <Upload className="w-5 h-5" />
-                  <span>Upload Book</span>
+                  <FileText className="w-5 h-5" />
+                  <span>Projects</span>
                 </button>
-              </div>
 
-              {/* Beta Services */}
-              <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                  Beta Services
-                </p>
-                
                 <button 
                   onClick={() => navigateTo('/beta-marketplace')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
@@ -353,24 +307,57 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/my-beta-profile')}
+                  onClick={() => navigateTo('/dashboard')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/my-beta-profile')
+                    isActive('/dashboard')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/my-beta-profile') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
                 >
-                  <Settings className="w-5 h-5" />
-                  <span>My Beta Profile</span>
+                  <BarChart className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </button>
+
+                <button 
+                  onClick={() => navigateTo('/store')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/store')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>Ebooks</span>
                 </button>
               </div>
 
-              {/* Admin Section */}
+              {/* Administration */}
+              <div className="mb-6">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                  Administration
+                </p>
+                
+                <button 
+                  onClick={() => navigateTo('/me')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/me')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/me') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <UserCircle className="w-5 h-5" />
+                  <span>Profile</span>
+                </button>
+              </div>
+
+              {/* Staff Admin Section */}
               {user && (user.is_staff || (user.groups && user.groups.length > 0)) && (
                 <div className="pt-6 border-t" style={{ borderColor: '#6C6A68' }}>
                   <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                    Administration
+                    Staff
                   </p>
 
                   {user.is_staff && (
