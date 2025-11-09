@@ -1,68 +1,43 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { 
-  BookOpen, 
-  FileText, 
-  Users, 
-  FolderOpen, 
-  Bell, 
-  Settings,
-  Search,
-  Plus,
-  Menu,
-  X,
-  Shield,
-  Crown,
-  LogIn,
-  LogOut
-} from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import './App.css'
-import { Documents } from './pages/Documents'
-import { Document } from './pages/Document'
-import { Projects } from './pages/Projects'
-import { Community } from './pages/Community'
-import { Feed } from './pages/Feed'
-import { Profile } from './pages/Profile'
-import PublicProfile from './pages/PublicProfile'
-import Bookshelf from './pages/Bookshelf'
-import Authors from './pages/Authors'
-import FreeBooks from './pages/FreeBooks'
-import UploadBook from './pages/UploadBook'
-import StoreSuccess from './pages/StoreSuccess'
-import BookDetail from './pages/BookDetail'
-import { AuthCallback } from './pages/AuthCallback'
-import Onboarding from './pages/Onboarding'
-import TermsOfService from './pages/TermsOfService'
-import HouseRules from './pages/HouseRules'
-import { Sitemap } from './pages/Sitemap'
-import Home from './pages/Home'
-import { authService, User } from './services/auth'
 
-// Lazy load large components
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="w-12 h-12 animate-spin" style={{ color: '#B34B0C' }} />
+      <p className="text-white">Loading...</p>
+    </div>
+  </div>
+)
+
+// Lazy load ALL pages for optimal code splitting
+const Home = lazy(() => import('./pages/Home'))
+const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module.Feed })))
+const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
+const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
+const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
+const PublicProfile = lazy(() => import('./pages/PublicProfile'))
+const Bookshelf = lazy(() => import('./pages/Bookshelf'))
+const Authors = lazy(() => import('./pages/Authors'))
 const Author = lazy(() => import('./pages/Author'))
-const AdminModeration = lazy(() => import('./pages/AdminModeration'))
+const FreeBooks = lazy(() => import('./pages/FreeBooks'))
+const UploadBook = lazy(() => import('./pages/UploadBook'))
 const Store = lazy(() => import('./pages/Store'))
-
-interface HealthStatus {
-  status: string
-  version: string
-  service: string
-}
+const StoreSuccess = lazy(() => import('./pages/StoreSuccess'))
+const BookDetail = lazy(() => import('./pages/BookDetail'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback').then(module => ({ default: module.AuthCallback })))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const HouseRules = lazy(() => import('./pages/HouseRules'))
+const Sitemap = lazy(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })))
+const AdminModeration = lazy(() => import('./pages/AdminModeration'))
 
 function App() {
-  const [health, setHealth] = useState<HealthStatus | null>(null)
-  const [activeTab, setActiveTab] = useState('documents')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
   const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'sitemap'>('home')
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
   useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then(res => res.json())
-      .then(data => setHealth(data))
-      .catch(() => {})
-
     // Check authentication and route
     const path = window.location.pathname
     
@@ -78,73 +53,42 @@ function App() {
       setCurrentPage('sitemap')
     } else if (path === '/feed') {
       setCurrentPage('feed')
-      loadUser()
     } else if (path === '/me') {
       setCurrentPage('profile')
-      loadUser()
     } else if (path === '/documents') {
       setCurrentPage('documents')
-      loadUser()
     } else if (path === '/document') {
       setCurrentPage('document')
-      loadUser()
     } else if (path === '/bookshelf') {
       setCurrentPage('bookshelf')
-      loadUser()
     } else if (path === '/authors') {
       setCurrentPage('authors')
-      loadUser()
     } else if (path.startsWith('/authors/')) {
       // Author profile page: /authors/:id
       setCurrentPage('author-profile')
-      loadUser()
     } else if (path === '/admin/moderation') {
       setCurrentPage('admin-moderation')
-      loadUser()
     } else if (path === '/free-books') {
       setCurrentPage('free-books')
-      loadUser()
     } else if (path === '/upload-book') {
       setCurrentPage('upload-book')
-      loadUser()
     } else if (path === '/store/success' || path === '/store/success/') {
       setCurrentPage('store-success')
-      loadUser()
     } else if (path === '/store' || path === '/store/') {
       setCurrentPage('store')
-      loadUser()
     } else if (path.startsWith('/book/')) {
       // Book detail page: /book/:id or /book/store-:id
       setCurrentPage('book-detail')
-      loadUser()
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
     } else if (path === '/' || path === '') {
       setCurrentPage('home')
-      loadUser()
     } else {
       // Unknown route - redirect to home
       window.location.href = '/'
     }
-  }, [API_URL])
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
-    } catch (error) {
-      console.error('Failed to load user:', error)
-    }
-  }
-
-  const handleLogin = () => {
-    authService.login()
-  }
-
-  const handleLogout = () => {
-    authService.logout()
-  }
+  }, [])
 
   const renderContent = () => {
     // Handle special pages
@@ -197,19 +141,11 @@ function App() {
     }
 
     if (currentPage === 'author-profile') {
-      return (
-        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading author profile...</div></div>}>
-          <Author />
-        </Suspense>
-      )
+      return <Author />
     }
 
     if (currentPage === 'admin-moderation') {
-      return (
-        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading moderation panel...</div></div>}>
-          <AdminModeration />
-        </Suspense>
-      )
+      return <AdminModeration />
     }
 
     if (currentPage === 'free-books') {
@@ -221,11 +157,7 @@ function App() {
     }
 
     if (currentPage === 'store') {
-      return (
-        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-lg">Loading store...</div></div>}>
-          <Store />
-        </Suspense>
-      )
+      return <Store />
     }
 
     if (currentPage === 'store-success') {
@@ -237,239 +169,15 @@ function App() {
     }
 
     // Home page - new dedicated landing page
-    if (currentPage === 'home') {
-      return <Home />
-    }
-
-    // Legacy tabs system (fallback, should rarely be used)
-    switch (activeTab) {
-      case 'documents':
-        return <Documents />
-      case 'projects':
-        return <Projects />
-      case 'community':
-        return <Community />
-      default:
-        return <Home />
-    }
+    return <Home />
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, sitemap, home, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'sitemap' || currentPage === 'home' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
-    return renderContent()
-  }
-
-  // Don't render header/menu for feed and profile pages (they have their own layouts)
-  if (currentPage === 'feed' || currentPage === 'profile') {
-    return <div className="min-h-screen bg-gray-900">
-      {currentPage === 'feed' ? <Feed /> : <Profile />}
-    </div>
-  }
-
+  // All pages now have their own Navigation component
+  // Wrap everything in Suspense for lazy loading
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-neutral-light bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg transition-colors"
-              >
-                {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-              
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-8 h-8 text-primary" />
-                <h1 className="text-2xl font-bold text-neutral-darkest">Work Shelf</h1>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="relative hidden md:block">
-                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral" />
-                <input
-                  type="text"
-                  placeholder="Search documents..."
-                  className="pl-10 pr-4 py-2 border border-neutral-light rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              
-              {/* Sitemap Link */}
-              <a
-                href="/sitemap"
-                className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Explore Platform</span>
-              </a>
-              
-              {user && (
-                <>
-                  <button className="relative p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-                  </button>
-                  
-                  <button className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg hidden md:block">
-                    <Settings className="w-5 h-5" />
-                  </button>
-                  
-                  <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                    <Plus className="w-5 h-5" />
-                    <span className="hidden md:inline">New Document</span>
-                  </button>
-                </>
-              )}
-
-              {!user && (
-                <button 
-                  onClick={handleLogin}
-                  className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                >
-                  <LogIn className="w-5 h-5" />
-                  <span>Log In</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Sidebar Navigation */}
-      <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity ${
-          menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setMenuOpen(false)}
-      />
-      <aside 
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-7 h-7 text-primary" />
-              <h2 className="text-xl font-bold text-neutral-darkest">Work Shelf</h2>
-            </div>
-            <button 
-              onClick={() => setMenuOpen(false)}
-              className="p-2 text-neutral-dark hover:bg-neutral-light/50 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <nav className="space-y-2">
-            <button 
-              onClick={() => { setActiveTab('documents'); setMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === 'documents' 
-                  ? 'bg-primary text-white' 
-                  : 'text-neutral-dark hover:bg-neutral-light/50'
-              }`}
-            >
-              <FileText className="w-5 h-5" />
-              <span className="font-medium">Documents</span>
-            </button>
-            
-            <button 
-              onClick={() => { setActiveTab('projects'); setMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === 'projects' 
-                  ? 'bg-primary text-white' 
-                  : 'text-neutral-dark hover:bg-neutral-light/50'
-              }`}
-            >
-              <FolderOpen className="w-5 h-5" />
-              <span className="font-medium">Projects</span>
-            </button>
-            
-            <button 
-              onClick={() => { setActiveTab('community'); setMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === 'community' 
-                  ? 'bg-primary text-white' 
-                  : 'text-neutral-dark hover:bg-neutral-light/50'
-              }`}
-            >
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Community</span>
-            </button>
-
-            {/* Admin Links - Role Based */}
-            {user && (user.is_staff || (user.groups && user.groups.length > 0)) && (
-              <div className="pt-6 mt-6 border-t border-neutral-light">
-                <p className="px-4 text-xs font-semibold text-neutral uppercase mb-2">
-                  Administration
-                </p>
-
-                {/* Staff Dashboard - Only for Kit */}
-                {user.is_staff && (
-                  <a
-                    href="/staff"
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span className="font-medium">Staff Dashboard</span>
-                  </a>
-                )}
-
-                {/* Group Admin - For group owners */}
-                {user.groups?.filter(g => g.is_owner).map(group => (
-                  <a
-                    key={group.id}
-                    href={`/group/${group.slug}/admin`}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-purple-50 hover:text-purple-700 transition-colors"
-                  >
-                    <Crown className="w-5 h-5" />
-                    <span className="font-medium">{group.name} Admin</span>
-                  </a>
-                ))}
-              </div>
-            )}
-
-            <div className="pt-6 mt-6 border-t border-neutral-light">
-              {user && (
-                <div className="px-4 py-3 mb-2">
-                  <p className="text-sm font-medium text-neutral-darkest">{user.display_name || user.username}</p>
-                  <p className="text-xs text-neutral">{user.email}</p>
-                </div>
-              )}
-
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-dark hover:bg-neutral-light/50 transition-colors">
-                <Settings className="w-5 h-5" />
-                <span className="font-medium">Settings</span>
-              </button>
-
-              {user && (
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-medium">Log Out</span>
-                </button>
-              )}
-            </div>
-          </nav>
-        </div>
-      </aside>
-
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {renderContent()}
-
-        {health && (
-          <div className="mt-8 text-center">
-            <p className="text-xs text-neutral">
-              Connected to {health.service} v{health.version} • Status: {health.status}
-            </p>
-          </div>
-        )}
-      </main>
-    </div>
+    <Suspense fallback={<PageLoader />}>
+      {renderContent()}
+    </Suspense>
   )
 }
 
