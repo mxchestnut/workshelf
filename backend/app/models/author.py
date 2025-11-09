@@ -30,6 +30,7 @@ class Author(Base):
     books = relationship("StoreItem", back_populates="author")
     edits = relationship("AuthorEdit", back_populates="author", cascade="all, delete-orphan")
     followers = relationship("UserFollowsAuthor", back_populates="author", cascade="all, delete-orphan")
+    earnings = relationship("AuthorEarnings", back_populates="author", cascade="all, delete-orphan")
 
 
 class AuthorEdit(Base):
