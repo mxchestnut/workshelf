@@ -217,6 +217,14 @@ export default function Bookshelf() {
   }
 
   const filteredBooks = books.filter(book => {
+    // Filter by active tab
+    if (activeTab !== 'all' && activeTab !== 'recommendations') {
+      if (book.status !== activeTab) {
+        return false
+      }
+    }
+    
+    // Filter by search query
     const query = searchQuery.toLowerCase()
     const title = book.title || book.document_title || ''
     const author = book.author || ''

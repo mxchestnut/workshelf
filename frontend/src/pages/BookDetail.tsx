@@ -157,8 +157,12 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
           headers: { 'Authorization': `Bearer ${token}` }
         })
         
+        console.log('[BookDetail] Fetching bookshelf item:', actualId)
+        console.log('[BookDetail] Response status:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log('[BookDetail] Book loaded:', data)
           setBook(data)
           setUserOwnsBook(true)
           

@@ -7,7 +7,7 @@ import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   FileText, Sparkles, TrendingUp, 
-  Clock, Zap, Layout, PenTool, Lightbulb 
+  Zap, Layout, PenTool 
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -29,14 +29,6 @@ interface ProjectTemplate {
   description: string
   icon: string
   wordCountGoal?: number
-}
-
-interface ArticlePrompt {
-  id: string
-  title: string
-  description: string
-  category: string
-  estimatedTime: string
 }
 
 const PROJECT_TEMPLATES: ProjectTemplate[] = [
@@ -101,19 +93,12 @@ export function Studio() {
   const [user, setUser] = useState<any>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState<'overview' | 'projects' | 'articles'>('overview')
-  const [articlePrompts, setArticlePrompts] = useState<ArticlePrompt[]>([])
+  const [activeSection, setActiveSection] = useState<'overview' | 'projects'>('overview')
 
   useEffect(() => {
     loadUser()
     loadDocuments()
   }, [])
-
-  useEffect(() => {
-    if (user) {
-      generateArticlePrompts()
-    }
-  }, [user])
 
   const loadUser = async () => {
     try {
@@ -166,66 +151,9 @@ export function Studio() {
     }
   }
 
-  const generateArticlePrompts = () => {
-    // Generate prompts based on user's interests (can be enhanced with user profile data)
-    const prompts: ArticlePrompt[] = [
-      {
-        id: '1',
-        title: 'Your Creative Journey',
-        description: 'Reflect on your writing process and what inspires you',
-        category: 'Personal',
-        estimatedTime: '15 min'
-      },
-      {
-        id: '2',
-        title: 'Character Deep Dive',
-        description: 'Explore a character from your current project in detail',
-        category: 'Fiction',
-        estimatedTime: '20 min'
-      },
-      {
-        id: '3',
-        title: 'World Building Exercise',
-        description: 'Describe the setting of your story through sensory details',
-        category: 'Fiction',
-        estimatedTime: '25 min'
-      },
-      {
-        id: '4',
-        title: 'Writing Challenges I Face',
-        description: 'Document obstacles and how you overcome them',
-        category: 'Craft',
-        estimatedTime: '10 min'
-      },
-      {
-        id: '5',
-        title: 'Scene Snapshot',
-        description: 'Write a pivotal scene from a different perspective',
-        category: 'Exercise',
-        estimatedTime: '30 min'
-      },
-      {
-        id: '6',
-        title: 'Dialogue Practice',
-        description: 'Create a conversation between two contrasting characters',
-        category: 'Exercise',
-        estimatedTime: '15 min'
-      }
-    ]
-    setArticlePrompts(prompts)
-  }
-
   const createFromTemplate = (templateId: string) => {
     // Navigate to document creator with template
     window.location.href = `/document?template=${templateId}`
-  }
-
-  const createFromPrompt = (promptId: string) => {
-    const prompt = articlePrompts.find(p => p.id === promptId)
-    if (prompt) {
-      // Create new document with prompt title
-      window.location.href = `/document?prompt=${encodeURIComponent(prompt.title)}`
-    }
   }
 
   const goToDocuments = () => {
@@ -288,19 +216,6 @@ export function Studio() {
               <div className="flex items-center gap-2">
                 <Layout className="w-5 h-5" />
                 Projects
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveSection('articles')}
-              className={`px-4 py-3 border-b-2 transition-colors ${
-                activeSection === 'articles'
-                  ? 'border-[#B34B0C] text-white font-semibold'
-                  : 'border-transparent text-[#B3B2B0] hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5" />
-                Articles & Prompts
               </div>
             </button>
           </div>
@@ -402,16 +317,6 @@ export function Studio() {
                 <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>Start a Project</h3>
                 <p style={{ color: '#B3B2B0' }}>Choose from templates like novels, screenplays, and more</p>
               </button>
-
-              <button
-                onClick={() => setActiveSection('articles')}
-                className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                style={{ backgroundColor: '#524944' }}
-              >
-                <Lightbulb className="w-8 h-8 mb-3" style={{ color: '#B34B0C' }} />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>Try a Writing Prompt</h3>
-                <p style={{ color: '#B3B2B0' }}>Get inspired with prompts tailored to your interests</p>
-              </button>
             </div>
           </div>
         )}
@@ -447,50 +352,6 @@ export function Studio() {
                       <span>{template.wordCountGoal.toLocaleString()} word goal</span>
                     </div>
                   )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Articles Section */}
-        {activeSection === 'articles' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>Writing Prompts</h2>
-              <p className="mb-6" style={{ color: '#B3B2B0' }}>
-                Quick writing exercises and article ideas to spark creativity
-              </p>
-            </div>
-
-            <div className="grid gap-4">
-              {articlePrompts.map(prompt => (
-                <button
-                  key={prompt.id}
-                  onClick={() => createFromPrompt(prompt.id)}
-                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                  style={{ backgroundColor: '#524944' }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold" style={{ color: 'white' }}>
-                          {prompt.title}
-                        </h3>
-                        <span 
-                          className="px-2 py-1 rounded text-xs font-medium"
-                          style={{ backgroundColor: '#37322E', color: '#B34B0C' }}
-                        >
-                          {prompt.category}
-                        </span>
-                      </div>
-                      <p style={{ color: '#B3B2B0' }}>{prompt.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm" style={{ color: '#6C6A68' }}>
-                    <Clock className="w-4 h-4" />
-                    <span>{prompt.estimatedTime}</span>
-                  </div>
                 </button>
               ))}
             </div>

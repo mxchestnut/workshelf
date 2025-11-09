@@ -78,12 +78,16 @@ export function Document() {
   const createNewDocument = async () => {
     try {
       const token = localStorage.getItem('access_token')
+      console.log('[Document] Creating new document, token:', token ? 'present' : 'missing')
+      
       if (!token) {
+        console.error('[Document] No access token found')
         setError('Please log in to create documents')
         setLoading(false)
         return
       }
 
+      console.log('[Document] POST to:', `${API_URL}/api/v1/documents`)
       const response = await fetch(`${API_URL}/api/v1/documents`, {
         method: 'POST',
         headers: {
@@ -98,11 +102,16 @@ export function Document() {
         })
       })
 
+      console.log('[Document] Response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error('Failed to create document')
+        const errorText = await response.text()
+        console.error('[Document] Create failed:', errorText)
+        throw new Error(`Failed to create document: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('[Document] Document created:', data.id)
       setDocument(data)
       setTitle(data.title)
       setLoading(false)
