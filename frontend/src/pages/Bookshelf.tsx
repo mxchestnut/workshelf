@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Star, Heart, Search, Plus, Upload, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, ShoppingCart } from 'lucide-react'
+import { authService } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
 
@@ -60,16 +62,27 @@ export default function Bookshelf() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
   useEffect(() => {
+    loadUser()
     loadBookshelf()
     loadStats()
     if (activeTab === 'recommendations') {
       loadRecommendations()
     }
   }, [activeTab])
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (err) {
+      console.error('Error loading user:', err)
+    }
+  }
 
   const loadBookshelf = async () => {
     try {
@@ -196,8 +209,11 @@ export default function Bookshelf() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
-        <div className="text-lg" style={{ color: 'white' }}>Loading bookshelf...</div>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-lg" style={{ color: 'white' }}>Loading bookshelf...</div>
+        </div>
       </div>
     )
   }
@@ -214,6 +230,8 @@ export default function Bookshelf() {
         />
       ) : (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
+      
       {/* Header */}
       <div className="pb-8" style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">

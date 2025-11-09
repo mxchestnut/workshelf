@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react'
+import { authService } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 import { FileText, Plus, Search, Clock, TrendingUp } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -22,10 +24,21 @@ export function Documents() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
+    loadUser()
     loadDocuments()
   }, [])
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (err) {
+      console.error('Error loading user:', err)
+    }
+  }
 
   const loadDocuments = async () => {
     try {
@@ -98,14 +111,19 @@ export function Documents() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#37322E' }}>
-        <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+      
       {/* Header */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">

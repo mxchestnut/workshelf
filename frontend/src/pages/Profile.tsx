@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Edit2, Save, X, ArrowLeft, ExternalLink } from 'lucide-react'
 import { authService } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 
 interface UserProfile {
   id: number
@@ -202,10 +203,13 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#B34B0C' }}></div>
-          <p className="mt-4" style={{ color: '#B3B2B0' }}>Loading profile...</p>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#B34B0C' }}></div>
+            <p className="mt-4" style={{ color: '#B3B2B0' }}>Loading profile...</p>
+          </div>
         </div>
       </div>
     )
@@ -213,9 +217,12 @@ export function Profile() {
 
   if (!profile) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <p style={{ color: '#B34B0C' }}>{error || 'Profile not found'}</p>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="text-center py-12">
+            <p style={{ color: '#B34B0C' }}>{error || 'Profile not found'}</p>
+          </div>
         </div>
       </div>
     )
@@ -223,6 +230,7 @@ export function Profile() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={profile as any} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
       <div className="max-w-4xl mx-auto p-6">
         {/* Navigation Bar */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: '#6C6A68' }}>

@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 import { BookOpen, Pin, Clock, Search, User as UserIcon } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -104,10 +105,13 @@ export function Feed() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
-        <div className="text-center">
-          <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: '#B34B0C' }} />
-          <p style={{ color: '#B3B2B0' }}>Loading your feed...</p>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: '#B34B0C' }} />
+            <p style={{ color: '#B3B2B0' }}>Loading your feed...</p>
+          </div>
         </div>
       </div>
     )
@@ -115,6 +119,8 @@ export function Feed() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
+      
       {/* Header */}
       <div className="border-b sticky top-0 z-10" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-4xl mx-auto px-6 py-4">

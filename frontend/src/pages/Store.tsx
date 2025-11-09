@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles } from 'lucide-react'
+import { authService } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -35,6 +37,21 @@ export default function Store() {
   const [sortBy, setSortBy] = useState('published_at')
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
+  const [user, setUser] = useState<any>(null)
+
+  // Load user
+  useEffect(() => {
+    loadUser()
+  }, [])
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (err) {
+      console.error('Error loading user:', err)
+    }
+  }
 
   // Check for author query parameter on mount
   useEffect(() => {
@@ -85,6 +102,8 @@ export default function Store() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="store" />
+      
       {/* Header */}
       <div className="text-white py-16" style={{ 
         background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
