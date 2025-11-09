@@ -322,18 +322,33 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   </p>
 
                   {user.is_staff && (
-                    <button 
-                      onClick={() => navigateTo('/admin/moderation')}
-                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                        isActive('/admin/moderation')
-                          ? 'font-medium text-white'
-                          : 'text-white hover:bg-opacity-20'
-                      }`}
-                      style={isActive('/admin/moderation') ? { backgroundColor: '#7C3306' } : {}}
-                    >
-                      <Shield className="w-5 h-5" />
-                      <span>Moderation</span>
-                    </button>
+                    <>
+                      <button 
+                        onClick={() => navigateTo('/staff')}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                          isActive('/staff')
+                            ? 'font-medium text-white'
+                            : 'text-white hover:bg-opacity-20'
+                        }`}
+                        style={isActive('/staff') ? { backgroundColor: '#7C3306' } : {}}
+                      >
+                        <Shield className="w-5 h-5" />
+                        <span>Staff Dashboard</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => navigateTo('/admin/moderation')}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                          isActive('/admin/moderation')
+                            ? 'font-medium text-white'
+                            : 'text-white hover:bg-opacity-20'
+                        }`}
+                        style={isActive('/admin/moderation') ? { backgroundColor: '#7C3306' } : {}}
+                      >
+                        <Shield className="w-5 h-5" />
+                        <span>Moderation</span>
+                      </button>
+                    </>
                   )}
 
                   {user.groups?.filter(g => g.is_owner).map(group => (
