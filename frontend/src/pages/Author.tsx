@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { 
   User, BookOpen, Calendar, MapPin, Award, Globe, 
-  Heart, Edit, History, X, Check, Clock 
+  Heart, Edit, History, X, Check, Clock, Plus
 } from 'lucide-react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import { authService } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -63,6 +65,21 @@ export default function Author() {
   const [isEditing, setIsEditing] = useState(false)
   const [showRevisions, setShowRevisions] = useState(false)
   const [editSummary, setEditSummary] = useState('')
+  const [user, setUser] = useState<any>(null)
+
+  // Load user
+  useEffect(() => {
+    loadUser()
+  }, [])
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (err) {
+      console.error('Error loading user:', err)
+    }
+  }
 
   // TipTap editor for bio editing
   const editor = useEditor({
@@ -198,6 +215,30 @@ export default function Author() {
     editor?.setEditable(true)
   }
 
+  const handleAddToBookshelf = async (bookId: number, bookTitle: string) => {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/v1/store/${bookId}/add-to-shelf`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) throw new Error('Failed to add to bookshelf')
+      
+      alert(`"${bookTitle}" added to your bookshelf!`)
+    } catch (error) {
+      console.error('Error adding to bookshelf:', error)
+      alert('Failed to add book to bookshelf')
+    }
+  }
+
   const cancelEditing = () => {
     setIsEditing(false)
     editor?.setEditable(false)
@@ -251,19 +292,26 @@ export default function Author() {
 
   if (!author) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Author Not Found</h1>
-          <p className="text-gray-600">The author you're looking for doesn't exist.</p>
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-white mb-2">Author Not Found</h1>
+            <p style={{ color: '#B3B2B0' }}>The author you're looking for doesn't exist.</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
+      
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white py-16">
+      <div className="text-white py-16" style={{ 
+        background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
+      }}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Author Photo */}
@@ -290,7 +338,7 @@ export default function Author() {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-4 text-purple-100 mb-4">
+              <div className="flex flex-wrap gap-4 mb-4" style={{ color: '#FED7AA' }}>
                 {author.birth_year && (
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
@@ -319,16 +367,16 @@ export default function Author() {
               <div className="flex flex-wrap gap-6 text-sm">
                 <div>
                   <div className="text-3xl font-bold">{author.follower_count}</div>
-                  <div className="text-purple-200">Followers</div>
+                  <div style={{ color: '#FED7AA' }}>Followers</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold">{author.books_published}</div>
-                  <div className="text-purple-200">Books</div>
+                  <div style={{ color: '#FED7AA' }}>Books</div>
                 </div>
                 {author.total_sales > 0 && (
                   <div>
                     <div className="text-3xl font-bold">{author.total_sales.toLocaleString()}</div>
-                    <div className="text-purple-200">Sales</div>
+                    <div style={{ color: '#FED7AA' }}>Sales</div>
                   </div>
                 )}
               </div>
@@ -339,7 +387,8 @@ export default function Author() {
                   {author.genres.map((genre) => (
                     <span
                       key={genre}
-                      className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm"
+                      className="px-3 py-1 rounded-full text-sm"
+                      style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#FFFFFF' }}
                     >
                       {genre}
                     </span>
@@ -352,7 +401,8 @@ export default function Author() {
                 {author.is_following ? (
                   <button
                     onClick={handleUnfollow}
-                    className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                    className="flex items-center gap-2 px-6 py-3 bg-white rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
+                    style={{ color: '#B34B0C' }}
                   >
                     <Check className="w-5 h-5" />
                     Following
@@ -360,7 +410,8 @@ export default function Author() {
                 ) : (
                   <button
                     onClick={handleFollow}
-                    className="flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+                    className="flex items-center gap-2 px-6 py-3 bg-white rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
+                    style={{ color: '#B34B0C' }}
                   >
                     <Heart className="w-5 h-5" />
                     Follow Author
@@ -376,14 +427,17 @@ export default function Author() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Biography */}
-            <div className="bg-white rounded-xl shadow-lg p-8">
+            {/* Biography - Wiki Style */}
+            <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: '#524944' }}>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Biography</h2>
+                <h2 className="text-2xl font-bold text-white">Biography</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowRevisions(!showRevisions)}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 transition-colors rounded-lg"
+                    style={{ color: '#B3B2B0' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#B3B2B0'}
                   >
                     <History className="w-5 h-5" />
                     History
@@ -391,7 +445,8 @@ export default function Author() {
                   {!isEditing ? (
                     <button
                       onClick={startEditing}
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors"
+                      style={{ backgroundColor: '#B34B0C' }}
                     >
                       <Edit className="w-5 h-5" />
                       Edit Bio
@@ -493,50 +548,55 @@ export default function Author() {
             )}
 
             {/* Books */}
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Books by {author.name}</h2>
+            <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: '#524944' }}>
+              <h2 className="text-2xl font-bold text-white mb-6">Books by {author.name}</h2>
               
               {books.length === 0 ? (
-                <p className="text-gray-500 italic">No books available yet.</p>
+                <p className="italic" style={{ color: '#B3B2B0' }}>No books available yet.</p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                   {books.map((book) => (
-                    <a
-                      key={book.id}
-                      href={`/book/store-${book.id}`}
-                      className="group cursor-pointer"
-                    >
-                      <div className="aspect-[2/3] bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg shadow-md overflow-hidden mb-2 group-hover:shadow-xl transition-shadow">
-                        {book.cover_url ? (
-                          <img
-                            src={book.cover_url}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none'
-                              e.currentTarget.parentElement!.innerHTML = `
-                                <div class="w-full h-full flex items-center justify-center">
-                                  <svg class="w-16 h-16 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                  </svg>
-                                </div>
-                              `
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <BookOpen className="w-16 h-16 text-purple-300" />
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                        {book.title}
-                      </h3>
-                      <p className="text-sm text-purple-600 font-bold mt-1">
-                        ${book.final_price.toFixed(2)}
-                      </p>
-                    </a>
+                    <div key={book.id} className="group">
+                      <a
+                        href={`/book/store-${book.id}`}
+                        className="block cursor-pointer"
+                      >
+                        <div 
+                          className="aspect-[2/3] rounded-lg shadow-md overflow-hidden mb-2 group-hover:shadow-xl transition-shadow"
+                          style={{ background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)' }}
+                        >
+                          {book.cover_url ? (
+                            <img
+                              src={book.cover_url}
+                              alt={book.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <BookOpen className="w-16 h-16" style={{ color: '#B3B2B0' }} />
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="font-semibold text-sm text-white line-clamp-2 group-hover:opacity-80 transition-opacity">
+                          {book.title}
+                        </h3>
+                        <p className="text-sm font-bold mt-1" style={{ color: '#B34B0C' }}>
+                          ${book.final_price.toFixed(2)}
+                        </p>
+                      </a>
+                      {/* Add to Bookshelf Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleAddToBookshelf(book.id, book.title)
+                        }}
+                        className="w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-white hover:opacity-90"
+                        style={{ backgroundColor: '#7C3306' }}
+                      >
+                        <Plus className="w-3 h-3" />
+                        Add to Shelf
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -547,14 +607,14 @@ export default function Author() {
           <div className="space-y-6">
             {/* Awards */}
             {author.awards && author.awards.length > 0 && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-yellow-500" />
+              <div className="rounded-xl shadow-lg p-6" style={{ backgroundColor: '#524944' }}>
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-yellow-400" />
                   Awards
                 </h3>
                 <ul className="space-y-2">
                   {author.awards.map((award, index) => (
-                    <li key={index} className="text-gray-700 text-sm">
+                    <li key={index} className="text-sm" style={{ color: '#B3B2B0' }}>
                       • {award}
                     </li>
                   ))}
@@ -563,17 +623,23 @@ export default function Author() {
             )}
 
             {/* Quick Stats */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Facts</h3>
+            <div className="rounded-xl shadow-lg p-6" style={{ backgroundColor: '#524944' }}>
+              <h3 className="text-lg font-bold text-white mb-4">Quick Facts</h3>
               <div className="space-y-3 text-sm">
                 {author.is_bestseller && (
-                  <div className="flex items-center gap-2 text-yellow-600">
+                  <div className="flex items-center gap-2 text-yellow-400">
                     <Award className="w-4 h-4" />
                     <span>Bestselling Author</span>
                   </div>
                 )}
+                {author.books_published > 0 && (
+                  <div className="flex items-center gap-2" style={{ color: '#B3B2B0' }}>
+                    <BookOpen className="w-4 h-4" />
+                    <span>{author.books_published} {author.books_published === 1 ? 'book' : 'books'} published</span>
+                  </div>
+                )}
                 {author.is_verified && (
-                  <div className="flex items-center gap-2 text-blue-600">
+                  <div className="flex items-center gap-2 text-blue-400">
                     <Check className="w-4 h-4" />
                     <span>Verified Author</span>
                   </div>
