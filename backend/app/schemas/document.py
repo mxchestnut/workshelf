@@ -32,7 +32,7 @@ class DocumentBase(BaseModel):
     status: DocumentStatus = DocumentStatus.DRAFT
     visibility: DocumentVisibility = DocumentVisibility.PRIVATE
     studio_id: Optional[int] = None
-    tags: Optional[List[str]] = Field(default_factory=list)  # Note: Not in DB model yet
+    tags: Optional[List[str]] = Field(default_factory=list)  # Tag names - stored in Tag/DocumentTag models
 
 
 # Create schema (for POST requests)
@@ -50,7 +50,7 @@ class DocumentUpdate(BaseModel):
     status: Optional[DocumentStatus] = None
     visibility: Optional[DocumentVisibility] = None
     studio_id: Optional[int] = None
-    tags: Optional[List[str]] = None  # Note: Not in DB model yet
+    tags: Optional[List[str]] = None  # Tag names - use tag API to manage document tags
 
 
 # Response schema (what API returns)

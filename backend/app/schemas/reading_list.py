@@ -1,7 +1,11 @@
 """
-Collections and bookmarking schemas.
-NOTE: This conflicts with Phase 0 database - Collections table doesn't exist.
-Using 'Reading Lists' concept instead to avoid confusion.
+Reading lists and bookmarking schemas.
+
+Reading lists allow users to organize documents into named collections.
+Users can create multiple reading lists (e.g., "To Read", "Favorites", "Research"),
+add documents to them, and share them publicly if desired.
+
+Related models: ReadingList, ReadingListItem, Bookmark (in app.models.reading)
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List
