@@ -475,17 +475,17 @@ export function Profile() {
               />
             </div>
 
-            {/* Twitter */}
+            {/* Social Link */}
             <div>
               <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>
-                Twitter Handle
+                Social Link
               </label>
               <input
                 type="text"
                 value={formData.twitter_handle}
                 onChange={(e) => setFormData(prev => ({ ...prev, twitter_handle: e.target.value }))}
                 disabled={!editing}
-                placeholder="@username"
+                placeholder="https://..."
                 className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
                 style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />

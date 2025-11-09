@@ -15,6 +15,7 @@ const PageLoader = () => (
 // Lazy load ALL pages for optimal code splitting
 const Home = lazy(() => import('./pages/Home'))
 const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module.Feed })))
+const Discover = lazy(() => import('./pages/Discover').then(module => ({ default: module.Discover })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -34,9 +35,12 @@ const HouseRules = lazy(() => import('./pages/HouseRules'))
 const Sitemap = lazy(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })))
 const AdminModeration = lazy(() => import('./pages/AdminModeration'))
 const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
+const BetaFeed = lazy(() => import('./pages/BetaFeed'))
+const MyBetaProfile = lazy(() => import('./pages/MyBetaProfile'))
+const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'sitemap'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -54,6 +58,8 @@ function App() {
       setCurrentPage('sitemap')
     } else if (path === '/feed') {
       setCurrentPage('feed')
+    } else if (path === '/discover') {
+      setCurrentPage('discover')
     } else if (path === '/me') {
       setCurrentPage('profile')
     } else if (path === '/documents') {
@@ -72,6 +78,12 @@ function App() {
     } else if (path.match(/^\/group\/[^/]+\/admin$/)) {
       // Group admin page: /group/:slug/admin
       setCurrentPage('group-admin')
+    } else if (path === '/beta-feed') {
+      setCurrentPage('beta-feed')
+    } else if (path === '/my-beta-profile') {
+      setCurrentPage('my-beta-profile')
+    } else if (path === '/beta-marketplace') {
+      setCurrentPage('beta-marketplace')
     } else if (path === '/free-books') {
       setCurrentPage('free-books')
     } else if (path === '/upload-book') {
@@ -120,6 +132,10 @@ function App() {
       return <Feed />
     }
     
+    if (currentPage === 'discover') {
+      return <Discover />
+    }
+    
     if (currentPage === 'profile') {
       return <Profile />
     }
@@ -154,6 +170,18 @@ function App() {
 
     if (currentPage === 'group-admin') {
       return <GroupAdmin />
+    }
+
+    if (currentPage === 'beta-feed') {
+      return <BetaFeed />
+    }
+
+    if (currentPage === 'my-beta-profile') {
+      return <MyBetaProfile />
+    }
+
+    if (currentPage === 'beta-marketplace') {
+      return <BetaMarketplace />
     }
 
     if (currentPage === 'free-books') {

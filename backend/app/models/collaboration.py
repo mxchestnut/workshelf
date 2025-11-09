@@ -158,6 +158,84 @@ class BetaFeedback(Base, TimestampMixin):
     beta_request = relationship("BetaRequest")
 
 
+class BetaReaderAppointment(Base, TimestampMixin):
+    """
+    Writers can appoint trusted beta readers for ongoing collaboration.
+    This is separate from one-off beta requests - it's a trusted relationship.
+    """
+    __tablename__ = "beta_reader_appointments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Writer appointing the beta reader
+    writer_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Beta reader being appointed
+    beta_reader_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Status
+    status = Column(String(20), nullable=False, default='active')  # active, inactive, removed
+    
+    # Optional: Give the appointment a title/description
+    appointment_title = Column(String(255), nullable=True)  # e.g., "Primary Beta Reader", "Genre Expert"
+    notes = Column(Text, nullable=True)  # Private notes from writer
+    
+    # Stats
+    releases_count = Column(Integer, default=0, nullable=False)  # How many documents released to this reader
+    completed_reads = Column(Integer, default=0, nullable=False)  # How many they've finished
+    
+    # Relationships
+    writer = relationship("User", foreign_keys=[writer_id])
+    beta_reader = relationship("User", foreign_keys=[beta_reader_id])
+    releases = relationship("BetaRelease", back_populates="appointment", cascade="all, delete-orphan")
+    
+    __table_args__ = (
+        Index('idx_writer_beta_reader', 'writer_id', 'beta_reader_id', unique=True),
+        Index('idx_beta_reader_active', 'beta_reader_id', 'status'),
+    )
+
+
+class BetaRelease(Base, TimestampMixin):
+    """
+    A specific document released to a beta reader.
+    Beta readers see these in their feed.
+    """
+    __tablename__ = "beta_releases"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # The appointment this release is part of
+    appointment_id = Column(Integer, ForeignKey('beta_reader_appointments.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Document being released
+    document_id = Column(Integer, ForeignKey('documents.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Release details
+    release_message = Column(Text, nullable=True)  # Message from writer to beta reader
+    release_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    
+    # Optional deadline
+    deadline = Column(DateTime, nullable=True)
+    
+    # Reading status
+    status = Column(String(20), nullable=False, default='unread')  # unread, reading, completed
+    started_reading_at = Column(DateTime, nullable=True)
+    completed_reading_at = Column(DateTime, nullable=True)
+    
+    # Feedback tracking
+    feedback_submitted = Column(Boolean, default=False, nullable=False)
+    feedback_submitted_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    appointment = relationship("BetaReaderAppointment", back_populates="releases")
+    document = relationship("Document")
+    
+    __table_args__ = (
+        Index('idx_beta_reader_feed', 'appointment_id', 'release_date'),
+        Index('idx_document_releases', 'document_id', 'release_date'),
+    )
+
+
 # ============================================================================
 # Groups & Communities
 # ============================================================================
@@ -220,6 +298,7 @@ class Group(Base, TimestampMixin):
     posts = relationship("GroupPost", back_populates="group", cascade="all, delete-orphan")
     custom_domains = relationship("GroupCustomDomain", back_populates="group", cascade="all, delete-orphan")
     scholarship_requests = relationship("ScholarshipRequest", back_populates="group", cascade="all, delete-orphan")
+    custom_roles = relationship("GroupRole", back_populates="group", cascade="all, delete-orphan")
 
 
 class GroupMember(Base, TimestampMixin):
@@ -238,6 +317,7 @@ class GroupMember(Base, TimestampMixin):
     # Relationships
     group = relationship("Group", back_populates="members")
     user = relationship("User", back_populates="group_memberships")
+    custom_roles = relationship("GroupMemberCustomRole", back_populates="group_member", cascade="all, delete-orphan")
     
     __table_args__ = (
         Index('idx_group_user', 'group_id', 'user_id', unique=True),
@@ -289,6 +369,85 @@ class GroupPostReaction(Base, TimestampMixin):
     
     __table_args__ = (
         Index('idx_post_user_reaction', 'post_id', 'user_id', 'reaction_type', unique=True),
+    )
+
+
+# ============================================================================
+# Custom Group Roles (Discord-style)
+# ============================================================================
+
+class GroupRole(Base, TimestampMixin):
+    """
+    Custom roles for groups with granular permissions
+    Similar to Discord's role system
+    """
+    __tablename__ = "group_roles"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Role identity
+    name = Column(String(100), nullable=False)
+    color = Column(String(7), nullable=True)  # Hex color code (e.g., '#FF5733')
+    position = Column(Integer, default=0, nullable=False)  # Hierarchy (higher = more power)
+    
+    # Permissions (JSON object with boolean flags)
+    # Content moderation
+    can_delete_posts = Column(Boolean, default=False, nullable=False)
+    can_delete_comments = Column(Boolean, default=False, nullable=False)
+    can_pin_posts = Column(Boolean, default=False, nullable=False)
+    can_lock_threads = Column(Boolean, default=False, nullable=False)
+    can_manage_tags = Column(Boolean, default=False, nullable=False)
+    
+    # Member management
+    can_approve_members = Column(Boolean, default=False, nullable=False)
+    can_kick_members = Column(Boolean, default=False, nullable=False)
+    can_ban_members = Column(Boolean, default=False, nullable=False)
+    can_invite_members = Column(Boolean, default=False, nullable=False)
+    can_view_member_list = Column(Boolean, default=True, nullable=False)
+    
+    # Publishing
+    can_approve_publications = Column(Boolean, default=False, nullable=False)
+    can_edit_publications = Column(Boolean, default=False, nullable=False)
+    can_feature_publications = Column(Boolean, default=False, nullable=False)
+    
+    # Settings
+    can_edit_group_info = Column(Boolean, default=False, nullable=False)
+    can_manage_roles = Column(Boolean, default=False, nullable=False)
+    can_view_analytics = Column(Boolean, default=False, nullable=False)
+    can_export_data = Column(Boolean, default=False, nullable=False)
+    
+    # Relationships
+    group = relationship("Group", back_populates="custom_roles")
+    member_roles = relationship("GroupMemberCustomRole", back_populates="role", cascade="all, delete-orphan")
+    
+    __table_args__ = (
+        Index('idx_group_roles', 'group_id', 'position'),
+    )
+
+
+class GroupMemberCustomRole(Base, TimestampMixin):
+    """
+    Assignment of custom roles to group members
+    A member can have multiple custom roles
+    """
+    __tablename__ = "group_member_custom_roles"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    group_member_id = Column(Integer, ForeignKey('group_members.id', ondelete='CASCADE'), nullable=False, index=True)
+    role_id = Column(Integer, ForeignKey('group_roles.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    assigned_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    
+    # Relationships
+    group_member = relationship("GroupMember", back_populates="custom_roles")
+    role = relationship("GroupRole", back_populates="member_roles")
+    assigner = relationship("User", foreign_keys=[assigned_by])
+    
+    __table_args__ = (
+        Index('idx_member_role', 'group_member_id', 'role_id', unique=True),
     )
 
 

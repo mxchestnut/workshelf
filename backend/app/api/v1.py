@@ -27,6 +27,8 @@ from app.api import (
     discovery,
     comments,
     beta_reading,
+    beta_appointments,  # Beta reader appointments and releases
+    beta_profiles,  # Beta reader marketplace profiles
     groups,
     messaging,
     subscriptions,
@@ -110,6 +112,8 @@ api_router.include_router(interests.router)  # Dynamic interests from groups
 # Phase 4: Feedback & Collaboration
 api_router.include_router(comments.router)
 api_router.include_router(beta_reading.router)
+api_router.include_router(beta_appointments.router)  # Beta reader appointments
+api_router.include_router(beta_profiles.router)  # Beta reader marketplace profiles
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
 

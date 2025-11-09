@@ -10,7 +10,9 @@ from app.services.group_service import GroupService
 from app.schemas.collaboration import (
     GroupCreate, GroupUpdate, GroupResponse,
     GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse,
-    ScholarshipRequestCreate, ScholarshipRequestResponse
+    ScholarshipRequestCreate, ScholarshipRequestResponse,
+    GroupRoleCreate, GroupRoleUpdate, GroupRoleResponse,
+    GroupMemberRoleAssignment
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -337,3 +339,337 @@ async def get_suggested_groups(
         suggested_groups.extend([row[0] for row in popular_result.all()])
     
     return suggested_groups
+
+
+# ============================================================================
+# Custom Role Management Endpoints
+# ============================================================================
+
+@router.get("/{group_id}/roles", response_model=List[GroupRoleResponse])
+async def get_group_roles(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all custom roles for a group."""
+    from app.models.collaboration import GroupRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Verify user is a member or staff
+    is_member = await GroupService.is_group_member(db, group_id, user.id)
+    if not is_member and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to view group roles")
+    
+    result = await db.execute(
+        select(GroupRole)
+        .where(GroupRole.group_id == group_id)
+        .order_by(GroupRole.position.desc())
+    )
+    
+    return result.scalars().all()
+
+
+@router.post("/{group_id}/roles", response_model=GroupRoleResponse, status_code=status.HTTP_201_CREATED)
+async def create_group_role(
+    group_id: int,
+    role_data: GroupRoleCreate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new custom role for a group (owner/can_manage_roles only)."""
+    from app.models.collaboration import GroupRole
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user can manage roles
+    can_manage = await GroupService.can_manage_roles(db, group_id, user.id)
+    if not can_manage and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to create roles")
+    
+    # Create the role
+    role = GroupRole(
+        group_id=group_id,
+        name=role_data.name,
+        color=role_data.color,
+        position=role_data.position,
+        can_delete_posts=role_data.can_delete_posts,
+        can_delete_comments=role_data.can_delete_comments,
+        can_pin_posts=role_data.can_pin_posts,
+        can_lock_threads=role_data.can_lock_threads,
+        can_manage_tags=role_data.can_manage_tags,
+        can_approve_members=role_data.can_approve_members,
+        can_kick_members=role_data.can_kick_members,
+        can_ban_members=role_data.can_ban_members,
+        can_invite_members=role_data.can_invite_members,
+        can_view_member_list=role_data.can_view_member_list,
+        can_approve_publications=role_data.can_approve_publications,
+        can_edit_publications=role_data.can_edit_publications,
+        can_feature_publications=role_data.can_feature_publications,
+        can_edit_group_info=role_data.can_edit_group_info,
+        can_manage_roles=role_data.can_manage_roles,
+        can_view_analytics=role_data.can_view_analytics,
+        can_export_data=role_data.can_export_data
+    )
+    
+    db.add(role)
+    await db.commit()
+    await db.refresh(role)
+    
+    return role
+
+
+@router.get("/{group_id}/roles/{role_id}", response_model=GroupRoleResponse)
+async def get_group_role(
+    group_id: int,
+    role_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get details of a specific custom role."""
+    from app.models.collaboration import GroupRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Verify user is a member or staff
+    is_member = await GroupService.is_group_member(db, group_id, user.id)
+    if not is_member and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to view group roles")
+    
+    result = await db.execute(
+        select(GroupRole).where(
+            GroupRole.id == role_id,
+            GroupRole.group_id == group_id
+        )
+    )
+    role = result.scalar_one_or_none()
+    
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    return role
+
+
+@router.patch("/{group_id}/roles/{role_id}", response_model=GroupRoleResponse)
+async def update_group_role(
+    group_id: int,
+    role_id: int,
+    role_data: GroupRoleUpdate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update a custom role (owner/can_manage_roles only)."""
+    from app.models.collaboration import GroupRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user can manage roles
+    can_manage = await GroupService.can_manage_roles(db, group_id, user.id)
+    if not can_manage and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to update roles")
+    
+    # Get the role
+    result = await db.execute(
+        select(GroupRole).where(
+            GroupRole.id == role_id,
+            GroupRole.group_id == group_id
+        )
+    )
+    role = result.scalar_one_or_none()
+    
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    # Update fields
+    update_data = role_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(role, field, value)
+    
+    await db.commit()
+    await db.refresh(role)
+    
+    return role
+
+
+@router.delete("/{group_id}/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_group_role(
+    group_id: int,
+    role_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a custom role (owner/can_manage_roles only)."""
+    from app.models.collaboration import GroupRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user can manage roles
+    can_manage = await GroupService.can_manage_roles(db, group_id, user.id)
+    if not can_manage and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to delete roles")
+    
+    # Get the role
+    result = await db.execute(
+        select(GroupRole).where(
+            GroupRole.id == role_id,
+            GroupRole.group_id == group_id
+        )
+    )
+    role = result.scalar_one_or_none()
+    
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    await db.delete(role)
+    await db.commit()
+    
+    return None
+
+
+# ============================================================================
+# Role Assignment Endpoints
+# ============================================================================
+
+@router.get("/{group_id}/members/{member_id}/roles", response_model=List[GroupRoleResponse])
+async def get_member_roles(
+    group_id: int,
+    member_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all custom roles assigned to a specific member."""
+    from app.models.collaboration import GroupRole, GroupMemberCustomRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Verify user is a member or staff
+    is_member = await GroupService.is_group_member(db, group_id, user.id)
+    if not is_member and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to view member roles")
+    
+    result = await db.execute(
+        select(GroupRole)
+        .join(GroupMemberCustomRole, GroupRole.id == GroupMemberCustomRole.role_id)
+        .where(GroupMemberCustomRole.group_member_id == member_id)
+        .order_by(GroupRole.position.desc())
+    )
+    
+    return result.scalars().all()
+
+
+@router.post("/{group_id}/members/{member_id}/roles/{role_id}", status_code=status.HTTP_201_CREATED)
+async def assign_role_to_member(
+    group_id: int,
+    member_id: int,
+    role_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Assign a custom role to a member (owner/can_manage_roles only)."""
+    from app.models.collaboration import GroupMemberCustomRole, GroupRole, GroupMember
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user can manage roles
+    can_manage = await GroupService.can_manage_roles(db, group_id, user.id)
+    if not can_manage and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to assign roles")
+    
+    # Verify role exists and belongs to this group
+    role_result = await db.execute(
+        select(GroupRole).where(
+            GroupRole.id == role_id,
+            GroupRole.group_id == group_id
+        )
+    )
+    role = role_result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    # Verify member exists and belongs to this group
+    member_result = await db.execute(
+        select(GroupMember).where(
+            GroupMember.id == member_id,
+            GroupMember.group_id == group_id
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Check if assignment already exists
+    existing_result = await db.execute(
+        select(GroupMemberCustomRole).where(
+            GroupMemberCustomRole.group_member_id == member_id,
+            GroupMemberCustomRole.role_id == role_id
+        )
+    )
+    existing = existing_result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=400, detail="Role already assigned to this member")
+    
+    # Create assignment
+    assignment = GroupMemberCustomRole(
+        group_member_id=member_id,
+        role_id=role_id,
+        assigned_by=user.id
+    )
+    
+    db.add(assignment)
+    await db.commit()
+    
+    return {"message": "Role assigned successfully"}
+
+
+@router.delete("/{group_id}/members/{member_id}/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_role_from_member(
+    group_id: int,
+    member_id: int,
+    role_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Remove a custom role from a member (owner/can_manage_roles only)."""
+    from app.models.collaboration import GroupMemberCustomRole, GroupMember
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user can manage roles
+    can_manage = await GroupService.can_manage_roles(db, group_id, user.id)
+    if not can_manage and not user.is_staff:
+        raise HTTPException(status_code=403, detail="Not authorized to remove roles")
+    
+    # Verify member belongs to this group
+    member_result = await db.execute(
+        select(GroupMember).where(
+            GroupMember.id == member_id,
+            GroupMember.group_id == group_id
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Find and delete assignment
+    assignment_result = await db.execute(
+        select(GroupMemberCustomRole).where(
+            GroupMemberCustomRole.group_member_id == member_id,
+            GroupMemberCustomRole.role_id == role_id
+        )
+    )
+    assignment = assignment_result.scalar_one_or_none()
+    
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Role assignment not found")
+    
+    await db.delete(assignment)
+    await db.commit()
+    
+    return None

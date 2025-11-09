@@ -220,6 +220,119 @@ class GroupResponse(BaseModel):
 
 
 # ============================================================================
+# Custom Role Schemas
+# ============================================================================
+
+class GroupRoleCreate(BaseModel):
+    """Schema for creating a custom group role."""
+    name: str = Field(..., min_length=1, max_length=100)
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    position: int = Field(default=0)
+    
+    # Content moderation permissions
+    can_delete_posts: bool = False
+    can_delete_comments: bool = False
+    can_pin_posts: bool = False
+    can_lock_threads: bool = False
+    can_manage_tags: bool = False
+    
+    # Member management permissions
+    can_approve_members: bool = False
+    can_kick_members: bool = False
+    can_ban_members: bool = False
+    can_invite_members: bool = False
+    can_view_member_list: bool = True
+    
+    # Publishing permissions
+    can_approve_publications: bool = False
+    can_edit_publications: bool = False
+    can_feature_publications: bool = False
+    
+    # Settings permissions
+    can_edit_group_info: bool = False
+    can_manage_roles: bool = False
+    can_view_analytics: bool = False
+    can_export_data: bool = False
+
+
+class GroupRoleUpdate(BaseModel):
+    """Schema for updating a custom group role."""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    position: Optional[int] = None
+    
+    # Content moderation permissions
+    can_delete_posts: Optional[bool] = None
+    can_delete_comments: Optional[bool] = None
+    can_pin_posts: Optional[bool] = None
+    can_lock_threads: Optional[bool] = None
+    can_manage_tags: Optional[bool] = None
+    
+    # Member management permissions
+    can_approve_members: Optional[bool] = None
+    can_kick_members: Optional[bool] = None
+    can_ban_members: Optional[bool] = None
+    can_invite_members: Optional[bool] = None
+    can_view_member_list: Optional[bool] = None
+    
+    # Publishing permissions
+    can_approve_publications: Optional[bool] = None
+    can_edit_publications: Optional[bool] = None
+    can_feature_publications: Optional[bool] = None
+    
+    # Settings permissions
+    can_edit_group_info: Optional[bool] = None
+    can_manage_roles: Optional[bool] = None
+    can_view_analytics: Optional[bool] = None
+    can_export_data: Optional[bool] = None
+
+
+class GroupRoleResponse(BaseModel):
+    """Schema for group role response."""
+    id: int
+    group_id: int
+    name: str
+    color: Optional[str]
+    position: int
+    
+    # Content moderation permissions
+    can_delete_posts: bool
+    can_delete_comments: bool
+    can_pin_posts: bool
+    can_lock_threads: bool
+    can_manage_tags: bool
+    
+    # Member management permissions
+    can_approve_members: bool
+    can_kick_members: bool
+    can_ban_members: bool
+    can_invite_members: bool
+    can_view_member_list: bool
+    
+    # Publishing permissions
+    can_approve_publications: bool
+    can_edit_publications: bool
+    can_feature_publications: bool
+    
+    # Settings permissions
+    can_edit_group_info: bool
+    can_manage_roles: bool
+    can_view_analytics: bool
+    can_export_data: bool
+    
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class GroupMemberRoleAssignment(BaseModel):
+    """Schema for assigning a role to a member."""
+    role_id: int
+
+
+# ============================================================================
 # Scholarship Schemas
 # ============================================================================
 

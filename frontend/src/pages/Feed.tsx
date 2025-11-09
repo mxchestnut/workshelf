@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
-import { BookOpen, Pin, Clock, Search, User as UserIcon } from 'lucide-react'
+import { BookOpen, Pin, Clock } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -38,7 +38,6 @@ export function Feed() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'feed' | 'discover'>('feed')
 
   useEffect(() => {
     const loadData = async () => {
@@ -63,7 +62,7 @@ export function Feed() {
   const loadFeed = async () => {
     try {
       const token = authService.getToken()
-      const endpoint = activeTab === 'feed' ? '/api/v1/feed' : '/api/v1/feed/discover'
+      const endpoint = '/api/v1/feed'
       
       const response = await fetch(`${API_URL}${endpoint}`, {
         headers: {
@@ -84,12 +83,6 @@ export function Feed() {
       console.error('Error loading feed:', error)
     }
   }
-
-  useEffect(() => {
-    if (user) {
-      loadFeed()
-    }
-  }, [activeTab])
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -121,75 +114,24 @@ export function Feed() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
       
-      {/* Header */}
-      <div className="border-b sticky top-0 z-10" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Feed</h1>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => window.location.href = '/me'}
-                className="p-2 rounded-lg transition-colors text-white hover:bg-opacity-20"
-                title="Profile"
-              >
-                <UserIcon className="w-5 h-5" />
-              </button>
-              <button className="p-2 rounded-lg transition-colors text-white hover:bg-opacity-20">
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          
-          {/* Tabs */}
-          <div className="flex gap-1 mt-4">
-            <button
-              onClick={() => setActiveTab('feed')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'feed'
-                  ? 'text-white'
-                  : 'text-white hover:bg-opacity-20'
-              }`}
-              style={activeTab === 'feed' ? { backgroundColor: '#B34B0C' } : {}}
-            >
-              Your Feed
-            </button>
-            <button
-              onClick={() => setActiveTab('discover')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'discover'
-                  ? 'text-white'
-                  : 'text-white hover:bg-opacity-20'
-              }`}
-              style={activeTab === 'discover' ? { backgroundColor: '#B34B0C' } : {}}
-            >
-              Discover
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
         {posts.length === 0 ? (
           <div className="rounded-lg shadow-sm border p-12 text-center" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
             <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
             <h2 className="text-xl font-bold text-white mb-2">
-              {activeTab === 'feed' ? 'Your feed is empty' : 'No posts to discover'}
+              Your feed is empty
             </h2>
             <p className="mb-6" style={{ color: '#B3B2B0' }}>
-              {activeTab === 'feed' 
-                ? 'Join groups to see posts from your communities.' 
-                : 'Check back later for new posts from public groups.'}
+              Join groups to see posts from your communities.
             </p>
-            {activeTab === 'feed' && (
-              <button 
-                onClick={() => setActiveTab('discover')}
-                className="text-white px-6 py-3 rounded-lg transition-colors hover:opacity-90"
-                style={{ backgroundColor: '#B34B0C' }}
-              >
-                Discover Groups
-              </button>
-            )}
+            <button 
+              onClick={() => window.location.href = '/discover'}
+              className="text-white px-6 py-3 rounded-lg transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#B34B0C' }}
+            >
+              Discover Groups
+            </button>
           </div>
         ) : (
           <div className="space-y-4">

@@ -18,7 +18,8 @@ import {
   PenTool,
   ShoppingBag,
   Upload,
-  UserCircle
+  UserCircle,
+  Search
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -112,7 +113,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <ShoppingBag className="w-5 h-5" />
-                    <span>Store</span>
+                    <span>Ebooks</span>
                   </button>
 
                   {/* Notifications */}
@@ -209,6 +210,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
+                  onClick={() => navigateTo('/discover')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/discover')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/discover') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <Search className="w-5 h-5" />
+                  <span>Discover</span>
+                </button>
+
+                <button 
                   onClick={() => navigateTo('/documents')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/documents')
@@ -218,7 +232,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   style={isActive('/documents') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <FileText className="w-5 h-5" />
-                  <span>Documents</span>
+                  <span>Studio</span>
                 </button>
 
                 <button 
@@ -252,6 +266,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <BookMarked className="w-5 h-5" />
                   <span>My Bookshelf</span>
+                </button>
+
+                <button 
+                  onClick={() => navigateTo('/beta-feed')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/beta-feed')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/beta-feed') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Beta Feed</span>
                 </button>
 
                 <button 
@@ -297,7 +324,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <ShoppingBag className="w-5 h-5" />
-                  <span>Store</span>
+                  <span>Ebooks</span>
                 </button>
 
                 <button 
@@ -311,6 +338,39 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <Upload className="w-5 h-5" />
                   <span>Upload Book</span>
+                </button>
+              </div>
+
+              {/* Beta Services */}
+              <div className="mb-6">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                  Beta Services
+                </p>
+                
+                <button 
+                  onClick={() => navigateTo('/beta-marketplace')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/beta-marketplace')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/beta-marketplace') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <UserCircle className="w-5 h-5" />
+                  <span>Beta Marketplace</span>
+                </button>
+
+                <button 
+                  onClick={() => navigateTo('/my-beta-profile')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/my-beta-profile')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/my-beta-profile') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span>My Beta Profile</span>
                 </button>
               </div>
 

@@ -343,3 +343,77 @@ class GroupService:
         member = result.scalar_one_or_none()
         return member is not None
 
+    @staticmethod
+    async def is_group_member(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> bool:
+        """Check if user is a member of the group."""
+        result = await db.execute(
+            select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == user_id,
+                    GroupMember.is_active == True
+                )
+            )
+        )
+        member = result.scalar_one_or_none()
+        return member is not None
+
+    @staticmethod
+    async def can_manage_roles(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> bool:
+        """Check if user can manage roles (owner or has can_manage_roles permission)."""
+        from app.models.collaboration import GroupRole, GroupMemberCustomRole
+        
+        # Check if owner
+        result = await db.execute(
+            select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == user_id,
+                    GroupMember.role == GroupMemberRole.OWNER
+                )
+            )
+        )
+        member = result.scalar_one_or_none()
+        
+        if member:
+            return True
+        
+        # Check if has can_manage_roles permission via custom role
+        result = await db.execute(
+            select(GroupMember).where(
+                and_(
+                    GroupMember.group_id == group_id,
+                    GroupMember.user_id == user_id,
+                    GroupMember.is_active == True
+                )
+            )
+        )
+        member = result.scalar_one_or_none()
+        
+        if not member:
+            return False
+        
+        # Check custom roles
+        roles_result = await db.execute(
+            select(GroupRole)
+            .join(GroupMemberCustomRole, GroupRole.id == GroupMemberCustomRole.role_id)
+            .where(
+                and_(
+                    GroupMemberCustomRole.group_member_id == member.id,
+                    GroupRole.can_manage_roles == True
+                )
+            )
+        )
+        
+        has_permission = roles_result.first() is not None
+        return has_permission
+
+

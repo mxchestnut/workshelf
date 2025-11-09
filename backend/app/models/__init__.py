@@ -4,7 +4,7 @@ Multi-tenant architecture with Row-Level Security
 """
 from app.models.base import Base
 from app.models.tenant import Tenant, TenantSettings
-from app.models.user import User, UserProfile
+from app.models.user import User, UserProfile, UserBadge, BetaReaderReview, BetaReaderProfile
 from app.models.role import Role, Permission, RolePermission, UserRole
 from app.models.document import Document, DocumentVersion, DocumentCollaborator, Tag, DocumentTag
 from app.models.studio import Studio, StudioMember
