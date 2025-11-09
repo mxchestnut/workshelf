@@ -10,7 +10,6 @@ import {
   Menu,
   X,
   Shield,
-  Crown,
   LogIn,
   LogOut,
   Home,
@@ -228,10 +227,10 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
               </div>
 
-              {/* My Bookshelf */}
+              {/* Library Section */}
               <div className="mb-6">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                  My Bookshelf
+                  Library
                 </p>
                 
                 <button 
@@ -248,16 +247,16 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/free-books')}
+                  onClick={() => navigateTo('/store')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/free-books')
+                    isActive('/store')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/free-books') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
                 >
-                  <BookOpen className="w-5 h-5" />
-                  <span>Free Books</span>
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>Books</span>
                 </button>
               </div>
 
@@ -305,32 +304,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <UserCircle className="w-5 h-5" />
                   <span>Beta Marketplace</span>
                 </button>
-
-                <button 
-                  onClick={() => navigateTo('/dashboard')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/dashboard')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <BarChart className="w-5 h-5" />
-                  <span>Dashboard</span>
-                </button>
-
-                <button 
-                  onClick={() => navigateTo('/store')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/store')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Ebooks</span>
-                </button>
               </div>
 
               {/* Administration */}
@@ -351,55 +324,69 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <UserCircle className="w-5 h-5" />
                   <span>Profile</span>
                 </button>
+
+                <button 
+                  onClick={() => navigateTo('/dashboard')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/dashboard')
+                      ? 'font-medium text-white'
+                      : 'text-white hover:bg-opacity-20'
+                  }`}
+                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
+                >
+                  <BarChart className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </button>
+
+                {/* Admin Dashboard - for group admins */}
+                {user && user.groups && user.groups.length > 0 && (
+                  <button 
+                    onClick={() => navigateTo('/admin')}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      isActive('/admin')
+                        ? 'font-medium text-white'
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Admin</span>
+                  </button>
+                )}
               </div>
 
-              {/* Staff Admin Section */}
-              {user && (user.is_staff || (user.groups && user.groups.length > 0)) && (
+              {/* Staff Section - Keycloak access */}
+              {user && user.is_staff && (
                 <div className="pt-6 border-t" style={{ borderColor: '#6C6A68' }}>
                   <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                    Staff
+                    Staff Only
                   </p>
 
-                  {user.is_staff && (
-                    <>
-                      <button 
-                        onClick={() => navigateTo('/staff')}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                          isActive('/staff')
-                            ? 'font-medium text-white'
-                            : 'text-white hover:bg-opacity-20'
-                        }`}
-                        style={isActive('/staff') ? { backgroundColor: '#7C3306' } : {}}
-                      >
-                        <Shield className="w-5 h-5" />
-                        <span>Staff Dashboard</span>
-                      </button>
-                      
-                      <button 
-                        onClick={() => navigateTo('/admin/moderation')}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                          isActive('/admin/moderation')
-                            ? 'font-medium text-white'
-                            : 'text-white hover:bg-opacity-20'
-                        }`}
-                        style={isActive('/admin/moderation') ? { backgroundColor: '#7C3306' } : {}}
-                      >
-                        <Shield className="w-5 h-5" />
-                        <span>Moderation</span>
-                      </button>
-                    </>
-                  )}
-
-                  {user.groups?.filter(g => g.is_owner).map(group => (
-                    <button
-                      key={group.id}
-                      onClick={() => navigateTo(`/group/${group.slug}/admin`)}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-white hover:bg-opacity-20"
-                    >
-                      <Crown className="w-5 h-5" />
-                      <span>{group.name} Admin</span>
-                    </button>
-                  ))}
+                  <button 
+                    onClick={() => navigateTo('/staff')}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      isActive('/staff')
+                        ? 'font-medium text-white'
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/staff') ? { backgroundColor: '#7C3306' } : {}}
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Staff Dashboard</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => navigateTo('/admin/moderation')}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      isActive('/admin/moderation')
+                        ? 'font-medium text-white'
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/admin/moderation') ? { backgroundColor: '#7C3306' } : {}}
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Moderation</span>
+                  </button>
                 </div>
               )}
             </div>

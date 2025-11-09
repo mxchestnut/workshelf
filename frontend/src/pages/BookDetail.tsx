@@ -87,8 +87,13 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
       onBack()
     } else {
       // If called from URL, determine where to go back to
-      const isStoreItem = bookId.startsWith('store-')
-      window.location.href = isStoreItem ? '/store' : '/bookshelf'
+      // If user owns the book (it's in their bookshelf), go to bookshelf
+      // Otherwise if it's a store item, go to store
+      if (userOwnsBook || !bookId.startsWith('store-')) {
+        window.location.href = '/bookshelf'
+      } else {
+        window.location.href = '/store'
+      }
     }
   }
   
@@ -348,7 +353,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B34B0C]"></div>
       </div>
     )
@@ -356,9 +361,9 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
   if (!book && !storeItem) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#37322E' }}>
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Book not found</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Book not found</h2>
           <button
             onClick={handleBack}
             className="text-[#B34B0C] hover:text-[#8A3809]"
@@ -379,8 +384,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
   const genres = displayData?.genres
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <button
           onClick={handleBack}
@@ -403,8 +408,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                       e.currentTarget.parentElement!.innerHTML = `
-                        <div class="w-64 h-96 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg shadow-md flex items-center justify-center">
-                          <svg class="w-24 h-24 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <div class="w-64 h-96 rounded-lg shadow-md flex items-center justify-center" style="background: linear-gradient(135deg, #524944, #37322E)">
+                          <svg class="w-24 h-24" style="color: #B34B0C" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                           </svg>
@@ -413,8 +418,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     }}
                   />
                 ) : (
-                  <div className="w-64 h-96 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg shadow-md flex items-center justify-center">
-                    <BookOpen className="w-24 h-24 text-purple-300" />
+                  <div className="w-64 h-96 rounded-lg shadow-md flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #524944, #37322E)' }}>
+                    <BookOpen className="w-24 h-24" style={{ color: '#B34B0C' }} />
                   </div>
                 )}
 
@@ -530,6 +535,30 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       View on Google Books
                     </a>
                   )}
+
+                  {/* Library Link - for bookshelf items */}
+                  {userOwnsBook && book && (
+                    <a
+                      href={`https://www.overdrive.com/search?q=${encodeURIComponent(book.title || '')}%20${encodeURIComponent(book.author || '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      Find at Library (Libby)
+                    </a>
+                  )}
+
+                  {/* Store Link - for bookshelf items, check if book is in store */}
+                  {userOwnsBook && book && (
+                    <button
+                      onClick={() => window.location.href = `/store?search=${encodeURIComponent(book.title || '')}`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      View in Store
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -587,34 +616,34 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
                 {/* Audiobook Info - Show if store item has audiobook and audiobook format selected */}
                 {storeItem?.has_audiobook && selectedFormat === 'audiobook' && (
-                  <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="mb-6 p-4 rounded-lg border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
                     <div className="space-y-2">
                       {storeItem.audiobook_narrator && (
-                        <div className="flex items-start gap-2 text-gray-700">
+                        <div className="flex items-start gap-2">
                           <User className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Narrated by:</span>
-                            <p className="text-base font-semibold">{storeItem.audiobook_narrator}</p>
+                            <span className="text-sm font-medium" style={{ color: '#B3B2B0' }}>Narrated by:</span>
+                            <p className="text-base font-semibold text-white">{storeItem.audiobook_narrator}</p>
                           </div>
                         </div>
                       )}
                       {storeItem.audiobook_duration_minutes && (
-                        <div className="flex items-start gap-2 text-gray-700">
+                        <div className="flex items-start gap-2">
                           <FileText className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Duration:</span>
-                            <p className="text-base font-semibold">
+                            <span className="text-sm font-medium" style={{ color: '#B3B2B0' }}>Duration:</span>
+                            <p className="text-base font-semibold text-white">
                               {Math.floor(storeItem.audiobook_duration_minutes / 60)}h {storeItem.audiobook_duration_minutes % 60}m
                             </p>
                           </div>
                         </div>
                       )}
                       {storeItem.audiobook_file_format && (
-                        <div className="flex items-start gap-2 text-gray-700">
+                        <div className="flex items-start gap-2">
                           <FileText className="w-5 h-5 text-[#B34B0C] mt-0.5" />
                           <div>
-                            <span className="text-sm font-medium text-gray-600">Format:</span>
-                            <p className="text-base font-semibold uppercase">{storeItem.audiobook_file_format}</p>
+                            <span className="text-sm font-medium" style={{ color: '#B3B2B0' }}>Format:</span>
+                            <p className="text-base font-semibold text-white uppercase">{storeItem.audiobook_file_format}</p>
                           </div>
                         </div>
                       )}
@@ -625,14 +654,15 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                 {/* Status Selector - Only show if user owns the book */}
                 {userOwnsBook && book && (
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#B3B2B0' }}>
                       Reading Status
                     </label>
                     <select
                       value={book.status}
                       onChange={(e) => updateStatus(e.target.value)}
                       disabled={updating}
-                      className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full max-w-xs px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                      style={{ borderColor: '#6C6A68', backgroundColor: '#524944', color: 'white' }}
                     >
                       <option value="reading">Currently Reading</option>
                       <option value="read">Read</option>
@@ -674,18 +704,18 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
                 {/* Store Item: Price and Sales Info - Only show if NOT owned */}
                 {!userOwnsBook && storeItem && (
-                  <div className="mb-6 p-4 bg-purple-50 rounded-lg">
+                  <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: '#524944' }}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-3xl font-bold text-[#B34B0C]">
                         ${storeItem.final_price.toFixed(2)}
                       </span>
                       {storeItem.discount_percentage > 0 && (
-                        <span className="text-lg text-gray-400 line-through">
+                        <span className="text-lg line-through" style={{ color: '#B3B2B0' }}>
                           ${storeItem.price_usd.toFixed(2)}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600">{storeItem.total_sales} copies sold</p>
+                    <p className="text-sm" style={{ color: '#B3B2B0' }}>{storeItem.total_sales} copies sold</p>
                   </div>
                 )}
 
@@ -700,7 +730,8 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       {genres.map((genre, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                          className="px-3 py-1 rounded-full text-sm font-medium"
+                          style={{ backgroundColor: '#B34B0C', color: 'white' }}
                         >
                           {genre}
                         </span>

@@ -68,16 +68,17 @@
         <div class="spinner"></div>
         <p class="note">
             If you're not redirected automatically,
-            <a href="http://kits-macbook-pro.tail41ebb6.ts.net:8080/" id="manual-link">click here</a>.
+            <a href="http://localhost:8081/" id="manual-link">click here</a>.
             <br><br>
-            <small>Note: This requires Tailscale access.</small>
+            <small>Staff Only: Keycloak Admin Console (admin/admin)</small>
         </p>
     </div>
 
     <script>
         // Redirect after 2 seconds
+        // Updated to use localhost - Keycloak must be running locally
         setTimeout(function() {
-            window.location.href = 'http://kits-macbook-pro.tail41ebb6.ts.net:8080/';
+            window.location.href = 'http://localhost:8081/';
         }, 2000);
     </script>
 </body>

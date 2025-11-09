@@ -20,6 +20,7 @@ const Groups = lazy(() => import('./pages/Groups'))
 const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -44,7 +45,7 @@ const MyBetaProfile = lazy(() => import('./pages/MyBetaProfile'))
 const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -74,6 +75,8 @@ function App() {
       setCurrentPage('projects')
     } else if (path === '/dashboard') {
       setCurrentPage('dashboard')
+    } else if (path === '/admin') {
+      setCurrentPage('admin')
     } else if (path === '/documents') {
       setCurrentPage('documents')
     } else if (path === '/document') {
@@ -170,6 +173,10 @@ function App() {
     
     if (currentPage === 'dashboard') {
       return <Dashboard />
+    }
+    
+    if (currentPage === 'admin') {
+      return <AdminDashboard />
     }
     
     if (currentPage === 'documents') {

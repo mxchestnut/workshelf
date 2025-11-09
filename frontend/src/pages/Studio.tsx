@@ -109,18 +109,23 @@ export function Studio() {
       
       if (!currentUser) {
         console.warn('[Studio] No user found, redirecting to login')
-        authService.login()
+        setTimeout(() => {
+          authService.login()
+        }, 100)
       }
     } catch (err) {
       console.error('[Studio] Error loading user:', err)
-      authService.login()
+      setTimeout(() => {
+        authService.login()
+      }, 100)
     }
   }
 
   const loadDocuments = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('access_token')
       if (!token) {
+        console.log('[Studio] No token found')
         setDocuments([])
         setLoading(false)
         return
@@ -134,7 +139,8 @@ export function Studio() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('token')
+          console.warn('[Studio] Token expired or invalid')
+          localStorage.removeItem('access_token')
           setDocuments([])
           setLoading(false)
           return
@@ -143,15 +149,24 @@ export function Studio() {
       }
 
       const data = await response.json()
-      setDocuments(data.documents)
+      console.log('[Studio] Documents loaded:', data.documents?.length || 0)
+      setDocuments(data.documents || [])
       setLoading(false)
     } catch (err) {
-      console.error('Error loading documents:', err)
+      console.error('[Studio] Error loading documents:', err)
       setLoading(false)
     }
   }
 
   const createFromTemplate = (templateId: string) => {
+    // Check if user is logged in before navigating
+    const token = localStorage.getItem('access_token')
+    if (!token || !user) {
+      console.warn('[Studio] User not logged in, redirecting to login')
+      authService.login()
+      return
+    }
+    
     // Navigate to document creator with template
     window.location.href = `/document?template=${templateId}`
   }
