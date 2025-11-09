@@ -142,8 +142,43 @@ async def get_document_by_id(
         if document.visibility == DocumentVisibility.PUBLIC:
             return document
         
-        # TODO: Check studio membership for STUDIO visibility
-        # TODO: Check collaborator status
+        # Check studio membership for STUDIO visibility
+        if document.visibility == DocumentVisibility.STUDIO:
+            if document.studio_id:
+                # Query studio membership
+                from app.models.studio import StudioMember
+                studio_member_result = await session.execute(
+                    select(StudioMember).where(
+                        StudioMember.studio_id == document.studio_id,
+                        StudioMember.user_id == user_id,
+                        StudioMember.is_active == True,
+                        StudioMember.is_approved == True
+                    )
+                )
+                studio_member = studio_member_result.scalar_one_or_none()
+                
+                if studio_member:
+                    return document
+            
+            # Not a studio member - deny access
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You must be an approved studio member to access this document"
+            )
+        
+        # Check collaborator status for non-public documents
+        from app.models.document import DocumentCollaborator
+        collaborator_result = await session.execute(
+            select(DocumentCollaborator).where(
+                DocumentCollaborator.document_id == document.id,
+                DocumentCollaborator.user_id == user_id
+            )
+        )
+        collaborator = collaborator_result.scalar_one_or_none()
+        
+        if collaborator:
+            # Collaborator has access
+            return document
         
         # If not owner and document is private
         if document.visibility == DocumentVisibility.PRIVATE:
@@ -228,8 +263,32 @@ async def update_document(
     # Get document and check ownership
     document = await get_document_by_id(session, document_id, user_id)
     
-    if document.owner_id != user_id:
-        # TODO: Check if user is a collaborator with edit permission
+    # Check if user has edit permission
+    can_edit = False
+    
+    # Owner can always edit
+    if document.owner_id == user_id:
+        can_edit = True
+    else:
+        # Check if user is a collaborator with edit permission
+        from app.models.document import DocumentCollaborator, CollaboratorRole
+        collaborator_result = await session.execute(
+            select(DocumentCollaborator).where(
+                DocumentCollaborator.document_id == document_id,
+                DocumentCollaborator.user_id == user_id
+            )
+        )
+        collaborator = collaborator_result.scalar_one_or_none()
+        
+        if collaborator:
+            # Check if collaborator role allows editing
+            # OWNER and EDITOR can edit, others cannot
+            if collaborator.role in [CollaboratorRole.OWNER, CollaboratorRole.EDITOR]:
+                can_edit = True
+            elif collaborator.can_edit:  # Explicit permission flag
+                can_edit = True
+    
+    if not can_edit:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to edit this document"
