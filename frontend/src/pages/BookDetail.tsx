@@ -56,6 +56,18 @@ interface StoreItem {
   is_bestseller: boolean
   is_new_release: boolean
   published_at?: string
+  // Audiobook fields
+  has_audiobook: boolean
+  audiobook_narrator?: string
+  audiobook_duration_minutes?: number
+  audiobook_file_url?: string
+  audiobook_sample_url?: string
+  audiobook_file_format?: string
+  audiobook_file_size_bytes?: number
+  audiobook_price_usd?: number
+  audiobook_final_price?: number
+  available_formats: string[]
+  has_ebook: boolean
 }
 
 interface BookDetailProps {
@@ -87,6 +99,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
   const [showReader, setShowReader] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
   const [userOwnsBook, setUserOwnsBook] = useState(false)
+  const [selectedFormat, setSelectedFormat] = useState<'ebook' | 'audiobook'>('ebook')
 
   const isStoreItem = bookId.startsWith('store-')
   const actualId = isStoreItem ? bookId.replace('store-', '') : bookId
@@ -432,16 +445,50 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </button>
                   )}
 
-                  {/* If user doesn't own the book BUT it's available in store: Show Buy Now */}
+                  {/* If user doesn't own the book BUT it's available in store: Show format tabs and Buy Now */}
                   {!userOwnsBook && storeItem && (
                     <>
+                      {/* Format Selector Tabs */}
+                      {storeItem.available_formats.length > 1 && (
+                        <div className="w-full flex gap-2 p-1 bg-gray-100 rounded-lg mb-3">
+                          {storeItem.has_ebook && (
+                            <button
+                              onClick={() => setSelectedFormat('ebook')}
+                              className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all ${
+                                selectedFormat === 'ebook'
+                                  ? 'bg-white text-purple-600 shadow-sm'
+                                  : 'text-gray-600 hover:text-gray-900'
+                              }`}
+                            >
+                              Ebook - ${storeItem.final_price.toFixed(2)}
+                            </button>
+                          )}
+                          {storeItem.has_audiobook && (
+                            <button
+                              onClick={() => setSelectedFormat('audiobook')}
+                              className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all ${
+                                selectedFormat === 'audiobook'
+                                  ? 'bg-white text-purple-600 shadow-sm'
+                                  : 'text-gray-600 hover:text-gray-900'
+                              }`}
+                            >
+                              Audiobook - ${storeItem.audiobook_final_price?.toFixed(2) || '0.00'}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
                       <button
                         onClick={handlePurchase}
                         disabled={purchasing}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
                       >
                         <ShoppingCart className="w-5 h-5" />
-                        {purchasing ? 'Processing...' : `Buy Now - $${storeItem.final_price.toFixed(2)}`}
+                        {purchasing ? 'Processing...' : `Buy ${selectedFormat === 'audiobook' ? 'Audiobook' : 'Ebook'} - $${
+                          selectedFormat === 'audiobook' && storeItem.audiobook_final_price 
+                            ? storeItem.audiobook_final_price.toFixed(2)
+                            : storeItem.final_price.toFixed(2)
+                        }`}
                       </button>
                       
                       <button
@@ -518,6 +565,43 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     <span className="text-sm text-gray-600">
                       {book?.rating ? `${book.rating}/5` : 'Not rated'}
                     </span>
+                  </div>
+                )}
+
+                {/* Audiobook Info - Show if store item has audiobook and audiobook format selected */}
+                {storeItem?.has_audiobook && selectedFormat === 'audiobook' && (
+                  <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="space-y-2">
+                      {storeItem.audiobook_narrator && (
+                        <div className="flex items-start gap-2 text-gray-700">
+                          <User className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Narrated by:</span>
+                            <p className="text-base font-semibold">{storeItem.audiobook_narrator}</p>
+                          </div>
+                        </div>
+                      )}
+                      {storeItem.audiobook_duration_minutes && (
+                        <div className="flex items-start gap-2 text-gray-700">
+                          <FileText className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Duration:</span>
+                            <p className="text-base font-semibold">
+                              {Math.floor(storeItem.audiobook_duration_minutes / 60)}h {storeItem.audiobook_duration_minutes % 60}m
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {storeItem.audiobook_file_format && (
+                        <div className="flex items-start gap-2 text-gray-700">
+                          <FileText className="w-5 h-5 text-purple-600 mt-0.5" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">Format:</span>
+                            <p className="text-base font-semibold uppercase">{storeItem.audiobook_file_format}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
