@@ -35,7 +35,7 @@ class ProjectTemplate(Base, TimestampMixin):
     sections = relationship("TemplateSection", back_populates="template", cascade="all, delete-orphan")
     studios = relationship("Studio", back_populates="template")
     searches = relationship("TemplateSearch", back_populates="selected_template")
-    # interest_mappings = relationship("TemplateInterestMapping", back_populates="template", cascade="all, delete-orphan")  # TODO: Implement TemplateInterestMapping model
+    interest_mappings = relationship("TemplateInterestMapping", back_populates="template", cascade="all, delete-orphan")
     
     __table_args__ = (
         Index('ix_template_active_category', 'is_active', 'category'),

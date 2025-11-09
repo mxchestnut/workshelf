@@ -12,6 +12,11 @@ class SearchQuery(BaseModel):
     type: Optional[Literal["document", "user", "studio", "all"]] = "all"
     page: int = Field(1, ge=1)
     page_size: int = Field(20, ge=1, le=100)
+    
+    # Tag filtering for content discovery and warnings
+    include_tags: Optional[List[str]] = Field(None, description="Only show documents with these tags (OR logic)")
+    exclude_tags: Optional[List[str]] = Field(None, description="Exclude documents with these tags (content warnings)")
+    require_all_tags: bool = Field(False, description="If True, require ALL include_tags (AND logic). Default is OR logic.")
 
 
 class SearchResult(BaseModel):

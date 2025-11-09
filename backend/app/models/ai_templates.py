@@ -87,8 +87,7 @@ class TemplateInterestMapping(Base):
     created_at = Column(DateTime(timezone=True), server_default=text('now()'), nullable=False)
     
     # Relationships
-    # TODO: Uncomment when interest_mappings relationship is enabled in ProjectTemplate
-    # template = relationship("ProjectTemplate", back_populates="interest_mappings")
+    template = relationship("ProjectTemplate", back_populates="interest_mappings")
 
 
 class AIGenerationLog(Base):
