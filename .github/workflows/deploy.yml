@@ -50,6 +50,7 @@ jobs:
           push: true
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_KEYCLOAK_URL=${{ secrets.VITE_KEYCLOAK_URL }}
           tags: |
             ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest
             ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }}
