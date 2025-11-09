@@ -33,6 +33,7 @@ import { AuthCallback } from './pages/AuthCallback'
 import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
 import HouseRules from './pages/HouseRules'
+import { Sitemap } from './pages/Sitemap'
 import { authService, User } from './services/auth'
 
 // Lazy load large components
@@ -51,7 +52,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('documents')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'sitemap'>('home')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -72,6 +73,8 @@ function App() {
       setCurrentPage('terms')
     } else if (path === '/legal/rules') {
       setCurrentPage('rules')
+    } else if (path === '/sitemap' || path === '/overview') {
+      setCurrentPage('sitemap')
     } else if (path === '/feed') {
       setCurrentPage('feed')
       loadUser()
@@ -160,6 +163,10 @@ function App() {
       return <HouseRules />
     }
     
+    if (currentPage === 'sitemap') {
+      return <Sitemap />
+    }
+    
     if (currentPage === 'feed') {
       return <Feed />
     }
@@ -241,8 +248,8 @@ function App() {
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, sitemap, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'sitemap' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
     return renderContent()
   }
 
@@ -281,6 +288,15 @@ function App() {
                   className="pl-10 pr-4 py-2 border border-neutral-light rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
+              
+              {/* Sitemap Link */}
+              <a
+                href="/sitemap"
+                className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Explore Platform</span>
+              </a>
               
               {user && (
                 <>
