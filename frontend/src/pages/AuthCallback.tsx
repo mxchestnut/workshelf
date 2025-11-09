@@ -7,6 +7,8 @@ import { useEffect, useState, useRef } from 'react'
 import { authService } from '../services/auth'
 import { BookOpen } from 'lucide-react'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+
 export function AuthCallback() {
   const [error, setError] = useState<string | null>(null)
   const hasHandledCallback = useRef(false)
@@ -59,6 +61,25 @@ export function AuthCallback() {
         // Clean up the processed code marker (optional, but keeps sessionStorage clean)
         const processedCodeKey = `oauth_code_${code}`
         sessionStorage.removeItem(processedCodeKey)
+        
+        // Check if user signed up via invitation
+        const invitationToken = localStorage.getItem('invitation_token')
+        if (invitationToken) {
+          console.log('[AuthCallback] User signed up via invitation, marking as accepted')
+          try {
+            const token = localStorage.getItem('access_token')
+            await fetch(`${API_URL}/api/v1/invitations/accept/${invitationToken}`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` }
+            })
+            // Clean up invitation data
+            localStorage.removeItem('invitation_token')
+            localStorage.removeItem('invitation_email')
+          } catch (inviteErr) {
+            console.error('[AuthCallback] Failed to mark invitation as accepted:', inviteErr)
+            // Continue anyway - don't block user flow
+          }
+        }
         
         // Check if user has completed onboarding (has username and phone)
         if (!user.username) {

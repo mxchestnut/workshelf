@@ -43,7 +43,8 @@ from app.api import (
     admin_moderation,  # Admin moderation for wiki edits
     group_admin,  # Group admin endpoints for subdomain owners
     feed,  # Personalized feed
-    interests  # Dynamic interests from group tags
+    interests,  # Dynamic interests from group tags
+    invitations  # Email invitations for onboarding
 )
 
 api_router = APIRouter()
@@ -142,3 +143,6 @@ api_router.include_router(admin_moderation.router)
 
 # Group admin endpoints (Keycloak-protected for group owners)
 api_router.include_router(group_admin.router)
+
+# Email invitations for onboarding
+api_router.include_router(invitations.router)

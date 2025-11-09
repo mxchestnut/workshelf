@@ -44,9 +44,10 @@ const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
 const BetaFeed = lazy(() => import('./pages/BetaFeed'))
 const MyBetaProfile = lazy(() => import('./pages/MyBetaProfile'))
 const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
+const Invite = lazy(() => import('./pages/Invite'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -111,6 +112,9 @@ function App() {
     } else if (path.startsWith('/book/')) {
       // Book detail page: /book/:id or /book/store-:id
       setCurrentPage('book-detail')
+    } else if (path.startsWith('/invite/')) {
+      // Invitation page: /invite/:token
+      setCurrentPage('invite')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -142,6 +146,10 @@ function App() {
     
     if (currentPage === 'sitemap') {
       return <Sitemap />
+    }
+    
+    if (currentPage === 'invite') {
+      return <Invite />
     }
     
     if (currentPage === 'feed') {

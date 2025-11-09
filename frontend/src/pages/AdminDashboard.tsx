@@ -15,7 +15,13 @@ import {
   MessageSquare,
   BookOpen,
   Settings,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Send,
+  X,
+  CheckCircle,
+  Clock,
+  XCircle
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -35,6 +41,16 @@ interface Group {
   post_count: number
 }
 
+interface Invitation {
+  id: number
+  email: string
+  token: string
+  status: 'pending' | 'accepted' | 'expired' | 'revoked'
+  created_at: string
+  expires_at: string
+  accepted_at?: string
+}
+
 export function AdminDashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -42,6 +58,10 @@ export function AdminDashboard() {
   const [managedGroups, setManagedGroups] = useState<Group[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation' | 'site-admin'>('overview')
   const [isStaff, setIsStaff] = useState(false)
+  const [invitations, setInvitations] = useState<Invitation[]>([])
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteMessage, setInviteMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
 
   useEffect(() => {
     loadUser()
@@ -114,11 +134,106 @@ export function AdminDashboard() {
       }
 
       setLoading(false)
-    } catch (err) {
-      console.error('[AdminDashboard] Error loading admin data:', err)
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading admin data:', error)
       setLoading(false)
     }
   }
+
+  const loadInvitations = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/invitations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setInvitations(data)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading invitations:', error)
+    }
+  }
+
+  const sendInvitation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inviteEmail || inviteLoading) return
+
+    setInviteLoading(true)
+    setInviteMessage(null)
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setInviteMessage({ type: 'error', text: 'Not authenticated' })
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/invitations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: inviteEmail })
+      })
+
+      if (response.ok) {
+        const invitation = await response.json()
+        setInvitations([invitation, ...invitations])
+        setInviteEmail('')
+        setInviteMessage({ 
+          type: 'success', 
+          text: `Invitation sent to ${inviteEmail}. Share this link: ${window.location.origin}/invite/${invitation.token}` 
+        })
+      } else {
+        const error = await response.json()
+        setInviteMessage({ type: 'error', text: error.detail || 'Failed to send invitation' })
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error sending invitation:', error)
+      setInviteMessage({ type: 'error', text: 'Failed to send invitation' })
+    } finally {
+      setInviteLoading(false)
+    }
+  }
+
+  const revokeInvitation = async (invitationId: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/invitations/${invitationId}/revoke`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        setInvitations(invitations.map(inv => 
+          inv.id === invitationId ? { ...inv, status: 'revoked' } : inv
+        ))
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error revoking invitation:', error)
+    }
+  }
+
+  const copyInviteLink = (token: string) => {
+    const link = `${window.location.origin}/invite/${token}`
+    navigator.clipboard.writeText(link)
+    setInviteMessage({ type: 'success', text: 'Invitation link copied to clipboard!' })
+    setTimeout(() => setInviteMessage(null), 3000)
+  }
+
+  // Load invitations when Site Admin tab becomes active
+  useEffect(() => {
+    if (activeTab === 'site-admin' && isStaff && invitations.length === 0) {
+      loadInvitations()
+    }
+  }, [activeTab, isStaff])
 
   const navigateToGroup = (slug: string) => {
     window.location.href = `/groups/${slug}`
@@ -399,6 +514,98 @@ export function AdminDashboard() {
                 </div>
                 <p className="text-3xl font-bold text-white mb-1">--</p>
                 <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Staff</p>
+              </div>
+            </div>
+
+            {/* Invite Users */}
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Mail className="w-6 h-6" />
+                Invite Users
+              </h3>
+              
+              <form onSubmit={sendInvitation} className="mb-6">
+                <div className="flex gap-4">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    required
+                    className="flex-1 px-4 py-2 rounded-lg text-white placeholder-gray-400 border-2 focus:outline-none focus:border-[#B34B0C]"
+                    style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={inviteLoading || !inviteEmail}
+                    className="px-6 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    {inviteLoading ? 'Sending...' : 'Send Invite'}
+                  </button>
+                </div>
+              </form>
+
+              {inviteMessage && (
+                <div className={`mb-4 p-4 rounded-lg flex items-center justify-between ${
+                  inviteMessage.type === 'success' ? 'bg-green-900/30 border border-green-700' : 'bg-red-900/30 border border-red-700'
+                }`}>
+                  <p className="text-white text-sm">{inviteMessage.text}</p>
+                  <button
+                    onClick={() => setInviteMessage(null)}
+                    className="text-white hover:opacity-80"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h4 className="font-semibold text-white mb-2">Recent Invitations</h4>
+                {invitations.length === 0 ? (
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>No invitations sent yet</p>
+                ) : (
+                  invitations.slice(0, 10).map(invitation => (
+                    <div
+                      key={invitation.id}
+                      className="p-4 rounded-lg border-2 flex items-center justify-between"
+                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-white">{invitation.email}</p>
+                        <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: '#B3B2B0' }}>
+                          <span className="flex items-center gap-1">
+                            {invitation.status === 'pending' && <Clock className="w-4 h-4 text-yellow-500" />}
+                            {invitation.status === 'accepted' && <CheckCircle className="w-4 h-4 text-green-500" />}
+                            {invitation.status === 'expired' && <XCircle className="w-4 h-4 text-gray-500" />}
+                            {invitation.status === 'revoked' && <XCircle className="w-4 h-4 text-red-500" />}
+                            {invitation.status}
+                          </span>
+                          <span>Sent {new Date(invitation.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {invitation.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => copyInviteLink(invitation.token)}
+                              className="px-3 py-1 bg-[#B34B0C] text-white text-sm rounded hover:bg-[#8A3809] transition-colors"
+                            >
+                              Copy Link
+                            </button>
+                            <button
+                              onClick={() => revokeInvitation(invitation.id)}
+                              className="px-3 py-1 border-2 text-white text-sm rounded hover:border-red-500 transition-colors"
+                              style={{ borderColor: '#6C6A68' }}
+                            >
+                              Revoke
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
