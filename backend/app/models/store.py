@@ -57,11 +57,21 @@ class StoreItem(Base):
     discount_percentage = Column(Integer, default=0)  # 0-100 for sales/promotions
     
     # Content Storage
-    epub_blob_url = Column(String(1000), nullable=False)  # Azure Blob Storage URL for EPUB
+    epub_blob_url = Column(String(1000), nullable=True)  # Azure Blob Storage URL for EPUB (nullable if audiobook-only)
     cover_blob_url = Column(String(1000), nullable=True)  # Book cover image
     sample_blob_url = Column(String(1000), nullable=True)  # Free sample chapters
-    file_hash = Column(String(64), nullable=False, unique=True)  # SHA-256 of EPUB for deduplication
-    file_size_bytes = Column(Integer, nullable=False)
+    file_hash = Column(String(64), nullable=True, unique=True)  # SHA-256 of EPUB for deduplication
+    file_size_bytes = Column(Integer, nullable=True)
+    
+    # Audiobook Fields
+    has_audiobook = Column(Boolean, default=False, nullable=False)
+    audiobook_narrator = Column(String(255), nullable=True)  # Narrator name
+    audiobook_duration_minutes = Column(Integer, nullable=True)  # Total duration in minutes
+    audiobook_file_url = Column(String(1000), nullable=True)  # Azure Blob Storage URL for audio file
+    audiobook_sample_url = Column(String(1000), nullable=True)  # Preview clip URL
+    audiobook_file_format = Column(String(10), nullable=True)  # mp3, m4b, etc.
+    audiobook_file_size_bytes = Column(Integer, nullable=True)
+    audiobook_price_usd = Column(Numeric(10, 2), nullable=True)  # Can have different price than ebook
     
     # Store Management
     status = Column(String(20), default=StoreItemStatus.DRAFT, index=True)
@@ -187,4 +197,79 @@ class AuthorEarnings(Base):
     __table_args__ = (
         Index('idx_author_earnings_status', 'author_id', 'payout_status'),
         Index('idx_author_earnings_payout', 'payout_status', 'created_at'),
+    )
+
+
+class AudiobookSubmissionStatus(str, Enum):
+    """Status of audiobook submission"""
+    PENDING = "pending"              # Just uploaded, awaiting verification
+    VERIFYING = "verifying"          # Currently running checks
+    VERIFIED = "verified"            # Passed all checks, auto-approved
+    NEEDS_REVIEW = "needs_review"    # Requires manual moderator review
+    APPROVED = "approved"            # Manually approved by moderator
+    REJECTED = "rejected"            # Quality issues, incorrect format, etc.
+    PUBLISHED = "published"          # Live on platform
+
+
+class AudiobookSubmission(Base):
+    """
+    User-submitted audiobook files
+    Tracks verification and moderation process
+    Similar to EpubSubmission but for audio content
+    """
+    __tablename__ = "audiobook_submissions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    store_item_id = Column(Integer, ForeignKey("store_items.id"), nullable=True, index=True)  # Link to existing book
+    
+    # Book metadata (if creating new book)
+    title = Column(String(500), nullable=False)
+    author_name = Column(String(200), nullable=False)
+    narrator_name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    genres = Column(JSON, nullable=True)  # ["genre1", "genre2"]
+    isbn = Column(String(20), nullable=True, index=True)
+    
+    # Audio file storage
+    file_hash = Column(String(64), nullable=False, unique=True, index=True)  # SHA-256
+    blob_url = Column(String(1000), nullable=False)  # Azure Blob Storage URL
+    sample_blob_url = Column(String(1000), nullable=True)  # Preview clip
+    cover_blob_url = Column(String(1000), nullable=True)  # Cover image
+    file_size_bytes = Column(Integer, nullable=False)
+    file_format = Column(String(10), nullable=False)  # mp3, m4b, etc.
+    
+    # Audio metadata
+    duration_minutes = Column(Integer, nullable=False)  # Total duration
+    bitrate_kbps = Column(Integer, nullable=True)  # Audio quality
+    sample_rate_hz = Column(Integer, nullable=True)  # 44100, 48000, etc.
+    
+    # Verification results
+    status = Column(String(20), nullable=False, default=AudiobookSubmissionStatus.PENDING, index=True)
+    verification_passed = Column(Boolean, nullable=True)  # Overall pass/fail
+    audio_quality_score = Column(Integer, nullable=True)  # 0-100
+    format_valid = Column(Boolean, nullable=True)
+    duration_verified = Column(Boolean, nullable=True)
+    
+    # Moderation
+    moderator_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    moderator_notes = Column(Text, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    
+    # Pricing (if new book)
+    price_usd = Column(Numeric(10, 2), nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    published_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+    moderator = relationship("User", foreign_keys=[moderator_id])
+    store_item = relationship("StoreItem", foreign_keys=[store_item_id])
+    
+    __table_args__ = (
+        Index('idx_audiobook_submissions_user_status', 'user_id', 'status'),
     )

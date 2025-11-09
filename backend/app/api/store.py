@@ -49,6 +49,21 @@ class StoreItemResponse(BaseModel):
     is_new_release: bool
     published_at: Optional[datetime]
     
+    # Audiobook fields
+    has_audiobook: bool = False
+    audiobook_narrator: Optional[str] = None
+    audiobook_duration_minutes: Optional[int] = None
+    audiobook_file_url: Optional[str] = None
+    audiobook_sample_url: Optional[str] = None
+    audiobook_file_format: Optional[str] = None
+    audiobook_file_size_bytes: Optional[int] = None
+    audiobook_price_usd: Optional[float] = None
+    audiobook_final_price: Optional[float] = None  # After discount
+    
+    # Computed fields
+    available_formats: List[str] = Field(default_factory=list)  # ["ebook", "audiobook"]
+    has_ebook: bool = True  # True if epub_blob_url is set
+    
     class Config:
         from_attributes = True
 
@@ -97,6 +112,7 @@ class PublicKeyResponse(BaseModel):
 async def browse_store(
     search: Optional[str] = None,
     genre: Optional[str] = None,
+    format: Optional[str] = None,  # "ebook", "audiobook", or None for both
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     featured: Optional[bool] = None,
@@ -113,6 +129,7 @@ async def browse_store(
     Filters:
     - search: Search in title or author name
     - genre: Filter by genre
+    - format: Filter by format ("ebook", "audiobook", or omit for both)
     - min_price/max_price: Price range
     - featured/bestseller/new_release: Special flags
     - sort_by: Sort order
@@ -133,6 +150,12 @@ async def browse_store(
     if genre:
         # PostgreSQL JSON array contains
         query = query.where(StoreItem.genres.contains([genre]))
+    
+    # Format filter
+    if format == "ebook":
+        query = query.where(StoreItem.epub_blob_url.isnot(None))
+    elif format == "audiobook":
+        query = query.where(StoreItem.has_audiobook == True)
     
     if min_price is not None:
         query = query.where(StoreItem.price_usd >= min_price)
@@ -173,6 +196,21 @@ async def browse_store(
         if item.discount_percentage > 0:
             final_price = final_price * (1 - item.discount_percentage / 100)
         
+        # Calculate audiobook final price
+        audiobook_final = None
+        if item.has_audiobook and item.audiobook_price_usd:
+            audiobook_final = float(item.audiobook_price_usd)
+            if item.discount_percentage > 0:
+                audiobook_final = audiobook_final * (1 - item.discount_percentage / 100)
+            audiobook_final = round(audiobook_final, 2)
+        
+        # Determine available formats
+        formats = []
+        if item.epub_blob_url:
+            formats.append("ebook")
+        if item.has_audiobook:
+            formats.append("audiobook")
+        
         response.append(StoreItemResponse(
             id=item.id,
             title=item.title,
@@ -194,7 +232,19 @@ async def browse_store(
             is_featured=item.is_featured,
             is_bestseller=item.is_bestseller,
             is_new_release=item.is_new_release,
-            published_at=item.published_at
+            published_at=item.published_at,
+            # Audiobook fields
+            has_audiobook=item.has_audiobook,
+            audiobook_narrator=item.audiobook_narrator,
+            audiobook_duration_minutes=item.audiobook_duration_minutes,
+            audiobook_file_url=item.audiobook_file_url,
+            audiobook_sample_url=item.audiobook_sample_url,
+            audiobook_file_format=item.audiobook_file_format,
+            audiobook_file_size_bytes=item.audiobook_file_size_bytes,
+            audiobook_price_usd=float(item.audiobook_price_usd) if item.audiobook_price_usd else None,
+            audiobook_final_price=audiobook_final,
+            available_formats=formats,
+            has_ebook=bool(item.epub_blob_url)
         ))
     
     return response
@@ -226,6 +276,21 @@ async def get_store_item(
     if item.discount_percentage > 0:
         final_price = final_price * (1 - item.discount_percentage / 100)
     
+    # Calculate audiobook final price
+    audiobook_final = None
+    if item.has_audiobook and item.audiobook_price_usd:
+        audiobook_final = float(item.audiobook_price_usd)
+        if item.discount_percentage > 0:
+            audiobook_final = audiobook_final * (1 - item.discount_percentage / 100)
+        audiobook_final = round(audiobook_final, 2)
+    
+    # Determine available formats
+    formats = []
+    if item.epub_blob_url:
+        formats.append("ebook")
+    if item.has_audiobook:
+        formats.append("audiobook")
+    
     return StoreItemResponse(
         id=item.id,
         title=item.title,
@@ -247,7 +312,19 @@ async def get_store_item(
         is_featured=item.is_featured,
         is_bestseller=item.is_bestseller,
         is_new_release=item.is_new_release,
-        published_at=item.published_at
+        published_at=item.published_at,
+        # Audiobook fields
+        has_audiobook=item.has_audiobook,
+        audiobook_narrator=item.audiobook_narrator,
+        audiobook_duration_minutes=item.audiobook_duration_minutes,
+        audiobook_file_url=item.audiobook_file_url,
+        audiobook_sample_url=item.audiobook_sample_url,
+        audiobook_file_format=item.audiobook_file_format,
+        audiobook_file_size_bytes=item.audiobook_file_size_bytes,
+        audiobook_price_usd=float(item.audiobook_price_usd) if item.audiobook_price_usd else None,
+        audiobook_final_price=audiobook_final,
+        available_formats=formats,
+        has_ebook=bool(item.epub_blob_url)
     )
 
 
