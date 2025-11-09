@@ -33,9 +33,10 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const HouseRules = lazy(() => import('./pages/HouseRules'))
 const Sitemap = lazy(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })))
 const AdminModeration = lazy(() => import('./pages/AdminModeration'))
+const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'sitemap'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'profile' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'sitemap'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -68,6 +69,9 @@ function App() {
       setCurrentPage('author-profile')
     } else if (path === '/admin/moderation') {
       setCurrentPage('admin-moderation')
+    } else if (path.match(/^\/group\/[^/]+\/admin$/)) {
+      // Group admin page: /group/:slug/admin
+      setCurrentPage('group-admin')
     } else if (path === '/free-books') {
       setCurrentPage('free-books')
     } else if (path === '/upload-book') {
@@ -146,6 +150,10 @@ function App() {
 
     if (currentPage === 'admin-moderation') {
       return <AdminModeration />
+    }
+
+    if (currentPage === 'group-admin') {
+      return <GroupAdmin />
     }
 
     if (currentPage === 'free-books') {
