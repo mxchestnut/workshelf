@@ -117,10 +117,18 @@ export function Studio() {
 
   const loadUser = async () => {
     try {
+      console.log('[Studio] Loading user...')
       const currentUser = await authService.getCurrentUser()
+      console.log('[Studio] User loaded:', currentUser)
       setUser(currentUser)
+      
+      if (!currentUser) {
+        console.warn('[Studio] No user found, redirecting to login')
+        authService.login()
+      }
     } catch (err) {
-      console.error('Error loading user:', err)
+      console.error('[Studio] Error loading user:', err)
+      authService.login()
     }
   }
 

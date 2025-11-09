@@ -45,15 +45,22 @@ export function Feed() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('[Feed] Loading user...')
         const currentUser = await authService.getCurrentUser()
+        console.log('[Feed] User loaded:', currentUser)
         setUser(currentUser)
         
         // Only load feed if we have a user
         if (currentUser) {
           await loadFeed(activeTab)
+        } else {
+          console.warn('[Feed] No user found, redirecting to login')
+          authService.login()
         }
       } catch (error) {
-        console.error('Failed to load user:', error)
+        console.error('[Feed] Failed to load user:', error)
+        // Redirect to login if user fetch fails
+        authService.login()
       } finally {
         setLoading(false)
       }

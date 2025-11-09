@@ -258,14 +258,6 @@ export default function Bookshelf() {
             </div>
             <div className="flex gap-3">
               <button
-                onClick={() => window.location.href = '/authors'}
-                className="flex items-center gap-2 px-6 py-3 text-white border-2 rounded-lg font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(4px)' }}
-              >
-                <Heart className="w-5 h-5" />
-                Authors
-              </button>
-              <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#524944', color: 'white' }}
