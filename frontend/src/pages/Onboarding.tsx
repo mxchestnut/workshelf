@@ -265,8 +265,8 @@ export default function Onboarding() {
           
           {/* Progress indicator */}
           <div className="flex items-center justify-center mt-6 space-x-2">
-            <div className={`h-2 w-16 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-200'}`} />
-            <div className={`h-2 w-16 rounded-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`} />
+            <div className={`h-2 w-16 rounded-full ${step >= 1 ? 'bg-[#B34B0C]' : 'bg-gray-200'}`} />
+            <div className={`h-2 w-16 rounded-full ${step >= 2 ? 'bg-[#B34B0C]' : 'bg-gray-200'}`} />
           </div>
           <p className="text-sm text-gray-500 mt-2">Step {step} of 2</p>
         </div>
@@ -385,7 +385,7 @@ export default function Onboarding() {
                 type="button"
                 onClick={handleNext}
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="w-full bg-[#B34B0C] text-white py-3 rounded-lg font-medium hover:bg-[#7C3306] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {loading ? 'Checking...' : 'Next →'}
               </button>
@@ -406,7 +406,7 @@ export default function Onboarding() {
                       name="newsletterOptIn"
                       checked={formData.newsletterOptIn}
                       onChange={handleChange}
-                      className="mt-1 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="mt-1 h-4 w-4 text-[#B34B0C] rounded focus:ring-[#B34B0C]"
                     />
                     <div className="ml-3">
                       <span className="text-sm font-medium text-gray-700">Email Newsletter</span>
@@ -420,7 +420,7 @@ export default function Onboarding() {
                       name="smsOptIn"
                       checked={formData.smsOptIn}
                       onChange={handleChange}
-                      className="mt-1 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="mt-1 h-4 w-4 text-[#B34B0C] rounded focus:ring-[#B34B0C]"
                     />
                     <div className="ml-3">
                       <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
@@ -438,14 +438,14 @@ export default function Onboarding() {
                     name="termsAccepted"
                     checked={formData.termsAccepted}
                     onChange={handleChange}
-                    className={`mt-1 h-4 w-4 rounded focus:ring-blue-500 ${
-                      getFieldError('termsAccepted') ? 'border-red-300' : 'text-blue-600'
+                    className={`mt-1 h-4 w-4 rounded focus:ring-[#B34B0C] ${
+                      getFieldError('termsAccepted') ? 'border-red-300' : 'text-[#B34B0C]'
                     }`}
                   />
                   <div className="ml-3">
                     <span className="text-sm font-medium text-gray-700">
                       I accept the{' '}
-                      <a href="/legal/terms" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/legal/terms" target="_blank" className="text-[#B34B0C] hover:underline">
                         Terms of Service
                       </a>{' '}
                       *
@@ -462,14 +462,14 @@ export default function Onboarding() {
                     name="houseRulesAccepted"
                     checked={formData.houseRulesAccepted}
                     onChange={handleChange}
-                    className={`mt-1 h-4 w-4 rounded focus:ring-blue-500 ${
-                      getFieldError('houseRulesAccepted') ? 'border-red-300' : 'text-blue-600'
+                    className={`mt-1 h-4 w-4 rounded focus:ring-[#B34B0C] ${
+                      getFieldError('houseRulesAccepted') ? 'border-red-300' : 'text-[#B34B0C]'
                     }`}
                   />
                   <div className="ml-3">
                     <span className="text-sm font-medium text-gray-700">
                       I accept the{' '}
-                      <a href="/legal/rules" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/legal/rules" target="_blank" className="text-[#B34B0C] hover:underline">
                         House Rules
                       </a>{' '}
                       *
@@ -492,7 +492,7 @@ export default function Onboarding() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[#B34B0C] text-white py-3 rounded-lg font-medium hover:bg-[#7C3306] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Saving...' : 'Complete Setup'}
                 </button>
