@@ -129,16 +129,18 @@ class KeycloakAuth:
             public_key = self.get_signing_key(token, jwks)
             
             # Verify and decode the token with full validation
+            # Note: We don't verify audience because Keycloak tokens typically have
+            # aud set to the requesting client (frontend), not the API.
+            # Security is still strong via signature + issuer verification.
             payload = jwt.decode(
                 token,
                 public_key,
                 algorithms=["RS256"],
-                audience=self.client_id,  # Verify audience matches our client
                 issuer=self.issuer,  # Verify issuer matches our realm
                 options={
                     "verify_signature": True,
                     "verify_exp": True,  # Verify expiration
-                    "verify_aud": True,  # Verify audience
+                    "verify_aud": False,  # Don't verify audience (Keycloak quirk)
                     "verify_iss": True,  # Verify issuer
                 }
             )

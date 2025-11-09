@@ -116,6 +116,17 @@ class AuthService {
         'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
       })
 
+      if (response.status === 401) {
+        // Token is invalid, clear it immediately
+        console.warn('[AuthService] 401 Unauthorized - clearing tokens')
+        this.accessToken = null
+        this.refreshToken = null
+        this.user = null
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        throw new Error('Authentication failed - token is invalid')
+      }
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[AuthService] Error response:', errorText)
