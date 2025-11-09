@@ -222,9 +222,10 @@ export function Profile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Navigation Bar */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: '#6C6A68' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Navigation Bar */}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b" style={{ borderColor: '#6C6A68' }}>
         <button
           onClick={() => window.location.href = '/feed'}
           className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
@@ -484,6 +485,7 @@ export function Profile() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }
