@@ -34,6 +34,7 @@ import Onboarding from './pages/Onboarding'
 import TermsOfService from './pages/TermsOfService'
 import HouseRules from './pages/HouseRules'
 import { Sitemap } from './pages/Sitemap'
+import Home from './pages/Home'
 import { authService, User } from './services/auth'
 
 // Lazy load large components
@@ -235,7 +236,12 @@ function App() {
       return <BookDetail />
     }
 
-    // Home page tabs
+    // Home page - new dedicated landing page
+    if (currentPage === 'home') {
+      return <Home />
+    }
+
+    // Legacy tabs system (fallback, should rarely be used)
     switch (activeTab) {
       case 'documents':
         return <Documents />
@@ -244,12 +250,12 @@ function App() {
       case 'community':
         return <Community />
       default:
-        return <Documents />
+        return <Home />
     }
   }
 
-  // Don't render header/menu for auth callback, onboarding, legal pages, sitemap, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
-  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'sitemap' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
+  // Don't render header/menu for auth callback, onboarding, legal pages, sitemap, home, documents, document editor, bookshelf, authors, author-profile, free-books, upload-book, store, book-detail, admin-moderation, or public profile
+  if (currentPage === 'auth-callback' || currentPage === 'onboarding' || currentPage === 'terms' || currentPage === 'rules' || currentPage === 'sitemap' || currentPage === 'home' || currentPage === 'documents' || currentPage === 'document' || currentPage === 'bookshelf' || currentPage === 'authors' || currentPage === 'author-profile' || currentPage === 'free-books' || currentPage === 'upload-book' || currentPage === 'store' || currentPage === 'store-success' || currentPage === 'book-detail' || currentPage === 'admin-moderation' || currentPage === 'public-profile') {
     return renderContent()
   }
 
