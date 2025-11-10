@@ -1028,11 +1028,22 @@ async def seed_store_items(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Seed the store with top 100 public domain classics.
+    Seed the store with top 10 public domain classics.
     Staff-only endpoint to populate initial catalog.
     """
-    from scripts.top_100_classics import TOP_100_CLASSICS
-    from decimal import Decimal
+    # Top 10 most popular public domain classics (inline to avoid import issues)
+    CLASSICS = [
+        {"title": "Pride and Prejudice", "author_name": "Jane Austen", "gutenberg_id": 1342, "word_count": 122000, "description": "A witty tale of love, marriage, and social class in Regency England.", "tags": ["romance", "classic", "literary-fiction", "public-domain"], "is_featured": True, "is_bestseller": True},
+        {"title": "Frankenstein", "author_name": "Mary Shelley", "gutenberg_id": 84, "word_count": 75000, "description": "The original science fiction horror novel about creation and responsibility.", "tags": ["horror", "sci-fi", "classic", "public-domain"], "is_featured": True, "is_bestseller": False},
+        {"title": "Dracula", "author_name": "Bram Stoker", "gutenberg_id": 345, "word_count": 164000, "description": "The definitive vampire novel that shaped horror literature forever.", "tags": ["horror", "gothic", "classic", "public-domain"], "is_featured": True, "is_bestseller": False},
+        {"title": "The Adventures of Sherlock Holmes", "author_name": "Arthur Conan Doyle", "gutenberg_id": 1661, "word_count": 110000, "description": "Twelve brilliant detective stories featuring the legendary Sherlock Holmes.", "tags": ["mystery", "detective", "classic", "public-domain"], "is_featured": True, "is_bestseller": True},
+        {"title": "A Tale of Two Cities", "author_name": "Charles Dickens", "gutenberg_id": 98, "word_count": 135000, "description": "Set during the French Revolution, a story of sacrifice, resurrection, and love.", "tags": ["historical-fiction", "classic", "public-domain"], "is_featured": True, "is_bestseller": False},
+        {"title": "The Picture of Dorian Gray", "author_name": "Oscar Wilde", "gutenberg_id": 174, "word_count": 78000, "description": "A philosophical novel about beauty, morality, and the consequences of hedonism.", "tags": ["classic", "philosophical-fiction", "public-domain"], "is_featured": True, "is_bestseller": False},
+        {"title": "Alice's Adventures in Wonderland", "author_name": "Lewis Carroll", "gutenberg_id": 11, "word_count": 27000, "description": "A whimsical journey through a fantastical underground world.", "tags": ["fantasy", "classic", "children", "public-domain"], "is_featured": True, "is_bestseller": True},
+        {"title": "The Great Gatsby", "author_name": "F. Scott Fitzgerald", "gutenberg_id": 64317, "word_count": 48000, "description": "The quintessential American novel of jazz age excess and tragedy.", "tags": ["american-literature", "classic", "public-domain"], "is_featured": True, "is_bestseller": True},
+        {"title": "Wuthering Heights", "author_name": "Emily Brontë", "gutenberg_id": 768, "word_count": 107000, "description": "A dark, passionate tale of love and revenge on the Yorkshire moors.", "tags": ["romance", "gothic", "classic", "public-domain"], "is_featured": True, "is_bestseller": False},
+        {"title": "Jane Eyre", "author_name": "Charlotte Brontë", "gutenberg_id": 1260, "word_count": 189000, "description": "An orphan girl becomes a governess and finds independence, love, and mystery.", "tags": ["romance", "classic", "gothic", "public-domain"], "is_featured": True, "is_bestseller": True},
+    ]
     
     # Get first user as seller (or use current_user)
     result = await db.execute(select(User).limit(1))
@@ -1053,7 +1064,7 @@ async def seed_store_items(
         )
     
     created_count = 0
-    for classic in TOP_100_CLASSICS:
+    for classic in CLASSICS:
         # Calculate page count
         page_count = classic["word_count"] // 250
         
