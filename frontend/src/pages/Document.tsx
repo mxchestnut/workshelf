@@ -4,7 +4,8 @@
 
 import { useEffect, useState } from 'react'
 import { Editor } from '../components/Editor'
-import { ArrowLeft, Trash2, ExternalLink } from 'lucide-react'
+import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
+import { ArrowLeft, Trash2, ExternalLink, Sparkles } from 'lucide-react'
 import '../components/Editor.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -25,6 +26,7 @@ export function Document() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [title, setTitle] = useState('')
+  const [promptsOpen, setPromptsOpen] = useState(false)
 
   // Get document ID from URL
   const documentId = new URLSearchParams(window.location.search).get('id')
@@ -292,6 +294,15 @@ export function Document() {
               </button>
             )}
             <button
+              onClick={() => setPromptsOpen(!promptsOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-neutral-lightest rounded-lg transition-colors"
+              style={{ color: promptsOpen ? '#B34B0C' : undefined }}
+              title="Writing prompts and help"
+            >
+              <Sparkles className="w-4 h-4" />
+              Prompts
+            </button>
+            <button
               onClick={deleteDocument}
               className="p-2 text-error hover:bg-error-light rounded-lg transition-colors"
               title="Delete document"
@@ -316,6 +327,18 @@ export function Document() {
           placeholder="Start writing your story..."
         />
       </div>
+
+      {/* Writing Prompts Sidebar */}
+      <WritingPromptsSidebar
+        isOpen={promptsOpen}
+        onClose={() => setPromptsOpen(false)}
+        onInsertText={(text) => {
+          // This would need to be passed to the Editor component to actually insert
+          // For now, just copy to clipboard
+          navigator.clipboard.writeText(text)
+          alert('Prompt copied to clipboard! Paste it in your document.')
+        }}
+      />
     </div>
   )
 }
