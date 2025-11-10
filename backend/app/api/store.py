@@ -126,14 +126,11 @@ async def browse_store(
     """
     Browse books available in the store.
     
-    Filters:
-    - search: Search in title or author name
-    - genre: Filter by genre
-    - format: Filter by format ("ebook", "audiobook", or omit for both)
-    - min_price/max_price: Price range
-    - featured/bestseller/new_release: Special flags
-    - sort_by: Sort order
+    **TEMPORARILY DISABLED** - Store is under maintenance.
+    Returns empty array until schema issues are resolved.
     """
+    # TEMPORARY: Return empty store while fixing schema issues
+    return []
     # Build query using select()
     query = select(StoreItem).where(StoreItem.status == StoreItemStatus.ACTIVE)
     
@@ -255,7 +252,12 @@ async def get_store_item(
     item_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get detailed information about a specific store item"""
+    """
+    Get detailed information about a specific store item
+    
+    **TEMPORARILY DISABLED** - Store is under maintenance.
+    """
+    raise HTTPException(status_code=503, detail="Store temporarily disabled for maintenance")
     result = await db.execute(
         select(StoreItem).where(
             StoreItem.id == item_id,
@@ -341,8 +343,9 @@ async def create_checkout_session(
     """
     Create a Stripe checkout session for purchasing a book.
     
-    Returns a checkout URL that the frontend should redirect to.
+    **TEMPORARILY DISABLED** - Store is under maintenance.
     """
+    raise HTTPException(status_code=503, detail="Store temporarily disabled for maintenance")
     # Get store item
     result = await db.execute(
         select(StoreItem).where(
