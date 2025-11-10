@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.auth import get_current_user, get_current_user_id
 from app.core.database import get_db
-from app.models import User, Group, GroupMember
+from app.models import User, Group, GroupMember, Tenant
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -36,6 +36,15 @@ async def get_user_info(
     
     # Auto-create user if they don't exist (first time login after Keycloak registration)
     if not db_user:
+        # Create a personal tenant for the user
+        tenant = Tenant(
+            name=f"{email.split('@')[0]}'s Workspace",
+            slug=f"{email.split('@')[0]}-workspace",
+            is_active=True
+        )
+        db.add(tenant)
+        await db.flush()  # Get tenant.id
+        
         db_user = User(
             keycloak_id=keycloak_id,
             email=email,
@@ -43,7 +52,8 @@ async def get_user_info(
             display_name=user.get("name") or user.get("preferred_username") or email.split("@")[0],
             is_staff=False,
             is_active=True,
-            is_verified=user.get("email_verified", False)
+            is_verified=user.get("email_verified", False),
+            tenant_id=tenant.id  # Link user to their personal tenant
         )
         db.add(db_user)
         await db.commit()
