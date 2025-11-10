@@ -4,7 +4,7 @@ Secured via Keycloak authentication with is_staff check
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from datetime import datetime
@@ -830,5 +830,191 @@ async def validate_price(
         'warnings': [w for w in result['warnings'] if w],
         'recommendations': [r for r in result['recommendations'] if r]
     }
+
+
+# ============================================================================
+# Store Analytics (Staff Only)
+# ============================================================================
+
+class StoreStatsResponse(BaseModel):
+    """Store-wide statistics"""
+    total_revenue: float
+    total_sales: int
+    active_items: int
+    avg_sale_price: float
+    
+    class Config:
+        from_attributes = True
+
+
+class StoreItemAnalyticsResponse(BaseModel):
+    """Store item with sales data for analytics"""
+    id: int
+    title: str
+    author_name: str
+    price_usd: float
+    audiobook_price_usd: Optional[float]
+    has_audiobook: bool
+    total_sales: int
+    total_revenue: float
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+@router.get("/store/stats", response_model=StoreStatsResponse)
+async def get_store_stats(
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Get overall store statistics (staff only)
+    """
+    # Get total revenue and sales from all completed purchases
+    from app.models.store import Purchase, PurchaseStatus
+    
+    revenue_query = select(
+        func.coalesce(func.sum(Purchase.amount_paid), 0).label('total_revenue'),
+        func.count(Purchase.id).label('total_sales')
+    ).where(Purchase.status == PurchaseStatus.COMPLETED)
+    
+    revenue_result = await db.execute(revenue_query)
+    revenue_data = revenue_result.one()
+    
+    # Get active items count
+    active_count_query = select(func.count(StoreItem.id)).where(
+        StoreItem.status == StoreItemStatus.ACTIVE
+    )
+    active_count_result = await db.execute(active_count_query)
+    active_items = active_count_result.scalar()
+    
+    # Calculate average sale price
+    avg_price = float(revenue_data.total_revenue) / revenue_data.total_sales if revenue_data.total_sales > 0 else 0.0
+    
+    return StoreStatsResponse(
+        total_revenue=float(revenue_data.total_revenue),
+        total_sales=revenue_data.total_sales,
+        active_items=active_items or 0,
+        avg_sale_price=avg_price
+    )
+
+
+@router.get("/store/items", response_model=List[StoreItemAnalyticsResponse])
+async def get_store_items(
+    status: Optional[str] = Query(None, description="Filter by status: active, inactive, draft"),
+    search: Optional[str] = Query(None, description="Search by title or author"),
+    limit: int = Query(100, le=1000),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Get all store items with sales analytics (staff only)
+    """
+    query = select(StoreItem).order_by(StoreItem.total_revenue.desc())
+    
+    # Apply filters
+    if status:
+        if status == "active":
+            query = query.where(StoreItem.status == StoreItemStatus.ACTIVE)
+        elif status == "inactive":
+            query = query.where(StoreItem.status == StoreItemStatus.INACTIVE)
+        elif status == "draft":
+            query = query.where(StoreItem.status == StoreItemStatus.DRAFT)
+    
+    if search:
+        search_term = f"%{search}%"
+        query = query.where(
+            or_(
+                StoreItem.title.ilike(search_term),
+                StoreItem.author_name.ilike(search_term)
+            )
+        )
+    
+    query = query.limit(limit).offset(offset)
+    
+    result = await db.execute(query)
+    items = result.scalars().all()
+    
+    return [
+        StoreItemAnalyticsResponse(
+            id=item.id,
+            title=item.title,
+            author_name=item.author_name,
+            price_usd=float(item.price_usd),
+            audiobook_price_usd=float(item.audiobook_price_usd) if item.audiobook_price_usd else None,
+            has_audiobook=item.has_audiobook,
+            total_sales=item.total_sales,
+            total_revenue=float(item.total_revenue),
+            status=item.status,
+            created_at=item.created_at
+        )
+        for item in items
+    ]
+
+
+@router.put("/store/items/{item_id}/status")
+async def update_store_item_status(
+    item_id: int,
+    status: str,
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Update store item status (staff only)
+    """
+    # Validate status
+    valid_statuses = [s.value for s in StoreItemStatus]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    # Get item
+    query = select(StoreItem).where(StoreItem.id == item_id)
+    result = await db.execute(query)
+    item = result.scalar_one_or_none()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Store item not found")
+    
+    # Update status
+    item.status = status
+    if status == StoreItemStatus.ACTIVE and not item.published_at:
+        item.published_at = datetime.utcnow()
+    
+    await db.commit()
+    await db.refresh(item)
+    
+    return {"success": True, "item_id": item_id, "status": status}
+
+
+@router.delete("/store/items/{item_id}")
+async def delete_store_item(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    staff_user: Optional[dict] = Depends(require_staff)
+):
+    """
+    Delete a store item (staff only)
+    """
+    query = select(StoreItem).where(StoreItem.id == item_id)
+    result = await db.execute(query)
+    item = result.scalar_one_or_none()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Store item not found")
+    
+    # Check if item has purchases
+    if item.total_sales > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete item with {item.total_sales} existing purchases. Consider marking as inactive instead."
+        )
+    
+    await db.delete(item)
+    await db.commit()
+    
+    return {"success": True, "item_id": item_id}
 
 

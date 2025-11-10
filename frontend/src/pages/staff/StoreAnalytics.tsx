@@ -10,6 +10,8 @@ import {
   ArrowLeft, Plus, Search, Edit, Trash2
 } from 'lucide-react'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+
 interface StoreItem {
   id: number
   title: string
@@ -62,67 +64,42 @@ export function StoreAnalytics() {
 
   const loadStoreData = async () => {
     try {
-      // TODO: Implement API endpoints
-      // const token = localStorage.getItem('access_token')
-      // const [statsRes, itemsRes] = await Promise.all([
-      //   fetch(`${API_URL}/api/v1/admin/store/stats`, {
-      //     headers: { 'Authorization': `Bearer ${token}` }
-      //   }),
-      //   fetch(`${API_URL}/api/v1/admin/store/items`, {
-      //     headers: { 'Authorization': `Bearer ${token}` }
-      //   })
-      // ])
-      
-      // Mock data for now
-      setStats({
-        total_revenue: 12543.50,
-        total_sales: 487,
-        active_items: 142,
-        avg_sale_price: 25.76
-      })
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        console.error('No access token')
+        setLoading(false)
+        return
+      }
 
-      setItems([
-        {
-          id: 1,
-          title: 'The Midnight Garden',
-          author: 'Sarah Johnson',
-          price: 29.99,
-          sales_count: 45,
-          revenue: 1349.55,
-          status: 'active',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          title: 'Quantum Dreams',
-          author: 'Michael Chen',
-          price: 34.99,
-          sales_count: 38,
-          revenue: 1329.62,
-          status: 'active',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 3,
-          title: 'Desert Winds',
-          author: 'Elena Rodriguez',
-          price: 24.99,
-          sales_count: 52,
-          revenue: 1299.48,
-          status: 'active',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 4,
-          title: 'City of Echoes',
-          author: 'David Park',
-          price: 19.99,
-          sales_count: 31,
-          revenue: 619.69,
-          status: 'inactive',
-          created_at: new Date().toISOString()
-        }
+      // Fetch stats and items in parallel
+      const [statsRes, itemsRes] = await Promise.all([
+        fetch(`${API_URL}/api/v1/admin/store/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/v1/admin/store/items?limit=100`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ])
+
+      if (!statsRes.ok || !itemsRes.ok) {
+        throw new Error('Failed to fetch store data')
+      }
+
+      const statsData = await statsRes.json()
+      const itemsData = await itemsRes.json()
+
+      setStats(statsData)
+      setItems(itemsData.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        author: item.author_name,
+        price: item.price_usd,
+        sales_count: item.total_sales,
+        revenue: item.total_revenue,
+        status: item.status,
+        created_at: item.created_at
+      })))
+      
       setLoading(false)
     } catch (error) {
       console.error('Failed to load store data:', error)
@@ -146,6 +123,57 @@ export function StoreAnalytics() {
   const handleAddItem = () => {
     console.log('Add new store item')
     // TODO: Open modal or navigate to add item page
+  }
+
+  const handleToggleStatus = async (itemId: number, currentStatus: string) => {
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+
+    try {
+      const response = await fetch(`${API_URL}/api/v1/admin/store/items/${itemId}/status?status=${newStatus}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) throw new Error('Failed to update status')
+
+      // Reload data
+      await loadStoreData()
+    } catch (error) {
+      console.error('Failed to toggle status:', error)
+      alert('Failed to update item status')
+    }
+  }
+
+  const handleDeleteItem = async (itemId: number, salesCount: number) => {
+    if (salesCount > 0) {
+      alert(`Cannot delete item with ${salesCount} existing purchases. Mark as inactive instead.`)
+      return
+    }
+
+    if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+      return
+    }
+
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    try {
+      const response = await fetch(`${API_URL}/api/v1/admin/store/items/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (!response.ok) throw new Error('Failed to delete item')
+
+      // Reload data
+      await loadStoreData()
+    } catch (error) {
+      console.error('Failed to delete item:', error)
+      alert('Failed to delete item')
+    }
   }
 
   if (loading) {
@@ -319,14 +347,16 @@ export function StoreAnalytics() {
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => console.log('Edit item', item.id)}
+                          onClick={() => handleToggleStatus(item.id, item.status)}
                           className="p-1 rounded hover:bg-[#524944] transition-colors"
+                          title={item.status === 'active' ? 'Mark as inactive' : 'Mark as active'}
                         >
                           <Edit className="w-4 h-4 text-[#B3B2B0]" />
                         </button>
                         <button
-                          onClick={() => console.log('Delete item', item.id)}
+                          onClick={() => handleDeleteItem(item.id, item.sales_count)}
                           className="p-1 rounded hover:bg-[#524944] transition-colors"
+                          title="Delete item"
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
