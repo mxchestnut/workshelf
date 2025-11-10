@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 from typing import List, Optional
-from app.database import get_db
-from app.services.auth import get_current_user
+from app.core.database import get_db
+from app.core.auth import get_current_user
 from app.models.user import User, BetaReaderProfile, UserBadge
 from app.schemas.beta_profile import (
     BetaReaderProfileCreate,
