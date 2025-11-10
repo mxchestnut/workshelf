@@ -5,7 +5,11 @@ This script is run during container startup to ensure all tables exist
 before running Alembic migrations.
 """
 import asyncio
-from app.core.database import Base, engine
+
+# Import all models - this registers them with Base
+import app.models  # noqa: F401
+from app.models.base import Base
+from app.core.database import engine
 
 
 async def create_tables():
