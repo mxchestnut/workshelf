@@ -7,7 +7,7 @@ import { Navigation } from '../../components/Navigation'
 import { authService, User } from '../../services/auth'
 import { 
   TrendingUp, DollarSign, ShoppingBag, Package,
-  ArrowLeft, Plus, Search, Edit, Trash2, Sparkles, AlertCircle
+  ArrowLeft, Plus, Search, Edit, Trash2, Sparkles
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
