@@ -37,6 +37,18 @@ async def get_or_create_user_from_keycloak(
         # Update last login
         from datetime import datetime
         user.last_login = datetime.utcnow()
+        
+        # If user doesn't have a tenant, create one for them
+        if user.tenant_id is None:
+            tenant = Tenant(
+                name=f"{user.email.split('@')[0]}'s Workspace",
+                slug=f"{user.email.split('@')[0]}-workspace",
+                is_active=True
+            )
+            session.add(tenant)
+            await session.flush()  # Get tenant.id
+            user.tenant_id = tenant.id
+        
         await session.commit()
         await session.refresh(user)
         return user
@@ -45,6 +57,15 @@ async def get_or_create_user_from_keycloak(
     email = keycloak_data.get("email", f"{keycloak_id}@keycloak.local")
     username = keycloak_data.get("preferred_username", email.split("@")[0])
     display_name = keycloak_data.get("name") or keycloak_data.get("preferred_username", username)
+    
+    # Create a personal tenant first
+    tenant = Tenant(
+        name=f"{email.split('@')[0]}'s Workspace",
+        slug=f"{email.split('@')[0]}-workspace",
+        is_active=True
+    )
+    session.add(tenant)
+    await session.flush()  # Get tenant.id
     
     # Check if username conflicts with existing group subdomains
     from app.models.collaboration import Group
@@ -73,7 +94,7 @@ async def get_or_create_user_from_keycloak(
                 )
     
     user = User(
-        tenant_id=tenant_id,
+        tenant_id=tenant.id,  # Use the created tenant
         keycloak_id=keycloak_id,
         email=email,
         username=username,
