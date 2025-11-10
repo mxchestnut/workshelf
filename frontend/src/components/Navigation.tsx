@@ -6,10 +6,8 @@ import {
   BookOpen, 
   FileText, 
   Bell,
-  Settings,
   Menu,
   X,
-  Shield,
   LogIn,
   LogOut,
   Home,
@@ -302,14 +300,14 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   style={isActive('/beta-marketplace') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <UserCircle className="w-5 h-5" />
-                  <span>Beta Marketplace</span>
+                  <span>Marketplace</span>
                 </button>
               </div>
 
-              {/* Administration */}
+              {/* Account */}
               <div className="mb-6">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                  Administration
+                  Account
                 </p>
                 
                 <button 
@@ -322,86 +320,28 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   style={isActive('/me') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <UserCircle className="w-5 h-5" />
-                  <span>Profile</span>
+                  <span>Profile & Settings</span>
                 </button>
 
+                {/* Unified Dashboard - shows tabs based on permissions */}
                 <button 
                   onClick={() => navigateTo('/dashboard')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/dashboard')
+                    isActive('/dashboard') || isActive('/admin')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/dashboard') || isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <BarChart className="w-5 h-5" />
                   <span>Dashboard</span>
                 </button>
-
-                {/* Admin Dashboard - for group admins */}
-                {user && user.groups && user.groups.length > 0 && (
-                  <button 
-                    onClick={() => navigateTo('/admin')}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      isActive('/admin')
-                        ? 'font-medium text-white'
-                        : 'text-white hover:bg-opacity-20'
-                    }`}
-                    style={isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span>Admin</span>
-                  </button>
-                )}
               </div>
-
-              {/* Staff Section - Keycloak access */}
-              {user && user.is_staff && (
-                <div className="pt-6 border-t" style={{ borderColor: '#6C6A68' }}>
-                  <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
-                    Staff Only
-                  </p>
-
-                  <button 
-                    onClick={() => navigateTo('/staff')}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      isActive('/staff')
-                        ? 'font-medium text-white'
-                        : 'text-white hover:bg-opacity-20'
-                    }`}
-                    style={isActive('/staff') ? { backgroundColor: '#7C3306' } : {}}
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span>Staff Dashboard</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => navigateTo('/admin/moderation')}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      isActive('/admin/moderation')
-                        ? 'font-medium text-white'
-                        : 'text-white hover:bg-opacity-20'
-                    }`}
-                    style={isActive('/admin/moderation') ? { backgroundColor: '#7C3306' } : {}}
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span>Moderation</span>
-                  </button>
-                </div>
-              )}
             </div>
           </nav>
 
           {/* Footer Actions */}
           <div className="p-6 border-t space-y-2" style={{ borderColor: '#6C6A68' }}>
-            <button 
-              onClick={() => navigateTo('/settings')}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-white hover:bg-opacity-20"
-            >
-              <Settings className="w-5 h-5" />
-              <span>Settings</span>
-            </button>
-
             {user && (
               <button 
                 onClick={onLogout}
