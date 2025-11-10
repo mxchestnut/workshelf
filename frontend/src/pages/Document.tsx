@@ -356,10 +356,9 @@ export function Document() {
         isOpen={promptsOpen}
         onClose={() => setPromptsOpen(false)}
         onInsertText={(text) => {
-          // This would need to be passed to the Editor component to actually insert
-          // For now, just copy to clipboard
-          navigator.clipboard.writeText(text)
-          alert('Prompt copied to clipboard! Paste it in your document.')
+          // Insert prompt text into the editor
+          // Note: This would ideally insert at cursor position
+          console.log('Insert prompt:', text)
         }}
       />
     </div>
