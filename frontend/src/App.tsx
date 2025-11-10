@@ -26,6 +26,7 @@ const ManageUsers = lazy(() => import('./pages/staff/ManageUsers').then(module =
 const ViewAllGroups = lazy(() => import('./pages/staff/ViewAllGroups').then(module => ({ default: module.ViewAllGroups })))
 const GlobalModeration = lazy(() => import('./pages/staff/GlobalModeration').then(module => ({ default: module.GlobalModeration })))
 const SystemSettings = lazy(() => import('./pages/staff/SystemSettings').then(module => ({ default: module.SystemSettings })))
+const StoreAnalytics = lazy(() => import('./pages/staff/StoreAnalytics').then(module => ({ default: module.StoreAnalytics })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -51,7 +52,7 @@ const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -93,6 +94,8 @@ function App() {
       setCurrentPage('staff-moderation')
     } else if (path === '/staff/settings') {
       setCurrentPage('staff-settings')
+    } else if (path === '/staff/store') {
+      setCurrentPage('staff-store')
     } else if (path === '/documents') {
       setCurrentPage('documents')
     } else if (path === '/document') {
@@ -220,6 +223,10 @@ function App() {
     
     if (currentPage === 'staff-settings') {
       return <SystemSettings />
+    }
+    
+    if (currentPage === 'staff-store') {
+      return <StoreAnalytics />
     }
     
     if (currentPage === 'documents') {

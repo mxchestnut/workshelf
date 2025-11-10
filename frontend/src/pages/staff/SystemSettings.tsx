@@ -76,7 +76,10 @@ export function SystemSettings() {
             <p style={{ color: '#B3B2B0' }} className="mb-4">
               View sales data, popular books, revenue trends, and marketplace performance.
             </p>
-            <button className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-medium hover:bg-[#8A3809] transition-colors">
+            <button 
+              onClick={() => window.location.href = '/staff/store'}
+              className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-medium hover:bg-[#8A3809] transition-colors"
+            >
               View Analytics
             </button>
           </div>
