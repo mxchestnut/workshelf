@@ -185,7 +185,7 @@ function App() {
     }
     
     if (currentPage === 'admin') {
-      return <AdminDashboard />
+      return <Dashboard />  {/* Admin now shows Dashboard with tabs */}
     }
     
     if (currentPage === 'documents') {
