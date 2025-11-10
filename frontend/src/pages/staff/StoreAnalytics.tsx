@@ -7,7 +7,7 @@ import { Navigation } from '../../components/Navigation'
 import { authService, User } from '../../services/auth'
 import { 
   TrendingUp, DollarSign, ShoppingBag, Package,
-  ArrowLeft, Plus, Search, Edit, Trash2
+  ArrowLeft, Plus, Search, Edit, Trash2, Sparkles, AlertCircle
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -21,6 +21,7 @@ interface StoreItem {
   revenue: number
   status: 'active' | 'inactive'
   created_at: string
+  has_audiobook: boolean
 }
 
 interface SalesStats {
@@ -120,9 +121,35 @@ export function StoreAnalytics() {
       return true
     })
 
+  // Books eligible for audiobook upgrade (hit $120 revenue threshold, no audiobook yet)
+  const AUDIOBOOK_THRESHOLD = 120
+  const eligibleForAudiobook = items.filter(
+    item => !item.has_audiobook && item.revenue >= AUDIOBOOK_THRESHOLD
+  )
+
   const handleAddItem = () => {
     console.log('Add new store item')
     // TODO: Open modal or navigate to add item page
+  }
+
+  const handleGenerateAudiobook = async (itemId: number, title: string) => {
+    if (!confirm(`Generate ElevenLabs audiobook for "${title}"?\n\nThis will:\n• Cost ~$120 for professional voice cloning\n• Take 1-2 hours to process\n• Upgrade book to immersive bundle at $11.99\n• Give original buyers free audiobook access`)) {
+      return
+    }
+
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    try {
+      // TODO: Implement backend endpoint POST /api/v1/admin/store/items/{itemId}/generate-audiobook
+      console.log(`Queueing audiobook generation for item ${itemId}`)
+      alert(`Audiobook generation queued for "${title}"!\n\nYou'll be notified when complete.`)
+      // For now, just reload data
+      await loadStoreData()
+    } catch (error) {
+      console.error('Failed to queue audiobook generation:', error)
+      alert('Failed to queue audiobook generation')
+    }
   }
 
   const handleToggleStatus = async (itemId: number, currentStatus: string) => {
@@ -220,6 +247,46 @@ export function StoreAnalytics() {
             Add Item
           </button>
         </div>
+
+        {/* Audiobook Eligibility Alerts */}
+        {eligibleForAudiobook.length > 0 && (
+          <div className="mb-8 p-6 rounded-lg border-2" style={{ 
+            backgroundColor: '#37322E', 
+            borderColor: '#B34B0C' 
+          }}>
+            <div className="flex items-start gap-4">
+              <Sparkles className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#B34B0C' }} />
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  🎉 {eligibleForAudiobook.length} {eligibleForAudiobook.length === 1 ? 'Book' : 'Books'} Ready for Immersive Upgrade!
+                </h3>
+                <p className="text-[#B3B2B0] mb-4">
+                  The following {eligibleForAudiobook.length === 1 ? 'book has' : 'books have'} earned enough revenue ($120+) to fund premium ElevenLabs audiobook narration. 
+                  Approve to generate immersive versions and upgrade to bundles at $11.99.
+                </p>
+                <div className="space-y-3">
+                  {eligibleForAudiobook.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-4 rounded" style={{ backgroundColor: '#524944' }}>
+                      <div>
+                        <p className="text-white font-semibold">{item.title}</p>
+                        <p className="text-sm text-[#B3B2B0]">
+                          {item.author} • {item.sales_count} sales • ${item.revenue.toFixed(2)} revenue
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleGenerateAudiobook(item.id, item.title)}
+                        className="px-4 py-2 rounded text-white font-semibold hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: '#B34B0C' }}
+                      >
+                        Generate Audiobook
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -319,6 +386,7 @@ export function StoreAnalytics() {
                   <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Price</th>
                   <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Sales</th>
                   <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Revenue</th>
+                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Audiobook</th>
                   <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Status</th>
                   <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Actions</th>
                 </tr>
@@ -330,8 +398,31 @@ export function StoreAnalytics() {
                     <td className="py-3 px-4 text-[#B3B2B0]">{item.author}</td>
                     <td className="py-3 px-4 text-white">${item.price.toFixed(2)}</td>
                     <td className="py-3 px-4 text-white">{item.sales_count}</td>
-                    <td className="py-3 px-4 text-white">
-                      ${item.revenue.toFixed(2)}
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col">
+                        <span className="text-white">${item.revenue.toFixed(2)}</span>
+                        {!item.has_audiobook && item.revenue >= 60 && item.revenue < AUDIOBOOK_THRESHOLD && (
+                          <span className="text-xs text-[#B34B0C] mt-1">
+                            {Math.floor((item.revenue / AUDIOBOOK_THRESHOLD) * 100)}% to audiobook
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      {item.has_audiobook ? (
+                        <span className="px-2 py-1 rounded text-xs font-semibold bg-purple-500/20 text-purple-400">
+                          Immersive
+                        </span>
+                      ) : item.revenue >= AUDIOBOOK_THRESHOLD ? (
+                        <span className="px-2 py-1 rounded text-xs font-semibold bg-yellow-500/20 text-yellow-400 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Ready!
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded text-xs font-semibold bg-gray-500/20 text-gray-400">
+                          Ebook only
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <span

@@ -10,146 +10,146 @@ from datetime import datetime
 from decimal import Decimal
 
 
+#!/usr/bin/env python3
+"""
+Seed the store with PUBLIC DOMAIN classics (ebook-only, self-funding model).
+
+This script creates legal-to-sell public domain ebooks from Project Gutenberg
+(pre-1928 works, public domain worldwide).
+
+SELF-FUNDING AUDIOBOOK MODEL:
+1. Launch Phase: Sell ebooks at $2.99 (competitive, zero production cost)
+2. Revenue Tracking: Each book tracks total ebook revenue
+3. Threshold Alert: When revenue hits $120 (40 sales), staff gets notified
+4. Upgrade Phase: Staff approves → ElevenLabs generates premium audiobook
+5. Bundle Phase: Book becomes immersive bundle at $11.99
+6. Reward Phase: Original 40 buyers get free audiobook upgrade (customer goodwill)
+
+ElevenLabs Cost: $120/book (Professional Voice Cloning)
+Break-even: 40 ebook sales at $2.99 = $119.60 revenue
+Post-upgrade profit: $11.99 bundle (pure profit after cost recovery)
+
+Run this script to populate the store with curated classics.
+"""
+
+import asyncio
+from decimal import Decimal
+from sqlalchemy import select
+from app.core.database import async_session_maker
+from app.models.store import StoreItem, StoreItemStatus
+from app.models.user import User
+
+
 async def seed_store_items():
-    """Add sample ebooks and audiobooks to the store"""
-    
-    async with async_session_maker() as db:
-        # Get the first user as the seller (you can change this to a specific staff user)
-        result = await db.execute(select(User).limit(1))
-        seller = result.scalar_one_or_none()
+    """Create public domain store items with AI audiobooks."""
+    async with async_session_maker() as session:
+        # Get the first user to be the seller
+        result = await session.execute(select(User).limit(1))
+        user = result.scalar_one_or_none()
         
-        if not seller:
-            print("No users found. Please create a user first.")
+        if not user:
+            print("No users found. Create a user first.")
             return
         
-        print(f"Using seller: {seller.username}")
+        print(f"Creating public domain store items for user: {user.email}")
         
-        # Check if we already have items
-        result = await db.execute(select(StoreItem))
-        existing = result.scalars().all()
-        if existing:
-            print(f"Found {len(existing)} existing items. Skipping seed.")
-            return
-        
-        # Sample store items
+        # PUBLIC DOMAIN classics from Project Gutenberg
+        # All books pre-1928, legal to sell worldwide
+        # EBOOK ONLY - audiobooks generated when revenue hits $120 threshold
         items = [
             {
-                "title": "The Writing Life: A Journey Through Words",
-                "author_name": "Sarah Mitchell",
-                "description": "A comprehensive guide to developing your writing craft and building a sustainable writing career.",
-                "long_description": "Drawing from 20 years of experience, Sarah Mitchell shares practical insights, exercises, and wisdom for writers at every stage. This book covers everything from finding your voice to navigating the publishing industry.",
-                "genres": ["Non-Fiction", "Writing", "Self-Help"],
-                "price_usd": Decimal("19.99"),
-                "epub_blob_url": "https://example.com/epub/writing-life.epub",  # You'll replace with actual Azure URLs
-                "cover_blob_url": "https://picsum.photos/seed/book1/400/600",
-                "page_count": 324,
+                "title": "Pride and Prejudice",
+                "author_name": "Jane Austen",
+                "description": "The timeless romance that defined a genre. Follow Elizabeth Bennet as she navigates society, family, and her complicated feelings for the enigmatic Mr. Darcy. Austen's wit and social commentary remain as relevant today as in 1813.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/1342.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg",
+                "word_count": 122000,
+                "page_count": 432,
+                "language": "en",
                 "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": True,
-                "audiobook_narrator": "Emma Thompson",
-                "audiobook_duration_minutes": 480,
-                "audiobook_file_url": "https://example.com/audio/writing-life.mp3",
-                "audiobook_price_usd": Decimal("24.99"),
                 "is_featured": True,
-                "is_new_release": True,
-            },
-            {
-                "title": "Quantum Echoes",
-                "author_name": "Dr. Marcus Chen",
-                "description": "A mind-bending sci-fi thriller about parallel universes and the choices that define us.",
-                "long_description": "When physicist Elena discovers a way to communicate with alternate versions of herself, she must navigate a web of timelines to prevent a catastrophic collapse. A gripping exploration of identity, free will, and the nature of reality.",
-                "genres": ["Science Fiction", "Thriller", "Mystery"],
-                "price_usd": Decimal("14.99"),
-                "epub_blob_url": "https://example.com/epub/quantum-echoes.epub",
-                "cover_blob_url": "https://picsum.photos/seed/book2/400/600",
-                "page_count": 412,
-                "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": True,
-                "audiobook_narrator": "Michael Chen",
-                "audiobook_duration_minutes": 660,
-                "audiobook_file_url": "https://example.com/audio/quantum-echoes.mp3",
-                "audiobook_price_usd": Decimal("19.99"),
                 "is_bestseller": True,
+                "tags": ["romance", "classic", "literary-fiction", "public-domain"],
+                "has_audiobook": False,
             },
             {
-                "title": "The Midnight Garden",
-                "author_name": "Isabella Rose",
-                "description": "A haunting tale of love, loss, and the secrets hidden in an enchanted garden.",
-                "long_description": "When Emma inherits her grandmother's estate, she discovers a magical garden that blooms only at midnight. As she uncovers family secrets and ancient magic, she must choose between the world she knows and a destiny she never imagined.",
-                "genres": ["Fantasy", "Romance", "Literary Fiction"],
-                "price_usd": Decimal("16.99"),
-                "epub_blob_url": "https://example.com/epub/midnight-garden.epub",
-                "cover_blob_url": "https://picsum.photos/seed/book3/400/600",
-                "page_count": 368,
+                "title": "The Adventures of Sherlock Holmes",
+                "author_name": "Arthur Conan Doyle",
+                "description": "Enter the world of literature's greatest detective! This collection features 12 iconic mysteries including 'A Scandal in Bohemia' and 'The Red-Headed League'. Experience Holmes' brilliant deductions and Watson's loyal companionship. Perfect for mystery lovers.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with dramatic character voices.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/1661.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/1661/pg1661.cover.medium.jpg",
+                "word_count": 105000,
+                "page_count": 307,
+                "language": "en",
                 "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": False,
                 "is_featured": True,
-            },
-            {
-                "title": "Code Warriors: Building the Digital Future",
-                "author_name": "Alex Rivera",
-                "description": "Inside stories from Silicon Valley's most innovative engineers and entrepreneurs.",
-                "long_description": "A collection of interviews and case studies revealing how breakthrough technologies are created. From AI to blockchain, learn from the pioneers shaping our digital future.",
-                "genres": ["Technology", "Business", "Biography"],
-                "price_usd": Decimal("22.99"),
-                "epub_blob_url": "https://example.com/epub/code-warriors.epub",
-                "cover_blob_url": "https://picsum.photos/seed/book4/400/600",
-                "page_count": 456,
-                "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": True,
-                "audiobook_narrator": "James Patterson",
-                "audiobook_duration_minutes": 540,
-                "audiobook_file_url": "https://example.com/audio/code-warriors.mp3",
-                "audiobook_price_usd": Decimal("27.99"),
-            },
-            {
-                "title": "Whispers in the Wind",
-                "author_name": "Maya Patel",
-                "description": "An emotional journey through love, identity, and finding home in unexpected places.",
-                "long_description": "When Priya returns to her ancestral village in India, she uncovers stories of resilience, love, and sacrifice that span three generations. A beautifully crafted tale about the ties that bind us and the courage to forge our own path.",
-                "genres": ["Literary Fiction", "Cultural", "Family Saga"],
-                "price_usd": Decimal("18.99"),
-                "epub_blob_url": "https://example.com/epub/whispers-wind.epub",
-                "cover_blob_url": "https://picsum.photos/seed/book5/400/600",
-                "page_count": 392,
-                "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": True,
-                "audiobook_narrator": "Priya Sharma",
-                "audiobook_duration_minutes": 600,
-                "audiobook_file_url": "https://example.com/audio/whispers-wind.mp3",
-                "audiobook_price_usd": Decimal("23.99"),
-                "is_new_release": True,
-            },
-            {
-                "title": "The Detective's Notebook",
-                "author_name": "James Blackwood",
-                "description": "A gripping murder mystery set in Victorian London.",
-                "long_description": "Inspector William Cross must solve a series of murders that mirror famous literary crimes. As the body count rises, he realizes the killer is leaving clues from classic detective novels. A love letter to the golden age of mystery fiction.",
-                "genres": ["Mystery", "Historical Fiction", "Thriller"],
-                "price_usd": Decimal("15.99"),
-                "epub_blob_url": "https://example.com/epub/detective-notebook.epub",
-                "cover_blob_url": "https://picsum.photos/seed/book6/400/600",
-                "page_count": 344,
-                "status": StoreItemStatus.ACTIVE,
-                "has_audiobook": False,
                 "is_bestseller": True,
+                "tags": ["mystery", "detective", "classic", "public-domain"],
+                "has_audiobook": False,
+            },
+            {
+                "title": "Frankenstein; Or, The Modern Prometheus",
+                "author_name": "Mary Shelley",
+                "description": "The original science fiction masterpiece! Dr. Victor Frankenstein's quest to create life leads to tragedy and moral reckoning. Shelley's 1818 Gothic novel explores ambition, responsibility, and what it means to be human. More relevant than ever in the age of AI.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs haunting narration.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/84.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/84/pg84.cover.medium.jpg",
+                "word_count": 75000,
+                "page_count": 280,
+                "language": "en",
+                "status": StoreItemStatus.ACTIVE,
+                "is_new_release": True,
+                "tags": ["science-fiction", "horror", "classic", "public-domain"],
+                "has_audiobook": False,
+            },
+            {
+                "title": "Alice's Adventures in Wonderland",
+                "author_name": "Lewis Carroll",
+                "description": "Tumble down the rabbit hole into a world of logic-defying madness! Lewis Carroll's 1865 masterpiece delights readers of all ages with talking animals, riddles, and unforgettable characters like the Cheshire Cat and Mad Hatter.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with distinct character voices.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/11.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/11/pg11.cover.medium.jpg",
+                "word_count": 26500,
+                "page_count": 96,
+                "language": "en",
+                "status": StoreItemStatus.ACTIVE,
+                "is_new_release": True,
+                "tags": ["fantasy", "children", "classic", "public-domain"],
+                "has_audiobook": False,
+            },
+            {
+                "title": "The Picture of Dorian Gray",
+                "author_name": "Oscar Wilde",
+                "description": "Oscar Wilde's only novel is a Gothic masterpiece of vanity, corruption, and eternal youth. When Dorian Gray wishes his portrait would age instead of him, his wish comes true with devastating consequences. Wilde's wit and social satire shine throughout.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration capturing the dark elegance.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/174.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/174/pg174.cover.medium.jpg",
+                "word_count": 78000,
+                "page_count": 254,
+                "language": "en",
+                "status": StoreItemStatus.ACTIVE,
+                "is_featured": True,
+                "tags": ["classic", "gothic", "philosophy", "public-domain"],
+                "has_audiobook": False,
+            },
+            {
+                "title": "Dracula",
+                "author_name": "Bram Stoker",
+                "description": "The vampire novel that started it all! Bram Stoker's 1897 epistolary masterpiece tells the tale of Count Dracula's attempt to move from Transylvania to England. Told through journal entries, letters, and newspaper clippings, this Gothic horror classic still thrills.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with atmospheric sound design.",
+                "price_usd": Decimal("2.99"),
+                "epub_blob_url": "https://www.gutenberg.org/ebooks/345.epub.images",
+                "cover_image_url": "https://www.gutenberg.org/cache/epub/345/pg345.cover.medium.jpg",
+                "word_count": 164000,
+                "page_count": 418,
+                "language": "en",
+                "status": StoreItemStatus.ACTIVE,
+                "is_bestseller": True,
+                "tags": ["horror", "gothic", "classic", "public-domain"],
+                "has_audiobook": False,
             },
         ]
-        
-        # Create items
-        for item_data in items:
-            store_item = StoreItem(
-                seller_id=seller.id,
-                published_at=datetime.utcnow(),
-                **item_data
-            )
-            db.add(store_item)
-        
-        await db.commit()
-        print(f"✅ Successfully seeded {len(items)} store items!")
-        print("\nCreated items:")
-        for item in items:
-            format_str = "Ebook + Audiobook" if item.get('has_audiobook') else "Ebook only"
-            print(f"  - {item['title']} by {item['author_name']} (${item['price_usd']}) - {format_str}")
 
 
 if __name__ == "__main__":
