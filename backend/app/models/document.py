@@ -45,6 +45,9 @@ class Document(Base, TimestampMixin, TenantMixin):
     # Owner
     owner_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
     
+    # Project association (optional)
+    project_id = Column(Integer, ForeignKey('projects.id', ondelete='SET NULL'), index=True)
+    
     # Studio association (optional)
     studio_id = Column(Integer, ForeignKey('studios.id', ondelete='SET NULL'), index=True)
     
@@ -84,6 +87,7 @@ class Document(Base, TimestampMixin, TenantMixin):
     # Relationships
     tenant = relationship("Tenant", back_populates="documents")
     owner = relationship("User", back_populates="documents")
+    project = relationship("Project", back_populates="documents")
     studio = relationship("Studio", back_populates="documents")
     versions = relationship("DocumentVersion", back_populates="document", cascade="all, delete-orphan", order_by="DocumentVersion.version.desc()")
     collaborators = relationship("DocumentCollaborator", back_populates="document", cascade="all, delete-orphan")

@@ -31,6 +31,7 @@ class DocumentBase(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)  # Changed from excerpt
     status: DocumentStatus = DocumentStatus.DRAFT
     visibility: DocumentVisibility = DocumentVisibility.PRIVATE
+    project_id: Optional[int] = None
     studio_id: Optional[int] = None
     tags: Optional[List[str]] = Field(default_factory=list)  # Tag names - stored in Tag/DocumentTag models
 

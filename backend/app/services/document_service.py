@@ -90,6 +90,7 @@ async def create_document(
         description=document_data.description,
         status=document_data.status,
         visibility=document_data.visibility,
+        project_id=document_data.project_id,
         studio_id=document_data.studio_id,
         word_count=word_count,
         current_version=1

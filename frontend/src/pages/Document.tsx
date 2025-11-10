@@ -28,8 +28,10 @@ export function Document() {
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
 
-  // Get document ID from URL
-  const documentId = new URLSearchParams(window.location.search).get('id')
+  // Get document ID and project ID from URL
+  const urlParams = new URLSearchParams(window.location.search)
+  const documentId = urlParams.get('id')
+  const projectId = urlParams.get('project')
 
   useEffect(() => {
     if (documentId) {
@@ -100,7 +102,8 @@ export function Document() {
           title: 'Untitled Document',
           content: { type: 'doc', content: [] },
           status: 'draft',
-          visibility: 'private'
+          visibility: 'private',
+          ...(projectId && { project_id: parseInt(projectId) })
         })
       })
 

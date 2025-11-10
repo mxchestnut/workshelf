@@ -158,7 +158,7 @@ export function Studio() {
     }
   }
 
-  const createFromTemplate = (templateId: string) => {
+  const createFromTemplate = async (templateId: string) => {
     // Check if user is logged in before navigating
     const token = localStorage.getItem('access_token')
     if (!token || !user) {
@@ -167,8 +167,39 @@ export function Studio() {
       return
     }
     
-    // Navigate to document creator with template
-    window.location.href = `/document?template=${templateId}`
+    // Create project first
+    try {
+      const template = PROJECT_TEMPLATES.find(t => t.id === templateId)
+      const projectTitle = template ? `New ${template.name}` : 'New Project'
+      
+      console.log('[Studio] Creating project for template:', templateId)
+      const response = await fetch(`${API_URL}/api/v1/projects/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: projectTitle,
+          project_type: templateId,
+          description: ''
+        })
+      })
+      
+      if (!response.ok) {
+        console.error('[Studio] Failed to create project:', response.status)
+        throw new Error('Failed to create project')
+      }
+      
+      const project = await response.json()
+      console.log('[Studio] Project created:', project.id)
+      
+      // Navigate to document creator with project and template
+      window.location.href = `/document?project=${project.id}&template=${templateId}`
+    } catch (err) {
+      console.error('[Studio] Error creating project:', err)
+      alert('Failed to create project. Please try again.')
+    }
   }
 
   const goToDocuments = () => {
