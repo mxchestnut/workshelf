@@ -172,7 +172,10 @@ export function Studio() {
       const template = PROJECT_TEMPLATES.find(t => t.id === templateId)
       const projectTitle = template ? `New ${template.name}` : 'New Project'
       
-      console.log('[Studio] Creating project for template:', templateId)
+      // Convert template ID to backend enum format (replace hyphens with underscores)
+      const projectType = templateId.replace(/-/g, '_')
+      
+      console.log('[Studio] Creating project for template:', templateId, '-> project_type:', projectType)
       const response = await fetch(`${API_URL}/api/v1/projects/`, {
         method: 'POST',
         headers: {
@@ -181,14 +184,16 @@ export function Studio() {
         },
         body: JSON.stringify({
           title: projectTitle,
-          project_type: templateId,
-          description: ''
+          project_type: projectType,
+          description: '',
+          target_word_count: template?.wordCountGoal
         })
       })
       
       if (!response.ok) {
-        console.error('[Studio] Failed to create project:', response.status)
-        throw new Error('Failed to create project')
+        const errorText = await response.text()
+        console.error('[Studio] Failed to create project:', response.status, errorText)
+        throw new Error(`Failed to create project: ${response.status}`)
       }
       
       const project = await response.json()

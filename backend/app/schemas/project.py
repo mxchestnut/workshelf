@@ -10,8 +10,13 @@ from enum import Enum
 class ProjectType(str, Enum):
     """Project types."""
     NOVEL = "novel"
+    NOVELLA = "novella"
     SHORT_STORY = "short_story"
+    SCREENPLAY = "screenplay"
     POETRY = "poetry"
+    NON_FICTION = "non_fiction"
+    MEMOIR = "memoir"
+    BLANK = "blank"
     ESSAY = "essay"
     SCRIPT = "script"
     BLOG = "blog"
