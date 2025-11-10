@@ -21,6 +21,7 @@ const Groups = lazy(() => import('./pages/Groups'))
 const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -46,7 +47,7 @@ const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'staff' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -78,6 +79,8 @@ function App() {
       setCurrentPage('dashboard')
     } else if (path === '/admin') {
       setCurrentPage('admin')
+    } else if (path === '/staff') {
+      setCurrentPage('staff')
     } else if (path === '/documents') {
       setCurrentPage('documents')
     } else if (path === '/document') {
@@ -183,9 +186,12 @@ function App() {
       return <Dashboard />
     }
     
-    // Admin route also shows Dashboard with tabs
     if (currentPage === 'admin') {
-      return <Dashboard />
+      return <AdminDashboard />
+    }
+    
+    if (currentPage === 'staff') {
+      return <AdminDashboard embedded={false} />
     }
     
     if (currentPage === 'documents') {

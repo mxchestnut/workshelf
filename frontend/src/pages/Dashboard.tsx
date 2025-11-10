@@ -1,24 +1,18 @@
 /**
- * Dashboard Page - Unified dashboard with tabs based on permissions
- * - Analytics: All users (personal writing analytics)
- * - Groups: Group admins (manage groups)
- * - Moderation: Group admins/moderators (content moderation)  
- * - Admin: Staff only (platform administration)
+ * Dashboard Page - Personal writing analytics
+ * Shows views, reads, likes, and performance metrics for published works
  */
 
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
-import { AdminDashboard } from './AdminDashboard'
 import { 
   TrendingUp, Eye, Heart, MessageCircle, Users,
   BookOpen, Download, DollarSign,
-  BarChart3, ArrowUp, ArrowDown, Shield, Settings
+  BarChart3, ArrowUp, ArrowDown
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
-
-type DashboardTab = 'analytics' | 'groups' | 'moderation' | 'admin'
 
 interface AnalyticsData {
   totalViews: number
@@ -46,7 +40,6 @@ interface WorkStats {
 export function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<DashboardTab>('analytics')
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalViews: 0,
     totalReads: 0,
@@ -223,81 +216,8 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1">
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-6 py-4 font-medium transition-colors border-b-2 ${
-                activeTab === 'analytics' 
-                  ? 'text-white border-[#B34B0C]'
-                  : 'text-[#B3B2B0] border-transparent hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Analytics
-              </div>
-            </button>
-
-            {user?.groups && user.groups.length > 0 && (
-              <>
-                <button
-                  onClick={() => setActiveTab('groups')}
-                  className={`px-6 py-4 font-medium transition-colors border-b-2 ${
-                    activeTab === 'groups'
-                      ? 'text-white border-[#B34B0C]'
-                      : 'text-[#B3B2B0] border-transparent hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Groups
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('moderation')}
-                  className={`px-6 py-4 font-medium transition-colors border-b-2 ${
-                    activeTab === 'moderation'
-                      ? 'text-white border-[#B34B0C]'
-                      : 'text-[#B3B2B0] border-transparent hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
-                    Moderation
-                  </div>
-                </button>
-              </>
-            )}
-
-            {user?.is_staff && (
-              <button
-                onClick={() => setActiveTab('admin')}
-                className={`px-6 py-4 font-medium transition-colors border-b-2 ${
-                  activeTab === 'admin'
-                    ? 'text-white border-[#B34B0C]'
-                    : 'text-[#B3B2B0] border-transparent hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Admin
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'admin' && user?.is_staff ? (
-        <AdminDashboard />
-      ) : activeTab === 'analytics' ? (
+      {/* Analytics Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Analytics Content - existing dashboard */}
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Views */}
@@ -445,23 +365,6 @@ export function Dashboard() {
           </div>
         </div>
       </div>
-      ) : activeTab === 'groups' ? (
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="p-12 text-center rounded-lg border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-            <Users className="w-12 h-12 mx-auto mb-3" style={{ color: '#B34B0C' }} />
-            <p className="font-medium text-white mb-1">Group Management</p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Manage your groups here (coming soon)</p>
-          </div>
-        </div>
-      ) : activeTab === 'moderation' ? (
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="p-12 text-center rounded-lg border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-            <Shield className="w-12 h-12 mx-auto mb-3" style={{ color: '#B34B0C' }} />
-            <p className="font-medium text-white mb-1">Content Moderation</p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Moderate content here (coming soon)</p>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }

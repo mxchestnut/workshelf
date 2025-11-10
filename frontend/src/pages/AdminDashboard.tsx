@@ -51,7 +51,11 @@ interface Invitation {
   accepted_at?: string
 }
 
-export function AdminDashboard() {
+interface AdminDashboardProps {
+  embedded?: boolean  // When true, don't render Navigation (for use in Dashboard tabs)
+}
+
+export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
@@ -242,7 +246,9 @@ export function AdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+        {!embedded && (
+          <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+        )}
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading admin dashboard...</div>
         </div>
@@ -252,7 +258,9 @@ export function AdminDashboard() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+      {!embedded && (
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+      )}
       
       {/* Header */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>

@@ -16,7 +16,9 @@ import {
   ShoppingBag,
   UserCircle,
   Users,
-  BarChart
+  BarChart,
+  Settings,
+  Shield
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -323,19 +325,51 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <span>Profile & Settings</span>
                 </button>
 
-                {/* Dashboard - unified view with tabs for different roles */}
+                {/* Dashboard - Personal analytics */}
                 <button 
                   onClick={() => navigateTo('/dashboard')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/dashboard') || isActive('/admin')
+                    isActive('/dashboard')
                       ? 'font-medium text-white'
                       : 'text-white hover:bg-opacity-20'
                   }`}
-                  style={isActive('/dashboard') || isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
+                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <BarChart className="w-5 h-5" />
                   <span>Dashboard</span>
                 </button>
+
+                {/* Admin - For group owners */}
+                {user?.groups && user.groups.length > 0 && (
+                  <button 
+                    onClick={() => navigateTo('/admin')}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      isActive('/admin')
+                        ? 'font-medium text-white'
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Group Admin</span>
+                  </button>
+                )}
+
+                {/* Staff - Platform administration */}
+                {user?.is_staff && (
+                  <button 
+                    onClick={() => navigateTo('/staff')}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      isActive('/staff')
+                        ? 'font-medium text-white'
+                        : 'text-white hover:bg-opacity-20'
+                    }`}
+                    style={isActive('/staff') ? { backgroundColor: '#B34B0C' } : {}}
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Staff Panel</span>
+                  </button>
+                )}
               </div>
             </div>
           </nav>
