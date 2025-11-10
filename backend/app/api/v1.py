@@ -40,6 +40,7 @@ from app.api import (
     ai_assist,
     ai_templates,  # AI template generation
     admin,  # Admin endpoints for platform staff
+    admin_store,  # Admin store management endpoints
     admin_moderation,  # Admin moderation for wiki edits
     group_admin,  # Group admin endpoints for subdomain owners
     feed,  # Personalized feed
@@ -137,6 +138,9 @@ api_router.include_router(ai_templates.router)
 
 # Admin endpoints (Keycloak-protected for platform staff)
 api_router.include_router(admin.router)
+
+# Admin store management (Keycloak-protected for platform staff)
+api_router.include_router(admin_store.router)
 
 # Admin moderation (wiki edits, content approval)
 api_router.include_router(admin_moderation.router)
