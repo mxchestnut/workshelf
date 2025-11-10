@@ -107,7 +107,15 @@ export function Document() {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[Document] Create failed:', errorText)
-        throw new Error(`Failed to create document: ${response.status}`)
+        let errorMessage = `Failed to create document: ${response.status}`
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.detail || errorMessage
+        } catch {
+          // errorText is not JSON, use as is
+          errorMessage = errorText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
@@ -120,7 +128,8 @@ export function Document() {
       window.history.pushState({}, '', `/document?id=${data.id}`)
     } catch (err) {
       console.error('Error creating document:', err)
-      setError('Failed to create document')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create document'
+      setError(errorMessage)
       setLoading(false)
     }
   }
