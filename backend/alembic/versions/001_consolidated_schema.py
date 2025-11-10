@@ -24,17 +24,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """
-    NO-OP upgrade - database already has all tables.
+    NO-OP upgrade - tables are created by create_tables.py script.
     
-    This migration serves as a baseline. The actual schema exists in the database
-    from previous manual migrations and deployments. We're just marking this
-    revision as applied so future migrations have a clean starting point.
-    
-    If you're setting up a NEW database from scratch, you would need to run:
-    python -c "from app.models import Base; from app.core.database import engine; Base.metadata.create_all(bind=engine)"
-    
-    Then mark this migration as applied:
-    alembic stamp 001_consolidated
+    This migration serves as a baseline marker.
     """
     pass
 

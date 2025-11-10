@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "Creating database tables..."
+python scripts/create_tables.py
+
 echo "Running database migrations..."
 alembic upgrade head
 
