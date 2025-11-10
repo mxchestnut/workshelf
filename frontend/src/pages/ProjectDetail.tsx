@@ -1,6 +1,6 @@
 /**
- * Project Detail Page - Shows project overview and document templates
- * Similar to World Anvil's world-building prompts
+ * Project Detail Page - Hybrid between Obsidian and World Anvil
+ * Shows document tree in sidebar with template selection
  */
 
 import { useEffect, useState } from 'react'
@@ -8,7 +8,7 @@ import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   ArrowLeft, Plus, FileText, User, MapPin, Clock,
-  Users, Book, Scroll
+  Users, Book, Scroll, ChevronRight, ChevronDown, Folder
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -30,6 +30,7 @@ interface Document {
   word_count: number
   status: string
   updated_at: string
+  document_type?: string
 }
 
 interface DocumentTemplate {
@@ -37,10 +38,11 @@ interface DocumentTemplate {
   title: string
   description: string
   icon: React.ElementType
-  prompts: string[]
+  category: string
+  prompt: string
 }
 
-// Document templates for different project types
+// Document templates - simple cards with single prompts
 const DOCUMENT_TEMPLATES: Record<string, DocumentTemplate[]> = {
   novel: [
     {
@@ -48,129 +50,92 @@ const DOCUMENT_TEMPLATES: Record<string, DocumentTemplate[]> = {
       title: 'Main Manuscript',
       description: 'Your primary story content',
       icon: Book,
-      prompts: ['Write your story here']
+      category: 'Writing',
+      prompt: 'Write your story here. This is your main manuscript where your narrative comes to life.'
     },
     {
       id: 'character',
       title: 'Character Profile',
-      description: 'Develop your characters',
+      description: 'Develop a character',
       icon: User,
-      prompts: [
-        'Physical appearance and mannerisms',
-        'Background and history',
-        'Motivations and goals',
-        'Relationships with other characters',
-        'Character arc and development'
-      ]
+      category: 'Characters',
+      prompt: 'Who is this character? Describe their appearance, personality, background, motivations, and role in your story.'
     },
     {
       id: 'location',
       title: 'Location',
-      description: 'Build your world\'s places',
+      description: 'Build a place in your world',
       icon: MapPin,
-      prompts: [
-        'Physical description',
-        'History and significance',
-        'Inhabitants and culture',
-        'Notable features',
-        'Role in the story'
-      ]
+      category: 'World',
+      prompt: 'Describe this location. What does it look like? What\'s its history? Who lives there? Why is it important to your story?'
     },
     {
       id: 'timeline',
       title: 'Timeline Event',
-      description: 'Track key events and history',
+      description: 'Track a key event',
       icon: Clock,
-      prompts: [
-        'Date or time period',
-        'What happened',
-        'Who was involved',
-        'Consequences and impact',
-        'Connection to main story'
-      ]
+      category: 'Timeline',
+      prompt: 'What happened in this event? When did it occur? Who was involved? What were the consequences?'
     },
     {
       id: 'faction',
       title: 'Faction/Organization',
-      description: 'Detail groups and organizations',
+      description: 'Detail a group',
       icon: Users,
-      prompts: [
-        'Name and purpose',
-        'Leadership structure',
-        'Beliefs and values',
-        'Resources and influence',
-        'Allies and enemies'
-      ]
+      category: 'World',
+      prompt: 'What is this organization? What are their goals and beliefs? Who leads them? What role do they play in your world?'
     },
     {
       id: 'lore',
       title: 'Lore & Mythology',
       description: 'World history and legends',
       icon: Scroll,
-      prompts: [
-        'The legend or historical event',
-        'Origins and authenticity',
-        'Cultural significance',
-        'How it\'s known today',
-        'Impact on your world'
-      ]
+      category: 'World',
+      prompt: 'What is this legend or historical event? How did it shape your world? How is it remembered today?'
     }
   ],
   screenplay: [
     {
       id: 'script',
       title: 'Script',
-      description: 'Your screenplay in standard format',
+      description: 'Your screenplay',
       icon: FileText,
-      prompts: ['Write your screenplay here']
+      category: 'Writing',
+      prompt: 'Write your screenplay here in standard script format.'
     },
     {
       id: 'character',
       title: 'Character Breakdown',
-      description: 'Character details for actors/casting',
+      description: 'Character details',
       icon: User,
-      prompts: [
-        'Physical description and age',
-        'Personality and quirks',
-        'Background and motivations',
-        'Character arc',
-        'Key scenes'
-      ]
+      category: 'Characters',
+      prompt: 'Who is this character? Describe them for actors and casting. Include their age, appearance, personality, and character arc.'
     },
     {
       id: 'location',
       title: 'Location/Set',
-      description: 'Scene locations and settings',
+      description: 'Scene location',
       icon: MapPin,
-      prompts: [
-        'Location type (INT/EXT)',
-        'Visual description',
-        'Atmosphere and mood',
-        'Key scenes here',
-        'Production notes'
-      ]
+      category: 'Locations',
+      prompt: 'Describe this location. Is it INT or EXT? What\'s the visual style? What scenes take place here?'
     }
   ],
-  // Other project types can use simpler templates
   default: [
     {
       id: 'main-content',
       title: 'Main Content',
       description: 'Your primary writing',
       icon: FileText,
-      prompts: ['Start writing here']
+      category: 'Writing',
+      prompt: 'Start writing here. This is your main content area.'
     },
     {
       id: 'notes',
       title: 'Notes & Research',
-      description: 'Supporting notes and ideas',
+      description: 'Supporting notes',
       icon: Scroll,
-      prompts: [
-        'Research notes',
-        'Ideas and brainstorming',
-        'References',
-        'Drafts and experiments'
-      ]
+      category: 'Research',
+      prompt: 'Collect your research, ideas, and brainstorming here. Use this space for notes that support your main work.'
     }
   ]
 }
@@ -264,29 +229,14 @@ export function ProjectDetail() {
         return
       }
 
-      // Create document with template prompts as initial content
+      // Create document with simple prompt-based initial content
       const initialContent = {
         type: 'doc',
         content: [
           {
-            type: 'heading',
-            attrs: { level: 1 },
-            content: [{ type: 'text', text: template.title }]
-          },
-          {
             type: 'paragraph',
-            content: [{ type: 'text', text: template.description, marks: [{ type: 'italic' }] }]
-          },
-          { type: 'paragraph' },
-          ...template.prompts.map(prompt => ({
-            type: 'heading',
-            attrs: { level: 2 },
-            content: [{ type: 'text', text: prompt }]
-          })).flatMap((heading, idx) => [
-            heading,
-            { type: 'paragraph' },
-            ...(idx < template.prompts.length - 1 ? [{ type: 'paragraph' }] : [])
-          ])
+            content: [{ type: 'text', text: '' }]
+          }
         ]
       }
 
@@ -297,8 +247,9 @@ export function ProjectDetail() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          title: template.title,
+          title: `New ${template.title}`,
           content: initialContent,
+          description: template.prompt,
           project_id: parseInt(projectId!),
           status: 'DRAFT',
           visibility: 'PRIVATE'
@@ -310,7 +261,8 @@ export function ProjectDetail() {
       }
 
       const document = await response.json()
-      window.location.href = `/document/${document.id}`
+      // Navigate to document editor with template context
+      window.location.href = `/document/${document.id}?prompt=${encodeURIComponent(template.prompt)}`
     } catch (err) {
       console.error('[ProjectDetail] Error creating document:', err)
       alert('Failed to create document. Please try again.')
@@ -398,74 +350,83 @@ export function ProjectDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Existing Documents */}
-        {documents.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4" style={{ color: 'white' }}>Documents</h2>
-            <div className="grid gap-4">
-              {documents.map(doc => (
-                <a
-                  key={doc.id}
-                  href={`/document/${doc.id}`}
-                  className="p-4 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#524944' }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold mb-1" style={{ color: 'white' }}>{doc.title}</h3>
-                      <div className="flex items-center gap-4 text-sm" style={{ color: '#B3B2B0' }}>
-                        <span>{doc.word_count.toLocaleString()} words</span>
-                        <span>•</span>
-                        <span className="capitalize">{doc.status.toLowerCase()}</span>
-                        <span>•</span>
-                        <span>{new Date(doc.updated_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <FileText className="w-5 h-5" style={{ color: '#6C6A68' }} />
-                  </div>
-                </a>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar - Document Tree */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: '#B3B2B0' }}>
+                Documents
+              </h2>
+              
+              {documents.length > 0 ? (
+                <div className="space-y-1">
+                  {documents.map(doc => (
+                    <a
+                      key={doc.id}
+                      href={`/document/${doc.id}`}
+                      className="flex items-center gap-2 px-3 py-2 rounded hover:bg-[#524944] transition-colors"
+                      style={{ color: '#B3B2B0' }}
+                    >
+                      <FileText className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-sm truncate">{doc.title}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: '#6C6A68' }}>
+                  No documents yet. Choose a template below to get started.
+                </p>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Document Templates */}
-        <div>
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2" style={{ color: 'white' }}>
-              {documents.length > 0 ? 'Add More Documents' : 'Get Started'}
-            </h2>
-            <p style={{ color: '#B3B2B0' }}>
-              Choose a template to add structure to your project
-            </p>
-          </div>
+          {/* Main Content - Template Cards */}
+          <div className="lg:col-span-3">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>
+                {documents.length > 0 ? 'Add Document' : 'Choose a Template'}
+              </h2>
+              <p style={{ color: '#B3B2B0' }}>
+                Select a template to create a new document with guided prompts
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map(template => {
-              const IconComponent = template.icon
-              return (
-                <button
-                  key={template.id}
-                  onClick={() => createFromTemplate(template)}
-                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                  style={{ backgroundColor: '#524944' }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <IconComponent size={32} style={{ color: '#B34B0C' }} />
-                    <Plus className="w-5 h-5" style={{ color: '#6C6A68' }} />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
-                    {template.title}
-                  </h3>
-                  <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>
-                    {template.description}
-                  </p>
-                  <div className="text-xs" style={{ color: '#6C6A68' }}>
-                    {template.prompts.length} prompt{template.prompts.length !== 1 ? 's' : ''}
-                  </div>
-                </button>
-              )
-            })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {templates.map(template => {
+                const IconComponent = template.icon
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => createFromTemplate(template)}
+                    className="p-5 rounded-lg hover:bg-opacity-90 transition-all text-left border border-transparent hover:border-[#B34B0C]"
+                    style={{ backgroundColor: '#524944' }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <IconComponent size={28} style={{ color: '#B34B0C' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1">
+                          <h3 className="font-semibold" style={{ color: 'white' }}>
+                            {template.title}
+                          </h3>
+                          <span className="text-xs px-2 py-1 rounded ml-2 flex-shrink-0" 
+                                style={{ backgroundColor: '#37322E', color: '#6C6A68' }}>
+                            {template.category}
+                          </span>
+                        </div>
+                        <p className="text-sm mb-2" style={{ color: '#B3B2B0' }}>
+                          {template.description}
+                        </p>
+                        <p className="text-xs italic" style={{ color: '#6C6A68' }}>
+                          "{template.prompt.substring(0, 80)}..."
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>

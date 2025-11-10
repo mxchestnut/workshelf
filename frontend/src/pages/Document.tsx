@@ -28,10 +28,11 @@ export function Document() {
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
 
-  // Get document ID and project ID from URL
+  // Get document ID, project ID, and prompt from URL
   const urlParams = new URLSearchParams(window.location.search)
   const documentId = urlParams.get('id')
   const projectId = urlParams.get('project')
+  const promptText = urlParams.get('prompt')
 
   useEffect(() => {
     if (documentId) {
@@ -220,6 +221,25 @@ export function Document() {
 
   return (
     <div className="h-screen flex flex-col">
+      {/* Template Prompt Banner */}
+      {promptText && (
+        <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#B34B0C' }} />
+              <div className="flex-1">
+                <div className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#B34B0C' }}>
+                  Writing Prompt
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: '#B3B2B0' }}>
+                  {promptText}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Info Banner */}
       {document.status === 'published' && document.visibility === 'public' && (
         <div className="bg-green-50 border-b border-green-200 px-4 py-2">
