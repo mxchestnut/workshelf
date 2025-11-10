@@ -2,10 +2,13 @@
 Work Shelf - FastAPI Application
 Main entry point for the backend API
 """
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import Response
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 from app.api.v1 import api_router
 from app.core.config import settings
+from app.core.database import get_db
 
 app = FastAPI(
     title="Work Shelf API",
@@ -56,15 +59,49 @@ async def add_cors_headers(request: Request, call_next):
 # NOTE: FastAPI CORSMiddleware removed because it was rejecting origins before our custom middleware could handle them
 # Our custom middleware above handles all CORS logic
 
-# Health check endpoint
+# Health check endpoints
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
+    """
+    Basic health check endpoint
+    Returns service status and version
+    """
     return {
         "status": "healthy",
         "version": "0.1.0",
         "service": "work-shelf-api"
     }
+
+@app.get("/health/live")
+async def liveness():
+    """
+    Kubernetes/Container Apps liveness probe
+    Returns 200 if service is running (doesn't check dependencies)
+    Used to determine if container should be restarted
+    """
+    return {"status": "alive"}
+
+@app.get("/health/ready")
+async def readiness(db: AsyncSession = Depends(get_db)):
+    """
+    Kubernetes/Container Apps readiness probe
+    Returns 200 only if service and database are ready
+    Used to determine if traffic should be routed to this instance
+    """
+    try:
+        # Check database connection
+        await db.execute(text("SELECT 1"))
+        
+        return {
+            "status": "ready",
+            "database": "connected",
+            "service": "work-shelf-api"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Service not ready: {str(e)}"
+        )
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")

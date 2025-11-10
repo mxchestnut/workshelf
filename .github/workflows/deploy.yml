@@ -9,6 +9,22 @@ env:
   REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
   BACKEND_IMAGE: workshelf-backend
   FRONTEND_IMAGE: workshelf-frontend
+  # Backend environment variables (consolidated)
+  BACKEND_ENV_VARS: >-
+    DATABASE_URL=secretref:database-url
+    ANTHROPIC_API_KEY=secretref:anthropic-api-key
+    STRIPE_SECRET_KEY=secretref:stripe-secret-key
+    STRIPE_PUBLISHABLE_KEY=secretref:stripe-publishable-key
+    STRIPE_WEBHOOK_SECRET=secretref:stripe-webhook-secret
+    GPTZERO_API_KEY=secretref:gptzero-api-key
+    COPYSCAPE_API_KEY=secretref:copyscape-api-key
+    COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }}
+    CLAUDE_MODEL=claude-sonnet-4-20250514
+    SECRET_KEY=secretref:secret-key
+    KEYCLOAK_SERVER_URL=${{ secrets.KEYCLOAK_SERVER_URL }}
+    KEYCLOAK_REALM=${{ secrets.KEYCLOAK_REALM }}
+    KEYCLOAK_CLIENT_ID=${{ secrets.KEYCLOAK_CLIENT_ID }}
+    KEYCLOAK_CLIENT_SECRET=${{ secrets.KEYCLOAK_CLIENT_SECRET }}
 
 jobs:
   build-and-deploy:
@@ -68,17 +84,7 @@ jobs:
             --name workshelf-backend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }} \
-            --set-env-vars \
-              DATABASE_URL=secretref:database-url \
-              ANTHROPIC_API_KEY=secretref:anthropic-api-key \
-              STRIPE_SECRET_KEY=secretref:stripe-secret-key \
-              STRIPE_PUBLISHABLE_KEY=secretref:stripe-publishable-key \
-              STRIPE_WEBHOOK_SECRET=secretref:stripe-webhook-secret \
-              GPTZERO_API_KEY=secretref:gptzero-api-key \
-              COPYSCAPE_API_KEY=secretref:copyscape-api-key \
-              COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
-              CLAUDE_MODEL=claude-4-sonnet-20250514 \
-              SECRET_KEY=secretref:secret-key || \
+            --set-env-vars ${{ env.BACKEND_ENV_VARS }} || \
           az containerapp create \
             --name workshelf-backend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
@@ -90,27 +96,17 @@ jobs:
             --registry-username ${{ secrets.ACR_USERNAME }} \
             --registry-password ${{ secrets.ACR_PASSWORD }} \
             --secrets \
-              database-url=${{ secrets.DATABASE_URL }} \
-              anthropic-api-key=${{ secrets.ANTHROPIC_API_KEY }} \
-              stripe-secret-key=${{ secrets.STRIPE_SECRET_KEY }} \
-              stripe-publishable-key=${{ secrets.STRIPE_PUBLISHABLE_KEY }} \
-              stripe-webhook-secret=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
-              gptzero-api-key=${{ secrets.GPTZERO_API_KEY }} \
-              copyscape-api-key=${{ secrets.COPYSCAPE_API_KEY }} \
-              secret-key=${{ secrets.SECRET_KEY }} \
-            --env-vars \
-              DATABASE_URL=secretref:database-url \
-              ANTHROPIC_API_KEY=secretref:anthropic-api-key \
-              STRIPE_SECRET_KEY=secretref:stripe-secret-key \
-              STRIPE_PUBLISHABLE_KEY=secretref:stripe-publishable-key \
-              STRIPE_WEBHOOK_SECRET=secretref:stripe-webhook-secret \
-              GPTZERO_API_KEY=secretref:gptzero-api-key \
-              COPYSCAPE_API_KEY=secretref:copyscape-api-key \
-              COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }} \
-              CLAUDE_MODEL=claude-4-sonnet-20250514 \
-              SECRET_KEY=secretref:secret-key \
+              database-url="${{ secrets.DATABASE_URL }}" \
+              anthropic-api-key="${{ secrets.ANTHROPIC_API_KEY }}" \
+              stripe-secret-key="${{ secrets.STRIPE_SECRET_KEY }}" \
+              stripe-publishable-key="${{ secrets.STRIPE_PUBLISHABLE_KEY }}" \
+              stripe-webhook-secret="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
+              gptzero-api-key="${{ secrets.GPTZERO_API_KEY }}" \
+              copyscape-api-key="${{ secrets.COPYSCAPE_API_KEY }}" \
+              secret-key="${{ secrets.SECRET_KEY }}" \
+            --env-vars ${{ env.BACKEND_ENV_VARS }} \
             --cpu 0.25 --memory 0.5Gi \
-            --min-replicas 0 --max-replicas 2
+            --min-replicas 1 --max-replicas 2
 
       - name: Deploy frontend to Azure Container Apps
         run: |
