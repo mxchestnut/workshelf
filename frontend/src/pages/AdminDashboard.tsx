@@ -480,7 +480,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Site Administration</h2>
               <a
-                href="http://100.124.184.58:8081"
+                href="https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io/admin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors flex items-center gap-2"
