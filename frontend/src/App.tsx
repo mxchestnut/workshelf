@@ -21,7 +21,6 @@ const Groups = lazy(() => import('./pages/Groups'))
 const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -184,8 +183,9 @@ function App() {
       return <Dashboard />
     }
     
+    // Admin route also shows Dashboard with tabs
     if (currentPage === 'admin') {
-      return <Dashboard />  {/* Admin now shows Dashboard with tabs */}
+      return <Dashboard />
     }
     
     if (currentPage === 'documents') {
