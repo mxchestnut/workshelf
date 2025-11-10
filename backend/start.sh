@@ -2,7 +2,7 @@
 set -e
 
 echo "Creating database tables..."
-python scripts/create_tables.py
+python -m scripts.create_tables
 
 echo "Running database migrations..."
 alembic upgrade head
