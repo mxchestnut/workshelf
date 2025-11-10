@@ -622,7 +622,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
-                  onClick={() => console.log('Manage users')}
+                  onClick={() => window.location.href = '/staff/users'}
                   className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
                   style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
                 >
@@ -632,7 +632,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 </button>
 
                 <button
-                  onClick={() => window.location.href = '/groups'}
+                  onClick={() => window.location.href = '/staff/groups'}
                   className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
                   style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
                 >
@@ -642,7 +642,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 </button>
 
                 <button
-                  onClick={() => console.log('Global moderation')}
+                  onClick={() => window.location.href = '/staff/moderation'}
                   className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
                   style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
                 >
@@ -652,7 +652,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 </button>
 
                 <button
-                  onClick={() => console.log('System settings')}
+                  onClick={() => window.location.href = '/staff/settings'}
                   className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
                   style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
                 >

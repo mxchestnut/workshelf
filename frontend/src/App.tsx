@@ -22,6 +22,10 @@ const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: mo
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })))
+const ManageUsers = lazy(() => import('./pages/staff/ManageUsers').then(module => ({ default: module.ManageUsers })))
+const ViewAllGroups = lazy(() => import('./pages/staff/ViewAllGroups').then(module => ({ default: module.ViewAllGroups })))
+const GlobalModeration = lazy(() => import('./pages/staff/GlobalModeration').then(module => ({ default: module.GlobalModeration })))
+const SystemSettings = lazy(() => import('./pages/staff/SystemSettings').then(module => ({ default: module.SystemSettings })))
 const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
@@ -47,7 +51,7 @@ const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'staff' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -81,6 +85,14 @@ function App() {
       setCurrentPage('admin')
     } else if (path === '/staff') {
       setCurrentPage('staff')
+    } else if (path === '/staff/users') {
+      setCurrentPage('staff-users')
+    } else if (path === '/staff/groups') {
+      setCurrentPage('staff-groups')
+    } else if (path === '/staff/moderation') {
+      setCurrentPage('staff-moderation')
+    } else if (path === '/staff/settings') {
+      setCurrentPage('staff-settings')
     } else if (path === '/documents') {
       setCurrentPage('documents')
     } else if (path === '/document') {
@@ -192,6 +204,22 @@ function App() {
     
     if (currentPage === 'staff') {
       return <AdminDashboard embedded={false} />
+    }
+    
+    if (currentPage === 'staff-users') {
+      return <ManageUsers />
+    }
+    
+    if (currentPage === 'staff-groups') {
+      return <ViewAllGroups />
+    }
+    
+    if (currentPage === 'staff-moderation') {
+      return <GlobalModeration />
+    }
+    
+    if (currentPage === 'staff-settings') {
+      return <SystemSettings />
     }
     
     if (currentPage === 'documents') {
