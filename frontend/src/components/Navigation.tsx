@@ -280,19 +280,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </button>
 
                 <button 
-                  onClick={() => navigateTo('/projects')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/projects')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
-                  }`}
-                  style={isActive('/projects') ? { backgroundColor: '#B34B0C' } : {}}
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Projects</span>
-                </button>
-
-                <button 
                   onClick={() => navigateTo('/beta-marketplace')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/beta-marketplace')
