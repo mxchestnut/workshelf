@@ -16,6 +16,7 @@ from app.core.auth import get_current_user
 from app.models.user import User
 from app.models.store import StoreItem, Purchase, StoreItemStatus, PurchaseStatus
 from app.services.stripe_service import StripeService
+from scripts.top_100_classics import TOP_100_CLASSICS
 
 
 router = APIRouter(prefix="/store", tags=["store"])
@@ -503,13 +504,9 @@ async def seed_store_items(
     Seed the store with top 100 public domain classics.
     Staff-only endpoint to populate initial catalog.
     """
-    from app.core.auth import require_staff
-    
     # Check staff permission
     if not current_user.get("is_staff"):
         raise HTTPException(status_code=403, detail="Staff access required")
-    
-    from scripts.top_100_classics import TOP_100_CLASSICS
     
     # Get first user as seller
     result = await db.execute(select(User).limit(1))
