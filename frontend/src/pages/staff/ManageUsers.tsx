@@ -6,11 +6,9 @@ import { useEffect, useState } from 'react'
 import { Navigation } from '../../components/Navigation'
 import { authService, User } from '../../services/auth'
 import { 
-  Users, Search, Filter, MoreVertical, 
-  Shield, Ban, CheckCircle, XCircle, ArrowLeft
+  Users, Search, MoreVertical, 
+  Shield, CheckCircle, XCircle, ArrowLeft
 } from 'lucide-react'
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface UserAccount {
   id: number
@@ -50,8 +48,8 @@ export function ManageUsers() {
 
   const loadUsers = async () => {
     try {
-      const token = localStorage.getItem('access_token')
       // TODO: Implement API endpoint
+      // const token = localStorage.getItem('access_token')
       // const response = await fetch(`${API_URL}/api/v1/admin/users`, {
       //   headers: { 'Authorization': `Bearer ${token}` }
       // })
