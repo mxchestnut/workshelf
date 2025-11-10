@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
-  ArrowLeft, Plus, FileText, User, MapPin, Clock,
-  Users, Book, Scroll, ChevronRight, ChevronDown, Folder
+  ArrowLeft, FileText, User, MapPin, Clock,
+  Users, Book, Scroll
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
