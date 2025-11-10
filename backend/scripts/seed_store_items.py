@@ -1,21 +1,17 @@
-"""
-Seed sample store items (ebooks and audiobooks)
-"""
-import asyncio
-from sqlalchemy import select
-from app.core.database import async_session_maker
-from app.models.store import StoreItem, StoreItemStatus
-from app.models.user import User
-from datetime import datetime
-from decimal import Decimal
-
-
 #!/usr/bin/env python3
 """
-Seed the store with PUBLIC DOMAIN classics (ebook-only, self-funding model).
+Seed the store with TOP 100 PUBLIC DOMAIN classics (ebook-only, self-funding model).
 
 This script creates legal-to-sell public domain ebooks from Project Gutenberg
-(pre-1928 works, public domain worldwide).
+(pre-1928 works, public domain worldwide). Covers all major genres for variety:
+- Romance & Literary Fiction (20 books)
+- Mystery & Detective (15 books)  
+- Science Fiction & Fantasy (15 books)
+- Horror & Gothic (10 books)
+- Adventure & Action (10 books)
+- Philosophy & Non-Fiction (10 books)
+- War & Historical Fiction (10 books)
+- American Classics (10 books)
 
 SELF-FUNDING AUDIOBOOK MODEL:
 1. Launch Phase: Sell ebooks at $2.99 (competitive, zero production cost)
@@ -29,6 +25,9 @@ ElevenLabs Cost: $120/book (Professional Voice Cloning)
 Break-even: 40 ebook sales at $2.99 = $119.60 revenue
 Post-upgrade profit: $11.99 bundle (pure profit after cost recovery)
 
+As users search for specific titles not in the catalog, replace lower-performing
+classics with requested titles to keep the store fresh and demand-driven.
+
 Run this script to populate the store with curated classics.
 """
 
@@ -38,10 +37,11 @@ from sqlalchemy import select
 from app.core.database import async_session_maker
 from app.models.store import StoreItem, StoreItemStatus
 from app.models.user import User
+from scripts.top_100_classics import TOP_100_CLASSICS
 
 
 async def seed_store_items():
-    """Create public domain store items with AI audiobooks."""
+    """Create top 100 public domain classics."""
     async with async_session_maker() as session:
         # Get the first user to be the seller
         result = await session.execute(select(User).limit(1))
@@ -51,105 +51,56 @@ async def seed_store_items():
             print("No users found. Create a user first.")
             return
         
-        print(f"Creating public domain store items for user: {user.email}")
+        print(f"Creating {len(TOP_100_CLASSICS)} public domain store items for user: {user.email}")
         
-        # PUBLIC DOMAIN classics from Project Gutenberg
-        # All books pre-1928, legal to sell worldwide
-        # EBOOK ONLY - audiobooks generated when revenue hits $120 threshold
-        items = [
-            {
-                "title": "Pride and Prejudice",
-                "author_name": "Jane Austen",
-                "description": "The timeless romance that defined a genre. Follow Elizabeth Bennet as she navigates society, family, and her complicated feelings for the enigmatic Mr. Darcy. Austen's wit and social commentary remain as relevant today as in 1813.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/1342.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg",
-                "word_count": 122000,
-                "page_count": 432,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_featured": True,
-                "is_bestseller": True,
-                "tags": ["romance", "classic", "literary-fiction", "public-domain"],
-                "has_audiobook": False,
-            },
-            {
-                "title": "The Adventures of Sherlock Holmes",
-                "author_name": "Arthur Conan Doyle",
-                "description": "Enter the world of literature's greatest detective! This collection features 12 iconic mysteries including 'A Scandal in Bohemia' and 'The Red-Headed League'. Experience Holmes' brilliant deductions and Watson's loyal companionship. Perfect for mystery lovers.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with dramatic character voices.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/1661.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/1661/pg1661.cover.medium.jpg",
-                "word_count": 105000,
-                "page_count": 307,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_featured": True,
-                "is_bestseller": True,
-                "tags": ["mystery", "detective", "classic", "public-domain"],
-                "has_audiobook": False,
-            },
-            {
-                "title": "Frankenstein; Or, The Modern Prometheus",
-                "author_name": "Mary Shelley",
-                "description": "The original science fiction masterpiece! Dr. Victor Frankenstein's quest to create life leads to tragedy and moral reckoning. Shelley's 1818 Gothic novel explores ambition, responsibility, and what it means to be human. More relevant than ever in the age of AI.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs haunting narration.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/84.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/84/pg84.cover.medium.jpg",
-                "word_count": 75000,
-                "page_count": 280,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_new_release": True,
-                "tags": ["science-fiction", "horror", "classic", "public-domain"],
-                "has_audiobook": False,
-            },
-            {
-                "title": "Alice's Adventures in Wonderland",
-                "author_name": "Lewis Carroll",
-                "description": "Tumble down the rabbit hole into a world of logic-defying madness! Lewis Carroll's 1865 masterpiece delights readers of all ages with talking animals, riddles, and unforgettable characters like the Cheshire Cat and Mad Hatter.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with distinct character voices.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/11.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/11/pg11.cover.medium.jpg",
-                "word_count": 26500,
-                "page_count": 96,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_new_release": True,
-                "tags": ["fantasy", "children", "classic", "public-domain"],
-                "has_audiobook": False,
-            },
-            {
-                "title": "The Picture of Dorian Gray",
-                "author_name": "Oscar Wilde",
-                "description": "Oscar Wilde's only novel is a Gothic masterpiece of vanity, corruption, and eternal youth. When Dorian Gray wishes his portrait would age instead of him, his wish comes true with devastating consequences. Wilde's wit and social satire shine throughout.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration capturing the dark elegance.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/174.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/174/pg174.cover.medium.jpg",
-                "word_count": 78000,
-                "page_count": 254,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_featured": True,
-                "tags": ["classic", "gothic", "philosophy", "public-domain"],
-                "has_audiobook": False,
-            },
-            {
-                "title": "Dracula",
-                "author_name": "Bram Stoker",
-                "description": "The vampire novel that started it all! Bram Stoker's 1897 epistolary masterpiece tells the tale of Count Dracula's attempt to move from Transylvania to England. Told through journal entries, letters, and newspaper clippings, this Gothic horror classic still thrills.\n\n📚 Ebook available now at $2.99\n🎧 Immersive audiobook coming soon! Help us reach 40 sales to unlock premium ElevenLabs narration with atmospheric sound design.",
-                "price_usd": Decimal("2.99"),
-                "epub_blob_url": "https://www.gutenberg.org/ebooks/345.epub.images",
-                "cover_image_url": "https://www.gutenberg.org/cache/epub/345/pg345.cover.medium.jpg",
-                "word_count": 164000,
-                "page_count": 418,
-                "language": "en",
-                "status": StoreItemStatus.ACTIVE,
-                "is_bestseller": True,
-                "tags": ["horror", "gothic", "classic", "public-domain"],
-                "has_audiobook": False,
-            },
-        ]
+        # Process each classic from the curated list
+        for idx, classic in enumerate(TOP_100_CLASSICS, 1):
+            # Calculate word count-based page count (250 words per page average)
+            page_count = classic["word_count"] // 250
+            
+            # Build Gutenberg URLs
+            gutenberg_id = classic["gutenberg_id"]
+            epub_url = f"https://www.gutenberg.org/ebooks/{gutenberg_id}.epub.images"
+            cover_url = f"https://www.gutenberg.org/cache/epub/{gutenberg_id}/pg{gutenberg_id}.cover.medium.jpg"
+            
+            item = StoreItem(
+                seller_id=user.id,
+                title=classic["title"],
+                author_name=classic["author_name"],
+                description=classic.get("description", ""),
+                price_usd=Decimal("2.99"),
+                epub_blob_url=epub_url,
+                cover_image_url=cover_url,
+                word_count=classic["word_count"],
+                page_count=page_count,
+                language="en",
+                status=StoreItemStatus.ACTIVE,
+                is_featured=classic.get("is_featured", False),
+                is_bestseller=classic.get("is_bestseller", False),
+                is_new_release=classic.get("is_new_release", False),
+                tags=classic.get("tags", []),
+                has_audiobook=False,  # Start ebook-only, upgrade when revenue hits $120
+            )
+            
+            session.add(item)
+            
+            if idx % 10 == 0:
+                print(f"  Added {idx}/{len(TOP_100_CLASSICS)} classics...")
+        
+        await session.commit()
+        print(f"✅ Successfully created {len(TOP_100_CLASSICS)} store items!")
+        print("\nTop sellers by genre:")
+        print("  📚 Romance: Pride & Prejudice, Jane Eyre, Wuthering Heights")
+        print("  🔍 Mystery: Sherlock Holmes, Hound of Baskervilles, Moonstone")
+        print("  🚀 Sci-Fi: Frankenstein, Time Machine, War of the Worlds")
+        print("  🧛 Horror: Dracula, Jekyll & Hyde, Dorian Gray")
+        print("  ⚔️  Adventure: Treasure Island, Count of Monte Cristo, Three Musketeers")
+        print("  🎓 Philosophy: Meditations, Republic, Prince")
+        print("  🗡️  Epic: Iliad, Odyssey, War and Peace")
+        print("  🇺🇸 American: Moby-Dick, Great Gatsby, Huckleberry Finn")
+        print("\nAll books priced at $2.99 ebook-only.")
+        print("Immersive audiobooks unlock automatically when revenue hits $120 (40 sales).")
+        print("\nReplace low performers with requested titles as users search the store!")
 
 
 if __name__ == "__main__":
