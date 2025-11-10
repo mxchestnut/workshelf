@@ -488,3 +488,83 @@ async def get_publishable_key():
     return PublicKeyResponse(
         publishable_key=StripeService.get_publishable_key()
     )
+
+
+# ============================================================================
+# Admin: Store Seeding (Staff Only)
+# ============================================================================
+
+@router.post("/admin/seed")
+async def seed_store_items(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Seed the store with top 100 public domain classics.
+    Staff-only endpoint to populate initial catalog.
+    """
+    from app.core.auth import require_staff
+    
+    # Check staff permission
+    if not current_user.get("is_staff"):
+        raise HTTPException(status_code=403, detail="Staff access required")
+    
+    from scripts.top_100_classics import TOP_100_CLASSICS
+    
+    # Get first user as seller
+    result = await db.execute(select(User).limit(1))
+    seller = result.scalar_one_or_none()
+    
+    if not seller:
+        raise HTTPException(status_code=400, detail="No users found in database")
+    
+    # Check if store is already seeded
+    count_query = select(func.count(StoreItem.id))
+    result = await db.execute(count_query)
+    existing_count = result.scalar()
+    
+    if existing_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Store already has {existing_count} items. Clear existing items first if reseeding."
+        )
+    
+    created_count = 0
+    for classic in TOP_100_CLASSICS:
+        # Calculate page count
+        page_count = classic["word_count"] // 250
+        
+        # Build Gutenberg URLs
+        gutenberg_id = classic["gutenberg_id"]
+        epub_url = f"https://www.gutenberg.org/ebooks/{gutenberg_id}.epub.images"
+        cover_url = f"https://www.gutenberg.org/cache/epub/{gutenberg_id}/pg{gutenberg_id}.cover.medium.jpg"
+        
+        item = StoreItem(
+            seller_id=seller.id,
+            title=classic["title"],
+            author_name=classic["author_name"],
+            description=classic.get("description", ""),
+            price_usd=Decimal("2.99"),
+            epub_blob_url=epub_url,
+            cover_image_url=cover_url,
+            word_count=classic["word_count"],
+            page_count=page_count,
+            language="en",
+            status=StoreItemStatus.ACTIVE,
+            is_featured=classic.get("is_featured", False),
+            is_bestseller=classic.get("is_bestseller", False),
+            is_new_release=classic.get("is_new_release", False),
+            tags=classic.get("tags", []),
+            has_audiobook=False,
+        )
+        
+        db.add(item)
+        created_count += 1
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "items_created": created_count,
+        "message": f"Successfully seeded {created_count} public domain classics at $2.99 each"
+    }
