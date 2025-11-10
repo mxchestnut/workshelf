@@ -260,8 +260,8 @@ export function Studio() {
       const project = await response.json()
       console.log('[Studio] Project created:', project.id)
       
-      // Navigate to document creator with project and template
-      window.location.href = `/document?project=${project.id}&template=${templateId}`
+      // Navigate to project detail page where user can choose document templates
+      window.location.href = `/project/${project.id}`
     } catch (err) {
       console.error('[Studio] Error creating project:', err)
       alert('Failed to create project. Please try again.')
