@@ -6,9 +6,6 @@
 import { useState } from 'react'
 import { 
   Sparkles, 
-  User, 
-  MapPin, 
-  BookOpen, 
   Zap,
   X,
   ChevronRight,
@@ -118,11 +115,8 @@ interface WritingPromptsSidebarProps {
 
 export function WritingPromptsSidebar({ isOpen, onClose, onInsertText }: WritingPromptsSidebarProps) {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
   if (!isOpen) return null
-
-  const categories = Array.from(new Set(WRITING_PROMPTS.map(p => p.category)))
 
   const insertPrompt = (question: string) => {
     if (onInsertText) {
