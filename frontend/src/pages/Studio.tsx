@@ -25,6 +25,17 @@ interface Document {
   updated_at: string
 }
 
+interface Project {
+  id: number
+  title: string
+  description: string
+  project_type: string
+  target_word_count: number
+  current_word_count: number
+  created_at: string
+  updated_at: string
+}
+
 interface ProjectTemplate {
   id: string
   name: string
@@ -106,12 +117,14 @@ const iconMap: Record<string, React.ElementType> = {
 export function Studio() {
   const [user, setUser] = useState<any>(null)
   const [documents, setDocuments] = useState<Document[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState<'overview' | 'projects'>('overview')
 
   useEffect(() => {
     loadUser()
     loadDocuments()
+    loadProjects()
   }, [])
 
   const loadUser = async () => {
@@ -169,6 +182,40 @@ export function Studio() {
     } catch (err) {
       console.error('[Studio] Error loading documents:', err)
       setLoading(false)
+    }
+  }
+
+  const loadProjects = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        console.log('[Studio] No token found for projects')
+        setProjects([])
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/projects/?page=1&page_size=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('[Studio] Token expired or invalid')
+          localStorage.removeItem('access_token')
+          setProjects([])
+          return
+        }
+        throw new Error('Failed to load projects')
+      }
+
+      const data = await response.json()
+      console.log('[Studio] Projects loaded:', data.projects?.length || 0)
+      setProjects(data.projects || [])
+    } catch (err) {
+      console.error('[Studio] Error loading projects:', err)
+      setProjects([])
     }
   }
 
@@ -388,42 +435,113 @@ export function Studio() {
 
         {/* Projects Section */}
         {activeSection === 'projects' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>Project Templates</h2>
-              <p className="mb-6" style={{ color: '#B3B2B0' }}>
-                Choose a template to structure your writing project
-              </p>
-            </div>
+          <div className="space-y-8">
+            {/* Existing Projects */}
+            {projects.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>Your Projects</h2>
+                    <p style={{ color: '#B3B2B0' }}>Continue working on your writing projects</p>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PROJECT_TEMPLATES.map(template => {
-                const IconComponent = iconMap[template.icon] || File
-                return (
-                  <button
-                    key={template.id}
-                    onClick={() => createFromTemplate(template.id)}
-                    className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                    style={{ backgroundColor: '#524944' }}
-                  >
-                    <div className="mb-3">
-                      <IconComponent size={40} style={{ color: '#B3B2B0' }} />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
-                      {template.name}
-                    </h3>
-                    <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>
-                      {template.description}
-                    </p>
-                    {template.wordCountGoal && (
-                      <div className="flex items-center gap-2 text-sm" style={{ color: '#B34B0C' }}>
-                        <Zap className="w-4 h-4" />
-                        <span>{template.wordCountGoal.toLocaleString()} word goal</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {projects.map(project => {
+                    const template = PROJECT_TEMPLATES.find(t => t.id === project.project_type.replace(/_/g, '-'))
+                    const IconComponent = template ? iconMap[template.icon] : File
+                    const progress = project.target_word_count 
+                      ? Math.min(100, Math.round((project.current_word_count / project.target_word_count) * 100))
+                      : 0
+
+                    return (
+                      <a
+                        key={project.id}
+                        href={`/project/${project.id}`}
+                        className="p-6 rounded-lg hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: '#524944' }}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <IconComponent size={32} style={{ color: '#B34B0C' }} />
+                          <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#37322E', color: '#B3B2B0' }}>
+                            {template?.name || project.project_type}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
+                          {project.title}
+                        </h3>
+                        {project.description && (
+                          <p className="text-sm mb-3 line-clamp-2" style={{ color: '#B3B2B0' }}>
+                            {project.description}
+                          </p>
+                        )}
+                        {project.target_word_count && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm" style={{ color: '#B3B2B0' }}>
+                              <span>{project.current_word_count.toLocaleString()} / {project.target_word_count.toLocaleString()} words</span>
+                              <span>{progress}%</span>
+                            </div>
+                            <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#37322E' }}>
+                              <div
+                                className="h-full transition-all"
+                                style={{ 
+                                  backgroundColor: '#B34B0C',
+                                  width: `${progress}%`
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <div className="mt-3 text-xs" style={{ color: '#6C6A68' }}>
+                          Updated {new Date(project.updated_at).toLocaleDateString()}
+                        </div>
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Project Templates */}
+            <div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>
+                  {projects.length > 0 ? 'Start a New Project' : 'Project Templates'}
+                </h2>
+                <p style={{ color: '#B3B2B0' }}>
+                  Choose a template to structure your writing project
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {PROJECT_TEMPLATES.map(template => {
+                  const IconComponent = iconMap[template.icon] || File
+                  return (
+                    <button
+                      key={template.id}
+                      onClick={() => createFromTemplate(template.id)}
+                      className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
+                      style={{ backgroundColor: '#524944' }}
+                    >
+                      <div className="mb-3">
+                        <IconComponent size={40} style={{ color: '#B3B2B0' }} />
                       </div>
-                    )}
-                  </button>
-                )
-              })}
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
+                        {template.name}
+                      </h3>
+                      <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>
+                        {template.description}
+                      </p>
+                      {template.wordCountGoal && (
+                        <div className="flex items-center gap-2 text-sm" style={{ color: '#B34B0C' }}>
+                          <Zap className="w-4 h-4" />
+                          <span>{template.wordCountGoal.toLocaleString()} word goal</span>
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
