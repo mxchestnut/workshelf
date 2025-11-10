@@ -1,4 +1,4 @@
-.PHONY: help build up down logs test clean deploy
+.PHONY: help build up down logs test clean deploy env setup-dev migrate-create migrate-up migrate-status
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -6,6 +6,26 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+# Setup & Environment
+env: ## Copy .env.example to .env for local development
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "✅ Created .env from .env.example"; \
+		echo "⚠️  Edit .env with your actual credentials"; \
+	else \
+		echo "⚠️  .env already exists (not overwriting)"; \
+	fi
+
+setup-dev: env install-backend install-frontend ## Complete dev environment setup
+	@echo "🚀 Setting up development environment..."
+	@echo "✅ Development environment ready!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Edit .env with your credentials"
+	@echo "  2. Run 'make up' to start all services"
+	@echo "  3. Run 'make migrate-up' to apply database migrations"
+
+# Docker Compose
 build: ## Build all Docker containers
 	cd docker && docker-compose build
 
@@ -86,3 +106,23 @@ db-shell: ## Open PostgreSQL shell
 
 db-logs: ## View database logs
 	cd docker && docker-compose logs -f postgres
+
+# Alembic Migration Commands
+migrate-create: ## Create new migration: make migrate-create MSG="description"
+	@if [ -z "$(MSG)" ]; then \
+		echo "❌ Usage: make migrate-create MSG='description'"; \
+		exit 1; \
+	fi
+	cd backend && python3 -m alembic revision -m "$(MSG)"
+	@echo "✅ Created migration: $(MSG)"
+	@echo "📝 Edit the file in backend/alembic/versions/ then run 'make migrate-up'"
+
+migrate-up: ## Run pending migrations locally
+	cd backend && python3 -m alembic upgrade head
+	@echo "✅ Migrations applied"
+
+migrate-status: ## Show current migration version
+	cd backend && python3 -m alembic current
+
+migrate-history: ## Show migration history
+	cd backend && python3 -m alembic history --verbose
