@@ -7,7 +7,9 @@ import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   FileText, Sparkles, TrendingUp, 
-  Zap, Layout, PenTool 
+  Zap, Layout, PenTool, Book, BookOpen, 
+  ScrollText, Film, Feather, Library, 
+  User, File
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -36,58 +38,70 @@ const PROJECT_TEMPLATES: ProjectTemplate[] = [
     id: 'novel',
     name: 'Novel',
     description: 'Full-length fiction work with chapters and character development',
-    icon: '📚',
+    icon: 'Book',
     wordCountGoal: 80000
   },
   {
     id: 'novella',
     name: 'Novella',
     description: 'Medium-length fiction, perfect for focused storytelling',
-    icon: '📖',
+    icon: 'BookOpen',
     wordCountGoal: 30000
   },
   {
     id: 'short-story',
     name: 'Short Story',
     description: 'Compact narrative with a single plot or theme',
-    icon: '📝',
+    icon: 'ScrollText',
     wordCountGoal: 5000
   },
   {
     id: 'screenplay',
     name: 'Screenplay',
     description: 'Script format for film or television',
-    icon: '🎬',
+    icon: 'Film',
     wordCountGoal: 20000
   },
   {
     id: 'poetry',
     name: 'Poetry Collection',
     description: 'Collection of poems with themes or styles',
-    icon: '✨',
+    icon: 'Feather',
     wordCountGoal: 3000
   },
   {
     id: 'non-fiction',
     name: 'Non-Fiction Book',
     description: 'Educational or informational book project',
-    icon: '📕',
+    icon: 'Library',
     wordCountGoal: 50000
   },
   {
     id: 'memoir',
     name: 'Memoir',
     description: 'Personal narrative and life stories',
-    icon: '🪞',
+    icon: 'User',
     wordCountGoal: 60000
   },
   {
     id: 'blank',
     name: 'Blank Project',
     description: 'Start from scratch with no template',
-    icon: '📄'
+    icon: 'File'
   }
 ]
+
+// Icon component map
+const iconMap: Record<string, React.ElementType> = {
+  Book,
+  BookOpen,
+  ScrollText,
+  Film,
+  Feather,
+  Library,
+  User,
+  File
+}
 
 export function Studio() {
   const [user, setUser] = useState<any>(null)
@@ -383,28 +397,33 @@ export function Studio() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PROJECT_TEMPLATES.map(template => (
-                <button
-                  key={template.id}
-                  onClick={() => createFromTemplate(template.id)}
-                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                  style={{ backgroundColor: '#524944' }}
-                >
-                  <div className="text-4xl mb-3">{template.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
-                    {template.name}
-                  </h3>
-                  <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>
-                    {template.description}
-                  </p>
-                  {template.wordCountGoal && (
-                    <div className="flex items-center gap-2 text-sm" style={{ color: '#B34B0C' }}>
-                      <Zap className="w-4 h-4" />
-                      <span>{template.wordCountGoal.toLocaleString()} word goal</span>
+              {PROJECT_TEMPLATES.map(template => {
+                const IconComponent = iconMap[template.icon] || File
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => createFromTemplate(template.id)}
+                    className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
+                    style={{ backgroundColor: '#524944' }}
+                  >
+                    <div className="mb-3">
+                      <IconComponent size={40} style={{ color: '#B3B2B0' }} />
                     </div>
-                  )}
-                </button>
-              ))}
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
+                      {template.name}
+                    </h3>
+                    <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>
+                      {template.description}
+                    </p>
+                    {template.wordCountGoal && (
+                      <div className="flex items-center gap-2 text-sm" style={{ color: '#B34B0C' }}>
+                        <Zap className="w-4 h-4" />
+                        <span>{template.wordCountGoal.toLocaleString()} word goal</span>
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
