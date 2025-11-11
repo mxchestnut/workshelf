@@ -14,11 +14,14 @@ interface Group {
   name: string
   slug: string
   description: string
-  member_count: number
-  post_count: number
-  is_member: boolean
-  privacy_type: string
+  is_public: boolean
+  is_active: boolean
+  avatar_url: string | null
+  tags: string[] | null
   created_at: string
+  updated_at: string
+  member_count?: number
+  post_count?: number
 }
 
 export default function Groups() {
@@ -64,8 +67,8 @@ export default function Groups() {
         setMyGroups(data)
       }
 
-      // Load discoverable groups
-      const discoverResponse = await fetch(`${API_URL}/api/v1/groups/discover`, {
+      // Load all public groups (for discovery)
+      const discoverResponse = await fetch(`${API_URL}/api/v1/groups`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (discoverResponse.ok) {
@@ -176,7 +179,7 @@ export default function Groups() {
                   {myGroups.map(group => (
                     <a
                       key={group.id}
-                      href={`/group/${group.slug}`}
+                      href={`/group?id=${group.id}`}
                       className="rounded-lg p-6 transition-all hover:shadow-lg border border-gray-700"
                       style={{ backgroundColor: '#524944' }}
                     >
@@ -185,11 +188,11 @@ export default function Groups() {
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Users className="w-4 h-4" />
-                          <span>{group.member_count} members</span>
+                          <span>{group.member_count || 0} members</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <MessageSquare className="w-4 h-4" />
-                          <span>{group.post_count} posts</span>
+                          <span>{group.post_count || 0} posts</span>
                         </div>
                       </div>
                     </a>
@@ -214,7 +217,7 @@ export default function Groups() {
                   {discoveredGroups.map(group => (
                     <a
                       key={group.id}
-                      href={`/group/${group.slug}`}
+                      href={`/group?id=${group.id}`}
                       className="rounded-lg p-6 transition-all hover:shadow-lg border border-gray-700"
                       style={{ backgroundColor: '#524944' }}
                     >
@@ -224,15 +227,15 @@ export default function Groups() {
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
-                            <span>{group.member_count}</span>
+                            <span>{group.member_count || 0}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <MessageSquare className="w-4 h-4" />
-                            <span>{group.post_count}</span>
+                            <span>{group.post_count || 0}</span>
                           </div>
                         </div>
                         <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#B34B0C', color: 'white' }}>
-                          {group.privacy_type}
+                          {group.is_public ? 'Public' : 'Private'}
                         </span>
                       </div>
                     </a>

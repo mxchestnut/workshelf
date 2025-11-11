@@ -68,7 +68,7 @@ export default function GroupDetail() {
 
   const loadGroup = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -88,7 +88,7 @@ export default function GroupDetail() {
 
   const loadMembers = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/members`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -111,7 +111,7 @@ export default function GroupDetail() {
 
   const loadPosts = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/posts`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -129,7 +129,7 @@ export default function GroupDetail() {
 
   const joinGroup = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/join`, {
         method: 'POST',
         headers: {
@@ -151,7 +151,7 @@ export default function GroupDetail() {
     if (!newPostTitle || !newPostContent) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/posts`, {
         method: 'POST',
         headers: {
