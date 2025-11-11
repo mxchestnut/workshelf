@@ -8,7 +8,7 @@ import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   ArrowLeft, FileText, User, MapPin, Clock,
-  Users, Book, Scroll
+  Users, Book, Scroll, Trash2
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -269,6 +269,42 @@ export function ProjectDetail() {
     }
   }
 
+  const deleteProject = async () => {
+    if (!confirm('Are you sure you want to delete this project? Documents will be moved to "Uncategorized". This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        // Try to get error details from response
+        let errorMessage = 'Failed to delete project'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.detail || errorMessage
+        } catch {
+          // If response isn't JSON, use default message
+        }
+        console.error('Delete error:', errorMessage)
+        alert(`Failed to delete project: ${errorMessage}`)
+        return
+      }
+
+      // Redirect to studio after successful deletion
+      window.location.href = '/studio'
+    } catch (err) {
+      console.error('[ProjectDetail] Error deleting project:', err)
+      alert('Failed to delete project: Network error')
+    }
+  }
+
   const getTemplates = (): DocumentTemplate[] => {
     if (!project) return DOCUMENT_TEMPLATES.default
     const projectType = project.project_type.replace(/_/g, '-')
@@ -326,6 +362,14 @@ export function ProjectDetail() {
                 <p style={{ color: '#B3B2B0' }}>{project.description}</p>
               )}
             </div>
+            <button
+              onClick={deleteProject}
+              className="p-2 rounded-lg hover:bg-red-600/10 transition-colors"
+              style={{ color: '#EF4444' }}
+              title="Delete project"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Progress */}
