@@ -5,7 +5,6 @@
 import { 
   BookOpen, 
   FileText, 
-  Bell,
   Menu,
   X,
   LogIn,
@@ -22,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
+import NotificationBell from './NotificationBell'
 
 interface NavigationProps {
   user: User | null
@@ -129,13 +129,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   </button>
 
                   {/* Notifications */}
-                  <button 
-                    className="relative p-2 rounded-lg transition-colors text-white hover:bg-opacity-20"
-                    aria-label="Notifications"
-                  >
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ backgroundColor: '#B34B0C' }}></span>
-                  </button>
+                  {user && <NotificationBell />}
                 </>
               ) : (
                 <button 
