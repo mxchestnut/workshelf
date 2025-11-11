@@ -187,13 +187,23 @@ export function Document() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete document')
+        // Try to get error details from response
+        let errorMessage = 'Failed to delete document'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.detail || errorMessage
+        } catch {
+          // If response isn't JSON, use default message
+        }
+        console.error('Delete error:', errorMessage)
+        alert(`Failed to delete document: ${errorMessage}`)
+        return
       }
 
       window.location.href = '/documents'
     } catch (err) {
       console.error('Error deleting document:', err)
-      alert('Failed to delete document')
+      alert('Failed to delete document: Network error')
     }
   }
 
