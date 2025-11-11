@@ -242,21 +242,10 @@ export function ProjectDetail() {
         ]
       }
 
-      // Fixed: Remove trailing slash to avoid FastAPI redirect that changes https to http
-      const hardcodedUrl = 'https://api.workshelf.dev/api/v1/documents'
-      console.log('[ProjectDetail] Using HARDCODED URL:', hardcodedUrl)
-      console.log('[ProjectDetail] API_URL was:', API_URL)
-      console.log('[ProjectDetail] typeof hardcodedUrl:', typeof hardcodedUrl)
-      console.log('[ProjectDetail] hardcodedUrl.includes("https"):', hardcodedUrl.includes('https'))
+      // Fixed: Remove trailing slash to avoid FastAPI redirect
+      const url = `${API_URL}/api/v1/documents`
       
-      // Wrap fetch to see what's actually being called
-      const originalFetch = window.fetch
-      const wrappedFetch = (url: any, options: any) => {
-        console.log('[ProjectDetail] FETCH CALLED WITH URL:', url, typeof url)
-        return originalFetch(url, options)
-      }
-      
-      const response = await wrappedFetch(hardcodedUrl, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
