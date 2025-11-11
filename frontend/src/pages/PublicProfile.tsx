@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star } from 'lucide-react'
+import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus } from 'lucide-react'
 
 interface PublicProfileData {
   id: number
@@ -14,6 +14,8 @@ interface PublicProfileData {
   interests?: string[]
   document_count?: number
   public_document_count?: number
+  followers_count?: number
+  following_count?: number
 }
 
 interface Document {
@@ -53,8 +55,102 @@ export default function PublicProfile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'about' | 'documents' | 'bookshelf'>('about')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followersCount, setFollowersCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [isOwnProfile, setIsOwnProfile] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+  const checkIfFollowing = async (userId: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+      
+      const response = await fetch(`${API_URL}/api/v1/relationships/following`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const following = data.following || []
+        setIsFollowing(following.some((f: any) => f.id === userId))
+      }
+    } catch (err) {
+      console.error('Failed to check follow status:', err)
+    }
+  }
+
+  const followUser = async () => {
+    if (!profile || followLoading) return
+    
+    try {
+      setFollowLoading(true)
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please log in to follow users')
+        setFollowLoading(false)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/relationships/follow`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ following_id: profile.id })
+      })
+
+      if (response.ok) {
+        setIsFollowing(true)
+        setFollowersCount(prev => prev + 1)
+      } else {
+        alert('Failed to follow user')
+      }
+    } catch (err) {
+      console.error('Error following user:', err)
+      alert('Failed to follow user')
+    } finally {
+      setFollowLoading(false)
+    }
+  }
+
+  const unfollowUser = async () => {
+    if (!profile || followLoading) return
+    
+    try {
+      setFollowLoading(true)
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please log in to unfollow users')
+        setFollowLoading(false)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/relationships/unfollow/${profile.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        setIsFollowing(false)
+        setFollowersCount(prev => prev - 1)
+      } else {
+        alert('Failed to unfollow user')
+      }
+    } catch (err) {
+      console.error('Error unfollowing user:', err)
+      alert('Failed to unfollow user')
+    } finally {
+      setFollowLoading(false)
+    }
+  }
 
   useEffect(() => {
     loadProfile()
@@ -95,6 +191,31 @@ export default function PublicProfile() {
 
       const data = await response.json()
       setProfile(data)
+      
+      // Set follower counts
+      setFollowersCount(data.followers_count || 0)
+      setFollowingCount(data.following_count || 0)
+      
+      // Check if viewing own profile
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          const currentUserResponse = await fetch(`${API_URL}/api/v1/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (currentUserResponse.ok) {
+            const currentUser = await currentUserResponse.json()
+            setIsOwnProfile(currentUser.id === data.id)
+            
+            // Check if following this user
+            if (currentUser.id !== data.id) {
+              await checkIfFollowing(data.id)
+            }
+          }
+        } catch (err) {
+          console.error('Failed to check current user:', err)
+        }
+      }
 
       // Fetch public documents
       try {
@@ -207,6 +328,18 @@ export default function PublicProfile() {
                   {profile.display_name}
                 </h1>
                 <p className="text-gray-400 mb-4">@{profile.username}</p>
+                
+                {/* Follower Counts */}
+                <div className="flex items-center gap-4 text-sm mb-4">
+                  <button className="text-gray-300 hover:text-white">
+                    <span className="font-semibold">{followersCount}</span>
+                    <span className="text-gray-400"> {followersCount === 1 ? 'follower' : 'followers'}</span>
+                  </button>
+                  <button className="text-gray-300 hover:text-white">
+                    <span className="font-semibold">{followingCount}</span>
+                    <span className="text-gray-400"> following</span>
+                  </button>
+                </div>
 
                 {/* Meta Info */}
                 <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
@@ -250,6 +383,31 @@ export default function PublicProfile() {
                   )}
                 </div>
               </div>
+              
+              {/* Follow Button */}
+              {!isOwnProfile && (
+                <div className="flex-shrink-0">
+                  {isFollowing ? (
+                    <button
+                      onClick={unfollowUser}
+                      disabled={followLoading}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                      {followLoading ? 'Updating...' : 'Unfollow'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={followUser}
+                      disabled={followLoading}
+                      className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      {followLoading ? 'Updating...' : 'Follow'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Bio */}
