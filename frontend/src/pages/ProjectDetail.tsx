@@ -242,8 +242,8 @@ export function ProjectDetail() {
         ]
       }
 
-      // Hardcoded HTTPS URL to bypass any variable issues
-      const hardcodedUrl = 'https://api.workshelf.dev/api/v1/documents/'
+      // Fixed: Remove trailing slash to avoid FastAPI redirect that changes https to http
+      const hardcodedUrl = 'https://api.workshelf.dev/api/v1/documents'
       console.log('[ProjectDetail] Using HARDCODED URL:', hardcodedUrl)
       console.log('[ProjectDetail] API_URL was:', API_URL)
       console.log('[ProjectDetail] typeof hardcodedUrl:', typeof hardcodedUrl)
