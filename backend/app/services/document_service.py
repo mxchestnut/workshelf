@@ -348,20 +348,34 @@ async def delete_document(
         HTTPException: If document not found or user doesn't have permission
     """
     try:
-        document = await get_document_by_id(session, document_id, user_id)
+        # Get the document
+        result = await session.execute(
+            select(Document).where(Document.id == document_id)
+        )
+        document = result.scalar_one_or_none()
         
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document not found"
+            )
+        
+        # Check ownership
         if document.owner_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to delete this document"
             )
         
+        # Delete the document (CASCADE should handle related records)
         await session.delete(document)
+        await session.flush()  # Flush before commit to catch constraint errors
         await session.commit()
+        
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[ERROR] Failed to delete document {document_id}: {str(e)}")
+        print(f"[ERROR] Failed to delete document {document_id}: {type(e).__name__}: {str(e)}")
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
