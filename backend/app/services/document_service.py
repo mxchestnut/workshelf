@@ -347,16 +347,26 @@ async def delete_document(
     Raises:
         HTTPException: If document not found or user doesn't have permission
     """
-    document = await get_document_by_id(session, document_id, user_id)
-    
-    if document.owner_id != user_id:
+    try:
+        document = await get_document_by_id(session, document_id, user_id)
+        
+        if document.owner_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this document"
+            )
+        
+        await session.delete(document)
+        await session.commit()
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Failed to delete document {document_id}: {str(e)}")
+        await session.rollback()
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to delete this document"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete document: {str(e)}"
         )
-    
-    await session.delete(document)
-    await session.commit()
 
 
 async def list_public_documents(
