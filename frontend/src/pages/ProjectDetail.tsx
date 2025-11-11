@@ -242,12 +242,12 @@ export function ProjectDetail() {
         ]
       }
 
-      const url = `${API_URL}/api/v1/documents/`
-      console.log('[ProjectDetail] About to fetch:', url)
-      console.log('[ProjectDetail] API_URL value:', API_URL)
-      console.log('[ProjectDetail] Constructed URL:', url)
+      // Hardcoded HTTPS URL to bypass any variable issues
+      const hardcodedUrl = 'https://api.workshelf.dev/api/v1/documents/'
+      console.log('[ProjectDetail] Using HARDCODED URL:', hardcodedUrl)
+      console.log('[ProjectDetail] API_URL was:', API_URL)
       
-      const response = await fetch(url, {
+      const response = await fetch(hardcodedUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
