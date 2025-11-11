@@ -110,17 +110,12 @@ jobs:
 
       - name: Deploy frontend to Azure Container Apps
         run: |
-          # Update the container app with new image
+          # Update with latest tag
           az containerapp update \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }}
-          
-          # Force new revision by setting a timestamp env var
-          az containerapp update \
-            --name workshelf-frontend \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --set-env-vars DEPLOY_TIMESTAMP="$(date +%s)" || \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest \
+            --revision-suffix run-${{ github.run_number }} || \
           az containerapp create \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
