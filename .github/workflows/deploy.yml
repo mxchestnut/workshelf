@@ -110,11 +110,21 @@ jobs:
 
       - name: Deploy frontend to Azure Container Apps
         run: |
+          # Update the container app with new image
           az containerapp update \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }} \
-            --set-env-vars VITE_API_URL=${{ secrets.VITE_API_URL }} || \
+            --set-env-vars VITE_API_URL=${{ secrets.VITE_API_URL }}
+          
+          # Force restart to ensure new image is pulled
+          az containerapp revision restart \
+            --name workshelf-frontend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --revision $(az containerapp revision list \
+              --name workshelf-frontend \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --query "[0].name" -o tsv) || \
           az containerapp create \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
