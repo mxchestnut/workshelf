@@ -59,13 +59,13 @@ async def list_documents(
     # Get user from database
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    # Calculate skip
-    skip = (page - 1) * page_size
-    
-    # Get documents
+    # Get documents (function expects page number, not skip)
     documents, total = await document_service.list_user_documents(
-        db, user.id, skip, page_size, status_filter
+        db, user.id, page, page_size, status_filter
     )
+    
+    # Calculate skip for response metadata
+    skip = (page - 1) * page_size
     
     return {
         "documents": documents,
