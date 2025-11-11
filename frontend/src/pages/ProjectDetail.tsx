@@ -270,12 +270,52 @@ export function ProjectDetail() {
   }
 
   const deleteProject = async () => {
-    if (!confirm('Are you sure you want to delete this project? Documents will be moved to "Uncategorized". This action cannot be undone.')) {
-      return
+    // Step 1: Ask what to do with documents
+    const deleteDocuments = confirm(
+      `What would you like to do with the documents in this project?\n\n` +
+      `Click OK to DELETE ALL DOCUMENTS\n` +
+      `Click Cancel to KEEP DOCUMENTS (they'll move to "Uncategorized")`
+    )
+
+    // Step 2: If deleting documents, require typing "delete all"
+    if (deleteDocuments) {
+      const confirmation = prompt(
+        `⚠️ WARNING: This will permanently delete the project AND all ${documents.length} documents inside it.\n\n` +
+        `Type "delete all" to confirm:`
+      )
+      
+      if (confirmation !== 'delete all') {
+        if (confirmation !== null) {
+          alert('Project deletion cancelled. You must type "delete all" exactly.')
+        }
+        return
+      }
+    } else {
+      // Just confirm project deletion (documents will be preserved)
+      if (!confirm(`Delete this project? All ${documents.length} documents will be moved to "Uncategorized".`)) {
+        return
+      }
     }
 
     try {
       const token = localStorage.getItem('access_token')
+      
+      // If deleting documents, delete them first
+      if (deleteDocuments) {
+        console.log('[ProjectDetail] Deleting all documents in project...')
+        for (const doc of documents) {
+          try {
+            await fetch(`${API_URL}/api/v1/documents/${doc.id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token}` }
+            })
+          } catch (err) {
+            console.error(`[ProjectDetail] Failed to delete document ${doc.id}:`, err)
+          }
+        }
+      }
+      
+      // Now delete the project
       const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
         method: 'DELETE',
         headers: {
