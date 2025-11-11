@@ -57,7 +57,8 @@ function App() {
 
   useEffect(() => {
     // Check authentication and route
-    const path = window.location.pathname
+    const checkRoute = () => {
+      const path = window.location.pathname
     
     if (path === '/auth/callback') {
       setCurrentPage('auth-callback')
@@ -143,6 +144,17 @@ function App() {
     } else {
       // Unknown route - redirect to home
       window.location.href = '/'
+    }
+    }
+    
+    // Run on mount
+    checkRoute()
+    
+    // Listen for navigation events (back/forward buttons)
+    window.addEventListener('popstate', checkRoute)
+    
+    return () => {
+      window.removeEventListener('popstate', checkRoute)
     }
   }, [])
 
