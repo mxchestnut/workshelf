@@ -275,7 +275,7 @@ export function Studio() {
   // Calculate stats
   const totalWords = documents.reduce((sum, doc) => sum + doc.word_count, 0)
   const publishedCount = documents.filter(d => d.status === 'published').length
-  const recentDocs = documents.slice(0, 5)
+  const recentProjects = projects.slice(0, 6)
 
   if (loading) {
     return (
@@ -343,6 +343,16 @@ export function Studio() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
                 <div className="flex items-center gap-3 mb-2">
+                  <Layout className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <div>
+                    <p className="text-2xl font-bold" style={{ color: 'white' }}>{projects.length}</p>
+                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Projects</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-8 h-8" style={{ color: '#B34B0C' }} />
                   <div>
                     <p className="text-2xl font-bold" style={{ color: 'white' }}>{documents.length}</p>
@@ -360,60 +370,79 @@ export function Studio() {
                   </div>
                 </div>
               </div>
-
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-                <div className="flex items-center gap-3 mb-2">
-                  <Sparkles className="w-8 h-8" style={{ color: '#B34B0C' }} />
-                  <div>
-                    <p className="text-2xl font-bold" style={{ color: 'white' }}>{publishedCount}</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Published</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* Recent Documents */}
+            {/* Recent Projects */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold" style={{ color: 'white' }}>Recent Work</h2>
+                <h2 className="text-xl font-semibold" style={{ color: 'white' }}>Your Projects</h2>
                 <button
-                  onClick={goToDocuments}
+                  onClick={() => setActiveSection('projects')}
                   className="text-sm hover:underline"
                   style={{ color: '#B34B0C' }}
                 >
-                  View All Documents →
+                  View All Projects →
                 </button>
               </div>
               
-              {recentDocs.length > 0 ? (
-                <div className="grid gap-4">
-                  {recentDocs.map(doc => (
-                    <a
-                      key={doc.id}
-                      href={`/document/${doc.id}`}
-                      className="p-4 rounded-lg hover:opacity-90 transition-opacity"
-                      style={{ backgroundColor: '#524944' }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1" style={{ color: 'white' }}>{doc.title}</h3>
-                          <div className="flex items-center gap-4 text-sm" style={{ color: '#B3B2B0' }}>
-                            <span>{doc.word_count.toLocaleString()} words</span>
-                            <span>•</span>
-                            <span className="capitalize">{doc.status}</span>
-                            <span>•</span>
-                            <span>{new Date(doc.updated_at).toLocaleDateString()}</span>
-                          </div>
+              {recentProjects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {recentProjects.map(project => {
+                    const template = PROJECT_TEMPLATES.find(t => t.id === project.project_type.replace(/_/g, '-'))
+                    const IconComponent = template ? iconMap[template.icon] : File
+                    const progress = project.target_word_count 
+                      ? Math.min(100, Math.round((project.current_word_count / project.target_word_count) * 100))
+                      : 0
+
+                    return (
+                      <a
+                        key={project.id}
+                        href={`/project/${project.id}`}
+                        className="p-6 rounded-lg hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: '#524944' }}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <IconComponent size={32} style={{ color: '#B34B0C' }} />
+                          <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#37322E', color: '#B3B2B0' }}>
+                            {template?.name || project.project_type}
+                          </span>
                         </div>
-                        <FileText className="w-5 h-5" style={{ color: '#6C6A68' }} />
-                      </div>
-                    </a>
-                  ))}
+                        <h3 className="text-lg font-semibold mb-2" style={{ color: 'white' }}>
+                          {project.title}
+                        </h3>
+                        {project.description && (
+                          <p className="text-sm mb-3 line-clamp-2" style={{ color: '#B3B2B0' }}>
+                            {project.description}
+                          </p>
+                        )}
+                        {project.target_word_count && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm" style={{ color: '#B3B2B0' }}>
+                              <span>{project.current_word_count.toLocaleString()} / {project.target_word_count.toLocaleString()} words</span>
+                              <span>{progress}%</span>
+                            </div>
+                            <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#37322E' }}>
+                              <div
+                                className="h-full transition-all"
+                                style={{ 
+                                  backgroundColor: '#B34B0C',
+                                  width: `${progress}%`
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <div className="mt-3 text-xs" style={{ color: '#6C6A68' }}>
+                          Updated {new Date(project.updated_at).toLocaleDateString()}
+                        </div>
+                      </a>
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12 rounded-lg" style={{ backgroundColor: '#524944' }}>
-                  <FileText className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                  <p style={{ color: '#B3B2B0' }}>No documents yet. Start a new project!</p>
+                  <Layout className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
+                  <p style={{ color: '#B3B2B0' }}>No projects yet. Start a new project!</p>
                 </div>
               )}
             </div>
