@@ -1,6 +1,7 @@
 /**
  * Project Detail Page - Hybrid between Obsidian and World Anvil
  * Shows document tree in sidebar with template selection
+ * Cache bust v2
  */
 
 import { useEffect, useState } from 'react'
