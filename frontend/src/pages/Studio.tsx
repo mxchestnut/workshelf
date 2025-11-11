@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
-  FileText, Sparkles, TrendingUp, 
+  FileText, TrendingUp, 
   Zap, Layout, PenTool, Book, BookOpen, 
   ScrollText, Film, Feather, Library, 
   User, File
@@ -268,13 +268,8 @@ export function Studio() {
     }
   }
 
-  const goToDocuments = () => {
-    window.location.href = '/documents'
-  }
-
   // Calculate stats
   const totalWords = documents.reduce((sum, doc) => sum + doc.word_count, 0)
-  const publishedCount = documents.filter(d => d.status === 'published').length
   const recentProjects = projects.slice(0, 6)
 
   if (loading) {
