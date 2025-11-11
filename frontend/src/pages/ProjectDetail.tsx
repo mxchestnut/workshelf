@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+console.log('[ProjectDetail] Using API_URL:', API_URL)
 
 interface Project {
   id: number
