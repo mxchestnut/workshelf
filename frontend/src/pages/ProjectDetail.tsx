@@ -363,7 +363,7 @@ export function ProjectDetail() {
                   {documents.map(doc => (
                     <a
                       key={doc.id}
-                      href={`/document/${doc.id}`}
+                      href={`/document?id=${doc.id}`}
                       className="flex items-center gap-2 px-3 py-2 rounded hover:bg-[#524944] transition-colors"
                       style={{ color: '#B3B2B0' }}
                     >
