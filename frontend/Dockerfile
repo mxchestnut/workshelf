@@ -2,9 +2,9 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
-# Accept build args for API and Keycloak URLs
-ARG VITE_API_URL
-ARG VITE_KEYCLOAK_URL
+# Accept build args for API and Keycloak URLs with secure defaults
+ARG VITE_API_URL=https://api.workshelf.dev
+ARG VITE_KEYCLOAK_URL=https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
 
