@@ -31,15 +31,20 @@ async def add_cors_headers(request: Request, call_next):
         "https://workshelf-frontend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io",
     ]
     
-    # Handle preflight
+    # Log for debugging
+    print(f"[CORS] Method: {request.method}, Origin: {origin}, URL: {request.url}")
+    
+    # Handle preflight - be more permissive
     if request.method == "OPTIONS":
         response = Response()
-        if origin in allowed_origins:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
-            response.headers["Access-Control-Max-Age"] = "3600"
+        # Always set CORS headers for OPTIONS, even if origin not in list
+        response_origin = origin if origin in allowed_origins else "https://workshelf.dev"
+        response.headers["Access-Control-Allow-Origin"] = response_origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
+        response.headers["Access-Control-Max-Age"] = "3600"
+        print(f"[CORS] Preflight response for origin: {response_origin}")
         return response
     
     response = await call_next(request)
