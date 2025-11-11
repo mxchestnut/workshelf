@@ -123,9 +123,28 @@ export function Studio() {
 
   useEffect(() => {
     loadUser()
+    organizeOrphanedDocuments()
     loadDocuments()
     loadProjects()
   }, [])
+
+  const organizeOrphanedDocuments = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      await fetch(`${API_URL}/api/v1/projects/organize-orphaned`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      // Silently organize - no need to show success message
+    } catch (err) {
+      console.error('[Studio] Error organizing orphaned documents:', err)
+      // Fail silently - not critical
+    }
+  }
 
   const loadUser = async () => {
     try {

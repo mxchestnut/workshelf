@@ -172,3 +172,38 @@ class ProjectService:
         await db.delete(project)
         await db.commit()
         return True
+
+    @staticmethod
+    async def get_or_create_uncategorized_project(
+        db: AsyncSession,
+        user_id: str,
+        tenant_id: str
+    ) -> Project:
+        """Get or create the default 'Uncategorized' project for orphaned documents."""
+        # Try to find existing uncategorized project
+        stmt = select(Project).where(
+            and_(
+                Project.user_id == user_id,
+                Project.tenant_id == tenant_id,
+                Project.title == "Uncategorized"
+            )
+        )
+        result = await db.execute(stmt)
+        project = result.scalar_one_or_none()
+        
+        # Create if doesn't exist
+        if not project:
+            project = Project(
+                user_id=user_id,
+                tenant_id=tenant_id,
+                title="Uncategorized",
+                description="Documents without a specific project",
+                project_type="blank",
+                current_word_count=0,
+                target_word_count=None
+            )
+            db.add(project)
+            await db.commit()
+            await db.refresh(project)
+        
+        return project

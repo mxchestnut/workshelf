@@ -80,3 +80,46 @@ async def delete_project(
     await ProjectService.delete_project(
         db, project_id, user.id, user.tenant_id
     )
+
+
+@router.post("/organize-orphaned", status_code=status.HTTP_200_OK)
+async def organize_orphaned_documents(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Organize all orphaned documents (documents without a project) 
+    by assigning them to an 'Uncategorized' project.
+    """
+    from sqlalchemy import select, update
+    from app.models.document import Document
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Get or create uncategorized project
+    uncategorized_project = await ProjectService.get_or_create_uncategorized_project(
+        db, user.id, user.tenant_id
+    )
+    
+    # Find orphaned documents
+    stmt = select(Document).where(
+        Document.owner_id == user.id,
+        Document.tenant_id == user.tenant_id,
+        Document.project_id.is_(None)
+    )
+    result = await db.execute(stmt)
+    orphaned_docs = result.scalars().all()
+    
+    # Assign them to uncategorized project
+    count = 0
+    for doc in orphaned_docs:
+        doc.project_id = uncategorized_project.id
+        count += 1
+    
+    await db.commit()
+    
+    return {
+        "message": f"Organized {count} orphaned documents into 'Uncategorized' project",
+        "count": count,
+        "project_id": uncategorized_project.id
+    }

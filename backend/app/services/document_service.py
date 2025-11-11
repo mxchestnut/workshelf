@@ -74,6 +74,15 @@ async def create_document(
     Returns:
         Created document
     """
+    # If no project_id provided, assign to "Uncategorized" project
+    project_id = document_data.project_id
+    if not project_id:
+        from app.services.project_service import ProjectService
+        uncategorized_project = await ProjectService.get_or_create_uncategorized_project(
+            session, str(owner_id), str(tenant_id)
+        )
+        project_id = uncategorized_project.id
+    
     # Calculate word count
     word_count = count_words(document_data.content)
     
@@ -90,7 +99,7 @@ async def create_document(
         description=document_data.description,
         status=document_data.status,
         visibility=document_data.visibility,
-        project_id=document_data.project_id,
+        project_id=project_id,
         studio_id=document_data.studio_id,
         word_count=word_count,
         current_version=1
