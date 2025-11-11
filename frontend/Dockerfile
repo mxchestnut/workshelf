@@ -10,7 +10,11 @@ ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
 
 # Force cache bust for environment variable changes
 ARG CACHE_BUST=1
-RUN echo "Cache bust: $CACHE_BUST, API URL: $VITE_API_URL"
+RUN echo "=== BUILD INFO ===" && \
+    echo "Cache bust: $CACHE_BUST" && \
+    echo "VITE_API_URL: $VITE_API_URL" && \
+    echo "VITE_KEYCLOAK_URL: $VITE_KEYCLOAK_URL" && \
+    echo "=================="
 
 # Install dependencies
 COPY package*.json ./
