@@ -8,6 +8,10 @@ ARG VITE_KEYCLOAK_URL=https://workshelf-keycloak.wonderfulstone-7c41e05e.central
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
 
+# Force cache bust for environment variable changes
+ARG CACHE_BUST=1
+RUN echo "Cache bust: $CACHE_BUST, API URL: $VITE_API_URL"
+
 # Install dependencies
 COPY package*.json ./
 RUN npm ci
