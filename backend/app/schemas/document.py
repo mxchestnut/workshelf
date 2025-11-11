@@ -2,10 +2,11 @@
 Document Schemas (DTOs)
 Pydantic models for API request/response validation
 """
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
 from typing import Optional, List, Union
 from datetime import datetime
 from enum import Enum
+import json
 
 
 class DocumentStatus(str, Enum):
@@ -74,6 +75,18 @@ class DocumentResponse(DocumentBase):
     # studio_slug: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
+    
+    @field_serializer('content')
+    def serialize_content(self, content: Union[str, dict, None], _info):
+        """Parse JSON string content back to dict for API response"""
+        if content is None:
+            return None
+        if isinstance(content, str):
+            try:
+                return json.loads(content)
+            except (json.JSONDecodeError, ValueError):
+                return content
+        return content
 
 
 # List response
