@@ -9,7 +9,7 @@ import {
   FileText, TrendingUp, 
   Zap, Layout, PenTool, Book, BookOpen, 
   ScrollText, Film, Feather, Library, 
-  User, File
+  User, File, Users
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -349,6 +349,15 @@ export function Studio() {
               <div className="flex items-center gap-2">
                 <Layout className="w-5 h-5" />
                 Projects
+              </div>
+            </button>
+            <button
+              onClick={() => window.location.href = '/groups'}
+              className="px-4 py-3 border-b-2 border-transparent text-[#B3B2B0] hover:text-white transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Groups
               </div>
             </button>
           </div>

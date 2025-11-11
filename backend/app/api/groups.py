@@ -673,3 +673,150 @@ async def remove_role_from_member(
     await db.commit()
     
     return None
+
+
+# ============================================================================
+# Group Posts Endpoints
+# ============================================================================
+
+@router.get("/{group_id}/posts", response_model=List[Dict[str, Any]])
+async def get_group_posts(
+    group_id: int,
+    limit: int = 50,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all posts in a group."""
+    from app.models.collaboration import GroupPost
+    from sqlalchemy import select, desc
+    
+    result = await db.execute(
+        select(GroupPost)
+        .where(GroupPost.group_id == group_id)
+        .order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
+        .limit(limit)
+        .offset(offset)
+    )
+    posts = result.scalars().all()
+    
+    # Convert to dict and include author info
+    post_dicts = []
+    for post in posts:
+        post_dict = {
+            "id": post.id,
+            "group_id": post.group_id,
+            "author_id": post.author_id,
+            "title": post.title,
+            "content": post.content,
+            "is_pinned": post.is_pinned,
+            "created_at": post.created_at.isoformat(),
+            "updated_at": post.updated_at.isoformat()
+        }
+        post_dicts.append(post_dict)
+    
+    return post_dicts
+
+
+@router.post("/{group_id}/posts", status_code=status.HTTP_201_CREATED)
+async def create_group_post(
+    group_id: int,
+    post_data: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new post in a group (members only)."""
+    from app.models.collaboration import GroupPost, GroupMember
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is a member
+    member_result = await db.execute(
+        select(GroupMember).where(
+            GroupMember.group_id == group_id,
+            GroupMember.user_id == user.id
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=403, detail="Must be a group member to post")
+    
+    # Create post
+    post = GroupPost(
+        group_id=group_id,
+        author_id=user.id,
+        title=post_data.get("title", ""),
+        content=post_data.get("content", ""),
+        is_pinned=False
+    )
+    
+    db.add(post)
+    await db.commit()
+    await db.refresh(post)
+    
+    return {
+        "id": post.id,
+        "group_id": post.group_id,
+        "author_id": post.author_id,
+        "title": post.title,
+        "content": post.content,
+        "is_pinned": post.is_pinned,
+        "created_at": post.created_at.isoformat(),
+        "updated_at": post.updated_at.isoformat()
+    }
+
+
+@router.post("/{group_id}/join", status_code=status.HTTP_201_CREATED)
+async def join_group(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Join a group (public groups only, or with invite for private)."""
+    from app.models.collaboration import Group, GroupMember, GroupMemberRole
+    from sqlalchemy import select
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Get group
+    group_result = await db.execute(
+        select(Group).where(Group.id == group_id)
+    )
+    group = group_result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Check if already a member
+    existing_result = await db.execute(
+        select(GroupMember).where(
+            GroupMember.group_id == group_id,
+            GroupMember.user_id == user.id
+        )
+    )
+    existing = existing_result.scalar_one_or_none()
+    if existing:
+        return {"message": "Already a member"}
+    
+    # For now, allow joining public groups only
+    if not group.is_public:
+        raise HTTPException(status_code=403, detail="Cannot join private group without invite")
+    
+    # Add member
+    member = GroupMember(
+        group_id=group_id,
+        user_id=user.id,
+        role=GroupMemberRole.MEMBER
+    )
+    
+    db.add(member)
+    await db.commit()
+    await db.refresh(member)
+    
+    return {
+        "id": member.id,
+        "group_id": member.group_id,
+        "user_id": member.user_id,
+        "role": member.role.value,
+        "created_at": member.created_at.isoformat(),
+        "updated_at": member.updated_at.isoformat()
+    }

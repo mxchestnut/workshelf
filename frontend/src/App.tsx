@@ -18,6 +18,7 @@ const Home = lazy(() => import('./pages/Home'))
 const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module.Feed })))
 const Discover = lazy(() => import('./pages/Discover').then(module => ({ default: module.Discover })))
 const Groups = lazy(() => import('./pages/Groups'))
+const GroupDetail = lazy(() => import('./pages/GroupDetail'))
 const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
@@ -53,7 +54,7 @@ const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -76,6 +77,8 @@ function App() {
       setCurrentPage('discover')
     } else if (path === '/groups') {
       setCurrentPage('groups')
+    } else if (path === '/group') {
+      setCurrentPage('group-detail')
     } else if (path === '/me') {
       setCurrentPage('profile')
     } else if (path === '/studio') {
@@ -194,6 +197,10 @@ function App() {
     
     if (currentPage === 'groups') {
       return <Groups />
+    }
+    
+    if (currentPage === 'group-detail') {
+      return <GroupDetail />
     }
     
     if (currentPage === 'profile') {
