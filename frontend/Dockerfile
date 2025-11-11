@@ -18,6 +18,10 @@ RUN npm ci
 
 # Build app
 COPY . .
+
+# Remove any .env files to ensure only ENV vars are used
+RUN rm -f .env* || true
+
 RUN npm run build
 
 # Production stage
