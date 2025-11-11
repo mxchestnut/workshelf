@@ -29,4 +29,4 @@ class Project(Base):
     tenant = relationship("Tenant", back_populates="projects")
     user = relationship("User", back_populates="projects")
     folder = relationship("Folder", back_populates="projects")
-    documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="project")
