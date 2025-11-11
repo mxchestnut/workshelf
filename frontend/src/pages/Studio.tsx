@@ -122,10 +122,13 @@ export function Studio() {
   const [activeSection, setActiveSection] = useState<'overview' | 'projects'>('overview')
 
   useEffect(() => {
-    loadUser()
-    organizeOrphanedDocuments()
-    loadDocuments()
-    loadProjects()
+    const init = async () => {
+      await loadUser()
+      await organizeOrphanedDocuments()
+      await loadDocuments()
+      await loadProjects()
+    }
+    init()
   }, [])
 
   const organizeOrphanedDocuments = async () => {
@@ -133,13 +136,17 @@ export function Studio() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      await fetch(`${API_URL}/api/v1/projects/organize-orphaned`, {
+      const response = await fetch(`${API_URL}/api/v1/projects/organize-orphaned`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      // Silently organize - no need to show success message
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('[Studio] Organized orphaned documents:', result)
+      }
     } catch (err) {
       console.error('[Studio] Error organizing orphaned documents:', err)
       // Fail silently - not critical
@@ -213,7 +220,7 @@ export function Studio() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/projects/?page=1&page_size=100`, {
+      const response = await fetch(`${API_URL}/api/v1/projects/?skip=0&limit=100`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -230,8 +237,8 @@ export function Studio() {
       }
 
       const data = await response.json()
-      console.log('[Studio] Projects loaded:', data.projects?.length || 0)
-      setProjects(data.projects || [])
+      console.log('[Studio] Projects loaded:', data?.length || 0)
+      setProjects(data || [])
     } catch (err) {
       console.error('[Studio] Error loading projects:', err)
       setProjects([])
