@@ -242,7 +242,12 @@ export function ProjectDetail() {
         ]
       }
 
-      const response = await fetch(`${API_URL}/api/v1/documents/`, {
+      const url = `${API_URL}/api/v1/documents/`
+      console.log('[ProjectDetail] About to fetch:', url)
+      console.log('[ProjectDetail] API_URL value:', API_URL)
+      console.log('[ProjectDetail] Constructed URL:', url)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
