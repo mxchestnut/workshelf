@@ -110,25 +110,26 @@ jobs:
 
       - name: Deploy frontend to Azure Container Apps
         run: |
-          # Update with latest tag
+          echo "🔄 Updating frontend container app..."
+          
+          # Update with latest tag and force new revision
           az containerapp update \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest \
-            --revision-suffix run-${{ github.run_number }} || \
-          az containerapp create \
+            --revision-suffix run-${{ github.run_number }}
+          
+          echo "✅ Update complete. Waiting for rollout..."
+          sleep 10
+          
+          # Verify the new image is running
+          CURRENT_IMAGE=$(az containerapp show \
             --name workshelf-frontend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:${{ github.sha }} \
-            --target-port 80 \
-            --ingress external \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --env-vars VITE_API_URL=${{ secrets.VITE_API_URL }} \
-            --cpu 0.25 --memory 0.5Gi \
-            --min-replicas 1 --max-replicas 3
+            --query "properties.template.containers[0].image" -o tsv)
+          
+          echo "📦 Current running image: $CURRENT_IMAGE"
+          echo "Expected: ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-frontend:latest"
 
       - name: Get deployment URLs
         run: |
