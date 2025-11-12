@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Users, MessageSquare, Crown, Shield, UserPlus, ArrowLeft } from 'lucide-react';
+import { Users, MessageSquare, Crown, Shield, ArrowLeft } from 'lucide-react';
+import { GroupActionButtons } from '../components/GroupActionButtons';
 
 interface Group {
   id: number;
@@ -50,6 +51,8 @@ export default function GroupDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'posts' | 'members'>('posts');
   const [isMemb, setIsMember] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
   
   // New post form
   const [showNewPost, setShowNewPost] = useState(false);
@@ -63,6 +66,8 @@ export default function GroupDetail() {
       loadGroup();
       loadMembers();
       loadPosts();
+      loadFollowStatus();
+      loadFollowerCount();
     }
   }, [groupId]);
 
@@ -127,23 +132,43 @@ export default function GroupDetail() {
     }
   };
 
-  const joinGroup = async () => {
+  const loadFollowStatus = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/join`, {
-        method: 'POST',
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/is-following`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       if (response.ok) {
-        setIsMember(true);
-        loadMembers();
+        const data = await response.json();
+        setIsFollowing(data.is_following || false);
       }
     } catch (error) {
-      console.error('Failed to join group:', error);
-      alert('Failed to join group');
+      console.error('Failed to load follow status:', error);
+    }
+  };
+
+  const loadFollowerCount = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/followers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFollowerCount(Array.isArray(data) ? data.length : 0);
+      }
+    } catch (error) {
+      console.error('Failed to load follower count:', error);
     }
   };
 
@@ -262,15 +287,20 @@ export default function GroupDetail() {
             </div>
 
             <div className="flex space-x-3">
-              {!isMemb && (
-                <button
-                  onClick={joinGroup}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  <UserPlus className="h-5 w-5 mr-2" />
-                  Join Group
-                </button>
-              )}
+              <GroupActionButtons
+                groupId={Number(groupId)}
+                isMember={isMemb}
+                isFollowing={isFollowing}
+                followerCount={followerCount}
+                onMembershipChange={(isMember) => {
+                  setIsMember(isMember);
+                  loadMembers();
+                }}
+                onFollowChange={(following, newCount) => {
+                  setIsFollowing(following);
+                  setFollowerCount(newCount);
+                }}
+              />
               {isMemb && (
                 <button
                   onClick={() => setShowNewPost(true)}
