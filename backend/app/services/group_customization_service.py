@@ -5,12 +5,13 @@ Manages group themes, branding, and custom styling
 from typing import Optional, List
 import secrets
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.group_customization import GroupTheme
-from app.models.collaboration import Group, GroupCustomDomain
+from app.models.collaboration import Group, GroupCustomDomain, GroupFollower
+from app.models.user import User
 
 
 class GroupCustomizationService:
@@ -208,4 +209,143 @@ class GroupCustomizationService:
             await db.commit()
             return True
         return False
+    
+    # ========================================================================
+    # FOLLOWER MANAGEMENT
+    # ========================================================================
+    
+    @staticmethod
+    async def follow_group(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> GroupFollower:
+        """Follow a group."""
+        # Check if already following
+        result = await db.execute(
+            select(GroupFollower).filter(
+                and_(
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.user_id == user_id
+                )
+            )
+        )
+        existing = result.scalar_one_or_none()
+        
+        if existing:
+            if not existing.is_active:
+                # Reactivate if previously unfollowed
+                existing.is_active = True
+                existing.updated_at = datetime.utcnow()
+                await db.commit()
+                await db.refresh(existing)
+            return existing
+        
+        # Create new follow relationship
+        follow = GroupFollower(
+            group_id=group_id,
+            user_id=user_id,
+            is_active=True
+        )
+        db.add(follow)
+        await db.commit()
+        await db.refresh(follow)
+        return follow
+    
+    @staticmethod
+    async def unfollow_group(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> bool:
+        """Unfollow a group (soft delete)."""
+        result = await db.execute(
+            select(GroupFollower).filter(
+                and_(
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.user_id == user_id,
+                    GroupFollower.is_active == True
+                )
+            )
+        )
+        follow = result.scalar_one_or_none()
+        
+        if not follow:
+            return False
+        
+        follow.is_active = False
+        follow.updated_at = datetime.utcnow()
+        await db.commit()
+        return True
+    
+    @staticmethod
+    async def is_following_group(
+        db: AsyncSession,
+        group_id: int,
+        user_id: int
+    ) -> bool:
+        """Check if user is following a group."""
+        result = await db.execute(
+            select(GroupFollower).filter(
+                and_(
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.user_id == user_id,
+                    GroupFollower.is_active == True
+                )
+            )
+        )
+        return result.scalar_one_or_none() is not None
+    
+    @staticmethod
+    async def get_group_followers(
+        db: AsyncSession,
+        group_id: int,
+        skip: int = 0,
+        limit: int = 50
+    ) -> tuple[List[User], int]:
+        """Get followers of a group."""
+        # Query with join
+        stmt = (
+            select(User)
+            .join(GroupFollower, GroupFollower.user_id == User.id)
+            .filter(
+                and_(
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.is_active == True
+                )
+            )
+        )
+        
+        # Get total count
+        count_stmt = select(GroupFollower).filter(
+            and_(
+                GroupFollower.group_id == group_id,
+                GroupFollower.is_active == True
+            )
+        )
+        count_result = await db.execute(count_stmt)
+        total = len(count_result.scalars().all())
+        
+        # Get paginated results
+        result = await db.execute(stmt.offset(skip).limit(limit))
+        followers = result.scalars().all()
+        
+        return list(followers), total
+    
+    @staticmethod
+    async def get_follower_count(
+        db: AsyncSession,
+        group_id: int
+    ) -> int:
+        """Get follower count for a group."""
+        result = await db.execute(
+            select(GroupFollower).filter(
+                and_(
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.is_active == True
+                )
+            )
+        )
+        return len(result.scalars().all())
+
 

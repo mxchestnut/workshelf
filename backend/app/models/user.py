@@ -81,6 +81,7 @@ class User(Base, TimestampMixin, TenantMixin):
     beta_requests_received = relationship("BetaRequest", foreign_keys="BetaRequest.reader_id", back_populates="reader", cascade="all, delete-orphan")
     group_memberships = relationship("GroupMember", back_populates="user", cascade="all, delete-orphan")
     group_posts = relationship("GroupPost", back_populates="author", cascade="all, delete-orphan")
+    group_follows = relationship("GroupFollower", back_populates="user", cascade="all, delete-orphan")
     messages_sent = relationship("Message", back_populates="sender", cascade="all, delete-orphan")
     
     # Phase 6: Monetization

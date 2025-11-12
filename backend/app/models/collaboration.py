@@ -300,6 +300,35 @@ class Group(Base, TimestampMixin):
     scholarship_requests = relationship("ScholarshipRequest", back_populates="group", cascade="all, delete-orphan")
     custom_roles = relationship("GroupRole", back_populates="group", cascade="all, delete-orphan")
     theme = relationship("GroupTheme", back_populates="group", uselist=False, cascade="all, delete-orphan")
+    followers = relationship("GroupFollower", back_populates="group", cascade="all, delete-orphan")
+
+
+class GroupFollower(Base, TimestampMixin):
+    """
+    Group follower relationships
+    Users can follow groups without being members to stay updated
+    """
+    __tablename__ = "group_followers"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Group being followed
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # User who is following
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Is the follow active (can be muted without unfollowing)
+    is_active = Column(Boolean, default=True, nullable=False)
+    
+    # Relationships
+    group = relationship("Group", back_populates="followers")
+    user = relationship("User", back_populates="group_follows")
+    
+    __table_args__ = (
+        Index('idx_group_follower', 'group_id', 'user_id', unique=True),
+        Index('idx_group_followers_active', 'group_id', 'is_active'),
+    )
 
 
 class GroupMember(Base, TimestampMixin):

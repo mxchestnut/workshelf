@@ -1,6 +1,7 @@
 """Groups API - Writing group management"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_
 from typing import Dict, Any, List
 
 from app.core.database import get_db
@@ -17,7 +18,8 @@ from app.schemas.collaboration import (
 )
 from app.schemas.group_customization import (
     GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate,
-    GroupCustomDomainCreate, GroupCustomDomainResponse
+    GroupCustomDomainCreate, GroupCustomDomainResponse,
+    GroupFollowerResponse, FollowerInfo, FollowersListResponse
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -1021,3 +1023,102 @@ async def delete_custom_domain(
     deleted = await GroupCustomizationService.delete_custom_domain(db, domain_id, group_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Custom domain not found")
+
+
+# ============================================================================
+# GROUP FOLLOWER ENDPOINTS
+# ============================================================================
+
+@router.post("/{group_id}/follow", response_model=GroupFollowerResponse, status_code=status.HTTP_201_CREATED)
+async def follow_group(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Follow a group to receive updates."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Verify group exists
+    group = await GroupService.get_group(db, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Follow the group
+    follow = await GroupCustomizationService.follow_group(db, group_id, user.id)
+    return follow
+
+
+@router.delete("/{group_id}/follow", status_code=status.HTTP_204_NO_CONTENT)
+async def unfollow_group(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Unfollow a group."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Unfollow the group
+    unfollowed = await GroupCustomizationService.unfollow_group(db, group_id, user.id)
+    if not unfollowed:
+        raise HTTPException(status_code=404, detail="Not following this group")
+
+
+@router.get("/{group_id}/followers", response_model=FollowersListResponse)
+async def get_group_followers(
+    group_id: int,
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get list of users following a group (public endpoint)."""
+    # Verify group exists
+    group = await GroupService.get_group(db, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Get followers
+    followers, total = await GroupCustomizationService.get_group_followers(db, group_id, skip, limit)
+    
+    # Build response
+    from app.models.collaboration import GroupFollower
+    follower_infos = []
+    for follower in followers:
+        result = await db.execute(
+            select(GroupFollower).filter(
+                and_(
+                    GroupFollower.user_id == follower.id,
+                    GroupFollower.group_id == group_id,
+                    GroupFollower.is_active == True
+                )
+            )
+        )
+        follow = result.scalar_one_or_none()
+        follower_infos.append(
+            FollowerInfo(
+                id=follower.id,
+                email=follower.email,
+                full_name=follower.full_name,
+                avatar_url=follower.avatar_url,
+                followed_at=follow.created_at if follow else None
+            )
+        )
+    
+    return FollowersListResponse(total=total, followers=follower_infos)
+
+
+@router.get("/{group_id}/is-following")
+async def check_if_following(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Check if current user is following a group."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    is_following = await GroupCustomizationService.is_following_group(db, group_id, user.id)
+    follower_count = await GroupCustomizationService.get_follower_count(db, group_id)
+    
+    return {
+        "is_following": is_following,
+        "follower_count": follower_count
+    }

@@ -20,7 +20,7 @@ from app.models.store import StoreItem, Purchase, AuthorEarnings, StoreItemStatu
 from app.models.collaboration import (
     Comment, CommentReaction,
     BetaRequest, BetaFeedback, BetaRequestStatus,
-    Group, GroupMember, GroupMemberRole, GroupPrivacyType,
+    Group, GroupMember, GroupMemberRole, GroupPrivacyType, GroupFollower,
     GroupPost, GroupPostReaction,
     GroupCustomDomain, ScholarshipRequest,
     MessageThread, MessageThreadParticipant, Message, MessageThreadType
@@ -101,6 +101,7 @@ __all__ = [
     "GroupMember",
     "GroupMemberRole",
     "GroupPrivacyType",
+    "GroupFollower",
     "GroupPost",
     "GroupPostReaction",
     "GroupCustomDomain",

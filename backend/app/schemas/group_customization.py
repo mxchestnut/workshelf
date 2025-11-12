@@ -8,6 +8,37 @@ from datetime import datetime
 
 
 # ============================================================================
+# GROUP FOLLOWER SCHEMAS
+# ============================================================================
+
+class GroupFollowerResponse(BaseModel):
+    """Group follower response."""
+    id: int
+    group_id: int
+    user_id: int
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class FollowerInfo(BaseModel):
+    """Follower user information."""
+    id: int
+    email: str
+    full_name: Optional[str]
+    avatar_url: Optional[str]
+    followed_at: datetime
+
+
+class FollowersListResponse(BaseModel):
+    """List of group followers."""
+    total: int
+    followers: list[FollowerInfo]
+
+
+# ============================================================================
 # GROUP THEME SCHEMAS
 # ============================================================================
 
