@@ -299,6 +299,7 @@ class Group(Base, TimestampMixin):
     custom_domains = relationship("GroupCustomDomain", back_populates="group", cascade="all, delete-orphan")
     scholarship_requests = relationship("ScholarshipRequest", back_populates="group", cascade="all, delete-orphan")
     custom_roles = relationship("GroupRole", back_populates="group", cascade="all, delete-orphan")
+    theme = relationship("GroupTheme", back_populates="group", uselist=False, cascade="all, delete-orphan")
 
 
 class GroupMember(Base, TimestampMixin):

@@ -25,6 +25,7 @@ from app.models.collaboration import (
     GroupCustomDomain, ScholarshipRequest,
     MessageThread, MessageThreadParticipant, Message, MessageThreadType
 )
+from app.models.group_customization import GroupTheme
 from app.models.studio_customization import (
     StudioTheme, StudioCustomDomain,
     DocumentView, StudioAnalytics
@@ -108,7 +109,8 @@ __all__ = [
     "MessageThreadParticipant",
     "Message",
     "MessageThreadType",
-    # Phase 5: Studio Customization
+    # Phase 5: Studio Customization & Group Customization
+    "GroupTheme",
     "StudioTheme",
     "StudioCustomDomain",
     "DocumentView",
