@@ -3,7 +3,7 @@ Invitation API endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
@@ -29,7 +29,7 @@ class InvitationResponse(BaseModel):
     created_by: int
     created_at: datetime
     expires_at: datetime
-    accepted_at: datetime | None = None
+    accepted_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

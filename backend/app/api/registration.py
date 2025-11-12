@@ -16,9 +16,9 @@ router = APIRouter(prefix="/auth", tags=["registration"])
 
 class AvailabilityCheck(BaseModel):
     """Request body for checking username/email/phone availability"""
-    username: str | None = None
-    email: EmailStr | None = None
-    phone_number: str | None = None
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
 
 
 class AvailabilityResponse(BaseModel):

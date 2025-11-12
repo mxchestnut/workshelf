@@ -1,7 +1,7 @@
 """
 Feed API - Personalized user feed
 """
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, desc
@@ -19,15 +19,15 @@ router = APIRouter(prefix="/feed", tags=["feed"])
 
 class PostAuthor(BaseModel):
     id: int
-    username: str | None
+    username: Optional[str]
     display_name: str
-    avatar_url: str | None
+    avatar_url: Optional[str]
 
 class GroupInfo(BaseModel):
     id: int
     name: str
     slug: str
-    avatar_url: str | None
+    avatar_url: Optional[str]
 
 class FeedPost(BaseModel):
     id: int
