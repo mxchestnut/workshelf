@@ -307,6 +307,7 @@ class Group(Base, TimestampMixin):
     custom_roles = relationship("GroupRole", back_populates="group", cascade="all, delete-orphan")
     theme = relationship("GroupTheme", back_populates="group", uselist=False, cascade="all, delete-orphan")
     followers = relationship("GroupFollower", back_populates="group", cascade="all, delete-orphan")
+    analytics = relationship("GroupAnalytics", back_populates="group", cascade="all, delete-orphan")
 
 
 class GroupFollower(Base, TimestampMixin):

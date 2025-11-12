@@ -128,3 +128,25 @@ class GroupCustomDomainResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# ============================================================================
+# GROUP ANALYTICS SCHEMAS
+# ============================================================================
+
+class GroupMetricsResponse(BaseModel):
+    """Complete group metrics response."""
+    group_id: int
+    period: Dict[str, datetime]
+    views: Dict[str, int]
+    followers: Dict[str, int]
+    members: Dict[str, int]
+    posts: Dict[str, int]
+    engagement: Dict[str, int]
+    growth: Dict[str, int]
+    top_posts: list[Dict[str, Any]]
+
+
+class GroupTimeSeriesResponse(BaseModel):
+    """Time series data response for groups."""
+    metric: str
+    data: list[Dict[str, Any]]

@@ -19,7 +19,8 @@ from app.schemas.collaboration import (
 from app.schemas.group_customization import (
     GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate,
     GroupCustomDomainCreate, GroupCustomDomainResponse,
-    GroupFollowerResponse, FollowerInfo, FollowersListResponse
+    GroupFollowerResponse, FollowerInfo, FollowersListResponse,
+    GroupMetricsResponse, GroupTimeSeriesResponse
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -1122,3 +1123,55 @@ async def check_if_following(
         "is_following": is_following,
         "follower_count": follower_count
     }
+
+
+# ============================================================================
+# GROUP ANALYTICS ENDPOINTS
+# ============================================================================
+
+@router.get("/{group_id}/analytics", response_model=GroupMetricsResponse)
+async def get_group_analytics(
+    group_id: int,
+    start_date: str = None,
+    end_date: str = None,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get group analytics and metrics (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can view analytics")
+    
+    from datetime import datetime
+    from app.services.group_analytics_service import GroupAnalyticsService
+    
+    start = datetime.fromisoformat(start_date) if start_date else None
+    end = datetime.fromisoformat(end_date) if end_date else None
+    
+    metrics = await GroupAnalyticsService.get_group_metrics(db, group_id, start, end)
+    return metrics
+
+
+@router.get("/{group_id}/analytics/time-series", response_model=GroupTimeSeriesResponse)
+async def get_group_time_series(
+    group_id: int,
+    metric: str = "followers",
+    days: int = 30,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get time series data for group analytics (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can view analytics")
+    
+    from app.services.group_analytics_service import GroupAnalyticsService
+    
+    data = await GroupAnalyticsService.get_time_series_data(db, group_id, metric, days)
+    return {"metric": metric, "data": data}

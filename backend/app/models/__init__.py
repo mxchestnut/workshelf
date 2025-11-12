@@ -26,6 +26,7 @@ from app.models.collaboration import (
     MessageThread, MessageThreadParticipant, Message, MessageThreadType
 )
 from app.models.group_customization import GroupTheme
+from app.models.group_analytics import GroupAnalytics
 from app.models.studio_customization import (
     StudioTheme, StudioCustomDomain,
     DocumentView, StudioAnalytics
@@ -112,6 +113,7 @@ __all__ = [
     "MessageThreadType",
     # Phase 5: Studio Customization & Group Customization
     "GroupTheme",
+    "GroupAnalytics",
     "StudioTheme",
     "StudioCustomDomain",
     "DocumentView",
