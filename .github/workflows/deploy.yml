@@ -83,42 +83,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Run database migrations
-        run: |
-          echo "🔄 Running database migrations..."
-          
-          # Create a temporary container to run migrations
-          az containerapp job create \
-            --name workshelf-migrations-${{ github.run_number }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }} \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --secrets database-url="${{ secrets.DATABASE_URL }}" \
-            --env-vars DATABASE_URL=secretref:database-url \
-            --command "/bin/sh" \
-            --args "-c,cd /app && alembic upgrade head" \
-            --cpu 0.25 --memory 0.5Gi \
-            --trigger-type Manual || true
-          
-          # Start the migration job
-          az containerapp job start \
-            --name workshelf-migrations-${{ github.run_number }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} || true
-          
-          echo "⏳ Waiting for migrations to complete..."
-          sleep 15
-          
-          # Clean up the migration job
-          az containerapp job delete \
-            --name workshelf-migrations-${{ github.run_number }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --yes || true
-          
-          echo "✅ Migrations complete"
-
       - name: Deploy backend to Azure Container Apps
         run: |
           az containerapp update \
