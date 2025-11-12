@@ -19,6 +19,11 @@ env:
     GPTZERO_API_KEY=secretref:gptzero-api-key
     COPYSCAPE_API_KEY=secretref:copyscape-api-key
     COPYSCAPE_USERNAME=${{ secrets.COPYSCAPE_USERNAME }}
+    AWS_REGION=${{ secrets.AWS_REGION }}
+    AWS_ACCESS_KEY_ID=secretref:aws-access-key-id
+    AWS_SECRET_ACCESS_KEY=secretref:aws-secret-access-key
+    FROM_EMAIL=${{ secrets.FROM_EMAIL }}
+    FRONTEND_URL=${{ secrets.FRONTEND_URL }}
     CLAUDE_MODEL=claude-sonnet-4-20250514
     SECRET_KEY=secretref:secret-key
     KEYCLOAK_SERVER_URL=${{ secrets.KEYCLOAK_SERVER_URL }}
@@ -78,6 +83,42 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Run database migrations
+        run: |
+          echo "🔄 Running database migrations..."
+          
+          # Create a temporary container to run migrations
+          az containerapp job create \
+            --name workshelf-migrations-${{ github.run_number }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/workshelf-backend:${{ github.sha }} \
+            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --secrets database-url="${{ secrets.DATABASE_URL }}" \
+            --env-vars DATABASE_URL=secretref:database-url \
+            --command "/bin/sh" \
+            --args "-c,cd /app && alembic upgrade head" \
+            --cpu 0.25 --memory 0.5Gi \
+            --trigger-type Manual || true
+          
+          # Start the migration job
+          az containerapp job start \
+            --name workshelf-migrations-${{ github.run_number }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} || true
+          
+          echo "⏳ Waiting for migrations to complete..."
+          sleep 15
+          
+          # Clean up the migration job
+          az containerapp job delete \
+            --name workshelf-migrations-${{ github.run_number }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --yes || true
+          
+          echo "✅ Migrations complete"
+
       - name: Deploy backend to Azure Container Apps
         run: |
           az containerapp update \
@@ -103,6 +144,8 @@ jobs:
               stripe-webhook-secret="${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
               gptzero-api-key="${{ secrets.GPTZERO_API_KEY }}" \
               copyscape-api-key="${{ secrets.COPYSCAPE_API_KEY }}" \
+              aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+              aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
               secret-key="${{ secrets.SECRET_KEY }}" \
             --env-vars ${{ env.BACKEND_ENV_VARS }} \
             --cpu 0.25 --memory 0.5Gi \
