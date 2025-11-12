@@ -83,6 +83,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Update Azure Container App secrets
+        run: |
+          echo "🔐 Updating secrets for backend container app..."
+          az containerapp secret set \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --secrets \
+              aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+              aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            || echo "⚠️  Failed to update secrets, will try in create step"
+
       - name: Deploy backend to Azure Container Apps
         run: |
           az containerapp update \
