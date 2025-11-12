@@ -7,12 +7,16 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services import user_service
 from app.services.group_service import GroupService
+from app.services.group_customization_service import GroupCustomizationService
 from app.schemas.collaboration import (
     GroupCreate, GroupUpdate, GroupResponse,
     GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse,
     ScholarshipRequestCreate, ScholarshipRequestResponse,
     GroupRoleCreate, GroupRoleUpdate, GroupRoleResponse,
     GroupMemberRoleAssignment
+)
+from app.schemas.group_customization import (
+    GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -820,3 +824,107 @@ async def join_group(
         "created_at": member.created_at.isoformat(),
         "updated_at": member.updated_at.isoformat()
     }
+
+
+# ============================================================================
+# GROUP THEME CUSTOMIZATION
+# ============================================================================
+
+@router.post("/{group_id}/theme", response_model=GroupThemeResponse, status_code=status.HTTP_201_CREATED)
+async def create_or_update_group_theme(
+    group_id: int,
+    theme_data: GroupThemeCreate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create or update group theme (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can customize theme")
+    
+    # Create or update theme
+    theme = await GroupCustomizationService.create_or_update_theme(
+        db=db,
+        group_id=group_id,
+        primary_color=theme_data.primary_color,
+        secondary_color=theme_data.secondary_color,
+        accent_color=theme_data.accent_color,
+        background_color=theme_data.background_color,
+        text_color=theme_data.text_color,
+        heading_font=theme_data.heading_font,
+        body_font=theme_data.body_font,
+        logo_url=theme_data.logo_url,
+        banner_url=theme_data.banner_url,
+        favicon_url=theme_data.favicon_url,
+        custom_css=theme_data.custom_css,
+        layout_config=theme_data.layout_config,
+        is_active=theme_data.is_active
+    )
+    
+    return theme
+
+
+@router.get("/{group_id}/theme", response_model=GroupThemeResponse)
+async def get_group_theme(
+    group_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get group theme (public endpoint)."""
+    theme = await GroupCustomizationService.get_group_theme(db, group_id)
+    if not theme:
+        raise HTTPException(status_code=404, detail="Theme not found")
+    return theme
+
+
+@router.put("/{group_id}/theme", response_model=GroupThemeResponse)
+async def update_group_theme(
+    group_id: int,
+    theme_data: GroupThemeUpdate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update group theme (partial update, owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can customize theme")
+    
+    # Get current theme
+    existing_theme = await GroupCustomizationService.get_group_theme(db, group_id)
+    if not existing_theme:
+        raise HTTPException(status_code=404, detail="Theme not found. Create one first with POST.")
+    
+    # Update theme with only provided fields
+    update_data = theme_data.model_dump(exclude_unset=True)
+    theme = await GroupCustomizationService.create_or_update_theme(
+        db=db,
+        group_id=group_id,
+        **update_data
+    )
+    
+    return theme
+
+
+@router.delete("/{group_id}/theme", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_group_theme(
+    group_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete group theme (revert to defaults, owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can delete theme")
+    
+    deleted = await GroupCustomizationService.delete_theme(db, group_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Theme not found")
+
