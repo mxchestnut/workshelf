@@ -28,9 +28,12 @@ export function Document() {
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
 
-  // Get document ID, project ID, and prompt from URL
+  // Get document ID from URL path (/document/123) or query (?id=123)
+  const pathParts = window.location.pathname.split('/')
+  const pathId = pathParts[2] // /document/123 -> 123
   const urlParams = new URLSearchParams(window.location.search)
-  const documentId = urlParams.get('id')
+  const queryId = urlParams.get('id')
+  const documentId = pathId || queryId
   const projectId = urlParams.get('project')
   const promptText = urlParams.get('prompt')
 
