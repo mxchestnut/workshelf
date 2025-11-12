@@ -126,6 +126,29 @@ jobs:
             --cpu 0.25 --memory 0.5Gi \
             --min-replicas 1 --max-replicas 2
 
+      - name: Bind custom domain to backend
+        run: |
+          echo "🌐 Binding custom domain api.workshelf.dev to backend..."
+          
+          # Check if domain is already bound
+          EXISTING_DOMAINS=$(az containerapp hostname list \
+            --name workshelf-backend \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --query "[?name=='api.workshelf.dev'].name" -o tsv)
+          
+          if [ -z "$EXISTING_DOMAINS" ]; then
+            echo "Adding domain binding..."
+            az containerapp hostname bind \
+              --hostname api.workshelf.dev \
+              --name workshelf-backend \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
+              --validation-method HTTP
+            echo "✅ Domain api.workshelf.dev bound successfully"
+          else
+            echo "✅ Domain api.workshelf.dev already bound"
+          fi
+
       - name: Deploy frontend to Azure Container Apps
         run: |
           echo "🔄 Updating frontend container app..."
