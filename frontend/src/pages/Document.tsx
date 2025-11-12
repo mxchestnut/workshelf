@@ -28,7 +28,6 @@ export function Document() {
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
 
   // Get document ID from URL path (/document/123) or query (?id=123)
   const pathParts = window.location.pathname.split('/')
@@ -189,7 +188,6 @@ export function Document() {
     if (!document) return
 
     try {
-      setSaveStatus('saving')
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents/${document.id}`, {
         method: 'PUT',
@@ -206,19 +204,13 @@ export function Document() {
       })
 
       if (!response.ok) {
-        setSaveStatus('error')
         throw new Error('Failed to save document')
       }
 
       const data = await response.json()
       setDocument(data)
-      setSaveStatus('saved')
-      
-      // Show brief success message
-      setTimeout(() => setSaveStatus('saved'), 2000)
     } catch (err) {
       console.error('Error saving document:', err)
-      setSaveStatus('error')
       throw err // Let the Editor component handle the error
     }
   }
