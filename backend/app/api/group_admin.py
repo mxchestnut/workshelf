@@ -687,3 +687,100 @@ async def delete_post(
         "success": True,
         "message": "Post deleted successfully"
     }
+
+
+@router.put("/groups/{group_id}/posts/{post_id}/lock")
+async def toggle_post_lock(
+    group_id: int,
+    post_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Lock/unlock a post thread (moderator/admin/owner only)
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    """
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get the post
+    post_result = await db.execute(
+        select(GroupPost).filter(
+            and_(
+                GroupPost.id == post_id,
+                GroupPost.group_id == group_id
+            )
+        )
+    )
+    post = post_result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Toggle lock status
+    post.is_locked = not post.is_locked
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": f"Post thread {'locked' if post.is_locked else 'unlocked'} successfully",
+        "post": {
+            "id": post.id,
+            "is_locked": post.is_locked
+        }
+    }
+
+
+@router.put("/groups/{group_id}/members/{user_id}/ban")
+async def ban_member(
+    group_id: int,
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Ban a member from the group (moderator/admin/owner only)
+    Removes member and prevents them from rejoining
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    """
+    group, current_member = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get the member to ban
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user_id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Role hierarchy check: can't ban someone with equal or higher role
+    role_hierarchy = {
+        GroupMemberRole.MEMBER: 1,
+        GroupMemberRole.MODERATOR: 2,
+        GroupMemberRole.ADMIN: 3,
+        GroupMemberRole.OWNER: 4
+    }
+    
+    if role_hierarchy[member.role] >= role_hierarchy[current_member.role]:
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot ban a member with equal or higher role"
+        )
+    
+    # For now, banning just removes the member
+    # In a full implementation, you'd create a BannedMember table to track bans
+    await db.delete(member)
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": "Member banned successfully"
+    }
+

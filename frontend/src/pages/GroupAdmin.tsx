@@ -121,6 +121,7 @@ export default function GroupAdmin() {
     loadUser()
   }, [])
   const [groupSlug, setGroupSlug] = useState<string>('')
+  const [groupId, setGroupId] = useState<number | null>(null)
   const [groupSettings, setGroupSettings] = useState<GroupSettings | null>(null)
   const [members, setMembers] = useState<GroupMember[]>([])
   const [publications, setPublications] = useState<GroupPublication[]>([])
@@ -162,6 +163,7 @@ export default function GroupAdmin() {
       if (settingsRes.ok) {
         const data = await settingsRes.json()
         setGroupSettings(data)
+        setGroupId(data.id) // Save group ID for moderation endpoints
       }
 
       // Load members
@@ -415,6 +417,68 @@ export default function GroupAdmin() {
       }
     } catch (err) {
       setError('Failed to remove role')
+    }
+  }
+
+  const banMember = async (memberId: number) => {
+    if (!groupId) {
+      setError('Group ID not available')
+      return
+    }
+
+    try {
+      const token = authService.getAccessToken()
+      const memberUserId = members.find(m => m.id === memberId)?.user_id
+      if (!memberUserId) {
+        setError('Member not found')
+        return
+      }
+
+      const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/members/${memberUserId}/ban`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setSuccess('Member banned successfully')
+        loadGroupData() // Reload member list
+      } else {
+        const data = await res.json()
+        setError(data.detail || 'Failed to ban member')
+      }
+    } catch (err) {
+      setError('Failed to ban member')
+    }
+  }
+
+  const kickMember = async (memberId: number) => {
+    if (!groupId) {
+      setError('Group ID not available')
+      return
+    }
+
+    try {
+      const token = authService.getAccessToken()
+      const memberUserId = members.find(m => m.id === memberId)?.user_id
+      if (!memberUserId) {
+        setError('Member not found')
+        return
+      }
+
+      const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/members/${memberUserId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setSuccess('Member removed successfully')
+        loadGroupData() // Reload member list
+      } else {
+        const data = await res.json()
+        setError(data.detail || 'Failed to remove member')
+      }
+    } catch (err) {
+      setError('Failed to remove member')
     }
   }
 
@@ -786,6 +850,13 @@ export default function GroupAdmin() {
                   roles={roles}
                   onAssignRole={assignRoleToMember}
                   onRemoveRole={removeRoleFromMember}
+                  onBanMember={banMember}
+                  onKickMember={kickMember}
+                  currentUserId={user?.id}
+                  userPermissions={{
+                    can_ban_members: true, // Group owners/admins can ban
+                    can_kick_members: true  // Group owners/admins can kick
+                  }}
                 />
               </div>
             )}

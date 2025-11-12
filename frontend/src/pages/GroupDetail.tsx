@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, MessageSquare, Crown, Shield, ArrowLeft } from 'lucide-react';
 import { GroupActionButtons } from '../components/GroupActionButtons';
+import { PostModerationActions } from '../components/PostModerationActions';
 
 interface Group {
   id: number;
@@ -35,6 +36,7 @@ interface GroupPost {
   title: string;
   content: string;
   is_pinned: boolean;
+  is_locked: boolean;
   created_at: string;
   updated_at: string;
   author?: {
@@ -53,6 +55,12 @@ export default function GroupDetail() {
   const [isMemb, setIsMember] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [userPermissions, setUserPermissions] = useState<{
+    can_pin_posts?: boolean;
+    can_delete_posts?: boolean;
+    can_lock_threads?: boolean;
+  }>({});
   
   // New post form
   const [showNewPost, setShowNewPost] = useState(false);
@@ -68,8 +76,13 @@ export default function GroupDetail() {
       loadPosts();
       loadFollowStatus();
       loadFollowerCount();
+      loadUserProfile();
     }
   }, [groupId]);
+
+  useEffect(() => {
+    calculateUserPermissions();
+  }, [members, currentUserId]);
 
   const loadGroup = async () => {
     try {
@@ -201,6 +214,125 @@ export default function GroupDetail() {
     } catch (error) {
       console.error('Failed to create post:', error);
       alert('Failed to create post');
+    }
+  };
+
+  const loadUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUserId(user.id);
+      }
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+    }
+  };
+
+  const calculateUserPermissions = () => {
+    if (!members || !currentUserId) return;
+    
+    const currentMember = members.find(m => m.user_id === currentUserId);
+    if (!currentMember) return;
+
+    // Base role permissions (simplified - in reality you'd fetch from custom roles)
+    const basePermissions: Record<string, any> = {
+      owner: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+      admin: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+      moderator: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+      member: {}
+    };
+
+    setUserPermissions(basePermissions[currentMember.role] || {});
+  };
+
+  const togglePostPin = async (postId: number) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}/pin`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        loadPosts(); // Reload to show updated pin status
+      } else {
+        const error = await response.json();
+        alert(`Failed to pin/unpin post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle pin:', error);
+      alert('Failed to toggle pin');
+    }
+  };
+
+  const togglePostLock = async (postId: number) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}/lock`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        loadPosts(); // Reload to show updated lock status
+      } else {
+        const error = await response.json();
+        alert(`Failed to lock/unlock post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle lock:', error);
+      alert('Failed to toggle lock');
+    }
+  };
+
+  const deletePost = async (postId: number) => {
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        loadPosts(); // Reload to remove deleted post
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Failed to delete post');
     }
   };
 
@@ -360,11 +492,20 @@ export default function GroupDetail() {
             ) : (
               posts.map((post) => (
                 <div key={post.id} className="bg-white rounded-lg border border-gray-200 p-6">
-                  {post.is_pinned && (
-                    <div className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mb-2">
-                      Pinned
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      {post.is_pinned && (
+                        <div className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mb-2">
+                          Pinned
+                        </div>
+                      )}
+                      {post.is_locked && (
+                        <div className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 mb-2 ml-2">
+                          Locked
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h3>
                   <p className="text-gray-700 whitespace-pre-wrap mb-4">{post.content}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
@@ -373,6 +514,16 @@ export default function GroupDetail() {
                     </span>
                     <span>{formatDate(post.created_at)}</span>
                   </div>
+                  
+                  <PostModerationActions
+                    isPinned={post.is_pinned}
+                    isLocked={post.is_locked}
+                    isAuthor={currentUserId === post.author_id}
+                    permissions={userPermissions}
+                    onPin={() => togglePostPin(post.id)}
+                    onLock={() => togglePostLock(post.id)}
+                    onDelete={() => deletePost(post.id)}
+                  />
                 </div>
               ))
             )}

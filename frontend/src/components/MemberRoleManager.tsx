@@ -4,7 +4,7 @@
  * Shows member list with role badges and multi-role assignment
  */
 import { useState } from 'react'
-import { Shield, X, Plus, Crown, Users } from 'lucide-react'
+import { Shield, X, Plus, Crown, Users, Ban, UserX } from 'lucide-react'
 
 interface GroupRole {
   id: number
@@ -30,11 +30,28 @@ interface MemberRoleManagerProps {
   roles: GroupRole[]
   onAssignRole: (memberId: number, roleId: number) => Promise<void>
   onRemoveRole: (memberId: number, roleId: number) => Promise<void>
+  onBanMember?: (memberId: number) => Promise<void>
+  onKickMember?: (memberId: number) => Promise<void>
+  currentUserId?: number
+  userPermissions?: {
+    can_ban_members?: boolean
+    can_kick_members?: boolean
+  }
 }
 
-export function MemberRoleManager({ members, roles, onAssignRole, onRemoveRole }: MemberRoleManagerProps) {
+export function MemberRoleManager({ 
+  members, 
+  roles, 
+  onAssignRole, 
+  onRemoveRole,
+  onBanMember,
+  onKickMember,
+  currentUserId,
+  userPermissions = {}
+}: MemberRoleManagerProps) {
   const [expandedMember, setExpandedMember] = useState<number | null>(null)
   const [assigningRole, setAssigningRole] = useState<{ memberId: number; roleId: number } | null>(null)
+  const [showModerationMenu, setShowModerationMenu] = useState<number | null>(null)
 
   const getBaseRoleBadge = (role: string) => {
     const badges = {
@@ -148,16 +165,66 @@ export function MemberRoleManager({ members, roles, onAssignRole, onRemoveRole }
                   </div>
                 </div>
 
-                {/* Assign Role Button */}
-                {availableRoles.length > 0 && (
-                  <button
-                    onClick={() => setExpandedMember(isExpanded ? null : member.id)}
-                    className="ml-3 flex items-center gap-2 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Assign Role
-                  </button>
-                )}
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {/* Assign Role Button */}
+                  {availableRoles.length > 0 && (
+                    <button
+                      onClick={() => setExpandedMember(isExpanded ? null : member.id)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Assign Role
+                    </button>
+                  )}
+                  
+                  {/* Moderation Actions - only show if user has permissions and target is not current user */}
+                  {(userPermissions.can_kick_members || userPermissions.can_ban_members) && 
+                   member.user_id !== currentUserId && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowModerationMenu(showModerationMenu === member.id ? null : member.id)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded transition-colors"
+                      >
+                        <Shield className="h-4 w-4" />
+                        Moderate
+                      </button>
+                      
+                      {showModerationMenu === member.id && (
+                        <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
+                          {userPermissions.can_kick_members && onKickMember && (
+                            <button
+                              onClick={() => {
+                                setShowModerationMenu(null);
+                                if (confirm(`Remove ${member.user?.username || member.user?.email} from the group?`)) {
+                                  onKickMember(member.id);
+                                }
+                              }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-left text-orange-400 hover:bg-gray-700 rounded-t-lg transition-colors"
+                            >
+                              <UserX className="h-4 w-4" />
+                              <span>Kick Member</span>
+                            </button>
+                          )}
+                          {userPermissions.can_ban_members && onBanMember && (
+                            <button
+                              onClick={() => {
+                                setShowModerationMenu(null);
+                                if (confirm(`Ban ${member.user?.username || member.user?.email} from the group? This will remove them and prevent rejoining.`)) {
+                                  onBanMember(member.id);
+                                }
+                              }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-left text-red-400 hover:bg-gray-700 rounded-b-lg transition-colors"
+                            >
+                              <Ban className="h-4 w-4" />
+                              <span>Ban Member</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Role Assignment Dropdown */}

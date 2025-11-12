@@ -376,6 +376,7 @@ class GroupPost(Base, TimestampMixin):
     content = Column(Text, nullable=False)
     
     is_pinned = Column(Boolean, default=False, nullable=False)
+    is_locked = Column(Boolean, default=False, nullable=False)
     
     # Relationships
     group = relationship("Group", back_populates="posts")

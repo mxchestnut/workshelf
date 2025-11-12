@@ -35,6 +35,7 @@ class FeedPost(BaseModel):
     content: str
     created_at: datetime
     is_pinned: bool
+    is_locked: bool
     author: PostAuthor
     group: GroupInfo
 
@@ -84,6 +85,7 @@ async def get_feed(
             content=post.content,
             created_at=post.created_at,
             is_pinned=post.is_pinned,
+            is_locked=post.is_locked,
             author=PostAuthor(
                 id=author.id,
                 username=author.username,
@@ -145,6 +147,7 @@ async def get_discover_feed(
             content=post.content,
             created_at=post.created_at,
             is_pinned=post.is_pinned,
+            is_locked=post.is_locked,
             author=PostAuthor(
                 id=author.id,
                 username=author.username,

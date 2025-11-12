@@ -717,6 +717,7 @@ async def get_group_posts(
             "title": post.title,
             "content": post.content,
             "is_pinned": post.is_pinned,
+            "is_locked": post.is_locked,
             "created_at": post.created_at.isoformat(),
             "updated_at": post.updated_at.isoformat()
         }
@@ -769,6 +770,7 @@ async def create_group_post(
         "title": post.title,
         "content": post.content,
         "is_pinned": post.is_pinned,
+        "is_locked": post.is_locked,
         "created_at": post.created_at.isoformat(),
         "updated_at": post.updated_at.isoformat()
     }
