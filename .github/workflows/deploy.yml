@@ -93,6 +93,14 @@ jobs:
               aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
               aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             || echo "⚠️  Failed to update secrets, will try in create step"
+          
+          echo "🔐 Updating secrets for Keycloak..."
+          az containerapp secret set \
+            --name workshelf-keycloak \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --secrets \
+              db-password="${{ secrets.NEON_DB_PASSWORD }}" \
+            || echo "⚠️  Failed to update Keycloak secrets"
 
       - name: Deploy backend to Azure Container Apps
         run: |
@@ -147,6 +155,29 @@ jobs:
             echo "✅ Domain api.workshelf.dev bound successfully"
           else
             echo "✅ Domain api.workshelf.dev already bound"
+          fi
+
+      - name: Bind custom domain to Keycloak
+        run: |
+          echo "🌐 Binding custom domain auth.workshelf.dev to Keycloak..."
+          
+          # Check if domain is already bound
+          EXISTING_DOMAINS=$(az containerapp hostname list \
+            --name workshelf-keycloak \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --query "[?name=='auth.workshelf.dev'].name" -o tsv)
+          
+          if [ -z "$EXISTING_DOMAINS" ]; then
+            echo "Adding domain binding..."
+            az containerapp hostname bind \
+              --hostname auth.workshelf.dev \
+              --name workshelf-keycloak \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
+              --validation-method HTTP
+            echo "✅ Domain auth.workshelf.dev bound successfully"
+          else
+            echo "✅ Domain auth.workshelf.dev already bound"
           fi
 
       - name: Deploy frontend to Azure Container Apps
