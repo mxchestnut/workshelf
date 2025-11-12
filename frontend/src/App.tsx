@@ -105,6 +105,9 @@ function App() {
       setCurrentPage('staff-store')
     } else if (path === '/documents') {
       setCurrentPage('documents')
+    } else if (path.startsWith('/document/')) {
+      // Document editor page: /document/:id
+      setCurrentPage('document')
     } else if (path === '/document') {
       setCurrentPage('document')
     } else if (path === '/bookshelf') {
