@@ -256,8 +256,8 @@ export function ProjectDetail() {
           content: initialContent,
           description: template.prompt,
           project_id: parseInt(projectId!),
-          status: 'DRAFT',
-          visibility: 'PRIVATE'
+          status: 'draft',
+          visibility: 'private'
         })
       })
 
