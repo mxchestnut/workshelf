@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield } from 'lucide-react'
+import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -65,6 +65,17 @@ interface GroupSettings {
   subdomain_approved: boolean
 }
 
+interface CustomDomain {
+  id: number
+  domain_name: string
+  is_verified: boolean
+  verification_token: string
+  dns_configured: boolean
+  ssl_status: 'pending' | 'active' | 'failed' | null
+  created_at: string
+  verified_at: string | null
+}
+
 export default function GroupAdmin() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -81,7 +92,10 @@ export default function GroupAdmin() {
   const [members, setMembers] = useState<GroupMember[]>([])
   const [publications, setPublications] = useState<GroupPublication[]>([])
   const [roles, setRoles] = useState<GroupRole[]>([])
-  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications'>('members')
+  const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])
+  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains'>('members')
+  const [newDomain, setNewDomain] = useState('')
+  const [domainError, setDomainError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [showRoleModal, setShowRoleModal] = useState(false)
@@ -141,6 +155,15 @@ export default function GroupAdmin() {
       if (rolesRes.ok) {
         const data = await rolesRes.json()
         setRoles(data)
+      }
+
+      // Load custom domains
+      const domainsRes = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (domainsRes.ok) {
+        const data = await domainsRes.json()
+        setCustomDomains(data)
       }
 
     } catch (err) {
@@ -394,6 +417,16 @@ export default function GroupAdmin() {
             Publications ({publications.filter(p => p.status === 'pending').length} pending)
           </button>
           <button
+            onClick={() => setActiveTab('domains')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'domains' ? 'text-white border-b-2' : 'text-gray-400'
+            }`}
+            style={activeTab === 'domains' ? { borderColor: '#B34B0C' } : {}}
+          >
+            <Globe className="w-5 h-5" />
+            Custom Domains ({customDomains.length})
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
               activeTab === 'settings' ? 'text-white border-b-2' : 'text-gray-400'
@@ -634,6 +667,254 @@ export default function GroupAdmin() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Custom Domains Tab */}
+        {activeTab === 'domains' && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <h2 className="text-xl font-bold text-white mb-4">Custom Domains</h2>
+              <p className="text-gray-300 mb-6">
+                Connect your own domain to your group for a professional, branded experience.
+              </p>
+
+              {/* Add New Domain */}
+              <div className="mb-8 p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                <h3 className="text-lg font-semibold text-white mb-3">Add Custom Domain</h3>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={newDomain}
+                    onChange={(e) => {
+                      setNewDomain(e.target.value)
+                      setDomainError(null)
+                    }}
+                    placeholder="example.com"
+                    className="flex-1 px-4 py-2 rounded-lg text-white"
+                    style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!newDomain.trim()) {
+                        setDomainError('Please enter a domain name')
+                        return
+                      }
+
+                      try {
+                        const token = authService.getAccessToken()
+                        
+                        const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ domain_name: newDomain.trim() })
+                        })
+
+                        if (response.ok) {
+                          const newDomainData = await response.json()
+                          setCustomDomains([...customDomains, newDomainData])
+                          setNewDomain('')
+                          setSuccess('Domain added! Please configure DNS records below.')
+                          setTimeout(() => setSuccess(null), 5000)
+                        } else {
+                          const error = await response.json()
+                          setDomainError(error.detail || 'Failed to add domain')
+                        }
+                      } catch (err) {
+                        setDomainError('Network error. Please try again.')
+                      }
+                    }}
+                    className="flex items-center gap-2 px-6 py-2 rounded-lg font-medium text-white whitespace-nowrap"
+                    style={{ backgroundColor: '#B34B0C' }}
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Domain
+                  </button>
+                </div>
+                {domainError && (
+                  <div className="mt-3 p-3 rounded-lg flex items-start gap-2" style={{ backgroundColor: '#7C3306' }}>
+                    <AlertCircle className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                    <p className="text-white text-sm">{domainError}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Domains List */}
+              {customDomains.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Globe className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p>No custom domains configured yet.</p>
+                  <p className="text-sm mt-2">Add your first domain to get started!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customDomains.map((domain) => (
+                    <div key={domain.id} className="p-5 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-white font-mono">{domain.domain_name}</h3>
+                            {domain.is_verified ? (
+                              <span className="px-3 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: '#10B981' }}>
+                                <CheckCircle className="w-3 h-3 inline mr-1" />
+                                Verified
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: '#7C3306' }}>
+                                <XCircle className="w-3 h-3 inline mr-1" />
+                                Pending Verification
+                              </span>
+                            )}
+                            {domain.ssl_status === 'active' && (
+                              <span className="px-3 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: '#10B981' }}>
+                                🔒 SSL Active
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-400">
+                            Added {new Date(domain.created_at).toLocaleDateString()}
+                            {domain.verified_at && ` • Verified ${new Date(domain.verified_at).toLocaleDateString()}`}
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Remove domain ${domain.domain_name}?`)) return
+
+                            try {
+                              const token = authService.getAccessToken()
+
+                              const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains/${domain.id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                              })
+
+                              if (response.ok) {
+                                setCustomDomains(customDomains.filter(d => d.id !== domain.id))
+                                setSuccess('Domain removed successfully')
+                                setTimeout(() => setSuccess(null), 3000)
+                              }
+                            } catch (err) {
+                              setError('Failed to remove domain')
+                            }
+                          }}
+                          className="p-2 rounded hover:bg-red-900/20 transition-colors"
+                          title="Remove domain"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-400" />
+                        </button>
+                      </div>
+
+                      {/* DNS Configuration Instructions */}
+                      {!domain.is_verified && (
+                        <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                          <h4 className="text-sm font-semibold text-white mb-3">DNS Configuration Required</h4>
+                          
+                          <div className="space-y-3 mb-4">
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Add this TXT record to verify domain ownership:</p>
+                              <div className="flex items-center gap-2 p-2 rounded font-mono text-sm" style={{ backgroundColor: '#37322E' }}>
+                                <code className="flex-1 text-white">
+                                  TXT @ workshelf-verify={domain.verification_token}
+                                </code>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`workshelf-verify=${domain.verification_token}`)
+                                    setSuccess('Verification token copied!')
+                                    setTimeout(() => setSuccess(null), 2000)
+                                  }}
+                                  className="p-1 hover:bg-white/10 rounded"
+                                  title="Copy to clipboard"
+                                >
+                                  <Copy className="w-4 h-4 text-gray-400" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Point your domain to WorkShelf:</p>
+                              <div className="flex items-center gap-2 p-2 rounded font-mono text-sm" style={{ backgroundColor: '#37322E' }}>
+                                <code className="flex-1 text-white">
+                                  CNAME @ workshelf.dev
+                                </code>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText('workshelf.dev')
+                                    setSuccess('CNAME target copied!')
+                                    setTimeout(() => setSuccess(null), 2000)
+                                  }}
+                                  className="p-1 hover:bg-white/10 rounded"
+                                  title="Copy to clipboard"
+                                >
+                                  <Copy className="w-4 h-4 text-gray-400" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={async () => {
+                              try {
+                                const token = authService.getAccessToken()
+
+                                const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains/${domain.id}/verify`, {
+                                  method: 'POST',
+                                  headers: { 'Authorization': `Bearer ${token}` }
+                                })
+
+                                if (response.ok) {
+                                  const updatedDomain = await response.json()
+                                  setCustomDomains(customDomains.map(d => d.id === domain.id ? updatedDomain : d))
+                                  setSuccess('Domain verified successfully! SSL certificate will be issued shortly.')
+                                  setTimeout(() => setSuccess(null), 5000)
+                                } else {
+                                  const error = await response.json()
+                                  setError(error.detail || 'Verification failed. Please check your DNS records.')
+                                  setTimeout(() => setError(null), 5000)
+                                }
+                              } catch (err) {
+                                setError('Network error. Please try again.')
+                              }
+                            }}
+                            className="w-full px-4 py-2 rounded-lg font-medium text-white flex items-center justify-center gap-2"
+                            style={{ backgroundColor: '#B34B0C' }}
+                          >
+                            <CheckCircle className="w-5 h-5" />
+                            Verify DNS Configuration
+                          </button>
+
+                          <p className="text-xs text-gray-400 mt-3">
+                            💡 DNS changes can take up to 48 hours to propagate. Click verify once you've configured the records.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* SSL Status */}
+                      {domain.is_verified && (
+                        <div className="mt-4 p-3 rounded-lg flex items-center gap-3" style={{ backgroundColor: domain.ssl_status === 'active' ? '#065F46' : '#524944' }}>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              {domain.ssl_status === 'active' && '🔒 SSL Certificate Active'}
+                              {domain.ssl_status === 'pending' && '⏳ SSL Certificate Pending'}
+                              {domain.ssl_status === 'failed' && '❌ SSL Certificate Failed'}
+                              {!domain.ssl_status && '⏳ SSL Certificate Pending'}
+                            </p>
+                            <p className="text-xs text-gray-300 mt-1">
+                              {domain.ssl_status === 'active' && 'Your domain is fully configured and secure!'}
+                              {domain.ssl_status === 'pending' && 'SSL certificate is being issued. This usually takes a few minutes.'}
+                              {domain.ssl_status === 'failed' && 'SSL certificate issuance failed. Please contact support.'}
+                              {!domain.ssl_status && 'SSL certificate will be issued automatically.'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
