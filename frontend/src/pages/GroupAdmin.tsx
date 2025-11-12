@@ -6,9 +6,10 @@
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye } from 'lucide-react'
+import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye, ShieldAlert } from 'lucide-react'
 import { RoleEditor } from '../components/RoleEditor'
 import { MemberRoleManager } from '../components/MemberRoleManager'
+import ModerationLog from '../components/ModerationLog'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -128,7 +129,7 @@ export default function GroupAdmin() {
   const [roles, setRoles] = useState<GroupRole[]>([])
   const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])
   const [groupTheme, setGroupTheme] = useState<GroupTheme | null>(null)
-  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains' | 'theme'>('members')
+  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains' | 'theme' | 'moderation'>('members')
   const [newDomain, setNewDomain] = useState('')
   const [domainError, setDomainError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -596,6 +597,16 @@ export default function GroupAdmin() {
           >
             <Palette className="w-5 h-5" />
             Theme
+          </button>
+          <button
+            onClick={() => setActiveTab('moderation')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'moderation' ? 'text-white border-b-2' : 'text-gray-400'
+            }`}
+            style={activeTab === 'moderation' ? { borderColor: '#B34B0C' } : {}}
+          >
+            <ShieldAlert className="w-5 h-5" />
+            Audit Log
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -1531,6 +1542,12 @@ export default function GroupAdmin() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'moderation' && groupId && (
+          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+            <ModerationLog groupId={groupId} />
           </div>
         )}
 

@@ -51,32 +51,81 @@ class Comment(Base, TimestampMixin):
     # The replies relationship is the "one" side and can use cascade delete-orphan
     parent = relationship("Comment", remote_side=[id], back_populates="replies", foreign_keys=[parent_id])
     replies = relationship("Comment", back_populates="parent", cascade="all, delete-orphan")
-    
-    __table_args__ = (
-        Index('idx_document_comments', 'document_id', 'created_at'),
-        Index('idx_user_comments', 'user_id', 'created_at'),
-    )
 
 
 class CommentReaction(Base, TimestampMixin):
-    """
-    Reactions to comments (emoji-style reactions)
-    """
+    """Reactions to comments (like, love, etc.)"""
     __tablename__ = "comment_reactions"
     
     id = Column(Integer, primary_key=True, index=True)
-    
     comment_id = Column(Integer, ForeignKey('comments.id', ondelete='CASCADE'), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    
-    reaction_type = Column(String(50), nullable=False)  # emoji or reaction name
+    reaction_type = Column(String(50), nullable=False)  # 'like', 'love', 'laugh', etc.
     
     # Relationships
     comment = relationship("Comment", back_populates="reactions")
-    user = relationship("User", back_populates="comment_reactions")
+    user = relationship("User")
     
     __table_args__ = (
-        Index('idx_comment_user_reaction', 'comment_id', 'user_id', 'reaction_type', unique=True),
+        Index('idx_comment_reactions', 'comment_id', 'user_id', unique=True),
+    )
+
+
+# ============================================================================
+# Moderation Audit Log
+# ============================================================================
+
+class ModerationActionType(enum.Enum):
+    """Types of moderation actions."""
+    DELETE_POST = "delete_post"
+    DELETE_COMMENT = "delete_comment"
+    PIN_POST = "pin_post"
+    UNPIN_POST = "unpin_post"
+    LOCK_THREAD = "lock_thread"
+    UNLOCK_THREAD = "unlock_thread"
+    BAN_MEMBER = "ban_member"
+    KICK_MEMBER = "kick_member"
+    WARN_MEMBER = "warn_member"
+
+
+class ModerationAction(Base, TimestampMixin):
+    """
+    Audit log for moderation actions
+    Tracks who did what, when, and why
+    """
+    __tablename__ = "moderation_actions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Which group this action occurred in
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Who performed the action
+    moderator_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
+    
+    # What type of action
+    action_type = Column(SQLEnum(ModerationActionType), nullable=False, index=True)
+    
+    # Target of the action
+    target_type = Column(String(50), nullable=True)  # 'post', 'comment', 'member'
+    target_id = Column(Integer, nullable=True)  # ID of the post/comment/member
+    target_user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)  # If action targets a user
+    
+    # Optional reason/notes
+    reason = Column(Text, nullable=True)
+    
+    # Additional context (JSON for flexibility)
+    action_metadata = Column(JSON, nullable=True)  # e.g., {"post_title": "...", "comment_text": "..."}
+    
+    # Relationships
+    group = relationship("Group")
+    moderator = relationship("User", foreign_keys=[moderator_id])
+    target_user = relationship("User", foreign_keys=[target_user_id])
+    
+    __table_args__ = (
+        Index('idx_moderation_group_date', 'group_id', 'created_at'),
+        Index('idx_moderation_moderator', 'moderator_id', 'created_at'),
+        Index('idx_moderation_action_type', 'action_type', 'created_at'),
     )
 
 
@@ -594,6 +643,11 @@ class GroupCustomDomain(Base, TimestampMixin):
     # Relationships
     group = relationship("Group", back_populates="custom_domains")
     approver = relationship("User", foreign_keys=[approved_by])
+    
+    __table_args__ = (
+        Index('idx_custom_domain_group', 'group_id'),
+        Index('idx_custom_domain_verified', 'dns_verified'),
+    )
     
     def __repr__(self):
         return f"<GroupCustomDomain(domain='{self.domain}', status='{self.status}')>"

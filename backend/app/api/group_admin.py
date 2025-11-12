@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_current_user_from_db
-from app.models.collaboration import Group, GroupMember, GroupPost, GroupMemberRole
+from app.models.collaboration import Group, GroupMember, GroupPost, GroupMemberRole, ModerationAction, ModerationActionType
 from app.models.user import User
 
 router = APIRouter(prefix="/group-admin", tags=["group-admin"])
@@ -489,6 +489,18 @@ async def remove_member(
             detail="You cannot remove a member with equal or higher role"
         )
     
+    # Log moderation action
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.KICK_MEMBER,
+        target_type='member',
+        target_id=member.id,
+        target_user_id=user_id,
+        action_metadata={"kicked_role": member.role.value}
+    )
+    db.add(audit_log)
+    
     # Remove the member
     await db.delete(member)
     await db.commit()
@@ -629,6 +641,19 @@ async def toggle_post_pin(
     
     # Toggle pin status
     post.is_pinned = not post.is_pinned
+    
+    # Log moderation action
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.PIN_POST if post.is_pinned else ModerationActionType.UNPIN_POST,
+        target_type='post',
+        target_id=post_id,
+        target_user_id=post.author_id,
+        action_metadata={"post_title": post.title if hasattr(post, 'title') else None}
+    )
+    db.add(audit_log)
+    
     await db.commit()
     
     return {
@@ -680,6 +705,18 @@ async def delete_post(
     # If not the author, must be moderator/admin/owner
     group, _ = await get_group_moderator_or_above(group_id, db, current_user)
     
+    # Log moderation action (only when deleted by moderator, not author)
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.DELETE_POST,
+        target_type='post',
+        target_id=post_id,
+        target_user_id=post.author_id,
+        action_metadata={"post_title": post.title if hasattr(post, 'title') else None, "post_content_preview": post.content[:100] if post.content else None}
+    )
+    db.add(audit_log)
+    
     await db.delete(post)
     await db.commit()
     
@@ -719,6 +756,19 @@ async def toggle_post_lock(
     
     # Toggle lock status
     post.is_locked = not post.is_locked
+    
+    # Log moderation action
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.LOCK_THREAD if post.is_locked else ModerationActionType.UNLOCK_THREAD,
+        target_type='post',
+        target_id=post_id,
+        target_user_id=post.author_id,
+        action_metadata={"post_title": post.title if hasattr(post, 'title') else None}
+    )
+    db.add(audit_log)
+    
     await db.commit()
     
     return {
@@ -774,6 +824,18 @@ async def ban_member(
             detail="You cannot ban a member with equal or higher role"
         )
     
+    # Log moderation action
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.BAN_MEMBER,
+        target_type='member',
+        target_id=member.id,
+        target_user_id=user_id,
+        action_metadata={"banned_role": member.role.value}
+    )
+    db.add(audit_log)
+    
     # For now, banning just removes the member
     # In a full implementation, you'd create a BannedMember table to track bans
     await db.delete(member)
@@ -782,5 +844,84 @@ async def ban_member(
     return {
         "success": True,
         "message": "Member banned successfully"
+    }
+
+
+@router.get("/groups/{group_id}/audit-log")
+async def get_audit_log(
+    group_id: int,
+    limit: int = Query(50, le=100),
+    offset: int = Query(0, ge=0),
+    action_type: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Get moderation audit log for a group (moderator/admin/owner only)
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    """
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Build query
+    query = select(ModerationAction).filter(ModerationAction.group_id == group_id)
+    
+    # Filter by action type if specified
+    if action_type:
+        try:
+            action_enum = ModerationActionType(action_type)
+            query = query.filter(ModerationAction.action_type == action_enum)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid action_type: {action_type}")
+    
+    # Order by most recent first
+    query = query.order_by(ModerationAction.created_at.desc())
+    
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
+    
+    # Execute query
+    result = await db.execute(query)
+    actions = result.scalars().all()
+    
+    # Get moderator and target user info
+    action_list = []
+    for action in actions:
+        # Fetch moderator info
+        moderator_name = None
+        if action.moderator_id:
+            mod_result = await db.execute(select(User).filter(User.id == action.moderator_id))
+            moderator = mod_result.scalar_one_or_none()
+            if moderator:
+                moderator_name = moderator.username or moderator.email
+        
+        # Fetch target user info
+        target_user_name = None
+        if action.target_user_id:
+            user_result = await db.execute(select(User).filter(User.id == action.target_user_id))
+            target_user = user_result.scalar_one_or_none()
+            if target_user:
+                target_user_name = target_user.username or target_user.email
+        
+        action_list.append({
+            "id": action.id,
+            "action_type": action.action_type.value,
+            "moderator_id": action.moderator_id,
+            "moderator_name": moderator_name,
+            "target_type": action.target_type,
+            "target_id": action.target_id,
+            "target_user_id": action.target_user_id,
+            "target_user_name": target_user_name,
+            "reason": action.reason,
+            "metadata": action.action_metadata,
+            "created_at": action.created_at.isoformat() if action.created_at else None
+        })
+    
+    return {
+        "success": True,
+        "logs": action_list,
+        "count": len(action_list),
+        "limit": limit,
+        "offset": offset
     }
 
