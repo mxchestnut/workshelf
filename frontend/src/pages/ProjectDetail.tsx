@@ -231,13 +231,12 @@ export function ProjectDetail() {
         return
       }
 
-      // Create document with simple prompt-based initial content
+      // Create document with empty paragraph (no text node to avoid Tiptap error)
       const initialContent = {
         type: 'doc',
         content: [
           {
-            type: 'paragraph',
-            content: [{ type: 'text', text: '' }]
+            type: 'paragraph'
           }
         ]
       }
