@@ -7,19 +7,33 @@ import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
 import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye } from 'lucide-react'
+import { RoleEditor } from '../components/RoleEditor'
+import { MemberRoleManager } from '../components/MemberRoleManager'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface GroupMember {
   id: number
   user_id: number
-  username: string
-  display_name: string
-  email: string
-  is_owner: boolean
-  is_moderator: boolean
-  joined_at: string
-  status: 'active' | 'pending' | 'banned'
+  role: 'owner' | 'admin' | 'moderator' | 'member'
+  username?: string
+  display_name?: string
+  email?: string
+  is_owner?: boolean
+  is_moderator?: boolean
+  joined_at?: string
+  status?: 'active' | 'pending' | 'banned'
+  user?: {
+    id: number
+    email: string
+    username?: string
+  }
+  custom_roles?: {
+    id: number
+    name: string
+    color: string | null
+    position: number
+  }[]
 }
 
 interface GroupPublication {
@@ -366,6 +380,44 @@ export default function GroupAdmin() {
     }
   }
 
+  const assignRoleToMember = async (memberId: number, roleId: number) => {
+    try {
+      const token = authService.getAccessToken()
+      const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}/roles/${roleId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setSuccess('Role assigned to member')
+        loadGroupData() // Reload to get updated member roles
+      } else {
+        setError('Failed to assign role')
+      }
+    } catch (err) {
+      setError('Failed to assign role')
+    }
+  }
+
+  const removeRoleFromMember = async (memberId: number, roleId: number) => {
+    try {
+      const token = authService.getAccessToken()
+      const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}/roles/${roleId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setSuccess('Role removed from member')
+        loadGroupData() // Reload to get updated member roles
+      } else {
+        setError('Failed to remove role')
+      }
+    } catch (err) {
+      setError('Failed to remove role')
+    }
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
@@ -529,8 +581,10 @@ export default function GroupAdmin() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">{member.email}</p>
-                    <p className="text-xs text-gray-500">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-400">{member.email || member.user?.email}</p>
+                    {member.joined_at && (
+                      <p className="text-xs text-gray-500">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                    )}
                   </div>
 
                   {!member.is_owner && (
@@ -720,6 +774,19 @@ export default function GroupAdmin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Member Role Assignment */}
+            {roles.length > 0 && members.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Assign Roles to Members</h3>
+                <MemberRoleManager
+                  members={members}
+                  roles={roles}
+                  onAssignRole={assignRoleToMember}
+                  onRemoveRole={removeRoleFromMember}
+                />
               </div>
             )}
           </div>
@@ -1481,200 +1548,16 @@ export default function GroupAdmin() {
         )}
 
         {/* Role Create/Edit Modal */}
-        {showRoleModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-lg p-6" style={{ backgroundColor: '#524944' }}>
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {editingRole ? 'Edit Role' : 'Create New Role'}
-              </h2>
-
-              <form onSubmit={(e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                const roleData: Partial<GroupRole> = {
-                  name: formData.get('name') as string,
-                  color: formData.get('color') as string || null,
-                  position: parseInt(formData.get('position') as string) || 0,
-                  can_delete_posts: formData.get('can_delete_posts') === 'on',
-                  can_delete_comments: formData.get('can_delete_comments') === 'on',
-                  can_pin_posts: formData.get('can_pin_posts') === 'on',
-                  can_lock_threads: formData.get('can_lock_threads') === 'on',
-                  can_manage_tags: formData.get('can_manage_tags') === 'on',
-                  can_approve_members: formData.get('can_approve_members') === 'on',
-                  can_kick_members: formData.get('can_kick_members') === 'on',
-                  can_ban_members: formData.get('can_ban_members') === 'on',
-                  can_invite_members: formData.get('can_invite_members') === 'on',
-                  can_view_member_list: formData.get('can_view_member_list') === 'on',
-                  can_approve_publications: formData.get('can_approve_publications') === 'on',
-                  can_edit_publications: formData.get('can_edit_publications') === 'on',
-                  can_feature_publications: formData.get('can_feature_publications') === 'on',
-                  can_edit_group_info: formData.get('can_edit_group_info') === 'on',
-                  can_manage_roles: formData.get('can_manage_roles') === 'on',
-                  can_view_analytics: formData.get('can_view_analytics') === 'on',
-                  can_export_data: formData.get('can_export_data') === 'on',
-                }
-                createOrUpdateRole(roleData)
-              }}>
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Role Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={editingRole?.name || ''}
-                      required
-                      className="w-full px-4 py-2 rounded-lg text-white"
-                      style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}
-                      placeholder="e.g., Editor, Moderator, Contributor"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Color (hex)</label>
-                      <input
-                        type="text"
-                        name="color"
-                        defaultValue={editingRole?.color || ''}
-                        className="w-full px-4 py-2 rounded-lg text-white"
-                        style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}
-                        placeholder="#FF5733"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Position (hierarchy)</label>
-                      <input
-                        type="number"
-                        name="position"
-                        defaultValue={editingRole?.position || 0}
-                        className="w-full px-4 py-2 rounded-lg text-white"
-                        style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Permissions - Content Moderation */}
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
-                    <h3 className="text-sm font-semibold text-white mb-3">Content Moderation</h3>
-                    <div className="space-y-2">
-                      {[
-                        { name: 'can_delete_posts', label: 'Delete Posts' },
-                        { name: 'can_delete_comments', label: 'Delete Comments' },
-                        { name: 'can_pin_posts', label: 'Pin Posts' },
-                        { name: 'can_lock_threads', label: 'Lock Threads' },
-                        { name: 'can_manage_tags', label: 'Manage Tags' },
-                      ].map(perm => (
-                        <label key={perm.name} className="flex items-center gap-2 text-sm text-gray-300">
-                          <input
-                            type="checkbox"
-                            name={perm.name}
-                            defaultChecked={editingRole ? editingRole[perm.name as keyof GroupRole] as boolean : false}
-                            className="w-4 h-4 rounded"
-                            style={{ accentColor: '#B34B0C' }}
-                          />
-                          {perm.label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Permissions - Member Management */}
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
-                    <h3 className="text-sm font-semibold text-white mb-3">Member Management</h3>
-                    <div className="space-y-2">
-                      {[
-                        { name: 'can_approve_members', label: 'Approve Members' },
-                        { name: 'can_kick_members', label: 'Kick Members' },
-                        { name: 'can_ban_members', label: 'Ban Members' },
-                        { name: 'can_invite_members', label: 'Invite Members' },
-                        { name: 'can_view_member_list', label: 'View Member List' },
-                      ].map(perm => (
-                        <label key={perm.name} className="flex items-center gap-2 text-sm text-gray-300">
-                          <input
-                            type="checkbox"
-                            name={perm.name}
-                            defaultChecked={editingRole ? editingRole[perm.name as keyof GroupRole] as boolean : perm.name === 'can_view_member_list'}
-                            className="w-4 h-4 rounded"
-                            style={{ accentColor: '#B34B0C' }}
-                          />
-                          {perm.label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Permissions - Publishing */}
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
-                    <h3 className="text-sm font-semibold text-white mb-3">Publishing</h3>
-                    <div className="space-y-2">
-                      {[
-                        { name: 'can_approve_publications', label: 'Approve Publications' },
-                        { name: 'can_edit_publications', label: 'Edit Publications' },
-                        { name: 'can_feature_publications', label: 'Feature Publications' },
-                      ].map(perm => (
-                        <label key={perm.name} className="flex items-center gap-2 text-sm text-gray-300">
-                          <input
-                            type="checkbox"
-                            name={perm.name}
-                            defaultChecked={editingRole ? editingRole[perm.name as keyof GroupRole] as boolean : false}
-                            className="w-4 h-4 rounded"
-                            style={{ accentColor: '#B34B0C' }}
-                          />
-                          {perm.label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Permissions - Settings */}
-                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
-                    <h3 className="text-sm font-semibold text-white mb-3">Settings & Administration</h3>
-                    <div className="space-y-2">
-                      {[
-                        { name: 'can_edit_group_info', label: 'Edit Group Info' },
-                        { name: 'can_manage_roles', label: 'Manage Roles' },
-                        { name: 'can_view_analytics', label: 'View Analytics' },
-                        { name: 'can_export_data', label: 'Export Data' },
-                      ].map(perm => (
-                        <label key={perm.name} className="flex items-center gap-2 text-sm text-gray-300">
-                          <input
-                            type="checkbox"
-                            name={perm.name}
-                            defaultChecked={editingRole ? editingRole[perm.name as keyof GroupRole] as boolean : false}
-                            className="w-4 h-4 rounded"
-                            style={{ accentColor: '#B34B0C' }}
-                          />
-                          {perm.label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowRoleModal(false)
-                      setEditingRole(null)
-                    }}
-                    className="flex-1 px-6 py-3 rounded-lg font-medium text-white"
-                    style={{ backgroundColor: '#6C6A68' }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 rounded-lg font-medium text-white"
-                    style={{ backgroundColor: '#B34B0C' }}
-                  >
-                    {editingRole ? 'Update Role' : 'Create Role'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <RoleEditor
+          isOpen={showRoleModal}
+          onClose={() => {
+            setShowRoleModal(false)
+            setEditingRole(null)
+          }}
+          onSave={createOrUpdateRole}
+          role={editingRole || undefined}
+          existingRoles={roles}
+        />
       </div>
     </div>
   )
