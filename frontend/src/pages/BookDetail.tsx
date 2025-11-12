@@ -4,6 +4,7 @@ import {
   User, Building2, Hash, FileText, Tag, ShoppingCart, Clock, Trash2
 } from 'lucide-react'
 import { calculateBookReadingTime } from '../utils/reading-time'
+import { toast } from '../components/Toast'
 
 // Lazy load the EPUB reader (large dependency)
 const EpubReader = lazy(() => import('../components/EpubReader'))
@@ -258,13 +259,14 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
       if (response.ok) {
         // Book deleted successfully - go back to bookshelf
+        toast.success('Book removed from your bookshelf')
         handleBack()
       } else {
-        alert('Failed to remove book from bookshelf')
+        toast.error('Failed to remove book from bookshelf')
       }
     } catch (error) {
       console.error('Failed to delete book:', error)
-      alert('Failed to remove book from bookshelf')
+      toast.error('Failed to remove book from bookshelf')
     } finally {
       setUpdating(false)
     }
@@ -319,17 +321,17 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.detail || 'Failed to add to bookshelf')
+        toast.error(error.detail || 'Failed to add to bookshelf')
         return
       }
 
       const newBook = await response.json()
       setBook(newBook)
       setUserOwnsBook(true)
-      alert('Added to your bookshelf! Set your reading status using the dropdown below.')
+      toast.success('Added to your bookshelf! Set your reading status using the dropdown below.')
     } catch (error) {
       console.error('Error adding to bookshelf:', error)
-      alert('Failed to add to bookshelf')
+      toast.error('Failed to add to bookshelf')
     }
   }
 
@@ -359,7 +361,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.detail || 'Failed to create checkout')
+        toast.error(error.detail || 'Failed to create checkout')
         return
       }
 
@@ -368,7 +370,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
       window.location.href = data.checkout_url
     } catch (error) {
       console.error('Error creating checkout:', error)
-      alert('Failed to start checkout process')
+      toast.error('Failed to start checkout process')
     } finally {
       setPurchasing(false)
     }
