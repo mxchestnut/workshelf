@@ -272,6 +272,12 @@ class Group(Base, TimestampMixin):
     interests = Column(ARRAY(String), nullable=True)  # User-defined interests for AI template generation
     rules = Column(Text, nullable=True)
     
+    # Homepage content
+    tagline = Column(String(500), nullable=True)  # Short catchy tagline
+    hero_image_url = Column(String(500), nullable=True)  # Hero/banner image
+    about_page = Column(Text, nullable=True)  # Rich text about page content
+    featured_posts = Column(JSON, nullable=True)  # Array of featured post IDs or objects
+    
     # Settings
     is_public = Column(Boolean, default=True, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)

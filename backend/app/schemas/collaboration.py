@@ -166,6 +166,10 @@ class GroupUpdate(BaseModel):
     tags: Optional[List[str]] = None
     interests: Optional[List[str]] = None
     rules: Optional[str] = None
+    tagline: Optional[str] = Field(None, max_length=500)
+    hero_image_url: Optional[str] = Field(None, max_length=500)
+    about_page: Optional[str] = None
+    featured_posts: Optional[List[int]] = None  # List of post IDs
 
 
 class GroupMemberAdd(BaseModel):
@@ -205,6 +209,10 @@ class GroupResponse(BaseModel):
     tags: Optional[List[str]]
     interests: Optional[List[str]]
     rules: Optional[str]
+    tagline: Optional[str]
+    hero_image_url: Optional[str]
+    about_page: Optional[str]
+    featured_posts: Optional[List[int]]
     subdomain_requested: Optional[str]
     subdomain_approved: bool = False
     can_use_custom_domain: bool = False
