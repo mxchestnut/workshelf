@@ -2,7 +2,7 @@
 Phase 6 Monetization Models
 Subscriptions, payments, and creator earnings
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, Numeric, Index
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, Numeric, Index, text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -262,7 +262,7 @@ class Payout(Base, TimestampMixin):
     stripe_payout_id = Column(String(255), nullable=True, unique=True, index=True)
     
     # Timestamps
-    requested_at = Column(DateTime(timezone=True), nullable=False, server_default='CURRENT_TIMESTAMP')
+    requested_at = Column(DateTime(timezone=True), nullable=False, server_default=text('CURRENT_TIMESTAMP'))
     processed_at = Column(DateTime(timezone=True), nullable=True)
     paid_at = Column(DateTime(timezone=True), nullable=True)
     
