@@ -2,13 +2,15 @@
 Group Customization Service
 Manages group themes, branding, and custom styling
 """
-from typing import Optional
+from typing import Optional, List
+import secrets
+from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.group_customization import GroupTheme
-from app.models.collaboration import Group
+from app.models.collaboration import Group, GroupCustomDomain
 
 
 class GroupCustomizationService:
@@ -122,3 +124,88 @@ class GroupCustomizationService:
             await db.commit()
             return True
         return False
+    
+    # ========================================================================
+    # CUSTOM DOMAIN MANAGEMENT
+    # ========================================================================
+    
+    @staticmethod
+    async def create_custom_domain(
+        db: AsyncSession,
+        group_id: int,
+        domain: str
+    ) -> GroupCustomDomain:
+        """Create a custom domain configuration for group."""
+        # Generate verification token
+        verification_token = secrets.token_urlsafe(32)
+        
+        custom_domain = GroupCustomDomain(
+            group_id=group_id,
+            domain=domain.lower().strip(),
+            status="pending",
+            dns_verified=False,
+            dns_verification_token=verification_token,
+            requested_at=datetime.utcnow()
+        )
+        
+        db.add(custom_domain)
+        await db.commit()
+        await db.refresh(custom_domain)
+        return custom_domain
+    
+    @staticmethod
+    async def verify_custom_domain(
+        db: AsyncSession,
+        domain_id: int
+    ) -> GroupCustomDomain:
+        """Verify a custom domain (simplified - in production would check DNS)."""
+        result = await db.execute(
+            select(GroupCustomDomain).filter(GroupCustomDomain.id == domain_id)
+        )
+        domain = result.scalar_one_or_none()
+        
+        if not domain:
+            return None
+        
+        # In production, this would check DNS records
+        # For now, we'll just mark it as verified
+        domain.dns_verified = True
+        domain.status = "active"
+        domain.ssl_status = "active"
+        
+        await db.commit()
+        await db.refresh(domain)
+        return domain
+    
+    @staticmethod
+    async def get_group_domains(
+        db: AsyncSession,
+        group_id: int
+    ) -> List[GroupCustomDomain]:
+        """Get all custom domains for a group."""
+        result = await db.execute(
+            select(GroupCustomDomain).filter(GroupCustomDomain.group_id == group_id)
+        )
+        return result.scalars().all()
+    
+    @staticmethod
+    async def delete_custom_domain(
+        db: AsyncSession,
+        domain_id: int,
+        group_id: int
+    ) -> bool:
+        """Delete a custom domain."""
+        result = await db.execute(
+            select(GroupCustomDomain).filter(
+                GroupCustomDomain.id == domain_id,
+                GroupCustomDomain.group_id == group_id
+            )
+        )
+        domain = result.scalar_one_or_none()
+        
+        if domain:
+            await db.delete(domain)
+            await db.commit()
+            return True
+        return False
+

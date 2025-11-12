@@ -67,3 +67,33 @@ class GroupThemeUpdate(BaseModel):
     custom_css: Optional[str] = None
     layout_config: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
+
+
+# ============================================================================
+# GROUP CUSTOM DOMAIN SCHEMAS
+# ============================================================================
+
+class GroupCustomDomainCreate(BaseModel):
+    """Create custom domain for group."""
+    domain: str = Field(..., min_length=3, max_length=255)
+
+
+class GroupCustomDomainResponse(BaseModel):
+    """Custom domain response."""
+    id: int
+    group_id: int
+    domain: str
+    status: str  # pending, approved, rejected, active
+    dns_verified: bool
+    dns_verification_token: Optional[str]
+    ssl_status: Optional[str]
+    requested_at: datetime
+    approved_at: Optional[datetime]
+    approved_by: Optional[int]
+    rejection_reason: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+

@@ -16,7 +16,8 @@ from app.schemas.collaboration import (
     GroupMemberRoleAssignment
 )
 from app.schemas.group_customization import (
-    GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate
+    GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate,
+    GroupCustomDomainCreate, GroupCustomDomainResponse
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -928,3 +929,95 @@ async def delete_group_theme(
     if not deleted:
         raise HTTPException(status_code=404, detail="Theme not found")
 
+
+# ============================================================================
+# GROUP CUSTOM DOMAINS
+# ============================================================================
+
+@router.post("/{group_id}/custom-domains", response_model=GroupCustomDomainResponse, status_code=status.HTTP_201_CREATED)
+async def create_custom_domain(
+    group_id: int,
+    domain_data: GroupCustomDomainCreate,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Add a custom domain to group (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can add custom domains")
+    
+    # Check if group has subdomain approved (requirement for custom domain)
+    from sqlalchemy import select
+    from app.models.collaboration import Group
+    result = await db.execute(select(Group).filter(Group.id == group_id))
+    group = result.scalar_one_or_none()
+    
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    if not group.can_use_custom_domain:
+        raise HTTPException(
+            status_code=403,
+            detail="Custom domains are only available after subdomain approval"
+        )
+    
+    # Create custom domain
+    domain = await GroupCustomizationService.create_custom_domain(
+        db, group_id, domain_data.domain
+    )
+    return domain
+
+
+@router.get("/{group_id}/custom-domains", response_model=List[GroupCustomDomainResponse])
+async def list_custom_domains(
+    group_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all custom domains for a group."""
+    domains = await GroupCustomizationService.get_group_domains(db, group_id)
+    return domains
+
+
+@router.post("/{group_id}/custom-domains/{domain_id}/verify", response_model=GroupCustomDomainResponse)
+async def verify_custom_domain(
+    group_id: int,
+    domain_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Verify a custom domain (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can verify domains")
+    
+    domain = await GroupCustomizationService.verify_custom_domain(db, domain_id)
+    if not domain:
+        raise HTTPException(status_code=404, detail="Custom domain not found")
+    
+    return domain
+
+
+@router.delete("/{group_id}/custom-domains/{domain_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_custom_domain(
+    group_id: int,
+    domain_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a custom domain (owner/admin only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user is group owner/admin
+    is_admin = await GroupService.is_group_admin(db, group_id, user.id)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Only group owners/admins can delete domains")
+    
+    deleted = await GroupCustomizationService.delete_custom_domain(db, domain_id, group_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Custom domain not found")
