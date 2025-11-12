@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle } from 'lucide-react'
+import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -76,6 +76,25 @@ interface CustomDomain {
   verified_at: string | null
 }
 
+interface GroupTheme {
+  id?: number
+  group_id?: number
+  primary_color: string
+  secondary_color: string
+  accent_color: string
+  background_color: string
+  text_color: string
+  heading_font: string
+  body_font: string
+  logo_url: string | null
+  banner_url: string | null
+  favicon_url: string | null
+  custom_css: string | null
+  layout_config: any
+  created_at?: string
+  updated_at?: string
+}
+
 export default function GroupAdmin() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -93,7 +112,8 @@ export default function GroupAdmin() {
   const [publications, setPublications] = useState<GroupPublication[]>([])
   const [roles, setRoles] = useState<GroupRole[]>([])
   const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])
-  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains'>('members')
+  const [groupTheme, setGroupTheme] = useState<GroupTheme | null>(null)
+  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains' | 'theme'>('members')
   const [newDomain, setNewDomain] = useState('')
   const [domainError, setDomainError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -164,6 +184,31 @@ export default function GroupAdmin() {
       if (domainsRes.ok) {
         const data = await domainsRes.json()
         setCustomDomains(data)
+      }
+
+      // Load group theme
+      const themeRes = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/theme`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (themeRes.ok) {
+        const data = await themeRes.json()
+        setGroupTheme(data)
+      } else if (themeRes.status === 404) {
+        // No theme yet, set default values
+        setGroupTheme({
+          primary_color: '#B34B0C',
+          secondary_color: '#7C3306',
+          accent_color: '#FF6B35',
+          background_color: '#1A1816',
+          text_color: '#FFFFFF',
+          heading_font: 'Inter',
+          body_font: 'Inter',
+          logo_url: null,
+          banner_url: null,
+          favicon_url: null,
+          custom_css: null,
+          layout_config: {}
+        })
       }
 
     } catch (err) {
@@ -425,6 +470,16 @@ export default function GroupAdmin() {
           >
             <Globe className="w-5 h-5" />
             Custom Domains ({customDomains.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('theme')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'theme' ? 'text-white border-b-2' : 'text-gray-400'
+            }`}
+            style={activeTab === 'theme' ? { borderColor: '#B34B0C' } : {}}
+          >
+            <Palette className="w-5 h-5" />
+            Theme
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -914,6 +969,429 @@ export default function GroupAdmin() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Theme Editor Tab */}
+        {activeTab === 'theme' && groupTheme && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Theme Editor - Left Column */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Colors Section */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Palette className="w-6 h-6" />
+                    Brand Colors
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Primary Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={groupTheme.primary_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, primary_color: e.target.value})}
+                          className="w-16 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={groupTheme.primary_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, primary_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded text-white font-mono text-sm"
+                          style={{ backgroundColor: '#37322E' }}
+                          placeholder="#B34B0C"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Main brand color (buttons, links)</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Secondary Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={groupTheme.secondary_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, secondary_color: e.target.value})}
+                          className="w-16 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={groupTheme.secondary_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, secondary_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded text-white font-mono text-sm"
+                          style={{ backgroundColor: '#37322E' }}
+                          placeholder="#7C3306"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Darker variant for hover states</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Accent Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={groupTheme.accent_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, accent_color: e.target.value})}
+                          className="w-16 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={groupTheme.accent_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, accent_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded text-white font-mono text-sm"
+                          style={{ backgroundColor: '#37322E' }}
+                          placeholder="#FF6B35"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Highlights and CTAs</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Background Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={groupTheme.background_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, background_color: e.target.value})}
+                          className="w-16 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={groupTheme.background_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, background_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded text-white font-mono text-sm"
+                          style={{ backgroundColor: '#37322E' }}
+                          placeholder="#1A1816"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Page background</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Text Color</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={groupTheme.text_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, text_color: e.target.value})}
+                          className="w-16 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={groupTheme.text_color}
+                          onChange={(e) => setGroupTheme({...groupTheme, text_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded text-white font-mono text-sm"
+                          style={{ backgroundColor: '#37322E' }}
+                          placeholder="#FFFFFF"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Main text color</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Typography Section */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <h2 className="text-xl font-bold text-white mb-4">Typography</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Heading Font</label>
+                      <select
+                        value={groupTheme.heading_font}
+                        onChange={(e) => setGroupTheme({...groupTheme, heading_font: e.target.value})}
+                        className="w-full px-4 py-2 rounded text-white"
+                        style={{ backgroundColor: '#37322E' }}
+                      >
+                        <option value="Inter">Inter</option>
+                        <option value="Playfair Display">Playfair Display</option>
+                        <option value="Merriweather">Merriweather</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Lora">Lora</option>
+                        <option value="Poppins">Poppins</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Open Sans">Open Sans</option>
+                      </select>
+                      <p className="text-xs text-gray-400 mt-1">Used for titles and headings</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Body Font</label>
+                      <select
+                        value={groupTheme.body_font}
+                        onChange={(e) => setGroupTheme({...groupTheme, body_font: e.target.value})}
+                        className="w-full px-4 py-2 rounded text-white"
+                        style={{ backgroundColor: '#37322E' }}
+                      >
+                        <option value="Inter">Inter</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Merriweather">Merriweather</option>
+                        <option value="Lora">Lora</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Open Sans">Open Sans</option>
+                        <option value="Source Sans Pro">Source Sans Pro</option>
+                        <option value="PT Serif">PT Serif</option>
+                      </select>
+                      <p className="text-xs text-gray-400 mt-1">Used for body text and paragraphs</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Branding Assets Section */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <h2 className="text-xl font-bold text-white mb-4">Branding Assets</h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Logo URL</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={groupTheme.logo_url || ''}
+                          onChange={(e) => setGroupTheme({...groupTheme, logo_url: e.target.value || null})}
+                          placeholder="https://example.com/logo.png"
+                          className="flex-1 px-4 py-2 rounded text-white"
+                          style={{ backgroundColor: '#37322E' }}
+                        />
+                        <button
+                          className="px-4 py-2 rounded text-white flex items-center gap-2"
+                          style={{ backgroundColor: '#7C3306' }}
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Recommended: PNG or SVG, max 200x60px</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Banner URL</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={groupTheme.banner_url || ''}
+                          onChange={(e) => setGroupTheme({...groupTheme, banner_url: e.target.value || null})}
+                          placeholder="https://example.com/banner.jpg"
+                          className="flex-1 px-4 py-2 rounded text-white"
+                          style={{ backgroundColor: '#37322E' }}
+                        />
+                        <button
+                          className="px-4 py-2 rounded text-white flex items-center gap-2"
+                          style={{ backgroundColor: '#7C3306' }}
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Recommended: JPG or PNG, 1200x300px</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Favicon URL</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={groupTheme.favicon_url || ''}
+                          onChange={(e) => setGroupTheme({...groupTheme, favicon_url: e.target.value || null})}
+                          placeholder="https://example.com/favicon.ico"
+                          className="flex-1 px-4 py-2 rounded text-white"
+                          style={{ backgroundColor: '#37322E' }}
+                        />
+                        <button
+                          className="px-4 py-2 rounded text-white flex items-center gap-2"
+                          style={{ backgroundColor: '#7C3306' }}
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Recommended: ICO or PNG, 32x32px</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom CSS Section */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <h2 className="text-xl font-bold text-white mb-4">Custom CSS</h2>
+                  <p className="text-gray-300 text-sm mb-3">
+                    Add custom CSS to further customize your group's appearance. Advanced users only.
+                  </p>
+                  <textarea
+                    value={groupTheme.custom_css || ''}
+                    onChange={(e) => setGroupTheme({...groupTheme, custom_css: e.target.value || null})}
+                    placeholder=".my-custom-class { color: red; }"
+                    rows={8}
+                    className="w-full px-4 py-2 rounded text-white font-mono text-sm"
+                    style={{ backgroundColor: '#37322E' }}
+                  />
+                  <p className="text-xs text-gray-400 mt-2">
+                    ⚠️ Custom CSS will be applied globally to your group. Test carefully before saving.
+                  </p>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={async () => {
+                    try {
+                      const token = authService.getAccessToken()
+                      const method = groupTheme.id ? 'PUT' : 'POST'
+                      
+                      const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/theme`, {
+                        method,
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(groupTheme)
+                      })
+
+                      if (response.ok) {
+                        const updatedTheme = await response.json()
+                        setGroupTheme(updatedTheme)
+                        setSuccess('Theme saved successfully!')
+                        setTimeout(() => setSuccess(null), 3000)
+                      } else {
+                        const error = await response.json()
+                        setError(error.detail || 'Failed to save theme')
+                        setTimeout(() => setError(null), 5000)
+                      }
+                    } catch (err) {
+                      setError('Network error. Please try again.')
+                      setTimeout(() => setError(null), 5000)
+                    }
+                  }}
+                  className="w-full px-6 py-3 rounded-lg font-medium text-white"
+                  style={{ backgroundColor: '#B34B0C' }}
+                >
+                  Save Theme
+                </button>
+              </div>
+
+              {/* Live Preview - Right Column */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-6 p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-white">Live Preview</h2>
+                    <Eye className="w-5 h-5 text-gray-400" />
+                  </div>
+                  
+                  <div 
+                    className="rounded-lg p-4 space-y-4"
+                    style={{ backgroundColor: groupTheme.background_color }}
+                  >
+                    {/* Logo */}
+                    {groupTheme.logo_url && (
+                      <div className="mb-3">
+                        <img 
+                          src={groupTheme.logo_url} 
+                          alt="Logo" 
+                          className="h-10 object-contain"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Banner */}
+                    {groupTheme.banner_url && (
+                      <div className="mb-4 rounded overflow-hidden">
+                        <img 
+                          src={groupTheme.banner_url} 
+                          alt="Banner" 
+                          className="w-full h-24 object-cover"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Heading */}
+                    <h3 
+                      className="text-2xl font-bold mb-2"
+                      style={{ 
+                        color: groupTheme.text_color,
+                        fontFamily: groupTheme.heading_font
+                      }}
+                    >
+                      Your Group Name
+                    </h3>
+
+                    {/* Body Text */}
+                    <p 
+                      className="text-sm mb-3"
+                      style={{ 
+                        color: groupTheme.text_color,
+                        fontFamily: groupTheme.body_font,
+                        opacity: 0.9
+                      }}
+                    >
+                      This is how your group content will look with the selected theme. The heading uses {groupTheme.heading_font} and body text uses {groupTheme.body_font}.
+                    </p>
+
+                    {/* Primary Button */}
+                    <button 
+                      className="px-4 py-2 rounded font-medium text-sm mb-2"
+                      style={{ 
+                        backgroundColor: groupTheme.primary_color,
+                        color: '#FFFFFF'
+                      }}
+                    >
+                      Primary Button
+                    </button>
+
+                    {/* Secondary Button */}
+                    <button 
+                      className="px-4 py-2 rounded font-medium text-sm ml-2"
+                      style={{ 
+                        backgroundColor: groupTheme.secondary_color,
+                        color: '#FFFFFF'
+                      }}
+                    >
+                      Secondary
+                    </button>
+
+                    {/* Accent Link */}
+                    <p className="text-sm mt-3">
+                      <a 
+                        href="#"
+                        style={{ color: groupTheme.accent_color }}
+                        className="font-medium"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        Accent link
+                      </a>
+                    </p>
+
+                    {/* Color Swatches */}
+                    <div className="mt-4 pt-4 border-t" style={{ borderColor: groupTheme.text_color, opacity: 0.2 }}>
+                      <p className="text-xs mb-2" style={{ color: groupTheme.text_color, opacity: 0.7 }}>Color Palette:</p>
+                      <div className="flex gap-2">
+                        <div 
+                          className="w-8 h-8 rounded border-2 border-white/20"
+                          style={{ backgroundColor: groupTheme.primary_color }}
+                          title="Primary"
+                        />
+                        <div 
+                          className="w-8 h-8 rounded border-2 border-white/20"
+                          style={{ backgroundColor: groupTheme.secondary_color }}
+                          title="Secondary"
+                        />
+                        <div 
+                          className="w-8 h-8 rounded border-2 border-white/20"
+                          style={{ backgroundColor: groupTheme.accent_color }}
+                          title="Accent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-3 text-center">
+                    Preview updates in real-time as you edit
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
