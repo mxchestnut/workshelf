@@ -25,24 +25,23 @@ az containerapp revision show \
 
 **Fix:**
 ```bash
-# The Neon database password is: npg_STVUfh8MQ4sx
-# Connection string format (asyncpg compatible):
-# postgresql+asyncpg://neondb_owner:npg_STVUfh8MQ4sx@ep-weathered-tree-a81zzcnl-pooler.eastus2.azure.neon.tech/keycloak_prod?sslmode=require
+# Get the database password from GitHub secrets or Azure Key Vault
+# Never commit credentials to the repository!
 
 # Update backend database secret
-gh secret set DATABASE_URL --body "postgresql+asyncpg://neondb_owner:npg_STVUfh8MQ4sx@ep-weathered-tree-a81zzcnl-pooler.eastus2.azure.neon.tech/keycloak_prod?sslmode=require"
+gh secret set DATABASE_URL --body "postgresql+asyncpg://neondb_owner:<PASSWORD>@<HOST>/keycloak_prod?sslmode=require"
 
 # Update Azure secret
 az containerapp secret set \
   --name workshelf-backend \
   --resource-group workshelf-prod-rg \
-  --secrets database-url="postgresql+asyncpg://neondb_owner:npg_STVUfh8MQ4sx@ep-weathered-tree-a81zzcnl-pooler.eastus2.azure.neon.tech/keycloak_prod?sslmode=require"
+  --secrets database-url="postgresql+asyncpg://neondb_owner:<PASSWORD>@<HOST>/keycloak_prod?sslmode=require"
 
 # For Keycloak
 az containerapp secret set \
   --name workshelf-keycloak \
   --resource-group workshelf-prod-rg \
-  --secrets db-password="npg_STVUfh8MQ4sx"
+  --secrets db-password="<PASSWORD>"
 
 # Force restart
 az containerapp update \
@@ -55,6 +54,7 @@ az containerapp update \
 - Never use `channel_binding=require` with asyncpg
 - Always use `postgresql+asyncpg://` prefix for backend
 - Keycloak uses plain postgres driver (no +asyncpg)
+- Get actual credentials from secure storage (1Password, Azure Key Vault, etc.)
 
 ### 2. Custom Domain Not Working
 
@@ -150,8 +150,14 @@ az containerapp logs show \
 
 ## Critical Secrets
 
-Stored in GitHub Secrets and Azure Container App secrets:
+All secrets stored in GitHub Secrets and Azure Container App secrets.
+**Never commit actual credential values to the repository.**
 
+Access secrets via:
+- GitHub: Settings → Secrets and variables → Actions
+- Azure: `az containerapp secret list --name <app-name> --resource-group workshelf-prod-rg`
+
+Required secrets:
 - `DATABASE_URL` - Neon PostgreSQL connection (backend)
 - `NEON_DB_PASSWORD` - Database password (Keycloak)
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` - SES email
