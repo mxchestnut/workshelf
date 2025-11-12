@@ -120,6 +120,50 @@ export function Profile() {
       setError(null)
       setSuccess(false)
 
+      // Validation
+      if (formData.username && formData.username.length < 3) {
+        setError('Username must be at least 3 characters')
+        setSaving(false)
+        return
+      }
+
+      if (formData.username && !/^[a-zA-Z0-9_-]+$/.test(formData.username)) {
+        setError('Username can only contain letters, numbers, dashes, and underscores')
+        setSaving(false)
+        return
+      }
+
+      if (formData.birth_year) {
+        const year = parseInt(formData.birth_year)
+        const currentYear = new Date().getFullYear()
+        if (year < 1900 || year > currentYear - 13) {
+          setError('Please enter a valid birth year (must be at least 13 years old)')
+          setSaving(false)
+          return
+        }
+      }
+
+      if (formData.website_url && formData.website_url.length > 0) {
+        try {
+          new URL(formData.website_url)
+        } catch {
+          setError('Please enter a valid website URL (e.g., https://example.com)')
+          setSaving(false)
+          return
+        }
+      }
+
+      if (formData.twitter_handle && formData.twitter_handle.length > 0) {
+        // Remove @ if user included it
+        const handle = formData.twitter_handle.replace('@', '')
+        if (!/^[a-zA-Z0-9_]{1,15}$/.test(handle)) {
+          setError('Twitter handle must be 1-15 characters (letters, numbers, underscore only)')
+          setSaving(false)
+          return
+        }
+        formData.twitter_handle = handle
+      }
+
       const token = authService.getToken()
       if (!token) {
         setError('Not authenticated')

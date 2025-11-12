@@ -1026,37 +1026,27 @@ const data = await response.json()
 - ~~4. Keyboard Shortcuts for Editor~~ ✅ Added ⌘S, ⌘K, ⌘/, ⌘⇧P
 - ~~27. Better Error Messages~~ ✅ User-friendly messages throughout
 
+**✅ COMPLETED (Batch 2 - Nov 12, 2025):**
+- ~~14. Image Lazy Loading~~ ✅ All images now lazy load
+- ~~16. Reading Time Calculations~~ ✅ Utility function created, displayed on BookDetail
+
+**✅ COMPLETED (Batch 3 - Nov 12, 2025):**
+- ~~1. Delete Book from Bookshelf~~ ✅ Added delete button to BookDetail page
+- ~~13. Better Loading States~~ ✅ Added skeleton loading to Projects page
+- ~~20. Form Validation~~ ✅ Added validation to Profile save function
+
 ---
 
 ### 🎯 Critical UX Improvements (P0)
 
-#### 1. **Delete Book from Bookshelf** ⚠️ BLOCKING ISSUE
-**Current State**: Backend `DELETE /bookshelf/{id}` exists, but NO delete button in UI  
+#### ~~1. **Delete Book from Bookshelf**~~ ✅ FIXED (Batch 3 - Nov 12, 2025)
+**Was**: Backend `DELETE /bookshelf/{id}` existed, but NO delete button in UI  
 **User Impact**: "I have two of the same book. I should be able to remove one."  
-**Location**: `Bookshelf.tsx`, `BookDetail.tsx`  
-**Implementation**:
-```typescript
-// Add to book card or detail page:
-const handleDeleteBook = async (bookId: number) => {
-  if (!confirm('Remove this book from your bookshelf?')) return
-  
-  const response = await fetch(`${API_URL}/api/v1/bookshelf/${bookId}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  })
-  
-  if (response.ok) {
-    // Refresh bookshelf
-    loadBookshelf()
-  }
-}
-
-// UI: Add trash icon button
-<button onClick={() => handleDeleteBook(book.id)} className="...">
-  <Trash2 className="w-4 h-4" />
-  Remove
-</button>
-```
+**Now Fixed**:
+- ✅ Added delete button to BookDetail page with Trash2 icon
+- ✅ Confirmation dialog prevents accidental deletion
+- ✅ Graceful error handling with user-friendly messages
+- ✅ Navigates back to Bookshelf after successful deletion
 
 #### ~~2. **Projects Page is Mock Data**~~ ✅ FIXED (Nov 12, 2025)
 **Was**: `Projects.tsx` displayed hardcoded fake projects  
@@ -1212,22 +1202,15 @@ const getSuggestions = useCallback(
 )
 ```
 
-#### 10. **Reading Time Estimates Everywhere** ⏱️
+#### ~~10. **Reading Time Estimates Everywhere**~~ ✅ COMPLETED (Batch 2)
 **Why Amazing**: User expectation setting  
-**Current**: Editor has word count  
-**Add**:
-- Reading time on document cards
-- Reading time in bookshelf
-- Reading time in project overview
-- Configurable reading speed (WPM)
-```typescript
-const calculateReadingTime = (wordCount: number, wpm: number = 200): string => {
-  const minutes = Math.ceil(wordCount / wpm)
-  if (minutes < 1) return '< 1 min read'
-  if (minutes === 1) return '1 min read'
-  return `${minutes} min read`
-}
-```
+**Implemented**: 
+- ✅ Created `reading-time.ts` utility with `calculateReadingTime()` and `calculateBookReadingTime()`
+- ✅ Supports multiple reading speeds (technical, normal, fiction, skimming)
+- ✅ BookDetail page shows estimated reading time next to page count
+- ✅ Utility ready to use across all pages (document cards, bookshelf, projects)
+
+**Next Steps**: Add to more locations (document cards, project overview)
 
 ---
 
@@ -1342,16 +1325,19 @@ const useInfiniteScroll = (loadMore: () => void) => {
 }
 ```
 
-#### 18. **Image Lazy Loading** 📷
-**Current**: All images load immediately  
-**Better**: Load images as they come into view  
-```typescript
-<img 
-  src={book.cover_url} 
-  loading="lazy"
-  alt={book.title}
-/>
-```
+#### ~~18. **Image Lazy Loading**~~ ✅ COMPLETED (Batch 2)
+**Implemented**: All book cover images across 10+ pages now have `loading="lazy"` attribute
+- ✅ Bookshelf.tsx (2 locations)
+- ✅ BookDetail.tsx
+- ✅ Store.tsx (2 locations)
+- ✅ FreeBooks.tsx
+- ✅ Home.tsx
+- ✅ Discover.tsx
+- ✅ Author.tsx (2 locations)
+- ✅ Authors.tsx
+- ✅ PublicProfile.tsx (2 locations)
+
+**Performance Impact**: Images load on-demand as user scrolls, reducing initial page load time
 
 #### 19. **PWA Support** 📱
 **Why Amazing**: Install as app, offline access  

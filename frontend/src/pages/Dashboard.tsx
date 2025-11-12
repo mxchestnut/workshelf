@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+import { WritingStreakWidget } from '../components/WritingStreakWidget'
 import { 
   TrendingUp, Eye, Heart, MessageCircle, Users,
   BookOpen, Download, DollarSign,
@@ -218,6 +219,11 @@ export function Dashboard() {
 
       {/* Analytics Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Writing Streak Widget - Prominent at top */}
+        <div className="mb-8">
+          <WritingStreakWidget />
+        </div>
+
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Views */}

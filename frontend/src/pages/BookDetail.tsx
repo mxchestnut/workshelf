@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   BookOpen, Star, Heart, ArrowLeft, Calendar, 
-  User, Building2, Hash, FileText, Tag, ShoppingCart, Clock
+  User, Building2, Hash, FileText, Tag, ShoppingCart, Clock, Trash2
 } from 'lucide-react'
 import { calculateBookReadingTime } from '../utils/reading-time'
 
@@ -238,6 +238,38 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
     updateBook({ rating: newRating })
   }
 
+  const deleteBook = async () => {
+    if (!book) return
+    
+    const bookTitle = book.title || 'this book'
+    if (!confirm(`Remove "${bookTitle}" from your bookshelf? This cannot be undone.`)) {
+      return
+    }
+
+    setUpdating(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/bookshelf/${book.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        // Book deleted successfully - go back to bookshelf
+        handleBack()
+      } else {
+        alert('Failed to remove book from bookshelf')
+      }
+    } catch (error) {
+      console.error('Failed to delete book:', error)
+      alert('Failed to remove book from bookshelf')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   const saveReadingProgress = async (location: string, progress: number) => {
     try {
       const token = localStorage.getItem('access_token')
@@ -453,6 +485,18 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     >
                       <Heart className={`w-5 h-5 ${book.is_favorite ? 'fill-current' : ''}`} />
                       {book.is_favorite ? 'Favorited' : 'Add to Favorites'}
+                    </button>
+                  )}
+
+                  {/* Delete button - only show if user owns the book */}
+                  {userOwnsBook && book && (
+                    <button
+                      onClick={deleteBook}
+                      disabled={updating}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      Remove from Bookshelf
                     </button>
                   )}
 

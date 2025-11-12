@@ -7,8 +7,7 @@ import {
   MoreVertical,
   Briefcase,
   CheckCircle2,
-  Plus,
-  Loader2
+  Plus
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -105,8 +104,22 @@ export function Projects() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="bg-white rounded-2xl shadow-md border border-neutral-light p-6 animate-pulse">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+              <div className="w-8 h-8 bg-gray-200 rounded"></div>
+            </div>
+            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
+            <div className="flex gap-4 mb-4">
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
+          </div>
+        ))}
       </div>
     )
   }

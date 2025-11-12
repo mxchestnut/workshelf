@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+import { WritingStreakWidget } from '../components/WritingStreakWidget'
 import { FileText, Plus, Search, Clock, TrendingUp } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -164,6 +165,11 @@ export function Documents() {
 
       {/* Documents Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Writing Streak Widget */}
+        <div className="mb-8">
+          <WritingStreakWidget />
+        </div>
+
         {filteredDocuments.length === 0 ? (
           <div className="text-center py-16">
             <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
