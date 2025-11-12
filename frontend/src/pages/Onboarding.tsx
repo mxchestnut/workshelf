@@ -227,11 +227,23 @@ export default function Onboarding() {
         
         // Handle validation errors
         if (error.detail && Array.isArray(error.detail)) {
-          // Pydantic validation errors
-          const validationErrors = error.detail.map((err: any) => ({
-            field: err.loc ? err.loc[err.loc.length - 1] : 'general',
-            message: err.msg
-          }));
+          // Pydantic validation errors - map snake_case to camelCase
+          const fieldMapping: Record<string, string> = {
+            'phone_number': 'phoneNumber',
+            'birth_year': 'birthYear',
+            'house_rules_accepted': 'houseRulesAccepted',
+            'newsletter_opt_in': 'newsletterOptIn',
+            'sms_opt_in': 'smsOptIn'
+          };
+          
+          const validationErrors = error.detail.map((err: any) => {
+            const apiField = err.loc ? err.loc[err.loc.length - 1] : 'general';
+            const frontendField = fieldMapping[apiField] || apiField;
+            return {
+              field: frontendField,
+              message: err.msg
+            };
+          });
           setErrors(validationErrors);
           return;
         }
@@ -315,7 +327,7 @@ export default function Onboarding() {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  placeholder="+1234567890 (optional)"
+                  placeholder="+15551234567"
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     getFieldError('phoneNumber') ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`}
@@ -323,7 +335,7 @@ export default function Onboarding() {
                 {getFieldError('phoneNumber') && (
                   <p className="mt-1 text-sm text-red-600">{getFieldError('phoneNumber')}</p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Can be added later in settings</p>
+                <p className="mt-1 text-xs text-gray-500">Must include country code (e.g., +1 for US)</p>
               </div>
 
               {/* Birth Year */}
