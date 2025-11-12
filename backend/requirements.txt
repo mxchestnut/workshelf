@@ -36,6 +36,9 @@ html2text==2020.1.16
 azure-storage-blob==12.19.0
 azure-identity==1.16.1
 
+# AWS SDK
+boto3==1.35.0  # For SES email sending
+
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1

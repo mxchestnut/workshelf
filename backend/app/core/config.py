@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     AZURE_STORAGE_CONNECTION_STRING: str = ""
     AZURE_STORAGE_CONTAINER_NAME: str = "documents"
     
+    # AWS SES Email
+    AWS_REGION: str = "us-east-1"
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    FROM_EMAIL: str = "noreply@workshelf.dev"
+    FRONTEND_URL: str = "https://workshelf.dev"
+    
     # Keycloak
     KEYCLOAK_SERVER_URL: str = "http://keycloak:8080"  # Internal Docker network
     KEYCLOAK_REALM: str = "workshelf"

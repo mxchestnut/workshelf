@@ -5,15 +5,21 @@ Secured via Keycloak authentication
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 from typing import List, Optional
-from datetime import datetime
-from pydantic import BaseModel
+from datetime import datetime, timedelta
+from pydantic import BaseModel, EmailStr
+import secrets
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_current_user_from_db
-from app.models.collaboration import Group, GroupMember, GroupPost, GroupMemberRole, ModerationAction, ModerationActionType
+from app.models.collaboration import (
+    Group, GroupMember, GroupPost, GroupMemberRole, 
+    ModerationAction, ModerationActionType,
+    GroupInvitation, GroupInvitationStatus
+)
 from app.models.user import User
+from app.services.email_service import email_service
 
 router = APIRouter(prefix="/group-admin", tags=["group-admin"])
 
@@ -924,4 +930,243 @@ async def get_audit_log(
         "limit": limit,
         "offset": offset
     }
+
+
+# ============================================================================
+# Group Invitations
+# ============================================================================
+
+class GroupInvitationCreate(BaseModel):
+    """Create a group invitation"""
+    email: EmailStr
+    role: GroupMemberRole = GroupMemberRole.MEMBER
+    message: Optional[str] = None
+
+
+class GroupInvitationResponse(BaseModel):
+    """Group invitation response"""
+    id: int
+    email: str
+    token: str
+    role: str
+    message: Optional[str]
+    status: str
+    invited_by: Optional[int]
+    inviter_name: Optional[str]
+    expires_at: str
+    created_at: str
+
+
+@router.post("/groups/{group_id}/invitations")
+async def create_group_invitation(
+    group_id: int,
+    invitation: GroupInvitationCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Send an invitation to join the group (admin/owner with invite permission)
+    
+    **Requires**: Keycloak authentication + group admin/owner/moderator with can_invite_members
+    """
+    # Check if user has permission to invite
+    member_result = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == current_user.id
+            )
+        )
+    )
+    member = member_result.scalar_one_or_none()
+    
+    if not member:
+        raise HTTPException(status_code=403, detail="You are not a member of this group")
+    
+    # Only admin/owner or moderator with can_invite_members can invite
+    if member.role not in [GroupMemberRole.OWNER, GroupMemberRole.ADMIN]:
+        # TODO: Check custom role permissions (can_invite_members)
+        raise HTTPException(status_code=403, detail="You don't have permission to invite members")
+    
+    # Check if user is already a member
+    existing_member = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == select(User.id).where(User.email == invitation.email).scalar_subquery()
+            )
+        )
+    )
+    if existing_member.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="User is already a member of this group")
+    
+    # Check if there's already a pending invitation
+    existing_invitation = await db.execute(
+        select(GroupInvitation).filter(
+            and_(
+                GroupInvitation.group_id == group_id,
+                GroupInvitation.email == invitation.email,
+                GroupInvitation.status == GroupInvitationStatus.PENDING,
+                GroupInvitation.expires_at > datetime.utcnow()
+            )
+        )
+    )
+    if existing_invitation.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="A pending invitation already exists for this email")
+    
+    # Create invitation
+    new_invitation = GroupInvitation(
+        group_id=group_id,
+        email=invitation.email,
+        token=secrets.token_urlsafe(32),
+        invited_by=current_user.id,
+        role=invitation.role,
+        message=invitation.message,
+        status=GroupInvitationStatus.PENDING,
+        expires_at=datetime.utcnow() + timedelta(days=7)  # 7 day expiration
+    )
+    
+    db.add(new_invitation)
+    await db.commit()
+    await db.refresh(new_invitation)
+    
+    # Get group details for email
+    group_result = await db.execute(
+        select(Group).filter(Group.id == group_id)
+    )
+    group = group_result.scalar_one()
+    
+    # Get inviter name
+    inviter_name = current_user.display_name or current_user.username or current_user.email
+    
+    # Send invitation email
+    try:
+        email_sent = await email_service.send_group_invitation(
+            to_email=invitation.email,
+            group_name=group.name,
+            inviter_name=inviter_name,
+            invitation_token=new_invitation.token,
+            role=invitation.role.value,
+            message=invitation.message
+        )
+        if not email_sent:
+            # Log warning but don't fail the request
+            # Invitation is still created, user just won't get email
+            print(f"Warning: Failed to send invitation email to {invitation.email}")
+    except Exception as e:
+        print(f"Error sending invitation email: {str(e)}")
+    
+    return {
+        "success": True,
+        "invitation": {
+            "id": new_invitation.id,
+            "email": new_invitation.email,
+            "token": new_invitation.token,
+            "role": new_invitation.role.value,
+            "message": new_invitation.message,
+            "status": new_invitation.status.value,
+            "expires_at": new_invitation.expires_at.isoformat()
+        }
+    }
+
+
+@router.get("/groups/{group_id}/invitations")
+async def get_group_invitations(
+    group_id: int,
+    status: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Get all invitations for a group (admin/owner only)
+    
+    **Requires**: Keycloak authentication + group admin/owner
+    """
+    # Verify user is admin/owner
+    group, _ = await get_group_admin_or_above(group_id, db, current_user)
+    
+    # Build query
+    query = select(GroupInvitation).filter(GroupInvitation.group_id == group_id)
+    
+    if status:
+        try:
+            status_enum = GroupInvitationStatus(status)
+            query = query.filter(GroupInvitation.status == status_enum)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+    
+    query = query.order_by(GroupInvitation.created_at.desc())
+    
+    result = await db.execute(query)
+    invitations = result.scalars().all()
+    
+    # Get inviter names
+    invitation_list = []
+    for inv in invitations:
+        inviter_name = None
+        if inv.invited_by:
+            inviter_result = await db.execute(select(User).filter(User.id == inv.invited_by))
+            inviter = inviter_result.scalar_one_or_none()
+            if inviter:
+                inviter_name = inviter.username or inviter.email
+        
+        invitation_list.append({
+            "id": inv.id,
+            "email": inv.email,
+            "token": inv.token,
+            "role": inv.role.value,
+            "message": inv.message,
+            "status": inv.status.value,
+            "invited_by": inv.invited_by,
+            "inviter_name": inviter_name,
+            "expires_at": inv.expires_at.isoformat(),
+            "created_at": inv.created_at.isoformat() if inv.created_at else None,
+            "accepted_at": inv.accepted_at.isoformat() if inv.accepted_at else None
+        })
+    
+    return {
+        "success": True,
+        "invitations": invitation_list,
+        "count": len(invitation_list)
+    }
+
+
+@router.delete("/groups/{group_id}/invitations/{invitation_id}")
+async def revoke_group_invitation(
+    group_id: int,
+    invitation_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Revoke/cancel a group invitation (admin/owner only)
+    
+    **Requires**: Keycloak authentication + group admin/owner
+    """
+    # Verify user is admin/owner
+    group, _ = await get_group_admin_or_above(group_id, db, current_user)
+    
+    # Get the invitation
+    result = await db.execute(
+        select(GroupInvitation).filter(
+            and_(
+                GroupInvitation.id == invitation_id,
+                GroupInvitation.group_id == group_id
+            )
+        )
+    )
+    invitation = result.scalar_one_or_none()
+    
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    
+    # Mark as revoked
+    invitation.status = GroupInvitationStatus.REVOKED
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": "Invitation revoked successfully"
+    }
+
 

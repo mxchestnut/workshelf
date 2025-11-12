@@ -23,7 +23,8 @@ from app.models.collaboration import (
     Group, GroupMember, GroupMemberRole, GroupPrivacyType, GroupFollower,
     GroupPost, GroupPostReaction,
     GroupCustomDomain, ScholarshipRequest,
-    MessageThread, MessageThreadParticipant, Message, MessageThreadType
+    MessageThread, MessageThreadParticipant, Message, MessageThreadType,
+    GroupInvitation, GroupInvitationStatus
 )
 from app.models.group_customization import GroupTheme
 from app.models.group_analytics import GroupAnalytics
@@ -107,6 +108,8 @@ __all__ = [
     "GroupPostReaction",
     "GroupCustomDomain",
     "ScholarshipRequest",
+    "GroupInvitation",
+    "GroupInvitationStatus",
     "MessageThread",
     "MessageThreadParticipant",
     "Message",

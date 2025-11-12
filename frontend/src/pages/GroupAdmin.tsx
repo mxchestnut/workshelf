@@ -10,6 +10,7 @@ import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield
 import { RoleEditor } from '../components/RoleEditor'
 import { MemberRoleManager } from '../components/MemberRoleManager'
 import ModerationLog from '../components/ModerationLog'
+import InviteMembersModal from '../components/InviteMembersModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -136,6 +137,8 @@ export default function GroupAdmin() {
   const [success, setSuccess] = useState<string | null>(null)
   const [showRoleModal, setShowRoleModal] = useState(false)
   const [editingRole, setEditingRole] = useState<GroupRole | null>(null)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([])
 
   // Extract group slug from URL
   useEffect(() => {
@@ -245,6 +248,32 @@ export default function GroupAdmin() {
     setUser(null)
     window.location.href = '/'
   }
+
+  const loadInvitations = async () => {
+    if (!groupId) return
+    
+    try {
+      const token = authService.getAccessToken()
+      const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations`, {
+        credentials: 'include',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setPendingInvitations(data.invitations || [])
+      }
+    } catch (err) {
+      console.error('Failed to load invitations:', err)
+    }
+  }
+
+  // Load invitations when activeTab changes to members
+  useEffect(() => {
+    if (activeTab === 'members' && groupId) {
+      loadInvitations()
+    }
+  }, [activeTab, groupId])
 
   const updateMemberStatus = async (memberId: number, action: 'approve' | 'reject' | 'ban' | 'make-moderator' | 'remove-moderator') => {
     try {
@@ -626,11 +655,12 @@ export default function GroupAdmin() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Group Members</h2>
               <button
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white"
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white hover:opacity-90"
                 style={{ backgroundColor: '#B34B0C' }}
               >
                 <UserPlus className="w-5 h-5" />
-                Invite Member
+                Invite Members
               </button>
             </div>
 
@@ -717,6 +747,83 @@ export default function GroupAdmin() {
                 </div>
               </div>
             ))}
+
+            {/* Pending Invitations */}
+            {pendingInvitations.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-bold text-white mb-4">Pending Invitations</h3>
+                <div className="space-y-2">
+                  {pendingInvitations.map(invite => (
+                    <div key={invite.id} className="p-4 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-white">{invite.email}</p>
+                            <span className="px-2 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: '#7C3306' }}>
+                              {invite.role.toUpperCase()}
+                            </span>
+                            <span className="px-2 py-1 rounded text-xs font-medium" style={{ 
+                              backgroundColor: invite.status === 'pending' ? '#B34B0C' : '#524944',
+                              color: '#B3B2B0'
+                            }}>
+                              {invite.status.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Invited by {invite.inviter_name || 'Unknown'} on {new Date(invite.created_at).toLocaleDateString()}
+                          </p>
+                          {invite.expires_at && (
+                            <p className="text-xs text-gray-500">
+                              Expires {new Date(invite.expires_at).toLocaleDateString()}
+                            </p>
+                          )}
+                          {invite.message && (
+                            <p className="text-sm text-gray-300 mt-2 italic">"{invite.message}"</p>
+                          )}
+                        </div>
+                        {invite.status === 'pending' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const token = authService.getAccessToken()
+                                const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations/${invite.id}`, {
+                                  method: 'DELETE',
+                                  headers: { 'Authorization': `Bearer ${token}` }
+                                })
+                                if (res.ok) {
+                                  setSuccess('Invitation revoked')
+                                  loadInvitations()
+                                } else {
+                                  setError('Failed to revoke invitation')
+                                }
+                              } catch (err) {
+                                setError('Failed to revoke invitation')
+                              }
+                            }}
+                            className="px-3 py-1 rounded text-sm font-medium text-white hover:opacity-80"
+                            style={{ backgroundColor: '#EF4444' }}
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Invite Members Modal */}
+            {showInviteModal && groupId && (
+              <InviteMembersModal
+                groupId={groupId}
+                onClose={() => setShowInviteModal(false)}
+                onInviteSent={() => {
+                  loadInvitations()
+                  setSuccess('Invitations sent successfully!')
+                }}
+              />
+            )}
           </div>
         )}
 

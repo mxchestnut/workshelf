@@ -3,12 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from typing import Dict, Any, List
+from datetime import datetime
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services import user_service
 from app.services.group_service import GroupService
 from app.services.group_customization_service import GroupCustomizationService
+from app.models.collaboration import GroupInvitation, GroupInvitationStatus, GroupMember
 from app.schemas.collaboration import (
     GroupCreate, GroupUpdate, GroupResponse,
     GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse,
@@ -786,7 +788,11 @@ async def join_group(
     from app.models.collaboration import Group, GroupMember, GroupMemberRole
     from sqlalchemy import select
     
-    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    try:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    except Exception as e:
+        print(f"Error getting/creating user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get user: {str(e)}")
     
     # Get group
     group_result = await db.execute(
@@ -1177,3 +1183,124 @@ async def get_group_time_series(
     
     data = await GroupAnalyticsService.get_time_series_data(db, group_id, metric, days)
     return {"metric": metric, "data": data}
+
+
+# ============================================================================
+# Group Invitations (Public)
+# ============================================================================
+
+@router.get("/invitations/verify/{token}")
+async def verify_group_invitation(
+    token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verify a group invitation token (public endpoint)
+    Returns invitation details if valid
+    """
+    result = await db.execute(
+        select(GroupInvitation).filter(GroupInvitation.token == token)
+    )
+    invitation = result.scalar_one_or_none()
+    
+    if not invitation:
+        return {
+            "valid": False,
+            "message": "Invalid invitation token"
+        }
+    
+    if invitation.status != GroupInvitationStatus.PENDING:
+        return {
+            "valid": False,
+            "message": f"This invitation has been {invitation.status.value}"
+        }
+    
+    if invitation.expires_at < datetime.utcnow():
+        invitation.status = GroupInvitationStatus.EXPIRED
+        await db.commit()
+        return {
+            "valid": False,
+            "message": "This invitation has expired"
+        }
+    
+    # Get group info
+    group = await GroupService.get_group_by_id(db, invitation.group_id)
+    
+    return {
+        "valid": True,
+        "email": invitation.email,
+        "group_id": invitation.group_id,
+        "group_name": group.name if group else None,
+        "role": invitation.role.value,
+        "message": invitation.message
+    }
+
+
+@router.post("/invitations/accept/{token}")
+async def accept_group_invitation(
+    token: str,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Accept a group invitation (authenticated user)
+    User must match the invitation email
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Get the invitation
+    result = await db.execute(
+        select(GroupInvitation).filter(GroupInvitation.token == token)
+    )
+    invitation = result.scalar_one_or_none()
+    
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    
+    # Verify status
+    if invitation.status != GroupInvitationStatus.PENDING:
+        raise HTTPException(status_code=400, detail=f"Invitation has been {invitation.status.value}")
+    
+    # Verify not expired
+    if invitation.expires_at < datetime.utcnow():
+        invitation.status = GroupInvitationStatus.EXPIRED
+        await db.commit()
+        raise HTTPException(status_code=400, detail="Invitation has expired")
+    
+    # Verify email matches
+    if user.email != invitation.email:
+        raise HTTPException(status_code=403, detail="This invitation was sent to a different email address")
+    
+    # Check if already a member
+    existing_member = await db.execute(
+        select(GroupMember).filter(
+            and_(
+                GroupMember.group_id == invitation.group_id,
+                GroupMember.user_id == user.id
+            )
+        )
+    )
+    if existing_member.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="You are already a member of this group")
+    
+    # Join the group
+    await GroupService.join_group(db, invitation.group_id, user.id, invitation.role)
+    
+    # Mark invitation as accepted
+    invitation.status = GroupInvitationStatus.ACCEPTED
+    invitation.accepted_by = user.id
+    invitation.accepted_at = datetime.utcnow()
+    await db.commit()
+    
+    # Get group details
+    group = await GroupService.get_group_by_id(db, invitation.group_id)
+    
+    return {
+        "success": True,
+        "message": "Successfully joined the group",
+        "group": {
+            "id": group.id,
+            "name": group.name,
+            "slug": group.slug
+        }
+    }

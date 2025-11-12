@@ -696,3 +696,57 @@ class ScholarshipRequest(Base, TimestampMixin):
     def __repr__(self):
         return f"<ScholarshipRequest(group_id={self.group_id}, status='{self.status}', type='{self.request_type}')>"
 
+
+# ============================================================================
+# Group Invitations
+# ============================================================================
+
+class GroupInvitationStatus(enum.Enum):
+    """Status of group invitation"""
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+
+
+class GroupInvitation(Base, TimestampMixin):
+    """
+    Group member invitations - send email invites to join a group
+    """
+    __tablename__ = "group_invitations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Group and invitee
+    group_id = Column(Integer, ForeignKey('groups.id', ondelete='CASCADE'), nullable=False, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    
+    # Invitation details
+    token = Column(String(100), unique=True, nullable=False, index=True)  # Unique token for the invitation link
+    invited_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    role = Column(SQLEnum(GroupMemberRole), nullable=False, default=GroupMemberRole.MEMBER)
+    message = Column(Text, nullable=True)  # Optional personal message from inviter
+    
+    # Status tracking
+    status = Column(SQLEnum(GroupInvitationStatus), nullable=False, default=GroupInvitationStatus.PENDING, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    
+    # Acceptance tracking
+    accepted_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    accepted_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    group = relationship("Group")
+    inviter = relationship("User", foreign_keys=[invited_by])
+    accepter = relationship("User", foreign_keys=[accepted_by])
+    
+    __table_args__ = (
+        Index('idx_group_invitations_group_email', 'group_id', 'email'),
+        Index('idx_group_invitations_status', 'status', 'expires_at'),
+    )
+    
+    def __repr__(self):
+        return f"<GroupInvitation(email='{self.email}', group_id={self.group_id}, status='{self.status.value}')>"
+
+
