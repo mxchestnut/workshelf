@@ -27,6 +27,8 @@ export function Document() {
   const [error, setError] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
 
   // Get document ID from URL path (/document/123) or query (?id=123)
   const pathParts = window.location.pathname.split('/')
@@ -36,6 +38,46 @@ export function Document() {
   const documentId = pathId || queryId
   const projectId = urlParams.get('project')
   const promptText = urlParams.get('prompt')
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+      const modKey = isMac ? e.metaKey : e.ctrlKey
+
+      // Cmd/Ctrl + S: Manual save
+      if (modKey && e.key === 's') {
+        e.preventDefault()
+        if (document) {
+          saveDocument()
+        }
+      }
+
+      // Cmd/Ctrl + K: Toggle writing prompts
+      if (modKey && e.key === 'k') {
+        e.preventDefault()
+        setPromptsOpen(!promptsOpen)
+      }
+
+      // Cmd/Ctrl + /: Show keyboard shortcuts
+      if (modKey && e.key === '/') {
+        e.preventDefault()
+        setShowShortcuts(!showShortcuts)
+      }
+
+      // Cmd/Ctrl + Shift + P: Toggle publish status
+      if (modKey && e.shiftKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault()
+        if (document) {
+          const newStatus = document.status === 'published' ? 'draft' : 'published'
+          setDocument({ ...document, status: newStatus })
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [document, promptsOpen, showShortcuts])
 
   useEffect(() => {
     if (documentId) {
@@ -147,6 +189,7 @@ export function Document() {
     if (!document) return
 
     try {
+      setSaveStatus('saving')
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents/${document.id}`, {
         method: 'PUT',
@@ -163,13 +206,19 @@ export function Document() {
       })
 
       if (!response.ok) {
+        setSaveStatus('error')
         throw new Error('Failed to save document')
       }
 
       const data = await response.json()
       setDocument(data)
+      setSaveStatus('saved')
+      
+      // Show brief success message
+      setTimeout(() => setSaveStatus('saved'), 2000)
     } catch (err) {
       console.error('Error saving document:', err)
+      setSaveStatus('error')
       throw err // Let the Editor component handle the error
     }
   }
@@ -333,10 +382,17 @@ export function Document() {
               onClick={() => setPromptsOpen(!promptsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-neutral-lightest rounded-lg transition-colors"
               style={{ color: promptsOpen ? '#B34B0C' : undefined }}
-              title="Writing prompts and help"
+              title="Writing prompts and help (⌘K)"
             >
               <Sparkles className="w-4 h-4" />
               Prompts
+            </button>
+            <button
+              onClick={() => setShowShortcuts(!showShortcuts)}
+              className="px-3 py-1.5 text-sm text-neutral hover:bg-neutral-lightest rounded-lg transition-colors"
+              title="Keyboard shortcuts (⌘/)"
+            >
+              ⌨️
             </button>
             <button
               onClick={deleteDocument}
@@ -374,6 +430,55 @@ export function Document() {
           console.log('Insert prompt:', text)
         }}
       />
+
+      {/* Keyboard Shortcuts Panel */}
+      {showShortcuts && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowShortcuts(false)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-neutral-darkest">Keyboard Shortcuts</h3>
+              <button
+                onClick={() => setShowShortcuts(false)}
+                className="text-neutral hover:text-neutral-darkest"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-neutral-light">
+                <span className="text-neutral">Save document</span>
+                <kbd className="px-2 py-1 bg-neutral-lightest border border-neutral-light rounded text-sm font-mono">
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} S
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-neutral-light">
+                <span className="text-neutral">Toggle writing prompts</span>
+                <kbd className="px-2 py-1 bg-neutral-lightest border border-neutral-light rounded text-sm font-mono">
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} K
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-neutral-light">
+                <span className="text-neutral">Show shortcuts</span>
+                <kbd className="px-2 py-1 bg-neutral-lightest border border-neutral-light rounded text-sm font-mono">
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} /
+                </kbd>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-neutral">Toggle publish status</span>
+                <kbd className="px-2 py-1 bg-neutral-lightest border border-neutral-light rounded text-sm font-mono">
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} ⇧ P
+                </kbd>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
