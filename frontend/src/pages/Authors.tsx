@@ -645,6 +645,7 @@ export default function Authors() {
                             src={book.cover_url}
                             alt={book.title}
                             className="w-full h-64 object-cover"
+                            loading="lazy"
                           />
                         )}
                         <div className="p-4">

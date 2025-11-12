@@ -439,6 +439,7 @@ export default function Bookshelf() {
                         src={rec.cover_url}
                         alt={rec.title}
                         className="w-full h-64 object-cover"
+                        loading="lazy"
                       />
                     )}
                     <div className="p-4">
@@ -510,6 +511,7 @@ export default function Bookshelf() {
                       src={book.cover_url}
                       alt={book.title || book.document_title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

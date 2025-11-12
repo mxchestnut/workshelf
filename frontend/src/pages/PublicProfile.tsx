@@ -314,6 +314,7 @@ export default function PublicProfile() {
                     src={profile.avatar_url}
                     alt={profile.display_name}
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-700"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-4 border-gray-700">
@@ -550,6 +551,7 @@ export default function PublicProfile() {
                               src={item.cover_url}
                               alt={bookTitle}
                               className="w-full h-64 object-cover"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="w-full h-64 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">

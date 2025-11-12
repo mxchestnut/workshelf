@@ -484,6 +484,7 @@ function BookCard({ book, featured }: BookCardProps) {
             src={book.cover_url}
             alt={book.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -654,6 +655,7 @@ function FreeBookCard({ book }: FreeBookCardProps) {
             src={book.cover_url} 
             alt={book.title}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

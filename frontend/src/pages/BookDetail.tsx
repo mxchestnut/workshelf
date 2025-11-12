@@ -1,8 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   BookOpen, Star, Heart, ArrowLeft, Calendar, 
-  User, Building2, Hash, FileText, Tag, ShoppingCart 
+  User, Building2, Hash, FileText, Tag, ShoppingCart, Clock
 } from 'lucide-react'
+import { calculateBookReadingTime } from '../utils/reading-time'
 
 // Lazy load the EPUB reader (large dependency)
 const EpubReader = lazy(() => import('../components/EpubReader'))
@@ -405,6 +406,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     src={coverUrl}
                     alt={title}
                     className="w-64 h-96 object-cover rounded-lg shadow-md"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                       e.currentTarget.parentElement!.innerHTML = `
@@ -688,10 +690,16 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </div>
                   )}
                   {book.page_count && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <FileText className="w-5 h-5 text-gray-400" />
-                      <span className="text-sm">{book.page_count} pages</span>
-                    </div>
+                    <>
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <FileText className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm">{book.page_count} pages</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <Clock className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm">~{calculateBookReadingTime(book.page_count)} to read</span>
+                      </div>
+                    </>
                   )}
                   {book.isbn && (
                     <div className="flex items-center gap-2 text-gray-700">

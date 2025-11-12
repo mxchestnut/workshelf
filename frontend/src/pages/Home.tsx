@@ -290,6 +290,7 @@ export default function Home() {
                         src={book.cover_image_url} 
                         alt={book.title}
                         className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full aspect-[2/3] flex items-center justify-center" style={{ 

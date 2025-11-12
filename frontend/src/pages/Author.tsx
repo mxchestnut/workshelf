@@ -321,6 +321,7 @@ export default function Author() {
                   src={author.photo_url}
                   alt={author.name}
                   className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-xl"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-40 h-40 rounded-full bg-white bg-opacity-20 flex items-center justify-center border-4 border-white shadow-xl">
@@ -570,6 +571,7 @@ export default function Author() {
                               src={book.cover_url}
                               alt={book.title}
                               className="w-full h-full object-cover"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

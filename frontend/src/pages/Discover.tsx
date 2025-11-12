@@ -138,6 +138,7 @@ export function Discover() {
                       src={post.group.avatar_url} 
                       alt={post.group.name}
                       className="w-10 h-10 rounded-full"
+                      loading="lazy"
                     />
                   )}
                   <div className="flex-1 min-w-0">
