@@ -1,0 +1,70 @@
+name: Build Keycloak for AWS
+
+on:
+  workflow_dispatch: # Allow manual trigger
+  push:
+    paths:
+      - '.github/workflows/build-keycloak.yml'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: workshelf-keycloak
+  KEYCLOAK_VERSION: 26.0.7
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # x86_64 architecture
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Pull and tag Keycloak image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          echo "Pulling Keycloak $KEYCLOAK_VERSION for linux/amd64"
+          docker pull --platform linux/amd64 quay.io/keycloak/keycloak:$KEYCLOAK_VERSION
+          
+          echo "Tagging for ECR"
+          docker tag quay.io/keycloak/keycloak:$KEYCLOAK_VERSION $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag quay.io/keycloak/keycloak:$KEYCLOAK_VERSION $ECR_REGISTRY/$ECR_REPOSITORY:$KEYCLOAK_VERSION
+          
+          echo "Verifying architecture"
+          docker inspect quay.io/keycloak/keycloak:$KEYCLOAK_VERSION | jq '.[0].Architecture'
+      
+      - name: Push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          echo "Pushing to ECR"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$KEYCLOAK_VERSION
+          
+          echo "✅ Successfully pushed Keycloak image to ECR"
+      
+      - name: Force ECS deployment
+        run: |
+          echo "Forcing ECS service to redeploy with new image"
+          aws ecs update-service \
+            --cluster workshelf-cluster \
+            --service workshelf-keycloak \
+            --force-new-deployment \
+            --region $AWS_REGION
+          
+          echo "✅ ECS service update triggered"
