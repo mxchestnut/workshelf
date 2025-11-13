@@ -35,15 +35,53 @@ class AuthService {
   }
 
   /**
-   * Redirect to Keycloak login page
+   * Generate a random code verifier for PKCE
    */
-  login() {
+  private generateCodeVerifier(): string {
+    const array = new Uint8Array(32)
+    crypto.getRandomValues(array)
+    return this.base64UrlEncode(array)
+  }
+
+  /**
+   * Generate code challenge from verifier using SHA-256
+   */
+  private async generateCodeChallenge(verifier: string): Promise<string> {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(verifier)
+    const hash = await crypto.subtle.digest('SHA-256', data)
+    return this.base64UrlEncode(new Uint8Array(hash))
+  }
+
+  /**
+   * Base64 URL encode (without padding)
+   */
+  private base64UrlEncode(array: Uint8Array): string {
+    return btoa(String.fromCharCode(...array))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '')
+  }
+
+  /**
+   * Redirect to Keycloak login page with PKCE
+   */
+  async login() {
+    // Generate PKCE code verifier and challenge
+    const codeVerifier = this.generateCodeVerifier()
+    const codeChallenge = await this.generateCodeChallenge(codeVerifier)
+    
+    // Store verifier in sessionStorage for callback
+    sessionStorage.setItem('pkce_verifier', codeVerifier)
+    
     const redirectUri = window.location.origin + '/auth/callback'
     const authUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?` +
       `client_id=${KEYCLOAK_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `response_type=code&` +
-      `scope=openid profile email`
+      `scope=openid profile email&` +
+      `code_challenge=${codeChallenge}&` +
+      `code_challenge_method=S256`
     
     window.location.href = authUrl
   }
@@ -53,6 +91,15 @@ class AuthService {
    */
   async handleCallback(code: string): Promise<User> {
     const redirectUri = window.location.origin + '/auth/callback'
+    
+    // Retrieve PKCE verifier from sessionStorage
+    const codeVerifier = sessionStorage.getItem('pkce_verifier')
+    if (!codeVerifier) {
+      throw new Error('PKCE verifier not found - login flow may have been interrupted')
+    }
+    
+    // Clear verifier from storage
+    sessionStorage.removeItem('pkce_verifier')
     
     console.log('[AuthService] Exchanging authorization code for tokens...')
     
@@ -66,6 +113,7 @@ class AuthService {
         client_id: KEYCLOAK_CLIENT_ID,
         code: code,
         redirect_uri: redirectUri,
+        code_verifier: codeVerifier,
       }),
     })
 

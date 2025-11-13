@@ -23,19 +23,26 @@ class KeycloakAuth:
     
     def __init__(self):
         self.server_url = settings.KEYCLOAK_SERVER_URL
+        # Use internal URL if provided (for ECS to bypass SSL/DNS issues)
+        self.internal_url = settings.KEYCLOAK_INTERNAL_URL or settings.KEYCLOAK_SERVER_URL
         self.realm = settings.KEYCLOAK_REALM
         self.client_id = settings.KEYCLOAK_CLIENT_ID
         self._jwks: Optional[Dict] = None
     
     @property
     def realm_url(self) -> str:
-        """Get the realm URL"""
+        """Get the realm URL (public-facing for token issuer)"""
         return f"{self.server_url}/realms/{self.realm}"
     
     @property
+    def internal_realm_url(self) -> str:
+        """Get the internal realm URL (for actual connections)"""
+        return f"{self.internal_url}/realms/{self.realm}"
+    
+    @property
     def certs_url(self) -> str:
-        """Get the JWKS URL for public keys"""
-        return f"{self.realm_url}/protocol/openid-connect/certs"
+        """Get the JWKS URL for public keys (use internal URL)"""
+        return f"{self.internal_realm_url}/protocol/openid-connect/certs"
     
     @property
     def issuer(self) -> str:
@@ -51,7 +58,7 @@ class KeycloakAuth:
             return self._jwks
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
                 response = await client.get(self.certs_url)
                 response.raise_for_status()
                 self._jwks = response.json()
@@ -128,6 +135,12 @@ class KeycloakAuth:
             # Get the public key for this specific token
             public_key = self.get_signing_key(token, jwks)
             
+            # Debug: check token issuer
+            unverified_claims = jwt.get_unverified_claims(token)
+            token_issuer = unverified_claims.get("iss")
+            print(f"[AUTH DEBUG] Token issuer: {token_issuer}")
+            print(f"[AUTH DEBUG] Expected issuer: {self.issuer}")
+            
             # Verify and decode the token with full validation
             # Note: We don't verify audience because Keycloak tokens typically have
             # aud set to the requesting client (frontend), not the API.
@@ -161,12 +174,14 @@ class KeycloakAuth:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         except jwt.JWTClaimsError as e:
+            print(f"[AUTH ERROR] JWT Claims Error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid token claims: {str(e)}",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         except JWTError as e:
+            print(f"[AUTH ERROR] JWT Error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid token: {str(e)}",

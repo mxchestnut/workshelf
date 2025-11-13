@@ -1,0 +1,25 @@
+# Terraform variables file for production deployment
+# Copy this to terraform.tfvars and fill in your values
+
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "production"
+
+# Domain Configuration
+domain_name = "workshelf.dev"
+
+# Database Configuration
+db_name     = "workshelf"
+db_username = "workshelf_admin"
+# db_password - SET THIS IN terraform.tfvars (not committed to git)
+
+# Keycloak Configuration
+# keycloak_admin_password - SET THIS IN terraform.tfvars (not committed to git)
+
+# Container Resources (Free Tier Optimized)
+# 512 CPU = 0.5 vCPU, 1024 memory = 1 GB RAM
+backend_container_cpu    = 512
+backend_container_memory = 1024
+
+keycloak_container_cpu    = 512
+keycloak_container_memory = 1024

@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     
     # Keycloak
     KEYCLOAK_SERVER_URL: str = "http://keycloak:8080"  # Internal Docker network
+    KEYCLOAK_INTERNAL_URL: str = ""  # Internal URL for ECS (bypasses DNS/SSL issues)
     KEYCLOAK_REALM: str = "workshelf"
     KEYCLOAK_CLIENT_ID: str = "workshelf-backend"
     KEYCLOAK_CLIENT_SECRET: str = ""
