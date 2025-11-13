@@ -157,28 +157,10 @@ jobs:
             echo "✅ Domain api.workshelf.dev already bound"
           fi
 
-      - name: Bind custom domain to Keycloak
-        run: |
-          echo "🌐 Binding custom domain auth.workshelf.dev to Keycloak..."
-          
-          # Check if domain is already bound
-          EXISTING_DOMAINS=$(az containerapp hostname list \
-            --name workshelf-keycloak \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --query "[?name=='auth.workshelf.dev'].name" -o tsv)
-          
-          if [ -z "$EXISTING_DOMAINS" ]; then
-            echo "Adding domain binding..."
-            az containerapp hostname bind \
-              --hostname auth.workshelf.dev \
-              --name workshelf-keycloak \
-              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-              --environment ${{ secrets.AZURE_CONTAINER_ENV }} \
-              --validation-method HTTP
-            echo "✅ Domain auth.workshelf.dev bound successfully"
-          else
-            echo "✅ Domain auth.workshelf.dev already bound"
-          fi
+      # Note: auth.workshelf.dev domain binding for Keycloak is managed manually
+      # due to Azure Container Apps validation requirements. If the binding is lost,
+      # run manually: az containerapp hostname bind --hostname auth.workshelf.dev
+      # --name workshelf-keycloak --resource-group workshelf-prod-rg
 
       - name: Deploy frontend to Azure Container Apps
         run: |
