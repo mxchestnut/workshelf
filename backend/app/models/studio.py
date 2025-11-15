@@ -38,7 +38,7 @@ class Studio(Base, TimestampMixin, TenantMixin):
     
     # Domain
     custom_domain = Column(String(255), unique=True)
-    subdomain = Column(String(100), unique=True)  # e.g., mystudio.workshelf.app
+    subdomain = Column(String(100), unique=True)  # e.g., mystudio.workshelf.dev
     
     # Settings
     is_public = Column(Boolean, default=True)

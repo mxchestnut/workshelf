@@ -38,7 +38,7 @@ from app.api import (
     export,
     accessibility,
     ai_assist,
-    ai_templates,  # AI template generation
+    # ai_templates,  # AI template generation - DISABLED
     admin,  # Admin endpoints for platform staff
     admin_store,  # Admin store management endpoints
     admin_moderation,  # Admin moderation for wiki edits
@@ -78,8 +78,7 @@ async def api_status():
             "content-integrity",
             "export",
             "accessibility",
-            "ai-assistance",
-            "ai-templates"
+            "ai-assistance"
         ]
     }
 
@@ -133,8 +132,8 @@ api_router.include_router(accessibility.router)
 # AI Assistance (helps users CREATE, never writes FOR them)
 api_router.include_router(ai_assist.router)
 
-# AI Templates (generate custom templates based on interests)
-api_router.include_router(ai_templates.router)
+# AI Templates (generate custom templates based on interests) - DISABLED
+# api_router.include_router(ai_templates.router)
 
 # Admin endpoints (Keycloak-protected for platform staff)
 api_router.include_router(admin.router)

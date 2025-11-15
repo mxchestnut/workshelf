@@ -1,0 +1,123 @@
+# Synapse Configuration for WorkShelf
+# This config is deployed to EFS and mounted at /data/homeserver.yaml
+
+server_name: "matrix.workshelf.dev"
+pid_file: /data/homeserver.pid
+web_client: false
+soft_file_limit: 0
+
+# Listeners for client and federation
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['::']
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# Database configuration (PostgreSQL via RDS)
+database:
+  name: psycopg2
+  args:
+    user: synapse_user
+    database: synapse
+    # Password and host provided via environment variables
+    # SYNAPSE_POSTGRES_PASSWORD - from Secrets Manager
+    # SYNAPSE_POSTGRES_HOST - from terraform
+
+# Logging
+log_config: "/data/matrix.workshelf.dev.log.config"
+
+# Media store on EFS
+media_store_path: "/data/media_store"
+
+# Registration (disabled for open signup, use shared secret)
+enable_registration: false
+registration_shared_secret: "1uNcQD0Lmz11vxV0Y9r5xHfqpxTistyD"
+
+# Report stats to matrix.org (optional)
+report_stats: false
+
+# Signing key (will be generated on first run)
+signing_key_path: "/data/matrix.workshelf.dev.signing.key"
+
+# Trusted key servers for federation
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+# CORS settings for web clients
+web_client_location: https://workshelf.dev
+
+# Allow guest access for preview
+allow_guest_access: false
+
+# URL previews
+url_preview_enabled: false
+
+# Enable encryption
+enable_room_list_search: true
+
+# Push notifications
+push:
+  enabled: true
+
+# Email (optional - can be configured later)
+# email:
+#   smtp_host: email-smtp.us-east-1.amazonaws.com
+#   smtp_port: 587
+#   smtp_user: "YOUR_SES_SMTP_USER"
+#   smtp_pass: "YOUR_SES_SMTP_PASSWORD"
+#   notif_from: "%(app)s <noreply@workshelf.dev>"
+
+# TURN servers (optional - for WebRTC)
+# turn_uris: []
+# turn_shared_secret: ""
+# turn_user_lifetime: 86400000
+
+# Presence (show online/offline status)
+presence:
+  enabled: true
+
+# User directory
+user_directory:
+  enabled: true
+  search_all_users: true
+
+# Rate limiting
+rc_message:
+  per_second: 10
+  burst_count: 50
+
+rc_registration:
+  per_second: 0.17
+  burst_count: 3
+
+rc_login:
+  address:
+    per_second: 0.17
+    burst_count: 3
+  account:
+    per_second: 0.17
+    burst_count: 3
+  failed_attempts:
+    per_second: 0.17
+    burst_count: 3
+
+# Federation
+federation_domain_whitelist: []
+
+# Retention
+retention:
+  enabled: false
+
+# Metrics (optional)
+enable_metrics: false
+
+# Sentry error tracking (optional)
+# sentry:
+#   dsn: "..."
+
+# Old/deprecated settings removed
+suppress_key_server_warning: true

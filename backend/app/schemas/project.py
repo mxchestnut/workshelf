@@ -83,6 +83,9 @@ class ProjectResponse(BaseModel):
     target_word_count: Optional[int]
     current_word_count: int
     folder_id: Optional[int]
+    template_id: Optional[int] = None
+    ai_template_id: Optional[int] = None
+    prompt_responses: Optional[List[dict]] = None
     created_at: datetime
     updated_at: datetime
     

@@ -1,0 +1,75 @@
+# Synapse homeserver.yaml for WorkShelf (Lightsail)
+server_name: "matrix.workshelf.dev"
+web_client: false
+pid_file: /data/homeserver.pid
+
+# HTTP listener only; TLS is terminated by Caddy
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# PostgreSQL database (docker-compose service name: postgres)
+database:
+  name: psycopg2
+  args:
+    user: synapse_user
+    password: "${POSTGRES_PASSWORD}"
+    database: synapse
+    host: postgres
+    port: 5432
+    cp_min: 5
+    cp_max: 10
+
+log_config: "/data/matrix.workshelf.dev.log.config"
+media_store_path: "/data/media_store"
+
+# Disable public registration; use shared secret via backend API
+enable_registration: false
+registration_shared_secret: "${REGISTRATION_SHARED_SECRET}"
+
+report_stats: false
+signing_key_path: "/data/matrix.workshelf.dev.signing.key"
+
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+web_client_location: https://workshelf.dev
+allow_guest_access: false
+url_preview_enabled: false
+
+presence:
+  enabled: true
+
+user_directory:
+  enabled: true
+  search_all_users: true
+
+rc_message:
+  per_second: 10
+  burst_count: 50
+
+rc_registration:
+  per_second: 0.17
+  burst_count: 3
+
+rc_login:
+  address:
+    per_second: 0.17
+    burst_count: 3
+  account:
+    per_second: 0.17
+    burst_count: 3
+  failed_attempts:
+    per_second: 0.17
+    burst_count: 3
+
+retention:
+  enabled: false
+
+enable_metrics: false
+suppress_key_server_warning: true

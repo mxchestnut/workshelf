@@ -1,0 +1,16 @@
+{
+  email admin@workshelf.dev
+}
+
+# Client API (443) → Synapse 8008
+matrix.workshelf.dev:443 {
+  encode zstd gzip
+  reverse_proxy synapse:8008
+}
+
+# Federation (8448) → Synapse 8008 (Synapse handles both on 8008 when behind TLS terminator)
+# Alternatively: reverse_proxy synapse:8448 if you enable TLS to synapse directly.
+matrix.workshelf.dev:8448 {
+  encode zstd gzip
+  reverse_proxy synapse:8008
+}

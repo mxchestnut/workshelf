@@ -3,9 +3,11 @@ Projects Service Layer - Manage writing projects and organization.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models.project import Project
+from app.models.templates import ProjectTemplate
+from app.models.ai_templates import AIGeneratedTemplate
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.core.exceptions import NotFoundError
 
@@ -207,3 +209,78 @@ class ProjectService:
             await db.refresh(project)
         
         return project
+
+    @staticmethod
+    async def create_project_from_template(
+        db: AsyncSession,
+        template_slug: str,
+        template_type: str,
+        title: str,
+        user_id: str,
+        tenant_id: str,
+        description: Optional[str] = None,
+        project_type: str = "writing",
+        prompt_responses: Optional[List[Dict[str, Any]]] = None
+    ) -> ProjectResponse:
+        """
+        Create a new project from a template (regular or AI-generated).
+        Stores the template reference and user's prompt responses.
+        """
+        
+        template_id = None
+        ai_template_id = None
+        
+        if template_type == "ai":
+            # Look up AI-generated template
+            result = await db.execute(
+                select(AIGeneratedTemplate)
+                .where(AIGeneratedTemplate.slug == template_slug)
+                .where(AIGeneratedTemplate.status == "approved")
+            )
+            template = result.scalar_one_or_none()
+            
+            if not template:
+                raise NotFoundError(f"AI template '{template_slug}' not found or not approved")
+            
+            ai_template_id = template.id
+            
+        else:
+            # Look up regular template
+            result = await db.execute(
+                select(ProjectTemplate)
+                .where(ProjectTemplate.slug == template_slug)
+                .where(ProjectTemplate.is_active == True)
+            )
+            template = result.scalar_one_or_none()
+            
+            if not template:
+                raise NotFoundError(f"Template '{template_slug}' not found or not active")
+            
+            template_id = template.id
+            
+            # Increment usage counter
+            template.usage_count += 1
+        
+        # Create the project
+        project = Project(
+            tenant_id=tenant_id,
+            user_id=user_id,
+            title=title,
+            description=description,
+            project_type=project_type,
+            template_id=template_id,
+            ai_template_id=ai_template_id,
+            prompt_responses=prompt_responses or [],
+            current_word_count=0
+        )
+        
+        db.add(project)
+        await db.commit()
+        await db.refresh(project)
+        
+        # Build response
+        response = ProjectResponse.model_validate(project)
+        response.progress_percentage = 0.0
+        response.document_count = 0
+        
+        return response

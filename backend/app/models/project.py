@@ -2,6 +2,7 @@
 Project database model.
 """
 from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from app.models.base import Base
 from datetime import datetime
@@ -22,6 +23,11 @@ class Project(Base):
     current_word_count = Column(Integer, default=0)
     folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True)
     
+    # Template support
+    template_id = Column(Integer, ForeignKey("project_templates.id", ondelete="SET NULL"), nullable=True, index=True)
+    ai_template_id = Column(Integer, ForeignKey("ai_generated_templates.id", ondelete="SET NULL"), nullable=True, index=True)
+    prompt_responses = Column(JSONB, nullable=True)  # User's answers to template prompts
+    
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
@@ -30,3 +36,5 @@ class Project(Base):
     user = relationship("User", back_populates="projects")
     folder = relationship("Folder", back_populates="projects")
     documents = relationship("Document", back_populates="project")
+    template = relationship("ProjectTemplate", foreign_keys=[template_id])
+    ai_template = relationship("AIGeneratedTemplate", foreign_keys=[ai_template_id])

@@ -141,7 +141,7 @@ class StudioCustomizationService:
             {
                 "type": "CNAME",
                 "name": subdomain or "@",
-                "value": "studios.workshelf.app",
+                "value": "studios.workshelf.dev",
                 "ttl": 3600
             }
         ]

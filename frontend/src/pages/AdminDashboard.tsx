@@ -18,6 +18,8 @@ import {
   AlertCircle,
   Mail,
   Send,
+  ShoppingBag,
+  Wand2,
   X,
   CheckCircle,
   Clock,
@@ -659,6 +661,26 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                   <Settings className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
                   <p className="font-semibold text-white">System Settings</p>
                   <p className="text-sm" style={{ color: '#B3B2B0' }}>Configure site-wide settings</p>
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/staff/store'}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <ShoppingBag className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">Store Analytics</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Manage store and EPUB uploads</p>
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/staff/ai-templates'}
+                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
+                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                >
+                  <Wand2 className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
+                  <p className="font-semibold text-white">AI Template Review</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Review AI-generated templates</p>
                 </button>
               </div>
             </div>

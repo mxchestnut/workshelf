@@ -4,12 +4,14 @@ Generate custom project templates based on user interests using Claude
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models import User
+from app.models.ai_templates import AIGeneratedTemplate
 from app.services.ai_template_service import AITemplateGenerator
 
 
@@ -32,7 +34,7 @@ class AITemplateResponse(BaseModel):
     category: Optional[str]
     icon: Optional[str]
     source_interests: List[str]
-    sections: dict  # JSONB structure
+    sections: Any  # JSONB structure (can be dict or list)
     status: str
     ai_model: str
     generation_timestamp: str
@@ -72,6 +74,33 @@ class ApproveTemplateRequest(BaseModel):
     ai_template_id: int
     edits: Optional[dict] = None
     review_notes: Optional[str] = None
+
+
+@router.get("/templates/{slug}", response_model=AITemplateResponse)
+async def get_template_by_slug(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get a specific AI template by slug.
+    Used when creating a project from a template.
+    """
+    result = await db.execute(
+        select(AIGeneratedTemplate)
+        .where(AIGeneratedTemplate.slug == slug)
+        .where(AIGeneratedTemplate.status == "approved")
+    )
+    
+    template = result.scalar_one_or_none()
+    
+    if not template:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Template '{slug}' not found or not approved"
+        )
+    
+    return template
 
 
 @router.post("/generate-templates", response_model=GenerateTemplatesResponse, status_code=status.HTTP_201_CREATED)
@@ -120,7 +149,7 @@ async def generate_templates(
         generation_time_ms = int((time.time() - start_time) * 1000)
         
         return GenerateTemplatesResponse(
-            templates=[AITemplateResponse.from_orm(t) for t in templates],
+            templates=[AITemplateResponse.model_validate(t) for t in templates],
             generation_time_ms=generation_time_ms,
             message=f"Generated {len(templates)} custom templates! These are pending staff review and can be used immediately."
         )
@@ -165,7 +194,7 @@ async def check_existing_templates(
             status="approved"
         )
         
-        return [ExistingTemplateResponse.from_orm(t) for t in templates]
+        return [ExistingTemplateResponse.model_validate(t) for t in templates]
         
     except Exception as e:
         raise HTTPException(
@@ -220,7 +249,7 @@ async def approve_template(
             review_notes=request.review_notes
         )
         
-        return ExistingTemplateResponse.from_orm(template)
+        return ExistingTemplateResponse.model_validate(template)
         
     except ValueError as e:
         raise HTTPException(
@@ -265,7 +294,7 @@ async def get_pending_templates(
         )
         templates = result.scalars().all()
         
-        return [AITemplateResponse.from_orm(t) for t in templates]
+        return [AITemplateResponse.model_validate(t) for t in templates]
         
     except Exception as e:
         raise HTTPException(

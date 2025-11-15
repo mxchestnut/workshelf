@@ -3,14 +3,50 @@ Projects API Endpoints - Manage writing projects.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Dict, Any
+from sqlalchemy import select
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services.project_service import ProjectService
 from app.services import user_service
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
+from app.models.document import Document
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+
+class CreateProjectFromTemplateRequest(BaseModel):
+    """Request to create a project from a template"""
+    template_slug: str = Field(..., description="Slug of the template (regular or AI-generated)")
+    template_type: str = Field("ai", description="'ai' for AI-generated or 'standard' for regular templates")
+    title: str = Field(..., min_length=1, max_length=500, description="Project title")
+    description: Optional[str] = Field(None, description="Project description")
+    project_type: str = Field("writing", description="Type of project (writing, novel, etc)")
+    prompt_responses: List[Dict[str, Any]] = Field(default_factory=list, description="User's answers to prompts")
+
+
+# DISABLED: AI template project creation endpoint
+# @router.post("/from-template", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+# async def create_project_from_template(
+#     data: CreateProjectFromTemplateRequest,
+#     db: AsyncSession = Depends(get_db),
+#     current_user: Dict[str, Any] = Depends(get_current_user)
+# ):
+#     """Create a new project from a template (AI or regular)."""
+#     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+#     
+#     return await ProjectService.create_project_from_template(
+#         db=db,
+#         template_slug=data.template_slug,
+#         template_type=data.template_type,
+#         title=data.title,
+#         user_id=user.id,
+#         tenant_id=user.tenant_id,
+#         description=data.description,
+#         project_type=data.project_type,
+#         prompt_responses=data.prompt_responses
+#     )
 
 
 @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
