@@ -8,8 +8,18 @@ import sys
 
 async def grant_staff():
     """Grant staff privileges to warpxth"""
-    # Production database URL
-    db_url = 'postgresql://workshelf_admin:GivO51ihnGvDMllSEylxMEKK0SI6UMPd@workshelf-db.c47iwe0is948.us-east-1.rds.amazonaws.com:5432/workshelf'
+    # Get connection from AWS Secrets Manager or environment
+    import boto3
+    import json
+    
+    try:
+        secrets_client = boto3.client('secretsmanager', region_name='us-east-1')
+        db_password = secrets_client.get_secret_value(SecretId='workshelf/db-password')['SecretString']
+        db_url = f'postgresql://workshelf_admin:{db_password}@workshelf-db.c47iwe0is948.us-east-1.rds.amazonaws.com:5432/workshelf'
+    except Exception as e:
+        print(f"Error getting secret: {e}")
+        print("Set DATABASE_URL environment variable or use AWS Secrets Manager")
+        sys.exit(1)
     
     try:
         print("🔌 Connecting to database...")

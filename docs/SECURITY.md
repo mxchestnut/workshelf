@@ -41,7 +41,7 @@ Therefore, anything in frontend code must be considered public.
 These values are **NEVER** safe to commit:
 
 ### Backend Secrets
-- ❌ Database passwords (`npg_c2ZCF0THgyzS`)
+- ✅ Database passwords (stored in AWS Secrets Manager)
 - ❌ Keycloak admin password (`e00NiIf26fJzdkdBt1kw`)
 - ❌ Backend client secret (`WTWM9Ahl5e95eIqnIf6PcnfFrr3oM9Bp`)
 - ❌ SendGrid API keys

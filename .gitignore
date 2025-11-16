@@ -32,6 +32,9 @@ secrets.*
 *.crt
 *.p12
 *.pfx
+matrix-helper-key*
+*_rsa*
+id_*
 
 # IDE
 .vscode/

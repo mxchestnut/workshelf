@@ -131,7 +131,7 @@ aws secretsmanager put-secret-value \
 ### Step 4: Migrate Database
 **Export from Neon:**
 ```bash
-pg_dump "postgresql://neondb_owner:npg_c2ZCF0THgyzS@ep-weathered-tree-a81zzcnl-pooler.eastus2.azure.neon.tech/neondb" > workshelf_backup.sql
+pg_dump "postgresql://neondb_owner:YOUR_PASSWORD@ep-weathered-tree-a81zzcnl-pooler.eastus2.azure.neon.tech/neondb" > workshelf_backup.sql
 ```
 
 **Get RDS endpoint:**
