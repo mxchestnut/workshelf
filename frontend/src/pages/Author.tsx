@@ -6,10 +6,19 @@ import {
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import Typography from '@tiptap/extension-typography'
+import Highlight from '@tiptap/extension-highlight'
+import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
+import Link from '@tiptap/extension-link'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Author {
   id: number
@@ -88,6 +97,20 @@ export default function Author() {
       Placeholder.configure({
         placeholder: 'Write a biography for this author...',
       }),
+      Typography,
+      Highlight.configure({ multicolor: true }),
+      Underline,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Link.configure({
+        openOnClick: false,
+      }),
+      TextStyle,
+      Color,
+      Subscript,
+      Superscript,
     ],
     content: author?.bio || '',
     editable: isEditing,

@@ -9,7 +9,9 @@ export interface User {
   username: string
   display_name: string
   is_staff: boolean
+  is_approved: boolean
   keycloak_id: string
+  matrix_onboarding_seen?: boolean
   groups?: {
     id: string
     name: string
@@ -18,7 +20,7 @@ export interface User {
   }[]
 }
 
-const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io'
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'https://auth.workshelf.dev'
 const KEYCLOAK_REALM = 'workshelf'
 const KEYCLOAK_CLIENT_ID = 'workshelf-frontend'
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -134,6 +136,11 @@ class AuthService {
     if (this.refreshToken) {
       localStorage.setItem('refresh_token', this.refreshToken)
     }
+
+    // Notify app that auth is now ready (same-tab listeners)
+    try {
+      window.dispatchEvent(new CustomEvent('auth:logged-in'))
+    } catch {}
 
     // Fetch user info from our backend
     return await this.fetchUserInfo()

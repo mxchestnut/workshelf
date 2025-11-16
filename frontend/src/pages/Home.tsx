@@ -40,7 +40,7 @@ export default function Home() {
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
   useEffect(() => {
     loadData()
@@ -86,19 +86,19 @@ export default function Home() {
 
       // For now, use placeholder stats
       setStats({
-        totalBooks: 127,
-        totalAuthors: 43,
-        totalUsers: 1250,
-        totalDocuments: 892
+  totalBooks: 0,
+  totalAuthors: 0,
+  totalUsers: 0,
+  totalDocuments: 0
       })
     } catch (error) {
       console.error('Failed to load stats:', error)
       // Use default stats
       setStats({
-        totalBooks: 100,
-        totalAuthors: 40,
-        totalUsers: 1000,
-        totalDocuments: 800
+  totalBooks: 0,
+  totalAuthors: 0,
+  totalUsers: 0,
+  totalDocuments: 0
       })
     }
   }
@@ -163,10 +163,10 @@ export default function Home() {
                 <span className="text-sm font-medium uppercase tracking-wide">Welcome to Work Shelf</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Writing Hub'}
+                {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Community'}
               </h1>
               <p className="text-xl mb-6 max-w-2xl" style={{ color: '#B3B2B0' }}>
-                Write, publish, and discover amazing stories. Join a community of authors and readers building the future of independent publishing.
+                Connect with fellow writers, join groups, share your work, and build meaningful relationships in a vibrant creative community.
               </p>
               
               {/* Platform Stats */}
@@ -193,9 +193,41 @@ export default function Home() {
 
           {/* Quick Actions */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Get Started</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               
+              {/* Join Groups */}
+              <button
+                onClick={() => handleNavigation('/groups')}
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+              >
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Join Groups</h3>
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Find your writing tribe and collaborate</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                  Explore groups <ArrowRight className="w-4 h-4 ml-1" />
+                </div>
+              </button>
+
+              {/* Start Chatting */}
+              <button
+                onClick={() => handleNavigation('/feed')}
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
+                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+              >
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
+                  <MessagesSquare className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Join Conversations</h3>
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Connect with writers through chat and feed</p>
+                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                  Start chatting <ArrowRight className="w-4 h-4 ml-1" />
+                </div>
+              </button>
+
               {/* Start Writing */}
               <button
                 onClick={() => handleNavigation('/documents')}
@@ -206,13 +238,13 @@ export default function Home() {
                   <PenTool className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Start Writing</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Create a new document with AI assistance</p>
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Create and share your stories</p>
                 <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Get started <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
 
-              {/* Browse Books */}
+              {/* Browse Store */}
               <button
                 onClick={() => handleNavigation('/store')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
@@ -222,41 +254,9 @@ export default function Home() {
                   <StoreIcon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Browse Store</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Discover books from independent authors</p>
+                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Discover books from our community</p>
                 <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
                   Explore now <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </button>
-
-              {/* Free Books */}
-              <button
-                onClick={() => handleNavigation('/free-books')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
-              >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
-                  <BookMarked className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Free Books</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Access thousands of classic literature</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
-                  Browse free <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </button>
-
-              {/* Discover Authors */}
-              <button
-                onClick={() => handleNavigation('/authors')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
-              >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Discover Authors</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Find and follow your favorite writers</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
-                  Find authors <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
 
@@ -422,12 +422,12 @@ export default function Home() {
               
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                  <PenTool className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                  <Users className="w-6 h-6" style={{ color: '#B34B0C' }} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">AI-Powered Writing</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">Community-Driven</h3>
                   <p style={{ color: '#B3B2B0' }}>
-                    Write faster with intelligent AI assistance that helps with structure, style, and creativity.
+                    Connect with fellow writers, get feedback, and grow together in a supportive community.
                   </p>
                 </div>
               </div>

@@ -82,9 +82,173 @@ class InterestStats(BaseModel):
     count: int
 
 
+class UserApprovalRequest(BaseModel):
+    """Request to approve/reject a user registration"""
+    approved: bool
+    rejection_reason: Optional[str] = None
+
+
+class PendingUserResponse(BaseModel):
+    """Pending user awaiting approval"""
+    id: int
+    email: str
+    username: Optional[str]
+    display_name: Optional[str]
+    created_at: datetime
+    is_approved: bool
+    
+    class Config:
+        from_attributes = True
+
+
+class UserAccountResponse(BaseModel):
+    """User account information for admin panel"""
+    id: int
+    email: str
+    username: Optional[str]
+    display_name: Optional[str]
+    is_staff: bool
+    is_approved: bool
+    is_active: bool
+    is_verified: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
 # ============================================================================
 # Admin Endpoints
 # ============================================================================
+
+@router.get("/users", response_model=List[UserAccountResponse])
+async def get_all_users(
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(100, le=500),
+    offset: int = Query(0, ge=0),
+    search: Optional[str] = Query(None, description="Search by email, username, or display name"),
+    filter_staff: Optional[bool] = Query(None, description="Filter by staff status"),
+    filter_approved: Optional[bool] = Query(None, description="Filter by approval status"),
+    filter_active: Optional[bool] = Query(None, description="Filter by active status")
+):
+    """
+    Get all users with optional filtering
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    query = select(User).order_by(User.created_at.desc())
+    
+    # Apply filters
+    conditions = []
+    if search:
+        search_term = f"%{search.lower()}%"
+        conditions.append(
+            or_(
+                func.lower(User.email).like(search_term),
+                func.lower(User.username).like(search_term),
+                func.lower(User.display_name).like(search_term)
+            )
+        )
+    
+    if filter_staff is not None:
+        conditions.append(User.is_staff == filter_staff)
+    
+    if filter_approved is not None:
+        conditions.append(User.is_approved == filter_approved)
+    
+    if filter_active is not None:
+        conditions.append(User.is_active == filter_active)
+    
+    if conditions:
+        query = query.where(and_(*conditions))
+    
+    query = query.limit(limit).offset(offset)
+    
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [
+        UserAccountResponse(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            display_name=user.display_name,
+            is_staff=user.is_staff,
+            is_approved=user.is_approved,
+            is_active=user.is_active,
+            is_verified=user.is_verified,
+            created_at=user.created_at
+        )
+        for user in users
+    ]
+
+
+@router.get("/users/pending", response_model=List[PendingUserResponse])
+async def get_pending_users(
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(50, le=100),
+    offset: int = Query(0, ge=0)
+):
+    """
+    Get users pending approval
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    result = await db.execute(
+        select(User)
+        .where(User.is_approved == False)
+        .order_by(User.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    pending_users = result.scalars().all()
+    
+    return [
+        PendingUserResponse(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            display_name=user.display_name,
+            created_at=user.created_at,
+            is_approved=user.is_approved
+        )
+        for user in pending_users
+    ]
+
+
+@router.post("/users/{user_id}/approve")
+async def approve_user(
+    user_id: int,
+    request: UserApprovalRequest,
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Approve or reject a user registration
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if request.approved:
+        user.is_approved = True
+        user.is_active = True
+        await db.commit()
+        return {"success": True, "message": f"User {user.email} approved"}
+    else:
+        # Reject: deactivate user
+        user.is_approved = False
+        user.is_active = False
+        await db.commit()
+        return {"success": True, "message": f"User {user.email} rejected", "reason": request.rejection_reason}
 
 @router.get("/stats", response_model=AdminStatsResponse)
 async def get_admin_stats(

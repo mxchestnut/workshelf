@@ -5,7 +5,7 @@
  */
 import { useEffect, useState, useRef } from 'react'
 import { X, Minimize2, Maximize2, Send } from 'lucide-react'
-import { useMatrix } from '../hooks/useMatrixClient'
+import { useMatrix } from '../hooks/useMatrixClient.tsx'
 import * as matrix from 'matrix-js-sdk'
 
 interface ChatPopupProps {
@@ -69,7 +69,7 @@ export function ChatPopup({
     loadMessages()
 
     // Listen for new messages in this room
-    const onTimeline = (event: matrix.MatrixEvent, room: matrix.Room) => {
+    const onTimeline = (event: matrix.MatrixEvent, room: matrix.Room | undefined) => {
       if (room?.roomId === roomId && event.getType() === 'm.room.message') {
         const newMessage: Message = {
           id: event.getId() || '',
@@ -83,10 +83,10 @@ export function ChatPopup({
       }
     }
 
-    client.on('Room.timeline', onTimeline)
+    client.on(matrix.RoomEvent.Timeline, onTimeline)
 
     return () => {
-      client.off('Room.timeline', onTimeline)
+      client.off(matrix.RoomEvent.Timeline, onTimeline)
     }
   }, [client, roomId])
 
@@ -221,10 +221,9 @@ export function ChatPopup({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm"
+              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B34B0C] text-sm"
               style={{ 
-                borderColor: '#E5E5E5',
-                focusRing: '#B34B0C'
+                borderColor: '#E5E5E5'
               }}
             />
             <button

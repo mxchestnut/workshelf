@@ -250,6 +250,7 @@ async def complete_onboarding(
     user.newsletter_opt_in = request.newsletter_opt_in
     user.sms_opt_in = request.sms_opt_in
     user.house_rules_accepted = request.house_rules_accepted
+    user.matrix_onboarding_seen = True  # Mark Matrix onboarding as seen after completing step 3
     
     # Set display_name if not already set
     if not user.display_name:

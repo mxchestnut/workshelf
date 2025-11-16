@@ -3,11 +3,11 @@
  * View all group activity and start new groups
  */
 import { useState, useEffect } from 'react'
-import { Users, Plus, TrendingUp, MessageSquare, Shield } from 'lucide-react'
+import { Users, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
 import { User } from '../services/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Group {
   id: number
@@ -88,7 +88,7 @@ export default function Groups() {
 
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/groups/request`, {
+      const response = await fetch(`${API_URL}/api/v1/groups`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,21 +96,28 @@ export default function Groups() {
         },
         body: JSON.stringify({
           name: newGroupName,
-          description: newGroupDescription
+          description: newGroupDescription,
+          is_public: true
         })
       })
 
       if (response.ok) {
-        alert('Group creation request submitted! Staff will review your request.')
+        const created = await response.json()
+        alert('Group created successfully!')
         setShowCreateModal(false)
         setNewGroupName('')
         setNewGroupDescription('')
+        // Refresh lists
+        loadGroups()
+        // Optionally navigate to the new group
+        window.location.href = `/group?id=${created.id}`
       } else {
-        alert('Failed to submit group request')
+        const errText = await response.text()
+        alert(`Failed to create group: ${errText || response.status}`)
       }
     } catch (error) {
-      console.error('Failed to create group:', error)
-      alert('Failed to submit group request')
+  console.error('Failed to create group:', error)
+  alert('Failed to create group')
     } finally {
       setCreating(false)
     }
@@ -248,7 +255,7 @@ export default function Groups() {
       </main>
 
       {/* Create Group Modal */}
-      {showCreateModal && (
+  {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
             <div className="sticky top-0 bg-gradient-to-r from-[#524944] to-[#37322E] text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
@@ -262,17 +269,6 @@ export default function Groups() {
             </div>
 
             <form onSubmit={handleCreateGroup} className="p-6 space-y-4">
-              <div className="bg-orange-50 border-2 border-[#B34B0C]/30 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-2">
-                  <Shield className="w-5 h-5 text-[#B34B0C] flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Staff Approval Required</p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      All group creation requests are reviewed by our staff team to ensure quality and community standards.
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -315,7 +311,7 @@ export default function Groups() {
                   disabled={creating}
                   className="flex-1 px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] disabled:opacity-50 transition-colors"
                 >
-                  {creating ? 'Submitting...' : 'Submit Request'}
+                  {creating ? 'Creating...' : 'Create Group'}
                 </button>
               </div>
             </form>

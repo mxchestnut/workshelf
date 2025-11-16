@@ -1,14 +1,29 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+// Use URL-based resolution to avoid Node.js type dependencies
 
 // https://vitejs.dev/config/
 // Force rebuild: 2025-11-09
+const rootDir = new URL('.', import.meta.url).pathname
+
 export default defineConfig({
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          matrix: ['matrix-js-sdk'],
+          editor: ['@tiptap/react', '@tiptap/starter-kit'],
+          epub: ['react-reader', 'epubjs'],
+          lucide: ['lucide-react']
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': new URL('./src', import.meta.url).pathname,
     },
   },
   server: {

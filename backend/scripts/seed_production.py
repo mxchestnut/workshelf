@@ -17,7 +17,7 @@ import getpass
 from typing import Optional
 
 # Production URLs
-KEYCLOAK_URL = "https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io"
+KEYCLOAK_URL = "https://auth.workshelf.dev"
 BACKEND_URL = "https://workshelf-backend.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io"
 REALM = "workshelf"
 CLIENT_ID = "workshelf-app"

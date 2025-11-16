@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, User, Calendar, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -59,7 +60,7 @@ const AdminModeration: React.FC = () => {
       }
 
       // Load stats
-      const statsRes = await fetch('http://localhost:8000/api/v1/admin/moderation/stats', {
+  const statsRes = await fetch(`${API_URL}/api/v1/admin/moderation/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statsRes.ok) {
@@ -67,7 +68,7 @@ const AdminModeration: React.FC = () => {
       }
 
       // Load pending edits
-      const editsRes = await fetch('http://localhost:8000/api/v1/admin/moderation/pending-edits', {
+  const editsRes = await fetch(`${API_URL}/api/v1/admin/moderation/pending-edits`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (editsRes.ok) {
@@ -87,7 +88,7 @@ const AdminModeration: React.FC = () => {
   const loadHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8000/api/v1/admin/moderation/history?limit=50', {
+  const res = await fetch(`${API_URL}/api/v1/admin/moderation/history?limit=50`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -107,7 +108,7 @@ const AdminModeration: React.FC = () => {
     setModeratingId(editId);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:8000/api/v1/admin/moderation/${editId}/moderate`, {
+  const res = await fetch(`${API_URL}/api/v1/admin/moderation/${editId}/moderate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -53,6 +53,14 @@ interface Invitation {
   accepted_at?: string
 }
 
+interface PendingUser {
+  id: number
+  email: string
+  username: string | null
+  display_name: string | null
+  created_at: string
+}
+
 interface AdminDashboardProps {
   embedded?: boolean  // When true, don't render Navigation (for use in Dashboard tabs)
 }
@@ -68,6 +76,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMessage, setInviteMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
+  const [pendingUsersLoading, setPendingUsersLoading] = useState(false)
 
   useEffect(() => {
     loadUser()
@@ -133,9 +143,9 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
         
         setStats({
           total_members: totalMembers,
-          pending_requests: 0, // TODO: Get from API
+          pending_requests: 0,
           total_posts: totalPosts,
-          flagged_content: 0 // TODO: Get from API
+          flagged_content: 0
         })
       }
 
@@ -234,10 +244,66 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
     setTimeout(() => setInviteMessage(null), 3000)
   }
 
-  // Load invitations when Site Admin tab becomes active
+  const loadPendingUsers = async () => {
+    setPendingUsersLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/admin/users/pending`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPendingUsers(data.users || [])
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading pending users:', error)
+    } finally {
+      setPendingUsersLoading(false)
+    }
+  }
+
+  const approveUser = async (userId: number, approve: boolean) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/admin/users/${userId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ approve })
+      })
+
+      if (response.ok) {
+        // Remove from pending list
+        setPendingUsers(pendingUsers.filter(u => u.id !== userId))
+        setInviteMessage({ 
+          type: 'success', 
+          text: approve ? 'User approved successfully!' : 'User rejected successfully.' 
+        })
+        setTimeout(() => setInviteMessage(null), 3000)
+      } else {
+        const error = await response.json()
+        setInviteMessage({ type: 'error', text: error.detail || 'Failed to process approval' })
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error approving user:', error)
+      setInviteMessage({ type: 'error', text: 'Failed to process approval' })
+    }
+  }
+
+  // Load invitations and pending users when Site Admin tab becomes active
   useEffect(() => {
-    if (activeTab === 'site-admin' && isStaff && invitations.length === 0) {
-      loadInvitations()
+    if (activeTab === 'site-admin' && isStaff) {
+      if (invitations.length === 0) {
+        loadInvitations()
+      }
+      loadPendingUsers()
     }
   }, [activeTab, isStaff])
 
@@ -482,7 +548,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Site Administration</h2>
               <a
-                href="https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io/admin"
+                href="https://auth.workshelf.dev/admin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors flex items-center gap-2"
@@ -612,6 +678,79 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                             </button>
                           </>
                         )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Pending User Approvals */}
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <UserCheck className="w-6 h-6" />
+                  Pending User Approvals
+                  {pendingUsers.length > 0 && (
+                    <span className="px-2 py-1 rounded-full bg-[#B34B0C] text-white text-sm font-semibold">
+                      {pendingUsers.length}
+                    </span>
+                  )}
+                </h3>
+                <button
+                  onClick={loadPendingUsers}
+                  disabled={pendingUsersLoading}
+                  className="px-3 py-1 text-sm border-2 text-white rounded hover:border-[#B34B0C] transition-colors disabled:opacity-50"
+                  style={{ borderColor: '#6C6A68' }}
+                >
+                  {pendingUsersLoading ? 'Loading...' : 'Refresh'}
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {pendingUsersLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading pending users...</div>
+                  </div>
+                ) : pendingUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <UserCheck className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
+                    <p className="font-semibold text-white mb-1">No pending approvals</p>
+                    <p className="text-sm" style={{ color: '#B3B2B0' }}>All users have been approved</p>
+                  </div>
+                ) : (
+                  pendingUsers.map(user => (
+                    <div
+                      key={user.id}
+                      className="p-4 rounded-lg border-2 flex items-center justify-between"
+                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-white">{user.display_name || user.username || 'New User'}</p>
+                        <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: '#B3B2B0' }}>
+                          <span>{user.email}</span>
+                          <span>Registered {new Date(user.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => approveUser(user.id, true)}
+                          className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to reject ${user.email}? This will delete their account.`)) {
+                              approveUser(user.id, false)
+                            }
+                          }}
+                          className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors flex items-center gap-1"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Reject
+                        </button>
                       </div>
                     </div>
                   ))

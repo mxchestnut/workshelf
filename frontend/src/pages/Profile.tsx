@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
@@ -35,6 +35,10 @@ export function Profile() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [matrixPwMessage, setMatrixPwMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [matrixPwLoading, setMatrixPwLoading] = useState(false)
+  const [matrixPassword, setMatrixPassword] = useState('')
+  const [matrixPassword2, setMatrixPassword2] = useState('')
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
   const [activeTab, setActiveTab] = useState<ProfileTab>('general')
 
@@ -50,7 +54,7 @@ export function Profile() {
     twitter_handle: ''
   })
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
   useEffect(() => {
     loadProfile()
@@ -456,7 +460,7 @@ export function Profile() {
                 value={formData.phone_number}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
                 disabled={!editing}
-                placeholder="+1234567890"
+                placeholder="+1 (555) 000-0000"
                 className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
                 style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
@@ -477,6 +481,116 @@ export function Profile() {
                 style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
               />
             </div>
+          </div>
+        </div>
+
+        {/* Messaging: Set Matrix Password */}
+        <div className="rounded-lg p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2" style={{ color: 'white' }}>
+            <Lock className="w-5 h-5" /> Messaging
+          </h2>
+          <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
+            Your messages sync across devices with Element. Set a password to sign in on mobile or desktop and continue your conversations anywhere.
+          </p>
+
+          <div className="mb-4 p-4 rounded-lg border" style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}>
+            <h3 className="font-semibold mb-2 text-white">Sign into Element</h3>
+            <div className="text-sm space-y-1" style={{ color: '#B3B2B0' }}>
+              <p><strong>Homeserver:</strong> https://matrix.workshelf.dev</p>
+              <p><strong>Username:</strong> {profile.username}</p>
+              <p><strong>Password:</strong> Set below</p>
+            </div>
+            <div className="mt-3 flex gap-3">
+              <a
+                href="https://element.io/download"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded text-sm font-medium text-white hover:opacity-80"
+                style={{ backgroundColor: '#B34B0C' }}
+              >
+                <ExternalLink className="w-4 h-4" />
+                Download Element
+              </a>
+            </div>
+          </div>
+
+          {matrixPwMessage && (
+            <div className={`mb-4 p-3 rounded border ${matrixPwMessage.type === 'success' ? 'bg-green-900/40 border-green-700 text-green-300' : 'bg-red-900/40 border-red-700 text-red-300'}`}>
+              {matrixPwMessage.text}
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>New Matrix Password</label>
+              <input
+                type="password"
+                value={matrixPassword}
+                onChange={(e) => setMatrixPassword(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#B3B2B0' }}>Confirm Password</label>
+              <input
+                type="password"
+                value={matrixPassword2}
+                onChange={(e) => setMatrixPassword2(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+                style={{ backgroundColor: '#37322E', borderColor: '#6C6A68', color: 'white' }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <button
+              onClick={async () => {
+                setMatrixPwMessage(null)
+                if (!matrixPassword || matrixPassword.length < 8) {
+                  setMatrixPwMessage({ type: 'error', text: 'Password must be at least 8 characters.' })
+                  return
+                }
+                if (matrixPassword !== matrixPassword2) {
+                  setMatrixPwMessage({ type: 'error', text: 'Passwords do not match.' })
+                  return
+                }
+                try {
+                  setMatrixPwLoading(true)
+                  const token = authService.getToken()
+                  if (!token) {
+                    setMatrixPwMessage({ type: 'error', text: 'Not authenticated.' })
+                    return
+                  }
+                  const resp = await fetch(`${API_URL}/api/v1/matrix/set-password`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: matrixPassword })
+                  })
+                  if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}))
+                    setMatrixPwMessage({ type: 'error', text: err.detail || 'Failed to set password.' })
+                  } else {
+                    setMatrixPwMessage({ type: 'success', text: 'Matrix password updated. You can now sign into Element.' })
+                    setMatrixPassword('')
+                    setMatrixPassword2('')
+                  }
+                } catch (e) {
+                  setMatrixPwMessage({ type: 'error', text: 'Unexpected error. Please try again.' })
+                } finally {
+                  setMatrixPwLoading(false)
+                }
+              }}
+              disabled={matrixPwLoading}
+              className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+              style={{ backgroundColor: '#B34B0C' }}
+            >
+              {matrixPwLoading ? 'Saving…' : 'Set Matrix Password'}
+            </button>
           </div>
         </div>
 

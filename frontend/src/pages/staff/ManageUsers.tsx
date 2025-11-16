@@ -48,24 +48,22 @@ export function ManageUsers() {
 
   const loadUsers = async () => {
     try {
-      // TODO: Implement API endpoint
-      // const token = localStorage.getItem('access_token')
-      // const response = await fetch(`${API_URL}/api/v1/admin/users`, {
-      //   headers: { 'Authorization': `Bearer ${token}` }
-      // })
+      const token = localStorage.getItem('access_token')
+      const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
       
-      // Mock data for now
-      setUsers([
-        {
-          id: 1,
-          email: 'user@example.com',
-          username: 'user1',
-          is_staff: false,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          last_login: new Date().toISOString()
+      const response = await fetch(`${API_URL}/api/v1/admin/users?limit=500`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      ])
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load users: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      setUsers(data)
       setLoading(false)
     } catch (error) {
       console.error('Failed to load users:', error)

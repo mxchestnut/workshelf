@@ -6,31 +6,31 @@ resource "aws_db_instance" "matrix" {
   identifier     = "${var.project_name}-matrix-db"
   engine         = "postgres"
   engine_version = "15.8"
-  
+
   # Smallest production instance - ~$15/month
   instance_class    = "db.t4g.micro"
   allocated_storage = 20
   storage_type      = "gp3"
-  
+
   db_name  = "synapse"
   username = "synapse_user"
   password = random_password.matrix_db_password.result
-  
+
   # Network
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.matrix_db.id]
   publicly_accessible    = false
-  
+
   # Backups
   backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "mon:04:00-mon:05:00"
-  
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "mon:04:00-mon:05:00"
+
   # Cost optimization
   skip_final_snapshot       = var.environment == "dev" ? true : false
   final_snapshot_identifier = var.environment == "dev" ? null : "${var.project_name}-matrix-db-final-snapshot"
   deletion_protection       = var.environment == "prod" ? true : false
-  
+
   tags = {
     Name = "${var.project_name}-matrix-db"
   }
@@ -146,139 +146,144 @@ resource "aws_ecs_task_definition" "matrix" {
   family                   = "${var.project_name}-matrix"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 512   # 0.5 vCPU - ~$7/month
-  memory                   = 1024  # 1GB RAM
+  cpu                      = 512  # 0.5 vCPU - ~$7/month
+  memory                   = 1024 # 1GB RAM
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
   task_role_arn            = aws_iam_role.ecs_task_execution.arn
 
-  container_definitions = jsonencode([{
-    name  = "synapse"
-    image = "496675774501.dkr.ecr.us-east-1.amazonaws.com/matrix-synapse:latest"
-    
-    # Use entrypoint to generate config if it doesn't exist
-    entryPoint = ["/bin/sh", "-c"]
-    command = [
-      <<-EOT
-      if [ ! -f /data/homeserver.yaml ]; then
-        echo "Generating homeserver.yaml..."
-        python -m synapse.app.homeserver --server-name=matrix.workshelf.dev --config-path=/data/homeserver.yaml --generate-config --report-stats=no &&
-        
-        # Update config with database settings
-        cat >> /data/homeserver.yaml <<EOF
+  container_definitions = jsonencode([
+    # Init/config writer container: writes homeserver.yaml to EFS, then exits
+    {
+      name       = "config-writer"
+      # Use the same private ECR image to avoid Docker Hub pulls (no NAT)
+      image      = "496675774501.dkr.ecr.us-east-1.amazonaws.com/matrix-synapse:latest"
+      essential  = false
+      entryPoint = ["/bin/sh", "-c"]
+      command = [
+        <<-EOT
+        mkdir -p /data
+cat > /data/homeserver.yaml <<CFG
+server_name: "${var.domain_name}"
+public_baseurl: "https://matrix.${var.domain_name}/"
+report_stats: false
 
-# Database configuration
+# Reduce log noise about default trusted key server
+suppress_key_server_warning: true
+
+# Explicitly configure trusted key servers to avoid startup warnings and be explicit
+trusted_key_servers:
+  - server_name: "matrix.org"
+
 database:
   name: psycopg2
   args:
     user: synapse_user
-    password: $POSTGRES_PASSWORD
+    password: "$POSTGRES_PASSWORD"
     database: synapse
-    host: $POSTGRES_HOST
+    host: "$POSTGRES_HOST"
     port: 5432
     cp_min: 5
     cp_max: 10
+  # RDS uses en_US.UTF-8 locale by default; Synapse prefers 'C'.
+  # Allow unsafe locale to bypass strict check on RDS.
+  allow_unsafe_locale: true
 
-# Registration
-enable_registration: false
-registration_shared_secret: "$SYNAPSE_REGISTRATION_SHARED_SECRET"
-
-# CORS and web client
-web_client_location: https://workshelf.dev
-
-# Listeners
 listeners:
   - port: 8008
     tls: false
     type: http
     x_forwarded: true
-    bind_addresses: ['::']
     resources:
       - names: [client, federation]
         compress: false
-EOF
-      fi
-      
-      # Start synapse
-      exec python -m synapse.app.homeserver --config-path=/data/homeserver.yaml
-      EOT
-    ]
-    
-    portMappings = [
-      {
-        containerPort = 8008
-        protocol      = "tcp"
-      },
-      {
-        containerPort = 8448
-        protocol      = "tcp"
-      }
-    ]
 
-    environment = [
-      {
-        name  = "SYNAPSE_SERVER_NAME"
-        value = "matrix.${var.domain_name}"
-      },
-      {
-        name  = "SYNAPSE_REPORT_STATS"
-        value = "no"
-      },
-      {
-        name  = "SYNAPSE_CONFIG_PATH"
-        value = "/data/homeserver.yaml"
-      },
-      {
-        name  = "POSTGRES_HOST"
-        value = aws_db_instance.matrix.address
-      },
-      {
-        name  = "POSTGRES_DB"
-        value = "synapse"
-      },
-      {
-        name  = "POSTGRES_USER"
-        value = "synapse_user"
-      }
-    ]
+enable_registration: false
+registration_shared_secret: "$SYNAPSE_REGISTRATION_SHARED_SECRET"
 
-    secrets = [
-      {
-        name      = "POSTGRES_PASSWORD"
-        valueFrom = aws_secretsmanager_secret.matrix_db_password.arn
-      },
-      {
-        name      = "SYNAPSE_REGISTRATION_SHARED_SECRET"
-        valueFrom = aws_secretsmanager_secret.matrix_shared_secret.arn
+media_store_path: "/data/media_store"
+signing_key_path: "/data/keys/signing.key"
+CFG
+        chmod 0644 /data/homeserver.yaml || true
+        mkdir -p /data/media_store /data/keys
+        # Relax permissions and try to set expected UID/GID for synapse (commonly 991:991)
+        chown -R 991:991 /data || true
+        chmod -R 0775 /data
+        exit 0
+        EOT
+      ]
+      environment = [
+        { name = "POSTGRES_HOST", value = aws_db_instance.matrix.address },
+        { name = "POSTGRES_USER", value = "synapse_user" },
+        { name = "POSTGRES_DB", value = "synapse" }
+      ]
+      secrets = [
+        { name = "POSTGRES_PASSWORD", valueFrom = aws_secretsmanager_secret.matrix_db_password.arn },
+        { name = "SYNAPSE_REGISTRATION_SHARED_SECRET", valueFrom = aws_secretsmanager_secret.matrix_shared_secret.arn }
+      ]
+      mountPoints = [{
+        sourceVolume  = "matrix-data"
+        containerPath = "/data"
+        readOnly      = false
+      }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.matrix.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "config"
+        }
       }
-    ]
+    },
 
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.matrix.name
-        "awslogs-region"        = var.aws_region
-        "awslogs-stream-prefix" = "matrix"
+    # Main Synapse container
+    {
+      name  = "synapse"
+      image = "496675774501.dkr.ecr.us-east-1.amazonaws.com/matrix-synapse:latest"
+
+      # Run as non-root now that signing key is persisted and permissions are set by config-writer
+      user = "991:991"
+
+      dependsOn = [
+        { containerName = "config-writer", condition = "SUCCESS" }
+      ]
+
+      portMappings = [
+        { containerPort = 8008, protocol = "tcp" },
+      ]
+
+      environment = [
+        { name = "SYNAPSE_CONFIG_PATH", value = "/data/homeserver.yaml" }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.matrix.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "matrix"
+        }
       }
+
+      # Use a simple TCP check via Python (avoid curl/wget dependency)
+      healthCheck = {
+        command     = ["CMD-SHELL", "python - <<'PY'\nimport socket,sys; s=socket.socket(); s.settimeout(2);\ntry:\n  s.connect(('127.0.0.1',8008)); s.close(); sys.exit(0)\nexcept Exception:\n  sys.exit(1)\nPY\n"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 90
+      }
+
+      mountPoints = [{
+        sourceVolume  = "matrix-data"
+        containerPath = "/data"
+        readOnly      = false
+      }]
     }
-
-    healthCheck = {
-      command     = ["CMD-SHELL", "curl -f http://localhost:8008/_matrix/client/versions || exit 1"]
-      interval    = 30
-      timeout     = 5
-      retries     = 3
-      startPeriod = 60
-    }
-
-    mountPoints = [{
-      sourceVolume  = "matrix-data"
-      containerPath = "/data"
-      readOnly      = false
-    }]
-  }])
+  ])
 
   volume {
     name = "matrix-data"
-    
+
     efs_volume_configuration {
       file_system_id = aws_efs_file_system.matrix.id
       root_directory = "/"
@@ -296,7 +301,7 @@ resource "aws_efs_file_system" "matrix" {
   encrypted      = true
 
   lifecycle_policy {
-    transition_to_ia = "AFTER_30_DAYS"  # Move to cheaper storage after 30 days
+    transition_to_ia = "AFTER_30_DAYS" # Move to cheaper storage after 30 days
   }
 
   tags = {
@@ -340,11 +345,12 @@ resource "aws_security_group" "matrix_efs" {
 
 # ECS Service for Matrix
 resource "aws_ecs_service" "matrix" {
-  name            = "${var.project_name}-matrix"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.matrix.arn
-  desired_count   = 1  # Single instance is fine for Matrix
-  launch_type     = "FARGATE"
+  name                   = "${var.project_name}-matrix"
+  cluster                = aws_ecs_cluster.main.id
+  task_definition        = aws_ecs_task_definition.matrix.arn
+  desired_count          = 1 # Single instance is fine for Matrix
+  launch_type            = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     subnets          = aws_subnet.private[*].id
@@ -358,11 +364,7 @@ resource "aws_ecs_service" "matrix" {
     container_port   = 8008
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.matrix_federation.arn
-    container_name   = "synapse"
-    container_port   = 8448
-  }
+  # Federation uses the same target group/port (8008) as client traffic
 
   depends_on = [
     aws_lb_listener.https,
@@ -397,26 +399,7 @@ resource "aws_lb_target_group" "matrix_client" {
 }
 
 # Target Group for Matrix Federation (port 8448)
-resource "aws_lb_target_group" "matrix_federation" {
-  name        = "${var.project_name}-matrix-federation"
-  port        = 8448
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
-  target_type = "ip"
-
-  health_check {
-    path                = "/_matrix/federation/v1/version"
-    healthy_threshold   = 2
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
-    matcher             = "200"
-  }
-
-  tags = {
-    Name = "${var.project_name}-matrix-federation-tg"
-  }
-}
+## Removed separate federation target group; routing shares the client TG on port 8008
 
 # ALB Listener Rule for Matrix (matrix.workshelf.dev)
 resource "aws_lb_listener_rule" "matrix_client" {
@@ -448,7 +431,7 @@ resource "aws_lb_listener_rule" "matrix_federation" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.matrix_federation.arn
+    target_group_arn = aws_lb_target_group.matrix_client.arn
   }
 
   condition {

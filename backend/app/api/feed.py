@@ -102,6 +102,15 @@ async def get_feed(
     
     return feed_posts
 
+@router.get("/personal", response_model=List[FeedPost])
+async def get_personal_feed(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 50
+):
+    """Alias for personalized feed to match frontend expectation /feed/personal."""
+    return await get_feed(current_user=current_user, db=db, limit=limit)
+
 
 @router.get("/discover", response_model=List[FeedPost])
 async def get_discover_feed(

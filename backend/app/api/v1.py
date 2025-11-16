@@ -5,6 +5,7 @@ Aggregates all v1 endpoints
 from fastapi import APIRouter
 from app.api import (
     auth,
+    bootstrap,  # Emergency admin access
     registration,  # Registration validation endpoints
     documents,
     studios,
@@ -32,6 +33,7 @@ from app.api import (
     beta_profiles,  # Beta reader marketplace profiles
     groups,
     messaging,
+    matrix,  # Matrix protocol integration for messaging
     subscriptions,
     creator,
     content_integrity,
@@ -84,6 +86,7 @@ async def api_status():
 
 # Include routers
 api_router.include_router(auth.router)
+api_router.include_router(bootstrap.router)  # Emergency admin access
 api_router.include_router(registration.router)  # Registration validation
 api_router.include_router(documents.router)
 api_router.include_router(studios.router)
@@ -119,6 +122,7 @@ api_router.include_router(beta_appointments.router)  # Beta reader appointments
 api_router.include_router(beta_profiles.router)  # Beta reader marketplace profiles
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
+api_router.include_router(matrix.router)  # Matrix protocol integration
 
 # Phase 6: Monetization & Premium Features
 api_router.include_router(subscriptions.router)

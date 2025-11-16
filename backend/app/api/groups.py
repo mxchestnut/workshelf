@@ -694,11 +694,33 @@ async def get_group_posts(
     group_id: int,
     limit: int = 50,
     offset: int = 0,
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all posts in a group."""
-    from app.models.collaboration import GroupPost
+    """Get all posts in a group (public groups: anyone, private groups: members only)."""
+    from app.models.collaboration import GroupPost, Group, GroupMember
     from sqlalchemy import select, desc
+    
+    # Get group to check if it's public
+    group_result = await db.execute(
+        select(Group).where(Group.id == group_id)
+    )
+    group = group_result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # If group is private, check membership
+    if not group.is_public:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        member_result = await db.execute(
+            select(GroupMember).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == user.id
+            )
+        )
+        member = member_result.scalar_one_or_none()
+        if not member:
+            raise HTTPException(status_code=403, detail="Must be a group member to view posts in private groups")
     
     result = await db.execute(
         select(GroupPost)

@@ -63,11 +63,11 @@ export function Community() {
   ]
 
   const trendingTopics = [
-    { name: 'NaNoWriMo', posts: 1234 },
-    { name: 'BetaReaders', posts: 856 },
-    { name: 'WritingTips', posts: 723 },
-    { name: 'Fantasy', posts: 612 },
-    { name: 'Publishing', posts: 445 },
+  { name: 'NaNoWriMo', posts: 42 },
+  { name: 'BetaReaders', posts: 38 },
+  { name: 'WritingTips', posts: 31 },
+  { name: 'Fantasy', posts: 27 },
+  { name: 'Publishing', posts: 19 },
   ]
 
   return (

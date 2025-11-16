@@ -13,13 +13,13 @@ resource "aws_db_instance" "postgres" {
   identifier     = "${var.project_name}-db"
   engine         = "postgres"
   engine_version = "16.3"
-  
+
   # Free Tier: db.t3.micro or db.t4g.micro
   instance_class = "db.t3.micro"
-  
+
   # Free Tier: 20 GB storage
   allocated_storage     = 20
-  max_allocated_storage = 100  # Auto-scaling limit
+  max_allocated_storage = 100 # Auto-scaling limit
   storage_type          = "gp3"
   storage_encrypted     = true
 
@@ -37,12 +37,12 @@ resource "aws_db_instance" "postgres" {
 
   skip_final_snapshot       = false
   final_snapshot_identifier = "${var.project_name}-db-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
-  
+
   deletion_protection = true
 
   # Performance Insights (free for 7 days retention)
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  
+
   tags = {
     Name = "${var.project_name}-postgres"
   }

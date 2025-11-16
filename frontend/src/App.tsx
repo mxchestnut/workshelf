@@ -2,6 +2,10 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import './App.css'
+import { ChatManager } from './components/ChatManager'
+import { ChatLauncher } from './components/ChatLauncher'
+import { ChatBar } from './components/ChatBar'
+import { authService } from './services/auth'
 
 // Cache bust: 2025-11-09 14:00
 // Loading component
@@ -53,14 +57,47 @@ const BetaFeed = lazy(() => import('./pages/BetaFeed'))
 const MyBetaProfile = lazy(() => import('./pages/MyBetaProfile'))
 const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
+const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval'>('home')
 
   useEffect(() => {
     // Check authentication and route
     const checkRoute = () => {
       const path = window.location.pathname
+      const isAuthenticated = authService.isAuthenticated()
+
+      // Public pages that don't require authentication
+      const publicPaths = new Set<string>([
+        '/', 
+        '', 
+        '/legal/terms', 
+        '/legal/rules',
+        '/sitemap',
+        '/overview',
+        '/pending-approval'
+      ])
+      
+      // Always allowed (even when not authenticated)
+      const alwaysAllowed = new Set<string>(['/auth/callback'])
+
+      // Check if current path or any parent path is public
+      const isPublicPath = publicPaths.has(path) || 
+                          path.startsWith('/invite/') || 
+                          alwaysAllowed.has(path)
+
+      if (!isAuthenticated && !isPublicPath) {
+        // Redirect unauthenticated users to home for private routes
+        if (path !== '/') {
+          window.history.replaceState({}, '', '/')
+        }
+        setCurrentPage('home')
+        return
+      }
+      
+      // Removed approval redirect - unapproved users can browse public content
+      // Staff approval is still required but doesn't block viewing
     
     if (path === '/auth/callback') {
       setCurrentPage('auth-callback')
@@ -143,6 +180,9 @@ function App() {
     } else if (path.startsWith('/invite/')) {
       // Invitation page: /invite/:token
       setCurrentPage('invite')
+    } else if (path === '/pending-approval') {
+      // Pending approval page
+      setCurrentPage('pending-approval')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -189,6 +229,10 @@ function App() {
     
     if (currentPage === 'invite') {
       return <Invite />
+    }
+    
+    if (currentPage === 'pending-approval') {
+      return <PendingApproval />
     }
     
     if (currentPage === 'feed') {
@@ -330,6 +374,10 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         {renderContent()}
       </Suspense>
+      {/* Global chat UI */}
+      <ChatManager />
+      <ChatLauncher />
+      <ChatBar />
       <ToastContainer />
     </>
   )

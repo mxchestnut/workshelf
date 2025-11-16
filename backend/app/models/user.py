@@ -36,6 +36,7 @@ class User(Base, TimestampMixin, TenantMixin):
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_staff = Column(Boolean, default=False, nullable=False)
+    is_approved = Column(Boolean, default=False, nullable=False)  # Staff must approve new registrations
     
     # Reputation Scores (1-5 scale)
     reading_score = Column(Integer, default=0, nullable=False)  # Based on book reviews quality/quantity
@@ -93,6 +94,12 @@ class User(Base, TimestampMixin, TenantMixin):
     integrity_checks = relationship("IntegrityCheck", back_populates="user", cascade="all, delete-orphan")
     export_jobs = relationship("ExportJob", back_populates="user", cascade="all, delete-orphan")
     accessibility_settings = Column(JSON, nullable=True)  # Flexible A11y settings
+    
+    # Matrix messaging credentials
+    matrix_user_id = Column(String(255), unique=True, index=True, nullable=True)
+    matrix_access_token = Column(Text, nullable=True)
+    matrix_homeserver = Column(String(255), nullable=True)
+    matrix_onboarding_seen = Column(Boolean, default=False, nullable=False)  # Track if user has seen Matrix explanation
     
     # Unique constraint: email must be unique within a tenant
     __table_args__ = (

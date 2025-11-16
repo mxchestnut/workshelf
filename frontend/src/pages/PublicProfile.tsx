@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus } from 'lucide-react'
+import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus, MessageCircle } from 'lucide-react'
+import { useMatrix } from '../hooks/useMatrixClient.tsx'
 
 interface PublicProfileData {
   id: number
@@ -49,6 +50,7 @@ interface BookshelfItem {
 }
 
 export default function PublicProfile() {
+  const { openChat, isReady } = useMatrix()
   const [profile, setProfile] = useState<PublicProfileData | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [bookshelf, setBookshelf] = useState<BookshelfItem[]>([])
@@ -61,7 +63,7 @@ export default function PublicProfile() {
   const [followLoading, setFollowLoading] = useState(false)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
   const checkIfFollowing = async (userId: number) => {
     try {
@@ -149,6 +151,39 @@ export default function PublicProfile() {
       alert('Failed to unfollow user')
     } finally {
       setFollowLoading(false)
+    }
+  }
+
+  const messageUser = async () => {
+    if (!profile) return
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please log in to send a message')
+        return
+      }
+      // Look up the recipient's Matrix ID
+      const resp = await fetch(`${API_URL}/api/v1/matrix/lookup-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ work_shelf_user_id: profile.id })
+      })
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}))
+        console.error('[Message] Lookup failed:', data)
+        alert(data.detail || 'User has not set up messaging yet')
+        return
+      }
+      const data = await resp.json()
+      const matrixUserId = data.matrix_user_id as string
+      const displayName = profile.display_name || profile.username
+      await openChat(matrixUserId, displayName, profile.avatar_url)
+    } catch (err) {
+      console.error('[Message] Failed to open chat:', err)
+      alert('Failed to open chat')
     }
   }
 
@@ -387,7 +422,17 @@ export default function PublicProfile() {
               
               {/* Follow Button */}
               {!isOwnProfile && (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 flex items-center gap-3">
+                  {/* Message Button */}
+                  <button
+                    onClick={messageUser}
+                    disabled={!isReady}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={isReady ? 'Send Message' : 'Messaging not ready yet'}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Message
+                  </button>
                   {isFollowing ? (
                     <button
                       onClick={unfollowUser}

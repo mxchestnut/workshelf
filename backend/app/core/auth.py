@@ -355,7 +355,7 @@ class RequireRole:
 
 
 async def get_current_user_from_db(
-    db,  # AsyncSession
+    db: AsyncSession = Depends(get_db),
     user_payload: Dict[str, Any] = Depends(get_current_user)
 ):
     """

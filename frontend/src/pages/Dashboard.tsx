@@ -89,15 +89,15 @@ export function Dashboard() {
         console.error('Failed to load analytics:', response.status)
         // Set mock data for development
         setAnalytics({
-          totalViews: 12543,
-          totalReads: 8234,
-          totalLikes: 1432,
-          totalComments: 326,
-          totalFollowers: 453,
-          totalDownloads: 892,
-          totalRevenue: 234.50,
-          viewsChange: 12.5,
-          readsChange: 8.3,
+          totalViews: 0,
+          totalReads: 0,
+          totalLikes: 0,
+          totalComments: 0,
+          totalFollowers: 0,
+          totalDownloads: 0,
+          totalRevenue: 0,
+          viewsChange: 0,
+          readsChange: 0,
           likesChange: 15.2
         })
       }
@@ -120,14 +120,8 @@ export function Dashboard() {
         setTopWorks(data)
       } else {
         console.error('Failed to load top works:', response.status)
-        // Set mock data for development
-        setTopWorks([
-          { id: 1, title: 'The Wandering Moon', views: 4532, reads: 3201, likes: 543, comments: 87, lastUpdated: '2024-11-08' },
-          { id: 2, title: 'Dark Horizons', views: 3421, reads: 2134, likes: 421, comments: 54, lastUpdated: '2024-11-07' },
-          { id: 3, title: 'Echoes of Tomorrow', views: 2543, reads: 1876, likes: 332, comments: 43, lastUpdated: '2024-11-06' },
-          { id: 4, title: 'Silent Shadows', views: 1987, reads: 1234, likes: 287, comments: 31, lastUpdated: '2024-11-05' },
-          { id: 5, title: 'The Last Chapter', views: 1543, reads: 987, likes: 198, comments: 22, lastUpdated: '2024-11-04' }
-        ])
+        // No mock data - will show empty state
+        setTopWorks([])
       }
     } catch (error) {
       console.error('Error loading top works:', error)

@@ -341,6 +341,9 @@ class Group(Base, TimestampMixin):
     # Custom domain capability (unlocked when subdomain approved)
     can_use_custom_domain = Column(Boolean, default=False, nullable=False)
     
+    # Matrix Space integration
+    matrix_space_id = Column(String(255), nullable=True, index=True)  # Matrix Space ID for group chat
+    
     # Scholarship/sliding scale
     has_scholarship = Column(Boolean, default=False, nullable=False)
     scholarship_plan = Column(String(50), nullable=True)  # 'free', 'basic', 'pro', 'custom'

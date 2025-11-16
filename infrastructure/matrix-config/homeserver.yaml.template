@@ -1,0 +1,87 @@
+# Synapse Configuration for WorkShelf (Template)
+# This template uses a placeholder for registration_shared_secret.
+# The upload script will inject the real secret from AWS Secrets Manager or env var.
+
+server_name: "matrix.workshelf.dev"
+pid_file: /data/homeserver.pid
+web_client: false
+soft_file_limit: 0
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['::']
+    resources:
+      - names: [client, federation]
+        compress: false
+
+database:
+  name: psycopg2
+  args:
+    user: synapse_user
+    database: synapse
+    # Password and host provided via environment variables
+    # SYNAPSE_POSTGRES_PASSWORD - from Secrets Manager
+    # SYNAPSE_POSTGRES_HOST - from terraform
+
+log_config: "/data/matrix.workshelf.dev.log.config"
+
+media_store_path: "/data/media_store"
+
+enable_registration: false
+registration_shared_secret: "${REGISTRATION_SHARED_SECRET}"
+
+report_stats: false
+
+signing_key_path: "/data/matrix.workshelf.dev.signing.key"
+
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+web_client_location: https://workshelf.dev
+
+allow_guest_access: false
+
+url_preview_enabled: false
+
+enable_room_list_search: true
+
+push:
+  enabled: true
+
+presence:
+  enabled: true
+
+user_directory:
+  enabled: true
+  search_all_users: true
+
+rc_message:
+  per_second: 10
+  burst_count: 50
+
+rc_registration:
+  per_second: 0.17
+  burst_count: 3
+
+rc_login:
+  address:
+    per_second: 0.17
+    burst_count: 3
+  account:
+    per_second: 0.17
+    burst_count: 3
+  failed_attempts:
+    per_second: 0.17
+    burst_count: 3
+
+federation_domain_whitelist: []
+
+retention:
+  enabled: false
+
+enable_metrics: false
+
+suppress_key_server_warning: true

@@ -34,8 +34,10 @@ log_config: "/data/matrix.workshelf.dev.log.config"
 media_store_path: "/data/media_store"
 
 # Registration (disabled for open signup, use shared secret)
+# IMPORTANT: Do not store real secrets in this file. Use homeserver.yaml.template
+# and the upload script to inject the secret from AWS Secrets Manager.
 enable_registration: false
-registration_shared_secret: "1uNcQD0Lmz11vxV0Y9r5xHfqpxTistyD"
+registration_shared_secret: "CHANGE_ME_USE_TEMPLATE"
 
 # Report stats to matrix.org (optional)
 report_stats: false

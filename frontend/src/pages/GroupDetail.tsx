@@ -7,12 +7,13 @@ interface Group {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
-  avatar_url: string | null;
+  description: string;
+  avatar_url?: string;
   is_public: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  matrix_space_id?: string | null;
 }
 
 interface GroupMember {
@@ -66,6 +67,12 @@ export default function GroupDetail() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
+  
+  // Create room modal
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomTopic, setNewRoomTopic] = useState('');
+  const [creatingRoom, setCreatingRoom] = useState(false);
 
   const groupId = new URLSearchParams(window.location.search).get('id');
 
@@ -306,6 +313,49 @@ export default function GroupDetail() {
     }
   };
 
+  const createRoomInSpace = async () => {
+    if (!newRoomName.trim()) {
+      alert('Please enter a room name');
+      return;
+    }
+
+    setCreatingRoom(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/matrix/create-room-in-space`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            group_id: Number(groupId),
+            room_name: newRoomName.trim(),
+            room_topic: newRoomTopic.trim()
+          })
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Room "${data.room_name}" created successfully! Members can see it in Element.`);
+        setShowCreateRoom(false);
+        setNewRoomName('');
+        setNewRoomTopic('');
+      } else {
+        const error = await response.json();
+        alert(`Failed to create room: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to create room:', error);
+      alert('Failed to create room');
+    } finally {
+      setCreatingRoom(false);
+    }
+  };
+
   const deletePost = async (postId: number) => {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       return;
@@ -406,6 +456,34 @@ export default function GroupDetail() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
               <p className="mt-1 text-sm text-gray-500">{group.description || 'No description'}</p>
+              
+              {/* Matrix Space Badge */}
+              {group.matrix_space_id && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                    <MessageSquare className="h-4 w-4 mr-1.5" />
+                    Group Chat Active
+                    <a
+                      href={`https://matrix.to/#/${group.matrix_space_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-indigo-600 hover:text-indigo-900 underline"
+                    >
+                      Open in Element
+                    </a>
+                  </div>
+                  {/* Add Room button for admins/owners */}
+                  {(userPermissions.can_pin_posts) && (
+                    <button
+                      onClick={() => setShowCreateRoom(true)}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200"
+                    >
+                      + Add Room
+                    </button>
+                  )}
+                </div>
+              )}
+              
               <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
                 <span className="flex items-center">
                   <Users className="h-4 w-4 mr-1" />
@@ -613,6 +691,71 @@ export default function GroupDetail() {
               >
                 Post
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Room Modal */}
+      {showCreateRoom && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Create Room in Group Chat
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Add a new discussion room to this group's Matrix Space. Members will see it in Element.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Room Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newRoomName}
+                    onChange={(e) => setNewRoomName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="e.g., General, Writing Tips, Book Club"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Topic (optional)
+                  </label>
+                  <textarea
+                    value={newRoomTopic}
+                    onChange={(e) => setNewRoomTopic(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="What's this room for?"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowCreateRoom(false);
+                    setNewRoomName('');
+                    setNewRoomTopic('');
+                  }}
+                  disabled={creatingRoom}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createRoomInSpace}
+                  disabled={!newRoomName.trim() || creatingRoom}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {creatingRoom ? 'Creating...' : 'Create Room'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

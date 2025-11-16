@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { useMatrix, getOtherUserInRoom } from '../hooks/useMatrixClient'
+import { useMatrix, getOtherUserInRoom } from '../hooks/useMatrixClient.tsx'
 import { authService, User } from '../services/auth'
 import { MessageSquare, Search, Loader2 } from 'lucide-react'
 import * as matrix from 'matrix-js-sdk'
@@ -61,6 +61,7 @@ export default function Messages() {
               40,
               40,
               'crop',
+              false,
               false
             ) || undefined,
             lastMessage: lastMessage?.getContent().body || 'No messages yet',
@@ -77,10 +78,10 @@ export default function Messages() {
     loadRooms()
 
     // Update room list when new messages arrive
-    client.on('Room.timeline', loadRooms)
+    client.on(matrix.RoomEvent.Timeline, loadRooms)
     
     return () => {
-      client.off('Room.timeline', loadRooms)
+      client.off(matrix.RoomEvent.Timeline, loadRooms)
     }
   }, [client, isReady])
 
@@ -147,10 +148,9 @@ export default function Messages() {
                     placeholder="Search conversations..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B34B0C]"
                     style={{ 
-                      borderColor: '#E5E5E5',
-                      focusRing: '#B34B0C'
+                      borderColor: '#E5E5E5'
                     }}
                   />
                 </div>
