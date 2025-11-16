@@ -1,0 +1,65 @@
+name: E2E Tests
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual trigger
+  push:
+    branches: [main]
+    paths:
+      - 'e2e/**'
+      - 'frontend/**'
+      - '.github/workflows/e2e-tests.yml'
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Install dependencies
+        working-directory: e2e
+        run: npm ci
+      
+      - name: Install Playwright Browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps
+      
+      - name: Run Playwright tests
+        working-directory: e2e
+        env:
+          BASE_URL: https://workshelf.dev
+        run: npx playwright test
+      
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 30
+      
+      - name: Comment on PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('e2e/test-results/results.json', 'utf8'));
+            const summary = `
+            ## E2E Test Results
+            - ✅ Passed: ${results.stats.passed}
+            - ❌ Failed: ${results.stats.failed}
+            - ⏭️ Skipped: ${results.stats.skipped}
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

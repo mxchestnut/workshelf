@@ -2,13 +2,39 @@
 Work Shelf - FastAPI Application
 Main entry point for the backend API
 """
+import os
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.api.v1 import api_router
 from app.core.config import settings
 from app.core.database import get_db
+
+# Initialize Sentry for error tracking
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        integrations=[
+            FastApiIntegration(),
+            SqlalchemyIntegration(),
+        ],
+        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring
+        # Adjust this in production to reduce volume
+        traces_sample_rate=0.1,  # 10% of requests for performance monitoring
+        # Capture request/response data
+        send_default_pii=False,  # Set True if you want to capture user emails, IPs, etc.
+        environment=os.getenv("ENVIRONMENT", "production"),
+        release=os.getenv("GIT_SHA", "unknown"),
+    )
+    print(f"[SENTRY] Initialized for environment: {os.getenv('ENVIRONMENT', 'production')}")
+else:
+    print("[SENTRY] Not configured (SENTRY_DSN not set)")
 
 app = FastAPI(
     title="Work Shelf API",
@@ -47,13 +73,25 @@ async def add_cors_headers(request: Request, call_next):
         print(f"[CORS] Preflight response for origin: {response_origin}")
         return response
     
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        # Ensure CORS headers are also present on error responses
+        status_code = 500
+        detail = "Internal Server Error"
+        if isinstance(exc, HTTPException):
+            status_code = exc.status_code
+            detail = exc.detail
+        response = JSONResponse(status_code=status_code, content={"detail": detail})
     
     # Add CORS headers to response
     if origin in allowed_origins:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Expose-Headers"] = "*"
+        # Helpful for some browsers to see allowed headers outside preflight
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
     
     # Add cache control to prevent browser caching CORS issues
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

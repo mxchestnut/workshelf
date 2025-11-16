@@ -7,6 +7,13 @@ resource "aws_ecs_cluster" "main" {
     value = "enabled"
   }
 
+  # Enable ECS Exec for troubleshooting containers (requires SSM permissions and endpoints)
+  configuration {
+    execute_command_configuration {
+      logging = "DEFAULT"
+    }
+  }
+
   tags = {
     Name = "${var.project_name}-cluster"
   }
@@ -47,6 +54,17 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
           "secretsmanager:GetSecretValue",
           "ssm:GetParameters",
           "kms:Decrypt"
+        ]
+        Resource = "*"
+      },
+      # Permissions required for ECS Exec (SSM channels)
+      {
+        Effect = "Allow"
+        Action = [
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
         ]
         Resource = "*"
       }
@@ -93,7 +111,7 @@ resource "aws_iam_role_policy" "ecs_task_ses" {
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "backend" {
   name              = "/ecs/${var.project_name}/backend"
-  retention_in_days = 7  # Free tier: 5 GB storage
+  retention_in_days = 7 # Free tier: 5 GB storage
 
   tags = {
     Name = "${var.project_name}-backend-logs"
@@ -122,7 +140,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([{
     name  = "backend"
     image = "${aws_ecr_repository.backend.repository_url}:latest"
-    
+
     portMappings = [{
       containerPort = 8000
       protocol      = "tcp"
@@ -152,6 +170,10 @@ resource "aws_ecs_task_definition" "backend" {
       {
         name  = "KEYCLOAK_INTERNAL_URL"
         value = "http://auth.${var.domain_name}"
+      },
+      {
+        name  = "MATRIX_HOMESERVER"
+        value = "https://matrix.${var.domain_name}"
       }
     ]
 
@@ -179,6 +201,14 @@ resource "aws_ecs_task_definition" "backend" {
       {
         name      = "KEYCLOAK_CLIENT_SECRET"
         valueFrom = aws_secretsmanager_secret.keycloak_client_secret.arn
+      },
+      {
+        name      = "MATRIX_REGISTRATION_SHARED_SECRET"
+        valueFrom = aws_secretsmanager_secret.matrix_shared_secret.arn
+      },
+      {
+        name      = "SENTRY_DSN"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:496675774501:secret:workshelf/sentry-dsn-EVRSm1"
       }
     ]
 
@@ -214,10 +244,10 @@ resource "aws_ecs_task_definition" "keycloak" {
   container_definitions = jsonencode([{
     name  = "keycloak"
     image = "${aws_ecr_repository.keycloak.repository_url}:latest"
-    
+
     entryPoint = ["/opt/keycloak/bin/kc.sh"]
     command    = ["start"]
-    
+
     portMappings = [{
       containerPort = 8080
       protocol      = "tcp"
@@ -307,9 +337,9 @@ resource "aws_ecs_service" "backend" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = aws_subnet.public[*].id  # FREE TIER: Use public subnets
+    subnets          = aws_subnet.public[*].id # FREE TIER: Use public subnets
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = true  # FREE TIER: Assign public IP for internet access
+    assign_public_ip = true # FREE TIER: Assign public IP for internet access
   }
 
   load_balancer {
@@ -329,9 +359,9 @@ resource "aws_ecs_service" "keycloak" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = aws_subnet.public[*].id  # FREE TIER: Use public subnets
+    subnets          = aws_subnet.public[*].id # FREE TIER: Use public subnets
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = true  # FREE TIER: Assign public IP for internet access
+    assign_public_ip = true # FREE TIER: Assign public IP for internet access
   }
 
   load_balancer {
