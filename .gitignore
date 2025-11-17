@@ -24,6 +24,7 @@ backend/.env
 
 # Credentials & Secrets - NEVER COMMIT
 **/Credentials.md
+**/credentials.md
 GITHUB-SECRETS.md
 credentials.*
 secrets.*
@@ -35,6 +36,10 @@ secrets.*
 matrix-helper-key*
 *_rsa*
 id_*
+
+# Kit's Notes - Private documentation (NEVER COMMIT)
+Kit's Notes/credentials.md
+**/Kit's Notes/credentials.md
 
 # IDE
 .vscode/
@@ -52,11 +57,12 @@ htmlcov/
 # Database
 *.db
 *.sqlite3
+*.sql
 
 # Docker
 *.log
 
-# Azure & Cloud
+# Cloud
 *.publishsettings
 *.azurePubxml
 
@@ -64,5 +70,16 @@ htmlcov/
 *.bak
 *.backup
 *~
-SECURITY-AUDIT.md
-# Trigger rebuild with correct API URL
+*_backup_*.sql
+neon_backup_*.sql
+keycloak_backup_*.sql
+neondb_backup_*.sql
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp
+
+# OS Files
+Thumbs.db
+desktop.ini

@@ -1,187 +1,366 @@
-# WorkShelf Operations Guide
+# WorkShelf Operations Guide (AWS)
 
-## Quick Health Check
+Quick reference for common operational tasks on AWS infrastructure.
 
+---
+
+## 🏥 Health Checks
+
+### Check All Services Status
 ```bash
-# Check all container apps status
-az containerapp list \
-  --resource-group workshelf-prod-rg \
-  --query "[].{name:name,status:properties.runningStatus,health:properties.latestRevisionName}" \
-  -o table
-
-# Check specific app health
-az containerapp revision show \
-  --name <app-name> \
-  --resource-group workshelf-prod-rg \
-  --revision <revision-name> \
-  --query "{health:properties.healthState,running:properties.runningState}"
+aws ecs describe-services \
+  --cluster workshelf-cluster \
+  --services workshelf-backend workshelf-keycloak workshelf-matrix \
+  --query 'services[*].{Name:serviceName,Status:status,Running:runningCount,Desired:desiredCount}' \
+  --output table
 ```
 
-## Common Issues & Fixes
-
-### 1. Database Connection Errors
-
-**Symptom:** Container logs show `password authentication failed` or `channel_binding` errors
-
-**Fix:**
+### Check Specific Service Health
 ```bash
-# Get the database password from GitHub secrets or Azure Key Vault
-# Never commit credentials to the repository!
-
-# Update backend database secret
-gh secret set DATABASE_URL --body "postgresql+asyncpg://neondb_owner:<PASSWORD>@<HOST>/keycloak_prod?sslmode=require"
-
-# Update Azure secret
-az containerapp secret set \
-  --name workshelf-backend \
-  --resource-group workshelf-prod-rg \
-  --secrets database-url="postgresql+asyncpg://neondb_owner:<PASSWORD>@<HOST>/keycloak_prod?sslmode=require"
-
-# For Keycloak
-az containerapp secret set \
-  --name workshelf-keycloak \
-  --resource-group workshelf-prod-rg \
-  --secrets db-password="<PASSWORD>"
-
-# Force restart
-az containerapp update \
-  --name <app-name> \
-  --resource-group workshelf-prod-rg \
-  --set-env-vars "RESTART_TRIGGER=$(date +%s)"
+aws ecs describe-services \
+  --cluster workshelf-cluster \
+  --service workshelf-backend \
+  --query 'services[0].{Status:status,Health:healthCheckGracePeriodSeconds,Running:runningCount}'
 ```
 
-**Important:** 
-- Never use `channel_binding=require` with asyncpg
-- Always use `postgresql+asyncpg://` prefix for backend
-- Keycloak uses plain postgres driver (no +asyncpg)
-- Get actual credentials from secure storage (1Password, Azure Key Vault, etc.)
-
-### 2. Custom Domain Not Working
-
-**Symptom:** API/frontend accessible via Azure URL but not custom domain
-
-**Fix:**
+### Check RDS Database Status
 ```bash
-# Check DNS
-dig api.workshelf.dev +short  # Should show 172.168.64.36
-dig auth.workshelf.dev +short # Should show 172.168.64.36
-
-# Check if domain is bound
-az containerapp hostname list \
-  --name workshelf-backend \
-  --resource-group workshelf-prod-rg
-
-# Bind if missing
-az containerapp hostname bind \
-  --hostname api.workshelf.dev \
-  --name workshelf-backend \
-  --resource-group workshelf-prod-rg \
-  --environment workshelf-env-prod \
-  --validation-method HTTP
+aws rds describe-db-instances \
+  --db-instance-identifier workshelf-db \
+  --query 'DBInstances[0].{Status:DBInstanceStatus,Endpoint:Endpoint.Address,Storage:AllocatedStorage}'
 ```
 
-**DNS Records Required:**
-```
-asuid.api.workshelf.dev TXT "4F6B1F31281E8034DF7DFE64964E185B7730F699BA1CE3000AA72FEAF8607E3C"
-asuid.auth.workshelf.dev TXT "4F6B1F31281E8034DF7DFE64964E185B7730F699BA1CE3000AA72FEAF8607E3C"
-asuid.workshelf.dev TXT "4F6B1F31281E8034DF7DFE64964E185B7730F699BA1CE3000AA72FEAF8607E3C"
-api.workshelf.dev A 172.168.64.36
-```
+---
 
-### 3. Container Unhealthy for Extended Period
+## 🔄 Deployments
 
-**Symptom:** Container shows "Unhealthy" state for hours/days
-
-**Diagnosis:**
+### Force Redeploy Service (No Code Changes)
 ```bash
-# Get logs
-az containerapp logs show \
-  --name <app-name> \
-  --resource-group workshelf-prod-rg \
-  --follow false \
-  --tail 100
-
-# Check revision history
-az containerapp revision list \
-  --name <app-name> \
-  --resource-group workshelf-prod-rg \
-  --query "[].{name:name,created:properties.createdTime,state:properties.runningState,health:properties.healthState}"
+aws ecs update-service \
+  --cluster workshelf-cluster \
+  --service workshelf-backend \
+  --force-new-deployment
 ```
 
-**Fix:**
-1. Check logs for specific error (usually database connection)
-2. Fix the underlying issue (see sections above)
-3. Force new revision with restart trigger
-4. Monitor logs until "Application startup complete" or "Keycloak started"
-
-### 4. Keycloak Data Loss
-
-**Symptom:** Users need to re-onboard, groups missing
-
-**Root Cause:** Keycloak restarted with database connection issues, created fresh schema
-
-**Prevention:**
-- Ensure Keycloak database password is always correct in secrets
-- Monitor Keycloak health status (should never stay "Unhealthy")
-- The deployment workflow now auto-updates Keycloak secrets on every deploy
-
-**Recovery:** Unfortunately, Keycloak data cannot be recovered if the database schema was reset. Users must re-onboard.
-
-## Monitoring Commands
-
+### Deploy New Backend Image
 ```bash
-# Watch all apps
-watch -n 30 'az containerapp list \
-  --resource-group workshelf-prod-rg \
-  --query "[].{name:name,status:properties.runningStatus}" \
-  -o table'
+# 1. Build and push to ECR
+cd backend
+docker build --platform linux/amd64 -t workshelf-backend:TAG .
+docker tag workshelf-backend:TAG 496675774501.dkr.ecr.us-east-1.amazonaws.com/workshelf-backend:TAG
+docker push 496675774501.dkr.ecr.us-east-1.amazonaws.com/workshelf-backend:TAG
 
-# Test endpoints
-curl https://workshelf.dev  # Frontend
-curl https://api.workshelf.dev/health  # Backend
-curl https://auth.workshelf.dev  # Keycloak (might timeout, that's ok)
+# 2. Update Terraform task definition
+cd ../infrastructure/terraform
+# Edit task definition to use new TAG
+terraform apply -target=aws_ecs_task_definition.backend
 
-# Get latest logs
-az containerapp logs show \
-  --name workshelf-backend \
-  --resource-group workshelf-prod-rg \
-  --tail 20 | jq -r '.Log'
+# 3. Force redeploy to pick up new task definition
+aws ecs update-service --cluster workshelf-cluster --service workshelf-backend --force-new-deployment
 ```
 
-## Critical Secrets
+### Deploy Frontend
+```bash
+cd frontend
+npm run build
+aws s3 sync dist/ s3://workshelf-frontend/ --delete
+aws cloudfront create-invalidation --distribution-id E1GLU4B1NET1IX --paths "/*"
+```
 
-All secrets stored in GitHub Secrets and Azure Container App secrets.
-**Never commit actual credential values to the repository.**
+### Run Database Migrations
+```bash
+# Migrations run automatically on backend startup
+# To run manually:
+./scripts/run-migration.sh
+```
 
-Access secrets via:
-- GitHub: Settings → Secrets and variables → Actions
-- Azure: `az containerapp secret list --name <app-name> --resource-group workshelf-prod-rg`
+---
 
-Required secrets:
-- `DATABASE_URL` - Neon PostgreSQL connection (backend)
-- `NEON_DB_PASSWORD` - Database password (Keycloak)
-- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` - SES email
-- `STRIPE_SECRET_KEY` - Payment processing
-- `ANTHROPIC_API_KEY` - AI features
+## 📊 Monitoring & Logs
 
-## Deployment Workflow
+### View Recent Logs
+```bash
+# Backend logs (last 10 minutes)
+aws logs tail /ecs/workshelf/backend --since 10m --follow
 
-The GitHub Actions workflow (`deploy.yml`) automatically:
-1. Builds Docker images for backend and frontend
-2. Pushes to Azure Container Registry
-3. Updates backend container app
-4. Updates Azure secrets (backend AWS keys, Keycloak DB password)
-5. Binds custom domains (api.workshelf.dev, auth.workshelf.dev)
-6. Updates frontend container app
+# Matrix logs
+aws logs tail /ecs/workshelf-matrix --since 10m --follow
 
-**Manual intervention only needed if:**
-- First-time DNS setup
-- Changing database connection strings
-- Major infrastructure changes
+# Keycloak logs
+aws logs tail /ecs/workshelf-keycloak --since 10m --follow
+```
 
-## Emergency Contacts
+### Search Logs for Errors
+```bash
+aws logs filter-log-events \
+  --log-group-name /ecs/workshelf/backend \
+  --filter-pattern "ERROR" \
+  --start-time $(date -u -v-1H +%s)000
+```
 
-- Azure Subscription: kitchestnut@hotmail.com
-- Neon Database: workshelf-prod database, keycloak_prod schema
-- Domain Registrar: Route 53 (workshelf.dev)
-- GitHub Repo: mxchestnut/workshelf
+### Check CloudWatch Alarms
+```bash
+aws cloudwatch describe-alarms \
+  --alarm-names "workshelf-*" \
+  --query 'MetricAlarms[*].{Name:AlarmName,State:StateValue,Reason:StateReason}'
+```
+
+---
+
+## 🔐 Secrets Management
+
+### View Secret (Without Value)
+```bash
+aws secretsmanager describe-secret --secret-id workshelf/db-password
+```
+
+### Get Secret Value
+```bash
+aws secretsmanager get-secret-value \
+  --secret-id workshelf/db-password \
+  --query SecretString \
+  --output text
+```
+
+### Update Secret
+```bash
+aws secretsmanager update-secret \
+  --secret-id workshelf/db-password \
+  --secret-string "NEW_PASSWORD_HERE"
+```
+
+### Rotate Database Password (Full Process)
+```bash
+# 1. Generate new password
+NEW_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
+
+# 2. Update Secrets Manager
+aws secretsmanager update-secret \
+  --secret-id workshelf/db-password \
+  --secret-string "$NEW_PASSWORD"
+
+# 3. Update RDS instance
+aws rds modify-db-instance \
+  --db-instance-identifier workshelf-db \
+  --master-user-password "$NEW_PASSWORD" \
+  --apply-immediately
+
+# 4. Wait for status to become 'available'
+aws rds wait db-instance-available --db-instance-identifier workshelf-db
+
+# 5. Restart backend to pick up new password
+aws ecs update-service --cluster workshelf-cluster --service workshelf-backend --force-new-deployment
+aws ecs update-service --cluster workshelf-cluster --service workshelf-keycloak --force-new-deployment
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Service Won't Start
+```bash
+# 1. Check task status
+aws ecs list-tasks --cluster workshelf-cluster --service workshelf-backend
+
+# 2. Describe failed task
+TASK_ARN=$(aws ecs list-tasks --cluster workshelf-cluster --service workshelf-backend --desired-status STOPPED --query 'taskArns[0]' --output text)
+aws ecs describe-tasks --cluster workshelf-cluster --tasks $TASK_ARN
+
+# 3. Check logs for errors
+aws logs tail /ecs/workshelf/backend --since 30m | grep -i error
+```
+
+### Database Connection Issues
+```bash
+# 1. Verify database is running
+aws rds describe-db-instances --db-instance-identifier workshelf-db --query 'DBInstances[0].DBInstanceStatus'
+
+# 2. Check security group allows ECS tasks
+aws ec2 describe-security-groups --group-ids <DB_SECURITY_GROUP_ID>
+
+# 3. Test connection from ECS task
+aws ecs execute-command \
+  --cluster workshelf-cluster \
+  --task TASK_ARN \
+  --container workshelf-backend \
+  --interactive \
+  --command "/bin/bash"
+# Then inside container: psql $DATABASE_URL
+```
+
+### High Memory/CPU Usage
+```bash
+# Check ECS service metrics
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/ECS \
+  --metric-name CPUUtilization \
+  --dimensions Name=ServiceName,Value=workshelf-backend Name=ClusterName,Value=workshelf-cluster \
+  --start-time $(date -u -v-1H +%Y-%m-%dT%H:%M:%S) \
+  --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
+  --period 300 \
+  --statistics Average,Maximum
+```
+
+### CloudFront Not Serving Latest Frontend
+```bash
+# Invalidate cache
+aws cloudfront create-invalidation \
+  --distribution-id E1GLU4B1NET1IX \
+  --paths "/*"
+
+# Check invalidation status
+aws cloudfront list-invalidations --distribution-id E1GLU4B1NET1IX
+```
+
+---
+
+## 💾 Backups & Recovery
+
+### Create Manual RDS Snapshot
+```bash
+aws rds create-db-snapshot \
+  --db-instance-identifier workshelf-db \
+  --db-snapshot-identifier workshelf-manual-$(date +%Y%m%d-%H%M%S)
+```
+
+### List Available Snapshots
+```bash
+aws rds describe-db-snapshots \
+  --db-instance-identifier workshelf-db \
+  --query 'DBSnapshots[*].{ID:DBSnapshotIdentifier,Created:SnapshotCreateTime,Status:Status}' \
+  --output table
+```
+
+### Restore from Snapshot
+```bash
+# 1. Restore to new instance
+aws rds restore-db-instance-from-db-snapshot \
+  --db-instance-identifier workshelf-db-restored \
+  --db-snapshot-identifier SNAPSHOT_ID
+
+# 2. Wait for restoration
+aws rds wait db-instance-available --db-instance-identifier workshelf-db-restored
+
+# 3. Update Secrets Manager with new endpoint
+# 4. Update backend to point to new database
+# 5. Delete old database when verified
+```
+
+---
+
+## 🚨 Emergency Procedures
+
+### Total Service Outage
+```bash
+# 1. Check AWS status
+# Visit: https://health.aws.amazon.com/health/status
+
+# 2. Check all services
+aws ecs describe-services --cluster workshelf-cluster --services workshelf-backend workshelf-keycloak workshelf-matrix
+
+# 3. Force restart all services
+for service in workshelf-backend workshelf-keycloak workshelf-matrix; do
+  aws ecs update-service --cluster workshelf-cluster --service $service --force-new-deployment
+done
+
+# 4. Monitor logs
+aws logs tail /ecs/workshelf/backend --follow
+```
+
+### Rollback Bad Deployment
+```bash
+# 1. List recent task definitions
+aws ecs list-task-definitions --family-prefix workshelf-backend --sort DESC
+
+# 2. Update service to use previous version
+aws ecs update-service \
+  --cluster workshelf-cluster \
+  --service workshelf-backend \
+  --task-definition workshelf-backend:PREVIOUS_VERSION
+
+# 3. Monitor deployment
+aws ecs describe-services --cluster workshelf-cluster --service workshelf-backend
+```
+
+### Security Breach Response
+```bash
+# 1. Immediately rotate all secrets
+./scripts/rotate-all-secrets.sh
+
+# 2. Check CloudTrail for unauthorized access
+aws cloudtrail lookup-events \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=GetSecretValue \
+  --start-time $(date -u -v-24H +%Y-%m-%dT%H:%M:%S)
+
+# 3. Review security groups
+aws ec2 describe-security-groups --filters "Name=group-name,Values=workshelf-*"
+
+# 4. Enable GuardDuty if not already
+aws guardduty create-detector --enable
+```
+
+---
+
+## 📈 Scaling
+
+### Increase Service Task Count
+```bash
+aws ecs update-service \
+  --cluster workshelf-cluster \
+  --service workshelf-backend \
+  --desired-count 2
+```
+
+### Upgrade RDS Instance
+```bash
+aws rds modify-db-instance \
+  --db-instance-identifier workshelf-db \
+  --db-instance-class db.t3.small \
+  --apply-immediately
+```
+
+### Increase RDS Storage
+```bash
+aws rds modify-db-instance \
+  --db-instance-identifier workshelf-db \
+  --allocated-storage 50 \
+  --apply-immediately
+```
+
+---
+
+## 🔧 Maintenance
+
+### Weekly Tasks
+- Review Sentry error reports
+- Check CloudWatch logs for anomalies
+- Monitor RDS storage usage
+- Review AWS costs in Cost Explorer
+
+### Monthly Tasks
+- Review and rotate credentials
+- Test backup restoration
+- Update dependencies (npm, pip)
+- Review and update security groups
+- Check for AWS service updates
+
+### Quarterly Tasks
+- Load testing
+- Security audit
+- Review IAM permissions
+- Update documentation
+- Disaster recovery drill
+
+---
+
+## 📞 Support Contacts
+
+- **AWS Support**: https://console.aws.amazon.com/support/
+- **Sentry**: https://sentry.io
+- **Matrix Documentation**: https://matrix-org.github.io/synapse/latest/
+- **Keycloak Documentation**: https://www.keycloak.org/documentation
+
+---
+
+**Last Updated**: November 16, 2025
+**Next Review**: December 16, 2025
