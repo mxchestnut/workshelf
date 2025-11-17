@@ -21,6 +21,9 @@ dist-ssr/
 *.env
 docker/.env
 backend/.env
+!.env.example
+!backend/.env.example
+!backend/.env.matrix.example
 
 # Credentials & Secrets - NEVER COMMIT
 **/Credentials.md
@@ -53,6 +56,7 @@ Kit's Notes/credentials.md
 htmlcov/
 .coverage
 *.log
+infrastructure/terraform/*.log
 
 # Database
 *.db
