@@ -33,16 +33,16 @@ const synapse = new SynapseStack(app, 'WorkShelfSynapse', {
   env,
   description: 'WorkShelf Matrix Synapse server on ECS Fargate',
   databaseUrl: process.env.DATABASE_URL || '',
-  keycloakClientSecret: 'fBZn2GXPZoRgMRm6FIIgLuEp88WGw8om',
+  keycloakClientSecret: process.env.KEYCLOAK_CLIENT_SECRET || '',
 });
 
 // Keycloak Authentication Server on ECS Fargate
 const keycloak = new KeycloakStack(app, 'WorkShelfKeycloak', {
   env,
   description: 'WorkShelf Keycloak authentication server on ECS Fargate',
-  adminUser: 'warpxth',
-  adminPassword: 'PXGSmFqwT3w68hA',
-  dbPassword: 'npg_D9Jiv7WeQChu',
+  adminUser: process.env.KEYCLOAK_ADMIN_USER || 'admin',
+  adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD || '',
+  dbPassword: process.env.DATABASE_PASSWORD || '',
 });
 
 // Element Web Client

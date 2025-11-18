@@ -105,7 +105,7 @@ export class KeycloakStack extends cdk.Stack {
       description: 'Keycloak secrets',
       generateSecretString: {
         secretStringTemplate: JSON.stringify({
-          database_password: 'npg_D9Jiv7WeQChu',
+          database_password: props.dbPassword,
           admin_user: props.adminUser,
           admin_password: props.adminPassword,
         }),

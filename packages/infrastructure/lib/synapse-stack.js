@@ -85,11 +85,9 @@ class SynapseStack extends cdk.Stack {
                 secretStringTemplate: JSON.stringify({
                     database_url: props.databaseUrl,
                     keycloak_client_secret: props.keycloakClientSecret,
-                    registration_shared_secret: 'O&HZ&q+;D1WNMMsnNf:Pn@X;cnXeK~NTHC~e&&h=@p-k3x-jeu',
-                    macaroon_secret_key: '9d*nPu2,l2RUL8w.F^#Z@Pc2tYCIJ7Ocy:9,2^4_^G+xh#cS2p',
-                    form_secret: '6.S4A@jtijtV5jZ,1*ROHt4j^:pDHXeF,Pj#..#Ki,.5ZU*Pdu',
                 }),
-                generateStringKey: 'unused',
+                generateStringKey: 'registration_shared_secret',
+                passwordLength: 32,
             },
         });
         const taskDefinition = new ecs.FargateTaskDefinition(this, 'SynapseTaskDef', {
