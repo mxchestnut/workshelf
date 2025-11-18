@@ -57,3 +57,27 @@ export interface RegisterRequest {
   firstName?: string;
   lastName?: string;
 }
+
+// Tenant/Publication types
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  ownerId: string;
+  owner?: User;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateTenantRequest {
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+export interface UpdateTenantRequest {
+  name?: string;
+  slug?: string;
+  description?: string;
+}

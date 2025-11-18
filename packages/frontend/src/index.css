@@ -4,48 +4,56 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Workshelf Brand Colors */
+    --mahogany: 0 52% 21%; /* #442727 */
+    --white-smoke: 50 33% 92%; /* #E9E7D9 */
+    --light-camel: 39 27% 76%; /* #D2C6B2 */
+    --pistachio: 68 83% 34%; /* #92A014 */
+
+    /* Light Mode Theme */
+    --background: 50 33% 92%; /* White Smoke */
+    --foreground: 0 52% 21%; /* Mahogany */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 52% 21%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 0 52% 21%;
+    --primary: 68 83% 34%; /* Pistachio Cream */
+    --primary-foreground: 50 33% 92%; /* White Smoke */
+    --secondary: 39 27% 76%; /* Light Camel */
+    --secondary-foreground: 0 52% 21%; /* Mahogany */
+    --muted: 39 27% 76%;
+    --muted-foreground: 0 52% 21%;
+    --accent: 68 83% 34%; /* Pistachio Cream */
+    --accent-foreground: 50 33% 92%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --destructive-foreground: 50 33% 92%;
+    --border: 39 27% 70%;
+    --input: 39 27% 70%;
+    --ring: 68 83% 34%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Dark Mode Theme */
+    --background: 0 52% 15%; /* Darker Mahogany */
+    --foreground: 50 33% 92%; /* White Smoke */
+    --card: 0 52% 21%; /* Mahogany */
+    --card-foreground: 50 33% 92%;
+    --popover: 0 52% 21%;
+    --popover-foreground: 50 33% 92%;
+    --primary: 68 83% 40%; /* Brighter Pistachio for dark mode */
+    --primary-foreground: 0 52% 15%;
+    --secondary: 39 27% 50%; /* Darker Light Camel */
+    --secondary-foreground: 50 33% 92%;
+    --muted: 39 27% 40%;
+    --muted-foreground: 50 33% 80%;
+    --accent: 68 83% 40%;
+    --accent-foreground: 50 33% 92%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 50 33% 92%;
+    --border: 39 27% 30%;
+    --input: 39 27% 30%;
+    --ring: 68 83% 40%;
   }
 }
 

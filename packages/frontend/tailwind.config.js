@@ -5,6 +5,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Workshelf Brand Colors
+        mahogany: 'hsl(var(--mahogany))',
+        'white-smoke': 'hsl(var(--white-smoke))',
+        'light-camel': 'hsl(var(--light-camel))',
+        pistachio: 'hsl(var(--pistachio))',
+
+        // Semantic Colors
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

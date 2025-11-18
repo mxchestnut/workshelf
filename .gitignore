@@ -72,3 +72,4 @@ temp/
 # Scripts with secrets
 status.sh
 deploy-with-tailscale.sh
+*.code-workspace

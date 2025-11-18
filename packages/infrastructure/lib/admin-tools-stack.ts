@@ -53,6 +53,12 @@ export class AdminToolsStack extends cdk.Stack {
     this.createPostHogService(cluster, vpc, alb);
     // Unleash
     this.createUnleashService(cluster, vpc, alb);
+    // Sentry
+    this.createSentryService(cluster, vpc, alb);
+    // OpenSearch
+    this.createOpenSearchService(cluster, vpc, alb);
+    // Matomo
+    this.createMatomoService(cluster, vpc, alb);
 
     new cdk.CfnOutput(this, 'AdminToolsALBDNS', {
       value: alb.loadBalancerDnsName,
@@ -60,7 +66,11 @@ export class AdminToolsStack extends cdk.Stack {
     });
   }
 
-  private createVaultService(cluster: ecs.Cluster, vpc: ec2.IVpc, alb: elbv2.ApplicationLoadBalancer) {
+  private createVaultService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
     const taskDef = new ecs.FargateTaskDefinition(this, 'VaultTask', {
       memoryLimitMiB: 512,
       cpu: 256,
@@ -69,7 +79,9 @@ export class AdminToolsStack extends cdk.Stack {
     const secrets = new secretsmanager.Secret(this, 'VaultSecrets', {
       secretName: 'workshelf/vault',
       generateSecretString: {
-        secretStringTemplate: JSON.stringify({ root_token: 'myroot' }),
+        secretStringTemplate: JSON.stringify({
+          root_token: process.env.VAULT_TOKEN || 'dev-token-change-immediately',
+        }),
         generateStringKey: 'unused',
       },
     });
@@ -119,7 +131,11 @@ export class AdminToolsStack extends cdk.Stack {
     });
   }
 
-  private createGrafanaService(cluster: ecs.Cluster, vpc: ec2.IVpc, alb: elbv2.ApplicationLoadBalancer) {
+  private createGrafanaService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
     const taskDef = new ecs.FargateTaskDefinition(this, 'GrafanaTask', {
       memoryLimitMiB: 512,
       cpu: 256,
@@ -136,7 +152,7 @@ export class AdminToolsStack extends cdk.Stack {
         }),
       }),
       environment: {
-        GF_SECURITY_ADMIN_PASSWORD: 'admin',
+        GF_SECURITY_ADMIN_PASSWORD: process.env.GRAFANA_ADMIN_PASSWORD || 'changeme',
         GF_SERVER_ROOT_URL: 'https://admin.workshelf.dev/grafana',
         GF_SERVER_SERVE_FROM_SUB_PATH: 'true',
       },
@@ -167,7 +183,11 @@ export class AdminToolsStack extends cdk.Stack {
     });
   }
 
-  private createPrometheusService(cluster: ecs.Cluster, vpc: ec2.IVpc, alb: elbv2.ApplicationLoadBalancer) {
+  private createPrometheusService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
     const taskDef = new ecs.FargateTaskDefinition(this, 'PrometheusTask', {
       memoryLimitMiB: 512,
       cpu: 256,
@@ -210,7 +230,11 @@ export class AdminToolsStack extends cdk.Stack {
     });
   }
 
-  private createPostHogService(cluster: ecs.Cluster, vpc: ec2.IVpc, alb: elbv2.ApplicationLoadBalancer) {
+  private createPostHogService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
     const taskDef = new ecs.FargateTaskDefinition(this, 'PostHogTask', {
       memoryLimitMiB: 1024,
       cpu: 512,
@@ -253,7 +277,11 @@ export class AdminToolsStack extends cdk.Stack {
     });
   }
 
-  private createUnleashService(cluster: ecs.Cluster, vpc: ec2.IVpc, alb: elbv2.ApplicationLoadBalancer) {
+  private createUnleashService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
     const taskDef = new ecs.FargateTaskDefinition(this, 'UnleashTask', {
       memoryLimitMiB: 512,
       cpu: 256,
@@ -297,6 +325,169 @@ export class AdminToolsStack extends cdk.Stack {
       targetGroups: [tg],
       priority: 50,
       conditions: [elbv2.ListenerCondition.pathPatterns(['/unleash*'])],
+    });
+  }
+
+  private createSentryService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
+    const taskDef = new ecs.FargateTaskDefinition(this, 'SentryTask', {
+      memoryLimitMiB: 2048,
+      cpu: 1024,
+    });
+
+    // Sentry requires Redis and Postgres
+    const container = taskDef.addContainer('sentry', {
+      image: ecs.ContainerImage.fromRegistry('getsentry/sentry:latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'sentry',
+        logGroup: new logs.LogGroup(this, 'SentryLogs', {
+          logGroupName: '/ecs/workshelf-sentry',
+          retention: logs.RetentionDays.ONE_WEEK,
+          removalPolicy: cdk.RemovalPolicy.DESTROY,
+        }),
+      }),
+      environment: {
+        SENTRY_SECRET_KEY: process.env.SENTRY_SECRET_KEY || 'dev-secret-key-change-in-prod',
+        SENTRY_POSTGRES_HOST: process.env.DATABASE_HOST || '',
+        SENTRY_DB_NAME: 'sentry',
+        SENTRY_DB_USER: process.env.DATABASE_USER || '',
+        SENTRY_REDIS_HOST: 'localhost',
+        SENTRY_REDIS_PORT: '6379',
+      },
+      portMappings: [{ containerPort: 9000 }],
+    });
+
+    const service = new ecs.FargateService(this, 'SentryService', {
+      cluster,
+      taskDefinition: taskDef,
+      desiredCount: 1,
+      assignPublicIp: true,
+    });
+
+    const tg = new elbv2.ApplicationTargetGroup(this, 'SentryTG', {
+      vpc,
+      port: 9000,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: { path: '/_health/', interval: cdk.Duration.seconds(30) },
+    });
+
+    service.attachToApplicationTargetGroup(tg);
+
+    alb.listeners[0].addTargetGroups('SentryTGAttach', {
+      targetGroups: [tg],
+      priority: 60,
+      conditions: [elbv2.ListenerCondition.pathPatterns(['/sentry*'])],
+    });
+  }
+
+  private createOpenSearchService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
+    const taskDef = new ecs.FargateTaskDefinition(this, 'OpenSearchTask', {
+      memoryLimitMiB: 2048,
+      cpu: 1024,
+    });
+
+    const container = taskDef.addContainer('opensearch', {
+      image: ecs.ContainerImage.fromRegistry('opensearchproject/opensearch:latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'opensearch',
+        logGroup: new logs.LogGroup(this, 'OpenSearchLogs', {
+          logGroupName: '/ecs/workshelf-opensearch',
+          retention: logs.RetentionDays.ONE_WEEK,
+          removalPolicy: cdk.RemovalPolicy.DESTROY,
+        }),
+      }),
+      environment: {
+        'discovery.type': 'single-node',
+        OPENSEARCH_JAVA_OPTS: '-Xms512m -Xmx512m',
+        DISABLE_SECURITY_PLUGIN: 'true', // Enable security in production
+      },
+      portMappings: [{ containerPort: 9200 }],
+    });
+
+    const service = new ecs.FargateService(this, 'OpenSearchService', {
+      cluster,
+      taskDefinition: taskDef,
+      desiredCount: 1,
+      assignPublicIp: true,
+    });
+
+    const tg = new elbv2.ApplicationTargetGroup(this, 'OpenSearchTG', {
+      vpc,
+      port: 9200,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: { path: '/_cluster/health', interval: cdk.Duration.seconds(30) },
+    });
+
+    service.attachToApplicationTargetGroup(tg);
+
+    alb.listeners[0].addTargetGroups('OpenSearchTGAttach', {
+      targetGroups: [tg],
+      priority: 70,
+      conditions: [elbv2.ListenerCondition.pathPatterns(['/opensearch*'])],
+    });
+  }
+
+  private createMatomoService(
+    cluster: ecs.Cluster,
+    vpc: ec2.IVpc,
+    alb: elbv2.ApplicationLoadBalancer
+  ) {
+    const taskDef = new ecs.FargateTaskDefinition(this, 'MatomoTask', {
+      memoryLimitMiB: 1024,
+      cpu: 512,
+    });
+
+    const container = taskDef.addContainer('matomo', {
+      image: ecs.ContainerImage.fromRegistry('matomo:latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'matomo',
+        logGroup: new logs.LogGroup(this, 'MatomoLogs', {
+          logGroupName: '/ecs/workshelf-matomo',
+          retention: logs.RetentionDays.ONE_WEEK,
+          removalPolicy: cdk.RemovalPolicy.DESTROY,
+        }),
+      }),
+      environment: {
+        MATOMO_DATABASE_HOST: process.env.DATABASE_HOST || '',
+        MATOMO_DATABASE_ADAPTER: 'pdo_pgsql',
+        MATOMO_DATABASE_TABLES_PREFIX: 'matomo_',
+        MATOMO_DATABASE_USERNAME: process.env.DATABASE_USER || '',
+        MATOMO_DATABASE_PASSWORD: process.env.DATABASE_PASSWORD || '',
+        MATOMO_DATABASE_DBNAME: 'matomo',
+      },
+      portMappings: [{ containerPort: 80 }],
+    });
+
+    const service = new ecs.FargateService(this, 'MatomoService', {
+      cluster,
+      taskDefinition: taskDef,
+      desiredCount: 1,
+      assignPublicIp: true,
+    });
+
+    const tg = new elbv2.ApplicationTargetGroup(this, 'MatomoTG', {
+      vpc,
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: { path: '/matomo.php', interval: cdk.Duration.seconds(30) },
+    });
+
+    service.attachToApplicationTargetGroup(tg);
+
+    alb.listeners[0].addTargetGroups('MatomoTGAttach', {
+      targetGroups: [tg],
+      priority: 80,
+      conditions: [elbv2.ListenerCondition.pathPatterns(['/matomo*'])],
     });
   }
 }
