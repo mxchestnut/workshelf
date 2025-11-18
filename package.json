@@ -1,0 +1,44 @@
+{
+  "name": "secure-admin-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Security-first, privacy-focused collaborative platform with killer admin panel",
+  "author": "",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "pnpm -r type-check",
+    "test": "pnpm -r test",
+    "security:scan": "pnpm security:gitleaks && pnpm security:trivy",
+    "security:gitleaks": "gitleaks detect --source . --verbose",
+    "security:trivy": "trivy fs --severity HIGH,CRITICAL .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "cdk:deploy": "pnpm --filter infrastructure deploy",
+    "cdk:synth": "pnpm --filter infrastructure synth"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

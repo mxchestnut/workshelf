@@ -1,0 +1,77 @@
+# Synapse Homeserver Configuration for WorkShelf
+server_name: 'chat.workshelf.dev'
+pid_file: /data/homeserver.pid
+public_baseurl: https://chat.workshelf.dev/
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['0.0.0.0']
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# Database configuration - Neon PostgreSQL
+database:
+  name: psycopg2
+  args:
+    user: neondb_owner
+    password: npg_D9Jiv7WeQChu
+    database: neondb
+    host: ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech
+    port: 5432
+    sslmode: require
+    cp_min: 5
+    cp_max: 10
+  allow_unsafe_locale: true
+
+# Media
+media_store_path: /data/media_store
+
+# Logging - disable file logging
+# log_config is intentionally omitted to use console logging
+
+# Registration - enabled for testing
+enable_registration: true
+enable_registration_without_verification: true
+registration_shared_secret: 'O&HZ&q+;D1WNMMsnNf:Pn@X;cnXeK~NTHC~e&&h=@p-k3x-jeu'
+
+# Secrets
+report_stats: false
+macaroon_secret_key: '9d*nPu2,l2RUL8w.F^#Z@Pc2tYCIJ7Ocy:9,2^4_^G+xh#cS2p'
+form_secret: '6.S4A@jtijtV5jZ,1*ROHt4j^:pDHXeF,Pj#..#Ki,.5ZU*Pdu'
+signing_key_path: '/data/chat.workshelf.dev.signing.key'
+
+# Trusted key servers
+trusted_key_servers:
+  - server_name: 'matrix.org'
+suppress_key_server_warning: true
+
+# SSO / OIDC configuration for Keycloak
+oidc_providers:
+  - idp_id: keycloak
+    idp_name: 'WorkShelf SSO'
+    idp_brand: 'keycloak'
+    discover: false
+    issuer: 'https://keycloak.workshelf.dev/realms/workshelf'
+    client_id: 'synapse'
+    client_secret: 'fBZn2GXPZoRgMRm6FIIgLuEp88WGw8om'
+    scopes: ['openid', 'profile', 'email']
+    authorization_endpoint: 'https://keycloak.workshelf.dev/realms/workshelf/protocol/openid-connect/auth'
+    token_endpoint: 'https://keycloak.workshelf.dev/realms/workshelf/protocol/openid-connect/token'
+    userinfo_endpoint: 'https://keycloak.workshelf.dev/realms/workshelf/protocol/openid-connect/userinfo'
+    user_mapping_provider:
+      config:
+        localpart_template: '{{ user.preferred_username }}'
+        display_name_template: '{{ user.name }}'
+        email_template: '{{ user.email }}'
+    allow_existing_users: true
+    user_profile_method: 'userinfo_endpoint'
+
+# Enable SSO
+sso:
+  client_whitelist:
+    - 'https://chat.workshelf.dev'
+    - 'http://localhost:8009'

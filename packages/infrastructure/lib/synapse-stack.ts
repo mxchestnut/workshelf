@@ -1,0 +1,218 @@
+import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as efs from 'aws-cdk-lib/aws-efs';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { Construct } from 'constructs';
+
+export interface SynapseStackProps extends cdk.StackProps {
+  databaseUrl: string;
+  keycloakClientSecret: string;
+}
+
+export class SynapseStack extends cdk.Stack {
+  public readonly loadBalancerDns: string;
+
+  constructor(scope: Construct, id: string, props: SynapseStackProps) {
+    super(scope, id, props);
+
+    // VPC - use default or create new
+    const vpc = ec2.Vpc.fromLookup(this, 'DefaultVpc', {
+      isDefault: true,
+    });
+
+    // ECS Cluster
+    const cluster = new ecs.Cluster(this, 'SynapseCluster', {
+      vpc,
+      clusterName: 'workshelf-synapse',
+    });
+
+    // Security Group for Synapse
+    const synapseSecurityGroup = new ec2.SecurityGroup(this, 'SynapseSecurityGroup', {
+      vpc,
+      description: 'Security group for Synapse Matrix server',
+      allowAllOutbound: true,
+    });
+
+    // EFS File System for Synapse data
+    const fileSystem = new efs.FileSystem(this, 'SynapseEFS', {
+      vpc,
+      encrypted: true,
+      performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
+      throughputMode: efs.ThroughputMode.BURSTING,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      fileSystemName: 'workshelf-synapse-data',
+    });
+
+    // EFS Access Point for Synapse
+    const accessPoint = new efs.AccessPoint(this, 'SynapseAccessPoint', {
+      fileSystem,
+      path: '/synapse',
+      posixUser: {
+        uid: '991',
+        gid: '991',
+      },
+      createAcl: {
+        ownerUid: '991',
+        ownerGid: '991',
+        permissions: '755',
+      },
+    });
+
+    // Allow ECS to access EFS
+    fileSystem.connections.allowDefaultPortFrom(synapseSecurityGroup);
+
+    // Store secrets in Secrets Manager
+    const synapseSecrets = new secretsmanager.Secret(this, 'SynapseSecrets', {
+      secretName: 'workshelf/synapse',
+      description: 'Synapse Matrix server secrets',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({
+          database_url: props.databaseUrl,
+          keycloak_client_secret: props.keycloakClientSecret,
+          registration_shared_secret: 'O&HZ&q+;D1WNMMsnNf:Pn@X;cnXeK~NTHC~e&&h=@p-k3x-jeu',
+          macaroon_secret_key: '9d*nPu2,l2RUL8w.F^#Z@Pc2tYCIJ7Ocy:9,2^4_^G+xh#cS2p',
+          form_secret: '6.S4A@jtijtV5jZ,1*ROHt4j^:pDHXeF,Pj#..#Ki,.5ZU*Pdu',
+        }),
+        generateStringKey: 'unused',
+      },
+    });
+
+    // Task Definition
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'SynapseTaskDef', {
+      memoryLimitMiB: 2048,
+      cpu: 1024,
+    });
+
+    // Grant EFS permissions to task execution role
+    fileSystem.grant(
+      taskDefinition.taskRole,
+      'elasticfilesystem:ClientMount',
+      'elasticfilesystem:ClientWrite'
+    );
+
+    // Add EFS volume to task definition
+    taskDefinition.addVolume({
+      name: 'synapse-data',
+      efsVolumeConfiguration: {
+        fileSystemId: fileSystem.fileSystemId,
+        transitEncryption: 'ENABLED',
+        authorizationConfig: {
+          accessPointId: accessPoint.accessPointId,
+          iam: 'ENABLED',
+        },
+      },
+    });
+
+    // Grant read access to secrets
+    synapseSecrets.grantRead(taskDefinition.taskRole);
+
+    // Log Group
+    const logGroup = new logs.LogGroup(this, 'SynapseLogGroup', {
+      logGroupName: '/ecs/workshelf-synapse',
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Container
+    const container = taskDefinition.addContainer('synapse', {
+      image: ecs.ContainerImage.fromRegistry('matrixdotorg/synapse:latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'synapse',
+        logGroup,
+      }),
+      environment: {
+        SYNAPSE_SERVER_NAME: 'chat.workshelf.dev',
+        SYNAPSE_REPORT_STATS: 'no',
+        SYNAPSE_NO_TLS: 'true',
+      },
+      secrets: {
+        DATABASE_URL: ecs.Secret.fromSecretsManager(synapseSecrets, 'database_url'),
+        KEYCLOAK_CLIENT_SECRET: ecs.Secret.fromSecretsManager(
+          synapseSecrets,
+          'keycloak_client_secret'
+        ),
+      },
+    });
+
+    // Mount EFS volume
+    container.addMountPoints({
+      containerPath: '/data',
+      sourceVolume: 'synapse-data',
+      readOnly: false,
+    });
+
+    container.addPortMappings({
+      containerPort: 8008,
+      protocol: ecs.Protocol.TCP,
+    });
+
+    // ECS Service (start with 0 tasks until config is initialized)
+    const service = new ecs.FargateService(this, 'SynapseService', {
+      cluster,
+      taskDefinition,
+      desiredCount: 0,
+      assignPublicIp: true,
+      securityGroups: [synapseSecurityGroup],
+    });
+
+    // Application Load Balancer
+    const alb = new elbv2.ApplicationLoadBalancer(this, 'SynapseALB', {
+      vpc,
+      internetFacing: true,
+      loadBalancerName: 'workshelf-synapse-alb',
+    });
+
+    // Target Group
+    const targetGroup = new elbv2.ApplicationTargetGroup(this, 'SynapseTargetGroup', {
+      vpc,
+      port: 8008,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/_matrix/client/versions',
+        interval: cdk.Duration.seconds(60),
+        timeout: cdk.Duration.seconds(30),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 3,
+      },
+      deregistrationDelay: cdk.Duration.seconds(30),
+    });
+
+    // Add service to target group
+    service.attachToApplicationTargetGroup(targetGroup);
+
+    // ALB Listener
+    alb.addListener('HttpListener', {
+      port: 80,
+      defaultTargetGroups: [targetGroup],
+    });
+
+    // Allow traffic from ALB to ECS
+    synapseSecurityGroup.addIngressRule(
+      ec2.Peer.securityGroupId(alb.connections.securityGroups[0].securityGroupId),
+      ec2.Port.tcp(8008),
+      'Allow traffic from ALB'
+    );
+
+    // Outputs
+    this.loadBalancerDns = alb.loadBalancerDnsName;
+
+    new cdk.CfnOutput(this, 'LoadBalancerDNS', {
+      value: alb.loadBalancerDnsName,
+      description: 'Synapse Load Balancer DNS',
+    });
+
+    new cdk.CfnOutput(this, 'ClusterName', {
+      value: cluster.clusterName,
+      description: 'ECS Cluster Name',
+    });
+
+    new cdk.CfnOutput(this, 'ServiceName', {
+      value: service.serviceName,
+      description: 'ECS Service Name',
+    });
+  }
+}

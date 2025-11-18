@@ -1,0 +1,188 @@
+version: '3.9'
+
+services:
+  # PostgreSQL for Keycloak (local only)
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: workshelf-keycloak-db
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      POSTGRES_DB: keycloak
+    ports:
+      - "5433:5432"
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - secure-platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak for authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: secure-platform-keycloak
+    environment:
+      KEYCLOAK_ADMIN: warpxth
+      KEYCLOAK_ADMIN_PASSWORD: PXGSmFqwT3w68hA
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8080:8080"
+    command: start-dev
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - secure-platform
+
+  # HashiCorp Vault for secrets management
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: secure-platform-vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-myroot}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    networks:
+      - secure-platform
+
+  # PostgreSQL for local development (use Neon in production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: secure-platform-postgres
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-secure_platform}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - secure-platform
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: secure-platform-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - secure-platform
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: secure-platform-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - secure-platform
+
+  # PostHog for privacy-first analytics (self-hosted)
+  posthog:
+    image: posthog/posthog:latest
+    container_name: secure-platform-posthog
+    ports:
+      - "8000:8000"
+    environment:
+      POSTHOG_DB_HOST: postgres
+      POSTHOG_DB_NAME: posthog
+      POSTHOG_DB_USER: ${DATABASE_USER:-postgres}
+      POSTHOG_DB_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTHOG_REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - secure-platform
+
+  # Redis for PostHog
+  redis:
+    image: redis:7-alpine
+    container_name: secure-platform-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - secure-platform
+
+  # Unleash for feature flags
+  unleash:
+    image: unleashorg/unleash-server:latest
+    container_name: secure-platform-unleash
+    ports:
+      - "4242:4242"
+    environment:
+      DATABASE_URL: postgres://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@postgres:5432/unleash
+      DATABASE_SSL: "false"
+      INIT_ADMIN_API_TOKENS: ${UNLEASH_API_TOKEN:-*:*.unleash-insecure-admin-api-token}
+    depends_on:
+      - postgres
+    networks:
+      - secure-platform
+
+  # Matrix Synapse for secure chat
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: workshelf-synapse
+    ports:
+      - "8008:8008"
+      - "8448:8448"
+    environment:
+      SYNAPSE_SERVER_NAME: chat.workshelf.dev
+      SYNAPSE_REPORT_STATS: "no"
+      SYNAPSE_NO_TLS: "true"
+    volumes:
+      - synapse_data:/data
+      - ./synapse-homeserver.yaml:/data/homeserver.yaml:ro
+    depends_on:
+      - keycloak
+    networks:
+      - secure-platform
+
+  # Element Web Client for Matrix
+  element:
+    image: vectorim/element-web:latest
+    container_name: workshelf-element
+    ports:
+      - "8009:80"
+    volumes:
+      - ./element-config.json:/app/config.json:ro
+    depends_on:
+      - synapse
+    networks:
+      - secure-platform
+
+networks:
+  secure-platform:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+  synapse_data:
+  keycloak_db_data:

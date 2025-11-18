@@ -1,0 +1,27 @@
+# Trivy Security Scanner Configuration
+
+# Severity levels to scan for
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+
+# Vulnerability database
+db:
+  skip-update: false
+
+# Output format
+format: table
+
+# Exit code on vulnerabilities
+exit-code: 1
+
+# Ignore unfixed vulnerabilities
+ignore-unfixed: true
+
+# Timeout
+timeout: 10m
+
+# Secret scanning
+secret:
+  config: .gitleaks.toml
