@@ -77,7 +77,7 @@ export default function Home() {
       }
 
       // Try to fetch store books count
-      const booksResponse = await fetch(`${API_URL}/api/v1/store/browse?skip=0&limit=1`, { headers })
+      const booksResponse = await fetch(`${API_URL}/v1/store/browse?skip=0&limit=1`, { headers })
       if (booksResponse.ok) {
         const booksData = await booksResponse.json()
         // The API doesn't return total count, so we'll estimate
@@ -114,7 +114,7 @@ export default function Home() {
       }
 
       // Try to fetch some books
-      const response = await fetch(`${API_URL}/api/v1/store/browse?skip=0&limit=6`, { headers })
+      const response = await fetch(`${API_URL}/v1/store/browse?skip=0&limit=6`, { headers })
       if (response.ok) {
         const books = await response.json()
         setFeaturedBooks(books)
