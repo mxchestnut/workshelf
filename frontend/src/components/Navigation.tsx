@@ -22,6 +22,7 @@ import {
 import { useState } from 'react'
 import { User } from '../services/auth'
 import NotificationBell from './NotificationBell'
+import { ThemeToggle } from './ThemeToggle'
 
 interface NavigationProps {
   user: User | null
@@ -45,18 +46,14 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
   return (
     <>
       {/* Top Header */}
-      <header className="border-b sticky top-0 z-50 shadow-sm" style={{ 
-        backgroundColor: '#524944',
-        borderColor: '#6C6A68'
-      }}>
+      <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left: Logo & Menu */}
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 rounded-lg transition-colors text-white hover:bg-opacity-20"
-                style={{ backgroundColor: menuOpen ? 'rgba(179, 75, 12, 0.2)' : 'transparent' }}
+                className="p-2 hover:bg-accent transition-colors"
                 aria-label="Toggle menu"
               >
                 {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -66,8 +63,8 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 onClick={() => navigateTo('/')}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <BookOpen className="w-8 h-8" style={{ color: '#B34B0C' }} />
-                <h1 className="text-2xl font-bold text-white">Work Shelf</h1>
+                <BookOpen className="w-8 h-8" />
+                <h1 className="text-2xl font-bold font-mono">Work Shelf</h1>
               </button>
             </div>
 
@@ -78,12 +75,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   {/* Quick Links */}
                   <button 
                     onClick={() => navigateTo('/feed')}
-                    className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/feed') 
-                        ? 'text-white font-medium' 
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium' 
+                        : 'hover:bg-accent'
                     }`}
-                    style={isActive('/feed') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <Home className="w-5 h-5" />
                     <span>Feed</span>
@@ -91,12 +87,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
                   <button 
                     onClick={() => navigateTo('/bookshelf')}
-                    className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/bookshelf') 
-                        ? 'text-white font-medium' 
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium' 
+                        : 'hover:bg-accent'
                     }`}
-                    style={isActive('/bookshelf') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <BookMarked className="w-5 h-5" />
                     <span>Bookshelf</span>
@@ -104,12 +99,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
                   <button 
                     onClick={() => navigateTo('/studio')}
-                    className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/studio') 
-                        ? 'text-white font-medium' 
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium' 
+                        : 'hover:bg-accent'
                     }`}
-                    style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <PenTool className="w-5 h-5" />
                     <span>Studio</span>
@@ -117,12 +111,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
                   <button 
                     onClick={() => navigateTo('/groups')}
-                    className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/groups') 
-                        ? 'text-white font-medium' 
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium' 
+                        : 'hover:bg-accent'
                     }`}
-                    style={isActive('/groups') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <Users className="w-5 h-5" />
                     <span>Groups</span>
@@ -130,13 +123,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
                   {/* Notifications */}
                   {user && <NotificationBell />}
+
+                  {/* Theme Toggle */}
+                  <ThemeToggle />
                 </>
               ) : (
-                <button 
-                  onClick={onLogin}
-                  className="px-6 py-2 rounded-lg flex items-center gap-2 transition-colors text-white hover:opacity-90"
-                  style={{ backgroundColor: '#B34B0C' }}
-                >
+                <>
+                  {/* Theme Toggle */}
+                  <ThemeToggle />
+                  
+                  <button 
+                    onClick={onLogin}
+                    className="px-6 py-2 flex items-center gap-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                  >
                   <LogIn className="w-5 h-5" />
                   <span>Log In</span>
                 </button>
@@ -158,11 +157,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
         className={`fixed top-0 left-0 h-full w-80 shadow-2xl z-50 transform transition-transform ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        style={{ backgroundColor: '#37322E' }}
+        className="bg-card"
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-6 border-b" style={{ borderColor: '#6C6A68' }}>
+          <div className="p-6 border-b" style={{ borderColor: 'border-border' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-7 h-7" style={{ color: '#B34B0C' }} />
@@ -178,7 +177,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
             </div>
 
             {user && (
-              <div className="rounded-lg p-3" style={{ backgroundColor: '#524944' }}>
+              <div className="rounded-lg p-3" style={{ backgroundColor: 'bg-muted' }}>
                 <p className="font-medium text-white">{user.display_name || user.username}</p>
                 <p className="text-sm" style={{ color: '#B3B2B0' }}>{user.email}</p>
               </div>
@@ -356,7 +355,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           </nav>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t space-y-2" style={{ borderColor: '#6C6A68' }}>
+          <div className="p-6 border-t space-y-2" style={{ borderColor: 'border-border' }}>
             {user && (
               <button 
                 onClick={onLogout}

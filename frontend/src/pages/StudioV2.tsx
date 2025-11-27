@@ -170,17 +170,17 @@ export default function StudioV2() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#ae431e]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#d06224]" />
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen bg-[#ae431e] text-[#eac891]">
+    <div className="flex h-screen bg-background text-foreground">
       {/* Left Sidebar */}
-      <div className="w-64 border-r border-[#8a3a1a] flex flex-col">
-        <div className="p-4 border-b border-[#8a3a1a]">
+      <div className="w-64 border-r border-border flex flex-col">
+        <div className="p-4 border-b border-border">
           <h2 className="text-lg font-bold font-mono">Studio</h2>
         </div>
         
@@ -190,9 +190,9 @@ export default function StudioV2() {
             const projectDocs = documents[project.id] || []
 
             return (
-              <div key={project.id} className="border-b border-[#8a3a1a]">
+              <div key={project.id} className="border-b border-border">
                 <div
-                  className="flex items-center gap-2 p-3 hover:bg-[#8a3a1a] cursor-pointer"
+                  className="flex items-center gap-2 p-3 hover:bg-accent cursor-pointer"
                   onClick={() => toggleProject(project.id)}
                 >
                   {isExpanded ? (
@@ -211,7 +211,7 @@ export default function StudioV2() {
                       e.stopPropagation()
                       createDocument(project.id)
                     }}
-                    className="p-1 hover:bg-[#d06224] rounded"
+                    className="p-1 hover:bg-muted rounded"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -220,15 +220,15 @@ export default function StudioV2() {
                 {isExpanded && (
                   <div className="pl-6">
                     {projectDocs.length === 0 ? (
-                      <div className="p-3 text-xs text-[#eac891] opacity-60 font-mono">
+                      <div className="p-3 text-xs text-muted-foreground font-mono">
                         No documents yet
                       </div>
                     ) : (
                       projectDocs.map(doc => (
                         <div
                           key={doc.id}
-                          className={`flex items-center gap-2 p-2 hover:bg-[#8a3a1a] cursor-pointer ${
-                            selectedDocument?.id === doc.id ? 'bg-[#8a3a1a]' : ''
+                          className={`flex items-center gap-2 p-2 hover:bg-accent cursor-pointer ${
+                            selectedDocument?.id === doc.id ? 'bg-accent' : ''
                           }`}
                           onClick={() => setSelectedDocument(doc)}
                         >
@@ -249,15 +249,15 @@ export default function StudioV2() {
       <div className="flex-1 flex flex-col">
         {selectedDocument ? (
           <>
-            <div className="flex items-center justify-between p-4 border-b border-[#8a3a1a]">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <input
                 type="text"
                 value={selectedDocument.title}
                 onChange={(e) => setSelectedDocument({ ...selectedDocument, title: e.target.value })}
-                className="bg-transparent border-none outline-none text-xl font-mono text-[#eac891]"
+                className="bg-transparent border-none outline-none text-xl font-mono text-foreground"
               />
               {saving && (
-                <div className="flex items-center gap-2 text-sm text-[#eac891] opacity-75">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Saving...</span>
                 </div>
@@ -276,9 +276,9 @@ export default function StudioV2() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-[#d06224]" />
-              <h2 className="text-xl font-mono mb-2 text-[#eac891]">No document selected</h2>
-              <p className="text-[#eac891] opacity-60 font-mono text-sm">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <h2 className="text-xl font-mono mb-2">No document selected</h2>
+              <p className="text-muted-foreground font-mono text-sm">
                 Select a document from the sidebar or create a new one
               </p>
             </div>

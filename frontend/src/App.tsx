@@ -10,10 +10,10 @@ import { authService } from './services/auth'
 // Cache bust: 2025-11-09 14:00
 // Loading component
 const PageLoader = () => (
-  <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#ae431e' }}>
+  <div className="flex items-center justify-center h-screen bg-background">
     <div className="flex flex-col items-center gap-4">
-      <Loader2 className="w-12 h-12 animate-spin" style={{ color: '#d06224' }} />
-      <p style={{ color: '#eac891' }}>Loading...</p>
+      <Loader2 className="w-12 h-12 animate-spin text-foreground" />
+      <p className="text-foreground">Loading...</p>
     </div>
   </div>
 )

@@ -8,50 +8,50 @@
 
 @layer base {
   :root {
-    /* Terracotta/Chile Rojo theme */
-    --background: 11 71% 40%; /* Chile Rojo #ae431e */
-    --foreground: 35 58% 74%; /* Sunset #eac891 */
-    --card: 11 71% 40%;
-    --card-foreground: 35 58% 74%;
-    --popover: 11 71% 40%;
-    --popover-foreground: 35 58% 74%;
-    --primary: 54 44% 38%; /* Olive #8a8635 */
-    --primary-foreground: 35 58% 74%;
-    --secondary: 15 67% 48%; /* Terracotta #d06224 */
-    --secondary-foreground: 35 58% 74%;
-    --muted: 11 71% 35%;
-    --muted-foreground: 35 58% 60%;
-    --accent: 15 67% 48%; /* Terracotta */
-    --accent-foreground: 35 58% 74%;
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 35 58% 74%;
-    --border: 11 71% 30%;
-    --input: 11 71% 30%;
-    --ring: 54 44% 38%;
+    /* Pure greyscale light theme */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 0% 20%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 0%;
     --radius: 0rem;
   }
 
   .dark {
-    /* Terracotta/Chile Rojo theme (same as root) */
-    --background: 11 71% 40%; /* Chile Rojo #ae431e */
-    --foreground: 35 58% 74%; /* Sunset #eac891 */
-    --card: 11 71% 40%;
-    --card-foreground: 35 58% 74%;
-    --popover: 11 71% 40%;
-    --popover-foreground: 35 58% 74%;
-    --primary: 54 44% 38%; /* Olive #8a8635 */
-    --primary-foreground: 35 58% 74%;
-    --secondary: 15 67% 48%; /* Terracotta #d06224 */
-    --secondary-foreground: 35 58% 74%;
-    --muted: 11 71% 35%;
-    --muted-foreground: 35 58% 60%;
-    --accent: 15 67% 48%; /* Terracotta */
-    --accent-foreground: 35 58% 74%;
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 35 58% 74%;
-    --border: 11 71% 30%;
-    --input: 11 71% 30%;
-    --ring: 54 44% 38%;
+    /* Pure greyscale dark theme */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 0% 80%;
+    --destructive-foreground: 0 0% 10%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 95%;
   }
 }
 
