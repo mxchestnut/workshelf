@@ -196,10 +196,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/feed')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/feed')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/feed') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <Home className="w-5 h-5" />
                   <span>Feed</span>
@@ -209,10 +208,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/groups')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/groups')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/groups') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <Users className="w-5 h-5" />
                   <span>Groups</span>
@@ -221,7 +219,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
               {/* Library Section */}
               <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
                   Library
                 </p>
                 
@@ -229,10 +227,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/bookshelf')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/bookshelf')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/bookshelf') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <BookMarked className="w-5 h-5" />
                   <span>Bookshelf</span>
@@ -242,10 +239,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/store')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/store')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/store') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <ShoppingBag className="w-5 h-5" />
                   <span>Books</span>
@@ -254,7 +250,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
               {/* My Studio */}
               <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
                   My Studio
                 </p>
                 
@@ -262,10 +258,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/studio')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/studio')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/studio') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <FileText className="w-5 h-5" />
                   <span>Studio</span>
@@ -275,10 +270,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/beta-marketplace')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/beta-marketplace')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/beta-marketplace') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <UserCircle className="w-5 h-5" />
                   <span>Marketplace</span>
@@ -287,7 +281,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
               {/* Account */}
               <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
                   Account
                 </p>
                 
@@ -295,10 +289,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/me')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/me')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/me') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <UserCircle className="w-5 h-5" />
                   <span>Profile & Settings</span>
@@ -309,10 +302,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   onClick={() => navigateTo('/dashboard')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/dashboard')
-                      ? 'font-medium text-white'
-                      : 'text-white hover:bg-opacity-20'
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
                   }`}
-                  style={isActive('/dashboard') ? { backgroundColor: '#B34B0C' } : {}}
                 >
                   <BarChart className="w-5 h-5" />
                   <span>Dashboard</span>
@@ -324,10 +316,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     onClick={() => navigateTo('/admin')}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       isActive('/admin')
-                        ? 'font-medium text-white'
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium'
+                        : 'text-foreground hover:bg-accent'
                     }`}
-                    style={isActive('/admin') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <Settings className="w-5 h-5" />
                     <span>Group Admin</span>
@@ -340,10 +331,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     onClick={() => navigateTo('/staff')}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       isActive('/staff')
-                        ? 'font-medium text-white'
-                        : 'text-white hover:bg-opacity-20'
+                        ? 'bg-primary text-primary-foreground font-medium'
+                        : 'text-foreground hover:bg-accent'
                     }`}
-                    style={isActive('/staff') ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <Shield className="w-5 h-5" />
                     <span>Staff Panel</span>
@@ -354,12 +344,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           </nav>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t space-y-2" style={{ borderColor: 'border-border' }}>
+          <div className="p-6 border-t border-border space-y-2">
             {user && (
               <button 
                 onClick={onLogout}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors hover:opacity-80"
-                style={{ color: '#B34B0C' }}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-foreground hover:bg-accent"
               >
                 <LogOut className="w-5 h-5" />
                 <span>Log Out</span>
