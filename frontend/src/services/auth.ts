@@ -76,7 +76,7 @@ class AuthService {
     // Store verifier in sessionStorage for callback
     sessionStorage.setItem('pkce_verifier', codeVerifier)
     
-    const redirectUri = window.location.origin + '/auth/callback'
+    const redirectUri = window.location.origin + '/callback'
     const authUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?` +
       `client_id=${KEYCLOAK_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
