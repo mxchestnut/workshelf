@@ -182,7 +182,7 @@ export function ProjectDetail() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+      const response = await fetch(`${API_URL}/v1/projects/${projectId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -206,7 +206,7 @@ export function ProjectDetail() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_URL}/api/v1/documents?project_id=${projectId}`, {
+      const response = await fetch(`${API_URL}/v1/documents?project_id=${projectId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
