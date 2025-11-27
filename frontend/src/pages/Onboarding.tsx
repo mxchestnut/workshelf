@@ -104,7 +104,7 @@ export default function Onboarding() {
     } else {
       // Check if username is available
       try {
-        const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
+        const response = await fetch(`${API_URL}/v1/auth/check-availability`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export default function Onboarding() {
         // Check if phone is available
         try {
           const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
-          const response = await fetch(`${API_URL}/api/v1/auth/check-availability`, {
+          const response = await fetch(`${API_URL}/v1/auth/check-availability`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
