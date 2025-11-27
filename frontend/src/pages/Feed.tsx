@@ -143,7 +143,7 @@ export function Feed() {
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
       
       {/* Feed Tabs */}
-      <div className="border-b" style={{ className="border-border bg-muted" }}>
+      <div className="border-b border-border bg-muted">
         <div className="max-w-4xl mx-auto px-6">
           <nav className="flex gap-1 overflow-x-auto">
             <button
@@ -237,7 +237,7 @@ export function Feed() {
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
         {posts.length === 0 ? (
-          <div className="rounded-lg shadow-sm border p-12 text-center" style={{  className="bg-muted border-border" }}>
+          <div className="rounded-lg shadow-sm border p-12 text-center bg-muted border-border">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-bold text-foreground mb-2">
               {activeTab === 'personal' && 'Your personal feed is empty'}
@@ -258,8 +258,7 @@ export function Feed() {
             {(activeTab === 'groups' || activeTab === 'discover') && (
               <button 
                 onClick={() => window.location.href = '/groups'}
-                className="text-foreground px-6 py-3 rounded-lg transition-colors hover:opacity-90"
-                className="bg-primary"
+                className="bg-primary text-foreground px-6 py-3 rounded-lg transition-colors hover:opacity-90"
               >
                 {activeTab === 'groups' ? 'Browse Groups' : 'Explore Content'}
               </button>
@@ -270,8 +269,7 @@ export function Feed() {
             {posts.map((post) => (
               <article 
                 key={post.id}
-                className="rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
-                style={{  className="bg-muted border-border" }}
+                className="rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow bg-muted border-border"
               >
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-4">
