@@ -142,12 +142,11 @@ export default function Groups() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">Groups</h1>
-              <p className="text-gray-400">Connect with writers, beta readers, and book lovers</p>
+              <p className="text-muted-foreground">Connect with writers, beta readers, and book lovers</p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-foreground transition-colors hover:bg-[hsl(var(--primary))]"
-              className="bg-primary"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-primary text-primary-foreground transition-colors hover:opacity-90"
             >
               <Plus className="w-5 h-5" />
               Start a Group
@@ -158,7 +157,7 @@ export default function Groups() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="mt-4 text-gray-400">Loading groups...</p>
+            <p className="mt-4 text-muted-foreground">Loading groups...</p>
           </div>
         ) : (
           <>
@@ -171,12 +170,11 @@ export default function Groups() {
 
               {myGroups.length === 0 ? (
                 <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-                  <p className="text-gray-400 mb-4">You haven't joined any groups yet</p>
+                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-4">You haven't joined any groups yet</p>
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="px-6 py-2 rounded-lg font-semibold text-foreground"
-                    className="bg-primary"
+                    className="px-6 py-2 rounded-lg font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                   >
                     Start Your First Group
                   </button>
@@ -187,12 +185,12 @@ export default function Groups() {
                     <a
                       key={group.id}
                       href={`/group?id=${group.id}`}
-                      className="rounded-lg p-6 transition-all hover:shadow-lg border border-gray-700"
+                      className="rounded-lg p-6 transition-all hover:shadow-lg border border-border"
                       style={{ backgroundColor: 'hsl(var(--muted))' }}
                     >
                       <h3 className="text-xl font-bold text-foreground mb-2">{group.name}</h3>
-                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">{group.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{group.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Users className="w-4 h-4" />
                           <span>{group.member_count || 0} members</span>
@@ -217,7 +215,7 @@ export default function Groups() {
 
               {discoveredGroups.length === 0 ? (
                 <div className="rounded-lg p-8 text-center" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-                  <p className="text-gray-400">No groups to discover yet</p>
+                  <p className="text-muted-foreground">No groups to discover yet</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -225,13 +223,13 @@ export default function Groups() {
                     <a
                       key={group.id}
                       href={`/group?id=${group.id}`}
-                      className="rounded-lg p-6 transition-all hover:shadow-lg border border-gray-700"
+                      className="rounded-lg p-6 transition-all hover:shadow-lg border border-border"
                       style={{ backgroundColor: 'hsl(var(--muted))' }}
                     >
                       <h3 className="text-xl font-bold text-foreground mb-2">{group.name}</h3>
-                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">{group.description}</p>
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{group.description}</p>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
                             <span>{group.member_count || 0}</span>
@@ -241,7 +239,7 @@ export default function Groups() {
                             <span>{group.post_count || 0}</span>
                           </div>
                         </div>
-                        <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'hsl(var(--primary))', color: 'white' }}>
+                        <span className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground">
                           {group.is_public ? 'Public' : 'Private'}
                         </span>
                       </div>
@@ -257,12 +255,12 @@ export default function Groups() {
       {/* Create Group Modal */}
   {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
-            <div className="sticky top-0 bg-gradient-to-r from-[hsl(var(--muted))] to-[hsl(var(--background))] text-foreground px-6 py-4 flex items-center justify-between rounded-t-xl">
+          <div className="bg-card rounded-xl shadow-2xl max-w-lg w-full border border-border">
+            <div className="sticky top-0 bg-muted text-foreground px-6 py-4 flex items-center justify-between rounded-t-xl">
               <h2 className="text-xl font-bold">Start a New Group</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-accent rounded-lg transition-colors"
               >
                 ×
               </button>
@@ -271,7 +269,7 @@ export default function Groups() {
             <form onSubmit={handleCreateGroup} className="p-6 space-y-4">
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Group Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -279,20 +277,20 @@ export default function Groups() {
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="e.g., Fantasy Writers Guild"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--primary))] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={newGroupDescription}
                   onChange={(e) => setNewGroupDescription(e.target.value)}
                   placeholder="What is your group about? Who should join?"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--primary))] focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none bg-background text-foreground"
                   rows={4}
                   required
                 />
@@ -302,14 +300,14 @@ export default function Groups() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border-2 border-border rounded-lg font-semibold bg-muted text-foreground hover:opacity-90 transition-opacity"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 px-4 py-2 bg-[hsl(var(--primary))] text-foreground rounded-lg font-semibold hover:bg-[hsl(var(--primary))] disabled:opacity-50 transition-colors"
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
                 >
                   {creating ? 'Creating...' : 'Create Group'}
                 </button>
