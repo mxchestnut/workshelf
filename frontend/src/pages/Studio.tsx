@@ -263,7 +263,7 @@ export function Studio() {
       const projectType = templateId.replace(/-/g, '_')
       
       console.log('[Studio] Creating project for template:', templateId, '-> project_type:', projectType)
-      const response = await fetch(`${API_URL}/api/v1/projects/`, {
+      const response = await fetch(`${API_URL}/v1/projects/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
