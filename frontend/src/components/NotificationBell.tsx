@@ -49,7 +49,7 @@ export default function NotificationBell() {
   const loadNotifications = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/notifications?limit=10`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/notifications?limit=10`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

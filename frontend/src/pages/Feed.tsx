@@ -82,15 +82,15 @@ export function Feed() {
       
       // Map tabs to API endpoints
       const endpointMap: Record<FeedTab, string> = {
-        'personal': '/api/v1/feed/personal',
-        'updates': '/api/v1/feed/updates',
-        'beta-feed': '/api/v1/feed/beta',
-        'groups': '/api/v1/feed/groups',
-        'global': '/api/v1/feed/global',
-        'discover': '/api/v1/feed/discover'
+        'personal': '/v1/feed/personal',
+        'updates': '/v1/feed/updates',
+        'beta-feed': '/v1/feed/beta',
+        'groups': '/v1/feed/groups',
+        'global': '/v1/feed/global',
+        'discover': '/v1/feed/discover'
       }
       
-      const endpoint = endpointMap[tab] || '/api/v1/feed'
+      const endpoint = endpointMap[tab] || '/v1/feed'
       
       const response = await fetch(`${API_URL}${endpoint}`, {
         headers: {
