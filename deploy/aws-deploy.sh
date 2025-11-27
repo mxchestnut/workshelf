@@ -82,12 +82,12 @@ else
 fi
 echo ""
 
-# Get latest Ubuntu 22.04 LTS ARM64 AMI
+# Get latest Ubuntu 22.04 LTS AMD64 AMI
 echo "🔍 Finding latest Ubuntu 22.04 LTS AMI..."
 AMI_ID=$(aws ec2 describe-images \
     --region "$REGION" \
     --owners 099720109477 \
-    --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*" \
+    --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
               "Name=state,Values=available" \
     --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
     --output text)
@@ -119,8 +119,8 @@ apt-get install -y git jq nginx certbot python3-certbot-nginx
 
 # Clone repository
 cd /opt
-git clone https://github.com/mxchestnut/workshelf.git
-cd workshelf/work-shelf
+git clone https://github.com/mxchestnut/workshelf.git workshelf-repo
+cd workshelf-repo
 
 # Generate secure secrets
 export SECRET_KEY=$(openssl rand -hex 32)
@@ -184,7 +184,7 @@ docker-compose exec -T keycloak /opt/keycloak/bin/kcadm.sh config credentials \
 docker-compose exec -T keycloak /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
 
 # Setup Keycloak realm and clients
-cd /opt/workshelf/work-shelf
+cd /opt/workshelf-repo
 chmod +x setup-keycloak-local.sh
 ./setup-keycloak-local.sh || true
 
