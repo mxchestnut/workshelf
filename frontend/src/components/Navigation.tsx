@@ -78,7 +78,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/feed') 
                         ? 'bg-primary text-primary-foreground font-medium' 
-                        : 'hover:bg-accent'
+                        : 'text-foreground hover:bg-accent'
                     }`}
                   >
                     <Home className="w-5 h-5" />
@@ -90,7 +90,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/bookshelf') 
                         ? 'bg-primary text-primary-foreground font-medium' 
-                        : 'hover:bg-accent'
+                        : 'text-foreground hover:bg-accent'
                     }`}
                   >
                     <BookMarked className="w-5 h-5" />
@@ -102,7 +102,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/studio') 
                         ? 'bg-primary text-primary-foreground font-medium' 
-                        : 'hover:bg-accent'
+                        : 'text-foreground hover:bg-accent'
                     }`}
                   >
                     <PenTool className="w-5 h-5" />
@@ -114,7 +114,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
                       isActive('/groups') 
                         ? 'bg-primary text-primary-foreground font-medium' 
-                        : 'hover:bg-accent'
+                        : 'text-foreground hover:bg-accent'
                     }`}
                   >
                     <Users className="w-5 h-5" />
