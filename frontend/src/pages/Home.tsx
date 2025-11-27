@@ -260,11 +260,10 @@ export default function Home() {
           {featuredBooks.length > 0 && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold" text-primary-foreground">Featured Books</h2>
+                <h2 className="text-2xl font-bold font-mono">Featured Books</h2>
                 <button
                   onClick={() => handleNavigation('/store')}
-                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  className="text-primary"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity text-primary"
                 >
                   View all <ArrowRight className="w-4 h-4" />
                 </button>
