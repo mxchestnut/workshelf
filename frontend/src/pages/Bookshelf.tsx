@@ -236,7 +236,7 @@ export default function Bookshelf() {
       <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg" style={{ color: 'white' }}>Loading bookshelf...</div>
+          <div className="text-lg text-foreground">Loading bookshelf...</div>
         </div>
       </div>
     )
@@ -267,8 +267,7 @@ export default function Bookshelf() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
-                className="bg-muted text-foreground"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90 bg-muted text-foreground"
               >
                 <Plus className="w-5 h-5" />
                 Add Book
@@ -332,7 +331,7 @@ export default function Bookshelf() {
               className="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'all' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               All Books
@@ -342,7 +341,7 @@ export default function Bookshelf() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'reading' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'reading' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               <Clock className="w-4 h-4" />
@@ -353,7 +352,7 @@ export default function Bookshelf() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'read' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'read' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               <BookMarked className="w-4 h-4" />
@@ -364,7 +363,7 @@ export default function Bookshelf() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'want-to-read' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'want-to-read' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               <BookOpen className="w-4 h-4" />
@@ -375,7 +374,7 @@ export default function Bookshelf() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'favorites' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'favorites' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               <Heart className="w-4 h-4" />
@@ -386,7 +385,7 @@ export default function Bookshelf() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
                 backgroundColor: activeTab === 'dnf' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                color: 'white'
+                color: activeTab === 'dnf' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
               }}
             >
               <ThumbsDown className="w-4 h-4" />
@@ -396,8 +395,8 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('recommendations')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 activeTab === 'recommendations'
-                  ? 'bg-[hsl(var(--primary))] text-foreground'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-foreground hover:opacity-90'
               }`}
             >
               <Sparkles className="w-4 h-4" />
@@ -489,7 +488,7 @@ export default function Bookshelf() {
             {!searchQuery && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-6 py-3 bg-[hsl(var(--primary))] text-foreground rounded-lg font-semibold hover:bg-[hsl(var(--primary))] transition-colors"
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
                 Add Your First Book
               </button>
