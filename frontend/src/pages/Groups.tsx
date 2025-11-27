@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { Users, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
-import { User } from '../services/auth'
+import { authService, User } from '../services/auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -40,17 +40,9 @@ export default function Groups() {
   }, [])
 
   const loadUser = async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/auth/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-      }
-    } catch (error) {
-      console.error('Failed to load user:', error)
+    const currentUser = await authService.getCurrentUser()
+    if (currentUser) {
+      setUser(currentUser)
     }
   }
 
@@ -127,12 +119,8 @@ export default function Groups() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => window.location.href = '/login'}
-        onLogout={() => {
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          window.location.href = '/'
-        }}
+        onLogin={() => authService.login()}
+        onLogout={() => authService.logout()}
         currentPage="groups"
       />
 
