@@ -322,8 +322,7 @@ export default function Bookshelf() {
               placeholder="Search your books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none"
-              style={{  className="bg-muted border-border", color: 'white' }}
+              className="w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none bg-muted border-border text-foreground"
             />
           </div>
 
