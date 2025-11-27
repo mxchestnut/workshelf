@@ -1,18 +1,18 @@
-Instance ID: i-0117ce9692be7077c
-Public IP: 3.238.248.59
+Instance ID: i-00d113ad6dd246b7a
+Public IP: 100.27.250.133
 Region: us-east-1
 Key Name: workshelf-key
-SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@3.238.248.59
+SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@100.27.250.133
 
 URLs:
-  Frontend: http://3.238.248.59
-  Backend API: http://3.238.248.59/api
-  Keycloak: http://3.238.248.59/auth
+  Frontend: http://100.27.250.133
+  Backend API: http://100.27.250.133/api
+  Keycloak: http://100.27.250.133/auth
 
 Credentials:
   Test User: testuser / test123
   Keycloak Admin: admin / admin
 
-To stop instance: aws ec2 stop-instances --region us-east-1 --instance-ids i-0117ce9692be7077c
-To start instance: aws ec2 start-instances --region us-east-1 --instance-ids i-0117ce9692be7077c
-To terminate: aws ec2 terminate-instances --region us-east-1 --instance-ids i-0117ce9692be7077c
+To stop instance: aws ec2 stop-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+To start instance: aws ec2 start-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+To terminate: aws ec2 terminate-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
