@@ -80,7 +80,7 @@ function App() {
       ])
       
       // Always allowed (even when not authenticated)
-      const alwaysAllowed = new Set<string>(['/auth/callback'])
+      const alwaysAllowed = new Set<string>(['/callback'])
 
       // Check if current path or any parent path is public
       const isPublicPath = publicPaths.has(path) || 
@@ -99,7 +99,7 @@ function App() {
       // Removed approval redirect - unapproved users can browse public content
       // Staff approval is still required but doesn't block viewing
     
-    if (path === '/auth/callback') {
+    if (path === '/callback') {
       setCurrentPage('auth-callback')
     } else if (path === '/onboarding') {
       setCurrentPage('onboarding')

@@ -92,7 +92,7 @@ class AuthService {
    * Handle OAuth callback with authorization code
    */
   async handleCallback(code: string): Promise<User> {
-    const redirectUri = window.location.origin + '/auth/callback'
+    const redirectUri = window.location.origin + '/callback'
     
     // Retrieve PKCE verifier from sessionStorage
     const codeVerifier = sessionStorage.getItem('pkce_verifier')
