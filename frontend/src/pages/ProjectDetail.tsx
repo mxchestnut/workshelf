@@ -242,7 +242,7 @@ export function ProjectDetail() {
       }
 
       // Fixed: Remove trailing slash to avoid FastAPI redirect
-      const url = `${API_URL}/api/v1/documents`
+      const url = `${API_URL}/v1/documents`
       
       const response = await fetch(url, {
         method: 'POST',
