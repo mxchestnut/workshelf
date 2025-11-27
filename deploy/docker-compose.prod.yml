@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    platform: linux/arm64/v8
+    environment:
+      POSTGRES_DB: workshelf
+      POSTGRES_USER: workshelf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    platform: linux/arm64/v8
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    platform: linux/arm64/v8
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/workshelf
+      KC_DB_USERNAME: workshelf
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY: edge
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    platform: linux/arm64/v8
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+  backend:
+    image: python:3.11-slim
+    platform: linux/arm64/v8
+    working_dir: /app
+    command: sh -c "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      REDIS_URL: ${REDIS_URL}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+    depends_on:
+      - postgres
+      - redis
+      - keycloak
+      - minio
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    platform: linux/arm64/v8
+    working_dir: /app
+    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER}
+    depends_on:
+      - backend
+    networks:
+      - workshelf
+    restart: unless-stopped
+
+networks:
+  workshelf:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:

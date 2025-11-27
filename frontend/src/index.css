@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import monospace fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Pure black & white theme */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
+    --radius: 0rem;
+  }
+
+  .dark {
+    /* Pure black & white theme (inverted) */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+  }
+  
+  /* Remove rounded corners globally */
+  button, input, select, textarea {
+    border-radius: 0;
+  }
+}
+
+/* Minimal, brutalist styling */
+.prose {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+  max-width: 65ch;
+}
+
+.prose code {
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.prose pre {
+  background-color: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Tiptap editor styling */
+.tiptap {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Matrix chat styling */
+.mx_RoomView_body {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Courier New', monospace;
+}
+

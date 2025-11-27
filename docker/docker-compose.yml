@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: workshelf-postgres
+    environment:
+      POSTGRES_DB: workshelf
+      POSTGRES_USER: workshelf
+      POSTGRES_PASSWORD: workshelf_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workshelf"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak for Authentication
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: workshelf-keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: workshelf
+      KC_DB_PASSWORD: workshelf_password
+    ports:
+      - "8081:8080"  # Changed from 8080:8080 to avoid conflicts
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # MinIO for Object Storage (S3-compatible)
+  minio:
+    image: minio/minio:latest
+    container_name: workshelf-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Redis for Caching (optional but useful)
+  redis:
+    image: redis:7-alpine
+    container_name: workshelf-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: workshelf-backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://workshelf:workshelf_password@postgres:5432/workshelf
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      SECRET_KEY: dev-secret-key-change-in-production
+      # AI Services - can override from .env file
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: claude-4-sonnet-20250514
+      # Stripe Payment Processing
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      # Content Integrity
+      GPTZERO_API_KEY: ${GPTZERO_API_KEY:-}
+      COPYSCAPE_API_KEY: ${COPYSCAPE_API_KEY:-}
+      COPYSCAPE_USERNAME: ${COPYSCAPE_USERNAME:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend/app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: workshelf-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:

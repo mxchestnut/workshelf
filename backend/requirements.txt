@@ -1,0 +1,52 @@
+# Core Framework
+fastapi==0.121.0
+uvicorn[standard]==0.38.0
+pydantic==2.10.6
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
+alembic==1.14.1
+
+# Authentication & Security
+python-jose[cryptography]==3.4.0
+cryptography>=41.0.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.18
+
+# Payment Processing
+stripe==11.3.0
+
+# Price Scraping & Web Requests
+aiohttp==3.12.14
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# AI Services
+anthropic==0.72.0  # Claude API for creative writing assistance
+
+# EPUB Processing
+ebooklib==0.18
+html2text==2020.1.16
+
+# Azure SDK
+azure-storage-blob==12.19.0
+azure-identity==1.16.1
+
+# AWS SDK
+boto3==1.35.0  # For SES email sending
+
+# Error Tracking
+sentry-sdk[fastapi]==2.18.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Development
+python-dotenv==1.0.0
+requests==2.32.4  # For Keycloak setup script

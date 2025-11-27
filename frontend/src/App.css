@@ -1,0 +1,5 @@
+/* Minimal App styles - most styling is in Tailwind */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
