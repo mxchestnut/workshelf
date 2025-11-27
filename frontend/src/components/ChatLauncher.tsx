@@ -90,8 +90,7 @@ export function ChatLauncher() {
     if (!unreadCount) return null
     return (
       <span
-        className="absolute -top-1 -right-1 text-xs font-bold rounded-full px-1.5 py-0.5"
-        style={{ backgroundColor: '#B34B0C', color: 'white' }}
+        className="absolute -top-1 -right-1 text-xs font-bold rounded-full px-1.5 py-0.5 bg-primary text-primary-foreground"
       >
         {unreadCount > 99 ? '99+' : unreadCount}
       </span>
@@ -119,13 +118,12 @@ export function ChatLauncher() {
       {/* Tray */}
       {isOpen && (
         <div
-          className="mb-3 w-80 rounded-lg shadow-2xl overflow-hidden border"
-          style={{ background: 'white', borderColor: '#E5E5E5' }}
+          className="mb-3 w-80 rounded-lg shadow-2xl overflow-hidden border border-border bg-card"
         >
-          <div className="flex items-center justify-between px-3 py-2" style={{ background: '#37322E' }}>
-            <span className="text-white font-medium">Messages</span>
+          <div className="flex items-center justify-between px-3 py-2 bg-muted">
+            <span className="text-foreground font-medium">Messages</span>
             <button
-              className="text-white/90 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
               onClick={toggleTray}
               aria-label="Close messages"
             >
@@ -134,18 +132,18 @@ export function ChatLauncher() {
           </div>
           <div className="max-h-80 overflow-y-auto">
             {dmRooms.length === 0 ? (
-              <div className="p-4 text-sm text-gray-500">No messages yet</div>
+              <div className="p-4 text-sm text-muted-foreground">No messages yet</div>
             ) : (
               dmRooms.map((item) => (
                 <button
                   key={item.roomId}
                   onClick={() => onOpenRoom(item)}
-                  className="w-full text-left px-3 py-2 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left px-3 py-2 flex items-center gap-3 hover:bg-accent transition-colors"
                 >
                   {item.avatarUrl ? (
                     <img src={item.avatarUrl} alt={item.name} className="w-8 h-8 rounded-full" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ background: '#B34B0C' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground font-bold">
                       {item.name?.[0]?.toUpperCase() || '?'}
                     </div>
                   )}
@@ -153,13 +151,13 @@ export function ChatLauncher() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium truncate">{item.name}</span>
                       {item.unread > 0 && (
-                        <span className="text-xs rounded-full px-1.5 py-0.5" style={{ background: '#B34B0C', color: 'white' }}>
+                        <span className="text-xs rounded-full px-1.5 py-0.5 bg-primary text-primary-foreground">
                           {item.unread}
                         </span>
                       )}
                     </div>
                     {item.lastMessage && (
-                      <div className="text-xs text-gray-500 truncate">{item.lastMessage}</div>
+                      <div className="text-xs text-muted-foreground truncate">{item.lastMessage}</div>
                     )}
                   </div>
                 </button>
@@ -172,14 +170,14 @@ export function ChatLauncher() {
       {/* Launcher Button */}
       <button
         onClick={toggleTray}
-        className="relative rounded-full shadow-xl hover:opacity-90 transition-opacity"
-        style={{ width: 56, height: 56, backgroundColor: '#37322E', color: 'white' }}
+        className="relative rounded-full shadow-xl bg-card text-foreground hover:opacity-90 transition-opacity"
+        style={{ width: 56, height: 56 }}
         aria-label="Open messages"
       >
         <MessageCircle size={24} />
         {badge}
         {isOpen && (
-          <div className="absolute -top-8 right-1 text-xs text-white/90 flex items-center gap-1">
+          <div className="absolute -top-8 right-1 text-xs text-muted-foreground flex items-center gap-1">
             <ChevronUp size={14} />
           </div>
         )}

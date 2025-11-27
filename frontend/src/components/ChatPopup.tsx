@@ -125,8 +125,7 @@ export function ChatPopup({
     >
       {/* Header */}
       <div 
-        className="flex items-center justify-between px-4 py-3 cursor-pointer rounded-t-lg"
-        style={{ backgroundColor: '#37322E' }}
+        className="flex items-center justify-between px-4 py-3 cursor-pointer rounded-t-lg bg-muted"
         onClick={onToggleMinimize}
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -138,15 +137,14 @@ export function ChatPopup({
             />
           ) : (
             <div 
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: '#B34B0C' }}
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-primary"
             >
-              <span className="text-white text-sm font-bold">
+              <span className="text-primary-foreground text-sm font-bold">
                 {recipientName[0]?.toUpperCase() || '?'}
               </span>
             </div>
           )}
-          <span className="text-white font-medium truncate">{recipientName}</span>
+          <span className="text-foreground font-medium truncate">{recipientName}</span>
         </div>
         
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -155,7 +153,7 @@ export function ChatPopup({
               e.stopPropagation()
               onToggleMinimize()
             }}
-            className="text-white hover:bg-white/10 p-1 rounded transition-colors"
+            className="text-foreground hover:bg-accent p-1 rounded transition-colors"
             aria-label={isMinimized ? 'Maximize' : 'Minimize'}
           >
             {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
@@ -165,7 +163,7 @@ export function ChatPopup({
               e.stopPropagation()
               onClose()
             }}
-            className="text-white hover:bg-white/10 p-1 rounded transition-colors"
+            className="text-foreground hover:bg-accent p-1 rounded transition-colors"
             aria-label="Close"
           >
             <X size={16} />
@@ -176,13 +174,13 @@ export function ChatPopup({
       {/* Messages Area */}
       {!isMinimized && (
         <>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundColor: '#F9F9F9' }}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 <p>Loading messages...</p>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 <p className="text-sm">Start the conversation!</p>
               </div>
             ) : (
@@ -194,10 +192,9 @@ export function ChatPopup({
                   <div 
                     className={`max-w-xs px-4 py-2 rounded-lg break-words ${
                       message.isMe 
-                        ? 'text-white' 
-                        : 'bg-white text-gray-900 border border-gray-200'
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-card text-foreground border border-border'
                     }`}
-                    style={message.isMe ? { backgroundColor: '#B34B0C' } : {}}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.body}</p>
                     <span className="text-xs opacity-70 mt-1 block">
@@ -214,23 +211,19 @@ export function ChatPopup({
           </div>
 
           {/* Input Area */}
-          <div className="border-t p-3 bg-white flex gap-2">
+          <div className="border-t border-border p-3 bg-card flex gap-2">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B34B0C] text-sm"
-              style={{ 
-                borderColor: '#E5E5E5'
-              }}
+              className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-background text-foreground"
             />
             <button
               onClick={sendMessage}
               disabled={!inputValue.trim()}
-              className="px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              style={{ backgroundColor: '#B34B0C', color: 'white' }}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               aria-label="Send message"
             >
               <Send size={18} />

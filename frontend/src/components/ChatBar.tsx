@@ -19,8 +19,7 @@ export function ChatBar() {
     if (!isReady || !unreadCount) return null
     return (
       <span
-        className="ml-2 text-xs font-bold rounded-full px-1.5 py-0.5"
-        style={{ backgroundColor: '#B34B0C', color: 'white' }}
+        className="ml-2 text-xs font-bold rounded-full px-1.5 py-0.5 bg-primary text-primary-foreground"
       >
         {unreadCount > 99 ? '99+' : unreadCount}
       </span>
@@ -34,17 +33,8 @@ export function ChatBar() {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9996,
-        background: '#37322E',
-        color: 'white',
-        borderTop: '1px solid #524944'
-      }}
-      className="px-4 py-2"
+      className="fixed left-0 right-0 bottom-0 px-4 py-2 bg-card text-foreground border-t border-border"
+      style={{ zIndex: 9996 }}
       aria-label="Work Shelf chat bar"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
@@ -60,8 +50,7 @@ export function ChatBar() {
           <button
             onClick={handleOpenMessages}
             disabled={!isReady}
-            className="px-3 py-1.5 rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: '#B34B0C', color: 'white' }}
+            className="px-3 py-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             title={!isReady ? 'Setting up chat...' : 'Open your messages'}
           >
             {!isReady ? 'Setting up...' : 'Open Messages'}
@@ -71,8 +60,7 @@ export function ChatBar() {
             href="https://app.element.io/"
             target="_blank"
             rel="noreferrer noopener"
-            className="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity"
-            style={{ background: '#524944', color: 'white' }}
+            className="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 bg-muted text-foreground hover:opacity-90 transition-opacity"
           >
             <ExternalLink size={14} />
             Open in Element
