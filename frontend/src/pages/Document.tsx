@@ -204,6 +204,14 @@ export function Document() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Token expired - redirect to login
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          alert('Your session has expired. Please log in again.')
+          window.location.href = '/'
+          return
+        }
         throw new Error('Failed to save document')
       }
 
