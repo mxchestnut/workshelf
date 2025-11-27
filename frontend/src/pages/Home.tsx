@@ -196,11 +196,10 @@ export default function Home() {
               {/* Join Groups */}
               <button
                 onClick={() => handleNavigation('/groups')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                className="bg-card border border-border"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
                 <div className="bg-primary">
-                  <Users className="w-6 h-6" text-primary-foreground" />
+                  <Users className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Join Groups</h3>
                 <p className="text-muted-foreground">Find your writing tribe and collaborate</p>
@@ -212,11 +211,10 @@ export default function Home() {
               {/* Start Chatting */}
               <button
                 onClick={() => handleNavigation('/feed')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                className="bg-card border border-border"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
                 <div className="bg-secondary">
-                  <MessagesSquare className="w-6 h-6" text-primary-foreground" />
+                  <MessagesSquare className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Join Conversations</h3>
                 <p className="text-muted-foreground">Connect with writers through chat and feed</p>
@@ -228,11 +226,10 @@ export default function Home() {
               {/* Start Writing */}
               <button
                 onClick={() => handleNavigation('/documents')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                className="bg-card border border-border"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
                 <div className="bg-primary">
-                  <PenTool className="w-6 h-6" text-primary-foreground" />
+                  <PenTool className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Start Writing</h3>
                 <p className="text-muted-foreground">Create and share your stories</p>
@@ -244,11 +241,10 @@ export default function Home() {
               {/* Browse Store */}
               <button
                 onClick={() => handleNavigation('/store')}
-                className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                className="bg-card border border-border"
+                className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
                 <div className="bg-secondary">
-                  <StoreIcon className="w-6 h-6" text-primary-foreground" />
+                  <StoreIcon className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Browse Store</h3>
                 <p className="text-muted-foreground">Discover books from our community</p>
@@ -348,7 +344,7 @@ export default function Home() {
               {/* Feed */}
               <div className="bg-card border border-border">
                 <div className="bg-primary">
-                  <MessagesSquare className="w-5 h-5" text-primary-foreground" />
+                  <MessagesSquare className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Community Feed</h3>
                 <p className="text-muted-foreground">
@@ -356,8 +352,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={() => handleNavigation('/feed')}
-                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  className="text-primary"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity text-primary"
                 >
                   View feed <ArrowRight className="w-4 h-4" />
                 </button>
@@ -366,7 +361,7 @@ export default function Home() {
               {/* Your Bookshelf */}
               <div className="bg-card border border-border">
                 <div className="bg-secondary">
-                  <BookMarked className="w-5 h-5" text-primary-foreground" />
+                  <BookMarked className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Your Bookshelf</h3>
                 <p className="text-muted-foreground">
@@ -374,8 +369,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={() => handleNavigation('/bookshelf')}
-                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  className="text-primary"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity text-primary"
                 >
                   View bookshelf <ArrowRight className="w-4 h-4" />
                 </button>
@@ -384,7 +378,7 @@ export default function Home() {
               {/* For Authors */}
               <div className="bg-card border border-border">
                 <div className="bg-primary">
-                  <TrendingUp className="w-5 h-5" text-primary-foreground" />
+                  <TrendingUp className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Publish Your Work</h3>
                 <p className="text-muted-foreground">
@@ -392,8 +386,7 @@ export default function Home() {
                 </p>
                 <button
                   onClick={() => handleNavigation('/upload-book')}
-                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  className="text-primary"
+                  className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity text-primary"
                 >
                   Upload book <ArrowRight className="w-4 h-4" />
                 </button>
