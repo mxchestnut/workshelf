@@ -39,8 +39,7 @@ export function MatrixProvider({ children }: MatrixProviderProps): React.JSX.Ele
         })
         
         if (!response.ok) {
-          // Matrix not configured - fail silently
-          console.debug('[Matrix] Not available (this is normal if Matrix is not configured)')
+          console.log('[Matrix] Could not get credentials:', response.status)
           return
         }
 
