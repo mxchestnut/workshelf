@@ -400,8 +400,8 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                  <Users className="text-primary" />
+                <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Community-Driven</h3>
@@ -412,8 +412,8 @@ export default function Home() {
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(124, 51, 6, 0.2)' }}>
-                  <StoreIcon className="w-6 h-6" style={{ color: '#7C3306' }} />
+                <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  <StoreIcon className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Direct to Reader</h3>
@@ -424,8 +424,8 @@ export default function Home() {
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                  <Users className="text-primary" />
+                <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Vibrant Community</h3>
@@ -436,8 +436,8 @@ export default function Home() {
               </div>
 
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(124, 51, 6, 0.2)' }}>
-                  <BookMarked className="w-6 h-6" style={{ color: '#7C3306' }} />
+                <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  <BookMarked className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Quality Curated</h3>
