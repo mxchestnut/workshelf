@@ -25,6 +25,7 @@ const Discover = lazy(() => import('./pages/Discover').then(module => ({ default
 const Groups = lazy(() => import('./pages/Groups'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
 const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
+const StudioV2 = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
@@ -119,6 +120,8 @@ function App() {
       setCurrentPage('group-detail')
     } else if (path === '/me') {
       setCurrentPage('profile')
+    } else if (path === '/studio-v2') {
+      setCurrentPage('studio-v2')
     } else if (path === '/studio') {
       setCurrentPage('studio')
     } else if (path.startsWith('/project/')) {
@@ -257,6 +260,10 @@ function App() {
     
     if (currentPage === 'public-profile') {
       return <PublicProfile />
+    }
+    
+    if (currentPage === 'studio-v2') {
+      return <StudioV2 />
     }
     
     if (currentPage === 'studio') {
