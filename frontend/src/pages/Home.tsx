@@ -148,44 +148,41 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="home" />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Hero Section */}
           <div className="mb-12">
-            <div className="rounded-2xl p-8 md:p-12 text-white" style={{ 
-              background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
-            }}>
+            <div className="bg-card border border-border p-8 md:p-12">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-6 h-6" />
                 <span className="text-sm font-medium uppercase tracking-wide">Welcome to Work Shelf</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-mono">
                 {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Community'}
               </h1>
-              <p className="text-xl mb-6 max-w-2xl" style={{ color: '#B3B2B0' }}>
-                Connect with fellow writers, join groups, share your work, and build meaningful relationships in a vibrant creative community.
+              <p className="text-xl mb-6 max-w-2xl text-muted-foreground">\nConnect with fellow writers, join groups, share your work, and build meaningful relationships in a vibrant creative community.
               </p>
               
               {/* Platform Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <div className="bg-muted">
                   <div className="text-3xl font-bold">{stats.totalBooks.toLocaleString()}</div>
-                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Books Published</div>
+                  <div className="text-muted-foreground">Books Published</div>
                 </div>
-                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <div className="bg-muted">
                   <div className="text-3xl font-bold">{stats.totalAuthors.toLocaleString()}</div>
-                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Active Authors</div>
+                  <div className="text-muted-foreground">Active Authors</div>
                 </div>
-                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <div className="bg-muted">
                   <div className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Community Members</div>
+                  <div className="text-muted-foreground">Community Members</div>
                 </div>
-                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <div className="bg-muted">
                   <div className="text-3xl font-bold">{stats.totalDocuments.toLocaleString()}</div>
-                  <div className="text-sm" style={{ color: '#B3B2B0' }}>Works in Progress</div>
+                  <div className="text-muted-foreground">Works in Progress</div>
                 </div>
               </div>
             </div>
@@ -193,21 +190,21 @@ export default function Home() {
 
           {/* Quick Actions */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Get Started</h2>
+            <h2 className="text-2xl font-bold mb-6">Get Started</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               
               {/* Join Groups */}
               <button
                 onClick={() => handleNavigation('/groups')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                className="bg-card border border-border"
               >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
-                  <Users className="w-6 h-6 text-white" />
+                <div className="bg-primary">
+                  <Users className="w-6 h-6" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Join Groups</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Find your writing tribe and collaborate</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                <h3 className="text-lg font-semibold mb-2">Join Groups</h3>
+                <p className="text-muted-foreground">Find your writing tribe and collaborate</p>
+                <div className="text-primary">
                   Explore groups <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -216,14 +213,14 @@ export default function Home() {
               <button
                 onClick={() => handleNavigation('/feed')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                className="bg-card border border-border"
               >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
-                  <MessagesSquare className="w-6 h-6 text-white" />
+                <div className="bg-secondary">
+                  <MessagesSquare className="w-6 h-6" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Join Conversations</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Connect with writers through chat and feed</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                <h3 className="text-lg font-semibold mb-2">Join Conversations</h3>
+                <p className="text-muted-foreground">Connect with writers through chat and feed</p>
+                <div className="text-primary">
                   Start chatting <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -232,14 +229,14 @@ export default function Home() {
               <button
                 onClick={() => handleNavigation('/documents')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                className="bg-card border border-border"
               >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#B34B0C' }}>
-                  <PenTool className="w-6 h-6 text-white" />
+                <div className="bg-primary">
+                  <PenTool className="w-6 h-6" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Start Writing</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Create and share your stories</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                <h3 className="text-lg font-semibold mb-2">Start Writing</h3>
+                <p className="text-muted-foreground">Create and share your stories</p>
+                <div className="text-primary">
                   Get started <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -248,14 +245,14 @@ export default function Home() {
               <button
                 onClick={() => handleNavigation('/store')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group border"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                className="bg-card border border-border"
               >
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#7C3306' }}>
-                  <StoreIcon className="w-6 h-6 text-white" />
+                <div className="bg-secondary">
+                  <StoreIcon className="w-6 h-6" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Browse Store</h3>
-                <p className="text-sm mb-3" style={{ color: '#B3B2B0' }}>Discover books from our community</p>
-                <div className="flex items-center text-sm font-medium" style={{ color: '#B34B0C' }}>
+                <h3 className="text-lg font-semibold mb-2">Browse Store</h3>
+                <p className="text-muted-foreground">Discover books from our community</p>
+                <div className="text-primary">
                   Explore now <ArrowRight className="w-4 h-4 ml-1" />
                 </div>
               </button>
@@ -267,11 +264,11 @@ export default function Home() {
           {featuredBooks.length > 0 && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Featured Books</h2>
+                <h2 className="text-2xl font-bold" text-primary-foreground">Featured Books</h2>
                 <button
                   onClick={() => handleNavigation('/store')}
                   className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  style={{ color: '#B34B0C' }}
+                  className="text-primary"
                 >
                   View all <ArrowRight className="w-4 h-4" />
                 </button>
@@ -283,7 +280,7 @@ export default function Home() {
                     key={book.id}
                     onClick={() => handleNavigation(`/book/${book.id}`)}
                     className="rounded-lg overflow-hidden transition-all group border"
-                    style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                    className="bg-card border border-border"
                   >
                     {book.cover_image_url ? (
                       <img 
@@ -293,23 +290,21 @@ export default function Home() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full aspect-[2/3] flex items-center justify-center" style={{ 
-                        background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)'
-                      }}>
-                        <BookOpen className="w-12 h-12" style={{ color: '#B3B2B0' }} />
+                      <div className="w-full aspect-[2/3] flex items-center justify-center bg-muted">
+                        <BookOpen className="w-12 h-12 text-muted-foreground" />
                       </div>
                     )}
                     <div className="p-3">
-                      <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2 text-left">
+                      <h3 className="text-sm font-semibold mb-1 line-clamp-2 text-left">
                         {book.title}
                       </h3>
                       {book.author_name && (
-                        <p className="text-xs mb-2 text-left" style={{ color: '#B3B2B0' }}>
+                        <p className="text-xs mb-2 text-left text-muted-foreground">
                           {book.author_name}
                         </p>
                       )}
                       {book.price !== undefined && (
-                        <p className="text-sm font-bold text-left" style={{ color: '#B34B0C' }}>
+                        <p className="text-sm font-bold text-left text-primary">
                           {book.price === 0 ? 'Free' : `$${book.price.toFixed(2)}`}
                         </p>
                       )}
@@ -323,27 +318,19 @@ export default function Home() {
           {/* Getting Started Guide (for new users) */}
           {user && !user.bio && (
             <div className="mb-12">
-              <div className="rounded-2xl p-8 text-white" style={{
-                background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
-              }}>
+              <div className="bg-card border border-border p-8">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+                  <div className="w-12 h-12 flex items-center justify-center flex-shrink-0 bg-muted">
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-2">New here? Let's get you started!</h3>
-                    <p className="mb-4" style={{ color: '#B3B2B0' }}>
+                    <h3 className="text-2xl font-bold mb-2 font-mono">New here? Let's get you started!</h3>
+                    <p className="mb-4 text-muted-foreground">
                       Complete your profile to unlock the full Work Shelf experience.
                     </p>
                     <button
                       onClick={() => handleNavigation('/me')}
-                      className="px-6 py-2 rounded-lg font-medium transition-colors"
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#7C3306'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B3B2B0'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                      className="px-6 py-2 font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                     >
                       Complete Your Profile
                     </button>
@@ -355,58 +342,58 @@ export default function Home() {
 
           {/* Community Highlights */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Join the Community</h2>
+            <h2 className="text-2xl font-bold mb-6">Join the Community</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Feed */}
-              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#B34B0C' }}>
-                  <MessagesSquare className="w-5 h-5 text-white" />
+              <div className="bg-card border border-border">
+                <div className="bg-primary">
+                  <MessagesSquare className="w-5 h-5" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Community Feed</h3>
-                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
+                <h3 className="text-lg font-semibold mb-2">Community Feed</h3>
+                <p className="text-muted-foreground">
                   Stay updated with posts, discussions, and updates from authors and groups you follow.
                 </p>
                 <button
                   onClick={() => handleNavigation('/feed')}
                   className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  style={{ color: '#B34B0C' }}
+                  className="text-primary"
                 >
                   View feed <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Your Bookshelf */}
-              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#7C3306' }}>
-                  <BookMarked className="w-5 h-5 text-white" />
+              <div className="bg-card border border-border">
+                <div className="bg-secondary">
+                  <BookMarked className="w-5 h-5" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Your Bookshelf</h3>
-                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
+                <h3 className="text-lg font-semibold mb-2">Your Bookshelf</h3>
+                <p className="text-muted-foreground">
                   Access your purchased books and reading list all in one place.
                 </p>
                 <button
                   onClick={() => handleNavigation('/bookshelf')}
                   className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  style={{ color: '#B34B0C' }}
+                  className="text-primary"
                 >
                   View bookshelf <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
               {/* For Authors */}
-              <div className="rounded-xl p-6 border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#B34B0C' }}>
-                  <TrendingUp className="w-5 h-5 text-white" />
+              <div className="bg-card border border-border">
+                <div className="bg-primary">
+                  <TrendingUp className="w-5 h-5" text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Publish Your Work</h3>
-                <p className="text-sm mb-4" style={{ color: '#B3B2B0' }}>
+                <h3 className="text-lg font-semibold mb-2">Publish Your Work</h3>
+                <p className="text-muted-foreground">
                   Upload your EPUB and start selling to readers around the world.
                 </p>
                 <button
                   onClick={() => handleNavigation('/upload-book')}
                   className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
-                  style={{ color: '#B34B0C' }}
+                  className="text-primary"
                 >
                   Upload book <ArrowRight className="w-4 h-4" />
                 </button>
@@ -417,16 +404,16 @@ export default function Home() {
 
           {/* Platform Features */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Why Work Shelf?</h2>
+            <h2 className="text-2xl font-bold mb-6">Why Work Shelf?</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                  <Users className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                  <Users className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Community-Driven</h3>
-                  <p style={{ color: '#B3B2B0' }}>
+                  <h3 className="text-lg font-semibold mb-2">Community-Driven</h3>
+                  <p className="text-muted-foreground">
                     Connect with fellow writers, get feedback, and grow together in a supportive community.
                   </p>
                 </div>
@@ -437,8 +424,8 @@ export default function Home() {
                   <StoreIcon className="w-6 h-6" style={{ color: '#7C3306' }} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Direct to Reader</h3>
-                  <p style={{ color: '#B3B2B0' }}>
+                  <h3 className="text-lg font-semibold mb-2">Direct to Reader</h3>
+                  <p className="text-muted-foreground">
                     Sell your books directly to readers with instant payouts and no middlemen taking huge cuts.
                   </p>
                 </div>
@@ -446,11 +433,11 @@ export default function Home() {
 
               <div className="flex gap-4">
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                  <Users className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                  <Users className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Vibrant Community</h3>
-                  <p style={{ color: '#B3B2B0' }}>
+                  <h3 className="text-lg font-semibold mb-2">Vibrant Community</h3>
+                  <p className="text-muted-foreground">
                     Connect with other writers and readers, join groups, and build your following.
                   </p>
                 </div>
@@ -461,8 +448,8 @@ export default function Home() {
                   <BookMarked className="w-6 h-6" style={{ color: '#7C3306' }} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Quality Curated</h3>
-                  <p style={{ color: '#B3B2B0' }}>
+                  <h3 className="text-lg font-semibold mb-2">Quality Curated</h3>
+                  <p className="text-muted-foreground">
                     Discover high-quality independent books and support authors you believe in.
                   </p>
                 </div>

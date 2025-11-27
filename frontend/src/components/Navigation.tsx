@@ -155,32 +155,30 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
       />
       
       <aside 
-        className={`fixed top-0 left-0 h-full w-80 shadow-2xl z-50 transform transition-transform ${
+        className={`fixed top-0 left-0 h-full w-80 bg-card border-r border-border shadow-2xl z-50 transform transition-transform ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        className="bg-card"
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-6 border-b" style={{ borderColor: 'border-border' }}>
+          <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <BookOpen className="w-7 h-7" style={{ color: '#B34B0C' }} />
-                <h2 className="text-xl font-bold text-white">Work Shelf</h2>
+                <BookOpen className="w-7 h-7" />
+                <h2 className="text-xl font-bold font-mono">Work Shelf</h2>
               </div>
               <button 
                 onClick={() => setMenuOpen(false)}
-                className="p-2 rounded-lg text-white hover:bg-opacity-20"
-                style={{ backgroundColor: 'rgba(179, 75, 12, 0.1)' }}
+                className="p-2 hover:bg-accent"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {user && (
-              <div className="rounded-lg p-3" style={{ backgroundColor: 'bg-muted' }}>
-                <p className="font-medium text-white">{user.display_name || user.username}</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>{user.email}</p>
+              <div className="bg-muted p-3">
+                <p className="font-medium">{user.display_name || user.username}</p>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
             )}
           </div>
@@ -190,7 +188,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
             <div className="space-y-1">
               {/* Main Navigation */}
               <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#B3B2B0' }}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
                   Main
                 </p>
                 
