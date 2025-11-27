@@ -123,7 +123,9 @@ function App() {
     } else if (path === '/studio-v2') {
       setCurrentPage('studio-v2')
     } else if (path === '/studio') {
-      setCurrentPage('studio')
+      // Redirect old studio to new studio-v2
+      window.history.replaceState({}, '', '/studio-v2')
+      setCurrentPage('studio-v2')
     } else if (path.startsWith('/project/')) {
       setCurrentPage('project-detail')
     } else if (path === '/projects') {

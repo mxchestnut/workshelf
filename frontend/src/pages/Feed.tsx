@@ -126,12 +126,12 @@ export function Feed() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: '#B34B0C' }} />
-            <p style={{ color: '#B3B2B0' }}>Loading your feed...</p>
+            <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse text-foreground" />
+            <p className="text-muted-foreground">Loading your feed...</p>
           </div>
         </div>
       </div>
@@ -139,22 +139,22 @@ export function Feed() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
       
       {/* Feed Tabs */}
-      <div className="border-b" style={{ borderColor: '#6C6A68', backgroundColor: '#524944' }}>
+      <div className="border-b" style={{ className="border-border bg-muted" }}>
         <div className="max-w-4xl mx-auto px-6">
           <nav className="flex gap-1 overflow-x-auto">
             <button
               onClick={() => setActiveTab('personal')}
               className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === 'personal' 
-                  ? 'text-white' 
-                  : 'text-[#B3B2B0] hover:text-white'
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               style={{ 
-                borderColor: activeTab === 'personal' ? '#B34B0C' : 'transparent'
+                borderColor: activeTab === 'personal' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
               Personal
@@ -163,11 +163,11 @@ export function Feed() {
               onClick={() => setActiveTab('updates')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === 'updates' 
-                  ? 'text-white' 
-                  : 'text-[#B3B2B0] hover:text-white'
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               style={{ 
-                borderColor: activeTab === 'updates' ? '#B34B0C' : 'transparent'
+                borderColor: activeTab === 'updates' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
               <Bell className="w-4 h-4" />
@@ -178,11 +178,11 @@ export function Feed() {
                 onClick={() => setActiveTab('beta-feed')}
                 className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === 'beta-feed' 
-                    ? 'text-white' 
-                    : 'text-[#B3B2B0] hover:text-white'
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 style={{ 
-                  borderColor: activeTab === 'beta-feed' ? '#B34B0C' : 'transparent'
+                  borderColor: activeTab === 'beta-feed' ? 'hsl(var(--primary))' : 'transparent'
                 }}
               >
                 Beta Feed
@@ -192,11 +192,11 @@ export function Feed() {
               onClick={() => setActiveTab('groups')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === 'groups' 
-                  ? 'text-white' 
-                  : 'text-[#B3B2B0] hover:text-white'
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               style={{ 
-                borderColor: activeTab === 'groups' ? '#B34B0C' : 'transparent'
+                borderColor: activeTab === 'groups' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
               <Users className="w-4 h-4" />
@@ -206,11 +206,11 @@ export function Feed() {
               onClick={() => setActiveTab('global')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === 'global' 
-                  ? 'text-white' 
-                  : 'text-[#B3B2B0] hover:text-white'
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               style={{ 
-                borderColor: activeTab === 'global' ? '#B34B0C' : 'transparent'
+                borderColor: activeTab === 'global' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
               <Globe className="w-4 h-4" />
@@ -220,11 +220,11 @@ export function Feed() {
               onClick={() => setActiveTab('discover')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === 'discover' 
-                  ? 'text-white' 
-                  : 'text-[#B3B2B0] hover:text-white'
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               style={{ 
-                borderColor: activeTab === 'discover' ? '#B34B0C' : 'transparent'
+                borderColor: activeTab === 'discover' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
               <Sparkles className="w-4 h-4" />
@@ -237,9 +237,9 @@ export function Feed() {
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
         {posts.length === 0 ? (
-          <div className="rounded-lg shadow-sm border p-12 text-center" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-            <h2 className="text-xl font-bold text-white mb-2">
+          <div className="rounded-lg shadow-sm border p-12 text-center" style={{  className="bg-muted border-border" }}>
+            <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {activeTab === 'personal' && 'Your personal feed is empty'}
               {activeTab === 'updates' && 'No updates yet'}
               {activeTab === 'beta-feed' && 'No beta reading content'}
@@ -247,7 +247,7 @@ export function Feed() {
               {activeTab === 'global' && 'No public posts yet'}
               {activeTab === 'discover' && 'Discover new content'}
             </h2>
-            <p className="mb-6" style={{ color: '#B3B2B0' }}>
+            <p className="mb-6 text-muted-foreground">
               {activeTab === 'personal' && 'Follow friends and writers to see their posts here.'}
               {activeTab === 'updates' && 'Updates from your followed stories, writers, and books will appear here.'}
               {activeTab === 'beta-feed' && 'Beta reading content will appear here if you\'re a beta reader.'}
@@ -258,8 +258,8 @@ export function Feed() {
             {(activeTab === 'groups' || activeTab === 'discover') && (
               <button 
                 onClick={() => window.location.href = '/groups'}
-                className="text-white px-6 py-3 rounded-lg transition-colors hover:opacity-90"
-                style={{ backgroundColor: '#B34B0C' }}
+                className="text-foreground px-6 py-3 rounded-lg transition-colors hover:opacity-90"
+                className="bg-primary"
               >
                 {activeTab === 'groups' ? 'Browse Groups' : 'Explore Content'}
               </button>
@@ -271,28 +271,28 @@ export function Feed() {
               <article 
                 key={post.id}
                 className="rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
-                style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+                style={{  className="bg-muted border-border" }}
               >
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(179, 75, 12, 0.2)' }}>
-                      <span className="font-semibold" style={{ color: '#B34B0C' }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-muted">
+                      <span className="font-semibold text-foreground">
                         {post.author.display_name[0].toUpperCase()}
                       </span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-foreground">
                           {post.author.display_name}
                         </span>
                         {post.author.username && (
-                          <span className="text-sm" style={{ color: '#B3B2B0' }}>@{post.author.username}</span>
+                          <span className="text-sm text-muted-foreground">@{post.author.username}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm" style={{ color: '#B3B2B0' }}>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>in</span>
-                        <span className="font-medium hover:underline cursor-pointer" style={{ color: '#B34B0C' }}>
+                        <span className="font-medium hover:underline cursor-pointer text-foreground">
                           {post.group.name}
                         </span>
                         <span>·</span>
@@ -304,7 +304,7 @@ export function Feed() {
                     </div>
                   </div>
                   {post.is_pinned && (
-                    <div className="flex items-center gap-1 text-sm" style={{ color: '#B34B0C' }}>
+                    <div className="flex items-center gap-1 text-sm text-foreground">
                       <Pin className="w-4 h-4" />
                       <span>Pinned</span>
                     </div>
@@ -312,24 +312,24 @@ export function Feed() {
                 </div>
 
                 {/* Post Content */}
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   {post.title}
                 </h3>
-                <p className="whitespace-pre-wrap mb-4" style={{ color: '#B3B2B0' }}>
+                <p className="whitespace-pre-wrap mb-4 text-muted-foreground">
                   {post.content.length > 300 
                     ? post.content.substring(0, 300) + '...' 
                     : post.content}
                 </p>
 
                 {/* Post Actions */}
-                <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: '#6C6A68' }}>
-                  <button className="transition-colors text-sm font-medium text-white hover:opacity-80" style={{ color: '#B3B2B0' }}>
+                <div className="flex items-center gap-4 pt-4 border-t border-border">
+                  <button className="transition-colors text-sm font-medium text-foreground hover:opacity-80 text-muted-foreground">
                     Reply
                   </button>
-                  <button className="transition-colors text-sm font-medium hover:opacity-80" style={{ color: '#B3B2B0' }}>
+                  <button className="transition-colors text-sm font-medium hover:opacity-80 text-muted-foreground">
                     React
                   </button>
-                  <button className="transition-colors text-sm font-medium hover:opacity-80" style={{ color: '#B3B2B0' }}>
+                  <button className="transition-colors text-sm font-medium hover:opacity-80 text-muted-foreground">
                     Share
                   </button>
                 </div>
@@ -340,8 +340,8 @@ export function Feed() {
 
         {/* User Info (for debugging) */}
         {user?.is_staff && (
-          <div className="mt-6 border rounded-lg p-4" style={{ backgroundColor: 'rgba(179, 75, 12, 0.1)', borderColor: '#B34B0C' }}>
-            <p className="text-sm" style={{ color: '#B34B0C' }}>
+          <div className="mt-6 border rounded-lg p-4 bg-muted border-border">
+            <p className="text-sm text-foreground">
               <strong>Staff Account:</strong> You have platform administration access
             </p>
           </div>

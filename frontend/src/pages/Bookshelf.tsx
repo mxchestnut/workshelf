@@ -233,7 +233,7 @@ export default function Bookshelf() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-lg" style={{ color: 'white' }}>Loading bookshelf...</div>
@@ -253,22 +253,22 @@ export default function Bookshelf() {
           }} 
         />
       ) : (
-    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
       
       {/* Header */}
-      <div className="pb-8" style={{ background: 'linear-gradient(135deg, #B34B0C, #7C3306)' }}>
+      <div className="pb-8 bg-card">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">My Bookshelf</h1>
-              <p style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Track your reading journey</p>
+              <h1 className="text-4xl font-bold text-foreground mb-2">My Bookshelf</h1>
+              <p className="text-foreground">Track your reading journey</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#524944', color: 'white' }}
+                className="bg-muted text-foreground"
               >
                 <Plus className="w-5 h-5" />
                 Add Book
@@ -279,32 +279,32 @@ export default function Bookshelf() {
           {/* Stats */}
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="text-3xl font-bold text-white">{stats.total_books}</div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Total Books</div>
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="text-3xl font-bold text-foreground">{stats.total_books}</div>
+                <div className="text-sm text-foreground">Total Books</div>
               </div>
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="text-3xl font-bold text-white">{stats.currently_reading}</div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Reading</div>
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="text-3xl font-bold text-foreground">{stats.currently_reading}</div>
+                <div className="text-sm text-foreground">Reading</div>
               </div>
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="text-3xl font-bold text-white">{stats.books_read}</div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Read</div>
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="text-3xl font-bold text-foreground">{stats.books_read}</div>
+                <div className="text-sm text-foreground">Read</div>
               </div>
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="text-3xl font-bold text-white">{stats.want_to_read}</div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Want to Read</div>
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="text-3xl font-bold text-foreground">{stats.want_to_read}</div>
+                <div className="text-sm text-foreground">Want to Read</div>
               </div>
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="text-3xl font-bold text-white">{stats.favorites}</div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Favorites</div>
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="text-3xl font-bold text-foreground">{stats.favorites}</div>
+                <div className="text-sm text-foreground">Favorites</div>
               </div>
-              <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }}>
-                <div className="flex items-center gap-2 text-3xl font-bold text-white">
+              <div className="rounded-lg p-4 bg-muted">
+                <div className="flex items-center gap-2 text-3xl font-bold text-foreground">
                   {stats.books_read_this_year}
                   <TrendingUp className="w-6 h-6" />
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>This Year</div>
+                <div className="text-sm text-foreground">This Year</div>
               </div>
             </div>
           )}
@@ -316,14 +316,14 @@ export default function Bookshelf() {
         {/* Search and Tabs */}
         <div className="mb-8">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#B3B2B0' }} />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search your books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none"
-              style={{ backgroundColor: '#524944', borderColor: '#6C6A68', color: 'white' }}
+              style={{  className="bg-muted border-border", color: 'white' }}
             />
           </div>
 
@@ -332,7 +332,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('all')}
               className="px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'all' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'all' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -342,7 +342,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('reading')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'reading' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'reading' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -353,7 +353,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('read')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'read' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'read' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -364,7 +364,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('want-to-read')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'want-to-read' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'want-to-read' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -375,7 +375,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('favorites')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'favorites' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'favorites' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -386,7 +386,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('dnf')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
               style={{
-                backgroundColor: activeTab === 'dnf' ? '#B34B0C' : '#524944',
+                backgroundColor: activeTab === 'dnf' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
                 color: 'white'
               }}
             >
@@ -397,7 +397,7 @@ export default function Bookshelf() {
               onClick={() => setActiveTab('recommendations')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 activeTab === 'recommendations'
-                  ? 'bg-[#B34B0C] text-white'
+                  ? 'bg-[hsl(var(--primary))] text-foreground'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
               }`}
             >
@@ -414,13 +414,13 @@ export default function Bookshelf() {
           ) : recommendations.length === 0 ? (
             <div className="text-center py-12">
               <Star className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Recommendations Yet</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">No Recommendations Yet</h3>
               <p className="text-gray-400 mb-4">
                 Mark some authors as favorites on the Authors page to get personalized book recommendations!
               </p>
               <button
                 onClick={() => window.location.href = '/authors'}
-                className="px-6 py-3 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
+                className="px-6 py-3 bg-[hsl(var(--primary))] text-foreground rounded-lg font-semibold hover:bg-[hsl(var(--primary))] transition-colors"
               >
                 Go to Authors
               </button>
@@ -428,12 +428,12 @@ export default function Bookshelf() {
           ) : (
             <>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">Recommendations from Your Favorite Authors</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Recommendations from Your Favorite Authors</h2>
                 <p className="text-gray-400">Books we think you'll love based on authors you've favorited</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {recommendations.map((rec, idx) => (
-                  <div key={idx} className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-[#B34B0C] transition-all">
+                  <div key={idx} className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-[hsl(var(--primary))] transition-all">
                     {rec.cover_url && (
                       <img
                         src={rec.cover_url}
@@ -443,7 +443,7 @@ export default function Bookshelf() {
                       />
                     )}
                     <div className="p-4">
-                      <h3 className="font-semibold text-white mb-1 line-clamp-2">{rec.title}</h3>
+                      <h3 className="font-semibold text-foreground mb-1 line-clamp-2">{rec.title}</h3>
                       <p className="text-sm text-gray-400 mb-2">{rec.author}</p>
                       <div className="flex items-center gap-2 mb-3">
                         <Star className="w-4 h-4 text-yellow-400" />
@@ -466,7 +466,7 @@ export default function Bookshelf() {
                           // TODO: Add to bookshelf functionality
                           console.log('Add to bookshelf:', rec)
                         }}
-                        className="w-full px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-medium hover:bg-[#8A3809] transition-colors"
+                        className="w-full px-4 py-2 bg-[hsl(var(--primary))] text-foreground rounded-lg font-medium hover:bg-[hsl(var(--primary))] transition-colors"
                       >
                         Add to Bookshelf
                       </button>
@@ -490,7 +490,7 @@ export default function Bookshelf() {
             {!searchQuery && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-6 py-3 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
+                className="px-6 py-3 bg-[hsl(var(--primary))] text-foreground rounded-lg font-semibold hover:bg-[hsl(var(--primary))] transition-colors"
               >
                 Add Your First Book
               </button>
@@ -502,10 +502,10 @@ export default function Bookshelf() {
               <div
                 key={book.id}
                 onClick={() => setSelectedBookId(book.id.toString())}
-                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-[#B34B0C] transition-all hover:shadow-lg hover:shadow-[#B34B0C]/20 cursor-pointer"
+                className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-[hsl(var(--primary))] transition-all hover:shadow-lg hover:shadow-[hsl(var(--primary))]/20 cursor-pointer"
               >
                 {/* Book Cover */}
-                <div className="aspect-[2/3] bg-gradient-to-br from-[#524944] to-[#37322E] relative">
+                <div className="aspect-[2/3] bg-gradient-to-br from-[hsl(var(--muted))] to-[hsl(var(--background))] relative">
                   {book.cover_url ? (
                     <img
                       src={book.cover_url}
@@ -519,7 +519,7 @@ export default function Bookshelf() {
                     </div>
                   )}
                   {book.is_favorite && (
-                    <div className="absolute top-2 right-2 bg-pink-500 text-white p-1.5 rounded-full">
+                    <div className="absolute top-2 right-2 bg-pink-500 text-foreground p-1.5 rounded-full">
                       <Heart className="w-4 h-4 fill-current" />
                     </div>
                   )}
@@ -527,7 +527,7 @@ export default function Bookshelf() {
 
                 {/* Book Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-white mb-1 line-clamp-2">
+                  <h3 className="font-semibold text-foreground mb-1 line-clamp-2">
                     {book.title || book.document_title}
                   </h3>
                   <p className="text-sm text-gray-400 mb-3 line-clamp-1">
