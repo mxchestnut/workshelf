@@ -32,7 +32,7 @@ export function MatrixProvider({ children }: MatrixProviderProps): React.JSX.Ele
     const initMatrix = async () => {
       try {
         // Get Matrix credentials from backend
-        const response = await fetch(`${API_URL}/api/v1/matrix/credentials`, {
+        const response = await fetch(`${API_URL}/v1/matrix/credentials`, {
           headers: { 
             Authorization: `Bearer ${localStorage.getItem('access_token')}` 
           }

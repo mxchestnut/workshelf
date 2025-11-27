@@ -41,7 +41,7 @@ export default function Onboarding() {
 
   const loadAvailableInterests = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/interests`);
+      const response = await fetch(`${API_URL}/v1/interests`);
       if (response.ok) {
         const interests = await response.json();
         setAvailableInterests(interests);
@@ -209,7 +209,7 @@ export default function Onboarding() {
       const token = authService.getToken();
       const cleanPhone = formData.phoneNumber.trim() ? formData.phoneNumber.replace(/[\s()-]/g, '') : null;
 
-      const response = await fetch(`${API_URL}/api/v1/auth/complete-onboarding`, {
+      const response = await fetch(`${API_URL}/v1/auth/complete-onboarding`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
