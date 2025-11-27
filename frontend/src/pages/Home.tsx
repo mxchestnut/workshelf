@@ -198,8 +198,8 @@ export default function Home() {
                 onClick={() => handleNavigation('/groups')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
-                <div className="bg-primary">
-                  <Users className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Join Groups</h3>
                 <p className="text-muted-foreground">Find your writing tribe and collaborate</p>
@@ -213,8 +213,8 @@ export default function Home() {
                 onClick={() => handleNavigation('/feed')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
-                <div className="bg-secondary">
-                  <MessagesSquare className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <MessagesSquare className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Join Conversations</h3>
                 <p className="text-muted-foreground">Connect with writers through chat and feed</p>
@@ -228,8 +228,8 @@ export default function Home() {
                 onClick={() => handleNavigation('/documents')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
-                <div className="bg-primary">
-                  <PenTool className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <PenTool className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Start Writing</h3>
                 <p className="text-muted-foreground">Create and share your stories</p>
@@ -243,8 +243,8 @@ export default function Home() {
                 onClick={() => handleNavigation('/store')}
                 className="rounded-xl p-6 text-left transition-all hover:scale-105 group bg-card border border-border"
               >
-                <div className="bg-secondary">
-                  <StoreIcon className="w-6 h-6 text-primary-foreground" />
+                <div className="w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <StoreIcon className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Browse Store</h3>
                 <p className="text-muted-foreground">Discover books from our community</p>
@@ -341,9 +341,9 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Feed */}
-              <div className="bg-card border border-border">
-                <div className="bg-primary">
-                  <MessagesSquare className="w-5 h-5 text-primary-foreground" />
+              <div className="bg-card border border-border p-6">
+                <div className="w-12 h-12 flex items-center justify-center mb-4">
+                  <MessagesSquare className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Community Feed</h3>
                 <p className="text-muted-foreground">
@@ -358,9 +358,9 @@ export default function Home() {
               </div>
 
               {/* Your Bookshelf */}
-              <div className="bg-card border border-border">
-                <div className="bg-secondary">
-                  <BookMarked className="w-5 h-5 text-primary-foreground" />
+              <div className="bg-card border border-border p-6">
+                <div className="w-12 h-12 flex items-center justify-center mb-4">
+                  <BookMarked className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Your Bookshelf</h3>
                 <p className="text-muted-foreground">
@@ -375,9 +375,9 @@ export default function Home() {
               </div>
 
               {/* For Authors */}
-              <div className="bg-card border border-border">
-                <div className="bg-primary">
-                  <TrendingUp className="w-5 h-5 text-primary-foreground" />
+              <div className="bg-card border border-border p-6">
+                <div className="w-12 h-12 flex items-center justify-center mb-4">
+                  <TrendingUp className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Publish Your Work</h3>
                 <p className="text-muted-foreground">
