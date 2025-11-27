@@ -136,7 +136,7 @@ export function Studio() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_URL}/api/v1/projects/organize-orphaned`, {
+      const response = await fetch(`${API_URL}/v1/projects/organize-orphaned`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -184,7 +184,7 @@ export function Studio() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/documents?page=1&page_size=100`, {
+      const response = await fetch(`${API_URL}/v1/documents?page=1&page_size=100`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -220,7 +220,7 @@ export function Studio() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/projects/?skip=0&limit=100`, {
+      const response = await fetch(`${API_URL}/v1/projects/?skip=0&limit=100`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
