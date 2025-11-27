@@ -136,9 +136,10 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     onClick={onLogin}
                     className="px-6 py-2 flex items-center gap-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                   >
-                  <LogIn className="w-5 h-5" />
-                  <span>Log In</span>
-                </button>
+                    <LogIn className="w-5 h-5" />
+                    <span>Log In</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
