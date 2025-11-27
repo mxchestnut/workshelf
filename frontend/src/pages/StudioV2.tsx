@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
 import { Editor } from '../components/Editor'
-import { authService } from '../services/auth'
+import { authService, User } from '../services/auth'
+import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev/api'
 
@@ -23,16 +24,27 @@ interface Document {
 }
 
 export default function StudioV2() {
+  const [user, setUser] = useState<User | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [documents, setDocuments] = useState<{ [projectId: number]: Document[] }>({})
   const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false)
+  const [newProjectTitle, setNewProjectTitle] = useState('')
 
   useEffect(() => {
+    loadUser()
     loadProjects()
   }, [])
+
+  const loadUser = async () => {
+    const currentUser = await authService.getCurrentUser()
+    if (currentUser) {
+      setUser(currentUser)
+    }
+  }
 
   const loadProjects = async () => {
     try {
@@ -124,6 +136,36 @@ export default function StudioV2() {
     }
   }
 
+  const createProject = async () => {
+    if (!newProjectTitle.trim()) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/v1/projects/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: newProjectTitle,
+          project_type: 'novel',
+          description: ''
+        })
+      })
+
+      if (response.ok) {
+        const newProject = await response.json()
+        setProjects(prev => [...prev, newProject])
+        setExpandedProjects(prev => new Set([...prev, newProject.id]))
+        setNewProjectTitle('')
+        setShowNewProjectModal(false)
+      }
+    } catch (err) {
+      console.error('Error creating project:', err)
+    }
+  }
+
   const saveDocument = async () => {
     if (!selectedDocument) return
 
@@ -177,12 +219,27 @@ export default function StudioV2() {
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      {/* Left Sidebar */}
-      <div className="w-64 border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-bold font-mono">Studio</h2>
-        </div>
+    <div className="flex flex-col h-screen bg-background">
+      <Navigation 
+        user={user} 
+        onLogin={() => authService.login()} 
+        onLogout={() => authService.logout()} 
+        currentPage="studio" 
+      />
+      
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar */}
+        <div className="w-64 border-r border-border flex flex-col">
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <h2 className="text-lg font-bold font-mono">Studio</h2>
+            <button
+              onClick={() => setShowNewProjectModal(true)}
+              className="p-1.5 hover:bg-accent rounded transition-colors"
+              title="New Project"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
         
         <div className="flex-1 overflow-y-auto">
           {projects.map(project => {
@@ -285,6 +342,43 @@ export default function StudioV2() {
           </div>
         )}
       </div>
+      </div>
+
+      {/* New Project Modal */}
+      {showNewProjectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card border border-border rounded-lg p-6 w-96">
+            <h3 className="text-xl font-bold mb-4">Create New Project</h3>
+            <input
+              type="text"
+              value={newProjectTitle}
+              onChange={(e) => setNewProjectTitle(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && createProject()}
+              placeholder="Project title..."
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground mb-4"
+              autoFocus
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowNewProjectModal(false)
+                  setNewProjectTitle('')
+                }}
+                className="px-4 py-2 rounded-lg bg-muted text-foreground hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createProject}
+                disabled={!newProjectTitle.trim()}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
