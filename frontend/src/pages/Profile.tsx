@@ -523,7 +523,8 @@ export function Profile() {
                 onChange={(e) => setMatrixPassword2(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
                 placeholder="Confirm password"
-              />v>
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-muted-foreground">Confirm Password</label>
               <input
