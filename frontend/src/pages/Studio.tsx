@@ -315,7 +315,7 @@ export function Studio() {
       
       {/* Header */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="px-6 py-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'white' }}>Studio</h1>
           <p style={{ color: '#B3B2B0' }}>Your creative workspace</p>
         </div>
@@ -365,7 +365,7 @@ export function Studio() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="px-6 py-8">
         {/* Overview Section */}
         {activeSection === 'overview' && (
           <div className="space-y-8">

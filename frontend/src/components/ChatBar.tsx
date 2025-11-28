@@ -33,11 +33,11 @@ export function ChatBar() {
 
   return (
     <div
-      className="fixed left-0 right-0 bottom-0 px-4 py-2 bg-card text-foreground border-t border-border"
+      className="fixed left-0 right-0 bottom-0 px-6 py-2 bg-card text-foreground border-t border-border"
       style={{ zIndex: 9996 }}
       aria-label="Work Shelf chat bar"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         {/* Left: label */}
         <div className="flex items-center">
           <MessageSquare size={18} className="mr-2" />
