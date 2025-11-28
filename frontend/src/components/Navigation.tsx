@@ -46,8 +46,8 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
     <>
       {/* Top Header */}
       <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="py-4">
+          <div className="flex items-center justify-between px-6">
             {/* Left: Logo & Menu */}
             <div className="flex items-center gap-4">
               <button 

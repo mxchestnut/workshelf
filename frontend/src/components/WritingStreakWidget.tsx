@@ -206,7 +206,7 @@ export function WritingStreakWidget() {
 
       {/* Quick Action Button */}
       <button
-        onClick={() => window.location.href = '/studio-v2'}
+        onClick={() => window.location.href = '/studio'}
         className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all font-semibold flex items-center justify-center gap-2"
       >
         {streak.isActiveToday ? 'Keep Writing' : 'Start Writing'}
