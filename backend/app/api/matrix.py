@@ -25,6 +25,7 @@ router = APIRouter(prefix="/matrix", tags=["matrix"])
 
 # Configuration - set these in environment variables
 MATRIX_HOMESERVER = os.getenv("MATRIX_HOMESERVER", "https://matrix.workshelf.dev")
+MATRIX_SERVER_NAME = os.getenv("MATRIX_SERVER_NAME", "workshelf.dev")
 MATRIX_SHARED_SECRET = os.getenv("MATRIX_REGISTRATION_SHARED_SECRET")
 MATRIX_ADMIN_ACCESS_TOKEN = os.getenv("MATRIX_ADMIN_ACCESS_TOKEN")
 MATRIX_ADMIN_ACCESS_TOKEN_SECRET_NAME = os.getenv("MATRIX_ADMIN_ACCESS_TOKEN_SECRET_NAME", "workshelf/matrix-admin-access-token")
@@ -160,8 +161,7 @@ async def register_matrix_user(
             print(f"[MATRIX REGISTER] 400 response errcode={errcode} body={response.text}")
             if errcode == "M_USER_IN_USE":
                 # Existing Matrix account; attempt admin login to get fresh token
-                domain = MATRIX_HOMESERVER.split('://', 1)[1].rstrip('/')
-                matrix_user_id_full = f"@{matrix_username}:{domain}"
+                matrix_user_id_full = f"@{matrix_username}:{MATRIX_SERVER_NAME}"
                 admin_token = get_admin_access_token()
                 if not admin_token:
                     raise HTTPException(status_code=409, detail="Matrix user exists but admin token unavailable for provisioning.")
