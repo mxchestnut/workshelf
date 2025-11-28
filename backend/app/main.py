@@ -54,6 +54,7 @@ async def add_cors_headers(request: Request, call_next):
         "https://workshelf.dev",
         "https://www.workshelf.dev",
         "https://app.workshelf.dev",
+        "https://admin.workshelf.dev",
     ]
     
     # Log for debugging
