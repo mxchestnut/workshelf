@@ -152,11 +152,11 @@ services:
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
-      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://localhost:8080}
+      VITE_API_URL: ${VITE_API_URL:-https://workshelf.dev}
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-https://keycloak.workshelf.dev}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-workshelf}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-workshelf-frontend}
-      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-http://localhost:8008}
+      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-https://workshelf.dev}
     ports:
       - "5173:5173"
     depends_on:
