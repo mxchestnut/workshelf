@@ -23,7 +23,7 @@ export interface User {
 const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'https://auth.workshelf.dev'
 const KEYCLOAK_REALM = 'workshelf'
 const KEYCLOAK_CLIENT_ID = 'workshelf-frontend'
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 class AuthService {
   private accessToken: string | null = null
@@ -154,11 +154,11 @@ class AuthService {
       throw new Error('No access token available')
     }
 
-    console.log('[AuthService] Fetching user info from:', `${API_URL}/v1/auth/me`)
+    console.log('[AuthService] Fetching user info from:', `${API_URL}/api/v1/auth/me`)
     console.log('[AuthService] Using token:', this.accessToken.substring(0, 20) + '...')
 
     try {
-      const response = await fetch(`${API_URL}/v1/auth/me`, {
+      const response = await fetch(`${API_URL}/api/v1/auth/me`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
