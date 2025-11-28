@@ -58,7 +58,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     rating: '',
   })
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return

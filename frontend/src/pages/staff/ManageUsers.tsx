@@ -49,7 +49,7 @@ export function ManageUsers() {
   const loadUsers = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+      const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
       
       const response = await fetch(`${API_URL}/api/v1/admin/users?limit=500`, {
         headers: { 

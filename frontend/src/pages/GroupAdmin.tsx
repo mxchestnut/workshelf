@@ -12,7 +12,7 @@ import { MemberRoleManager } from '../components/MemberRoleManager'
 import ModerationLog from '../components/ModerationLog'
 import InviteMembersModal from '../components/InviteMembersModal'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface GroupMember {
   id: number

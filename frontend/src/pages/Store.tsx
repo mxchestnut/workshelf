@@ -3,7 +3,7 @@ import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles, Library, Exter
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface LibraryAvailability {
   openLibrary: boolean

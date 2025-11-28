@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from 'react'
 import { authService } from '../services/auth'
 import { BookOpen } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 export function AuthCallback() {
   const [error, setError] = useState<string | null>(null)

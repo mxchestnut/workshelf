@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Loader2, CheckCircle, XCircle, Users } from 'lucide-react'
 import { authService } from '../services/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface GroupInvitation {
   id: number

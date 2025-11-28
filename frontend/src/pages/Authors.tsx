@@ -55,7 +55,7 @@ export default function Authors() {
   const [loadingBooks, setLoadingBooks] = useState(false)
   const [addingBook, setAddingBook] = useState<string | null>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
   useEffect(() => {
     loadAuthors()

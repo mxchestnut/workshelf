@@ -8,7 +8,7 @@ import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
 import { ArrowLeft, Trash2, ExternalLink, Sparkles } from 'lucide-react'
 import '../components/Editor.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface DocumentData {
   id: number

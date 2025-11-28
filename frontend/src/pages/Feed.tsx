@@ -9,7 +9,7 @@ import { Navigation } from '../components/Navigation'
 import { MatrixOnboardingModal } from '../components/MatrixOnboardingModal'
 import { BookOpen, Pin, Clock, Users, Bell, Sparkles, Globe } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 type FeedTab = 'personal' | 'updates' | 'beta-feed' | 'groups' | 'global' | 'discover'
 

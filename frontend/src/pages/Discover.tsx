@@ -8,7 +8,7 @@ import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { BookOpen, Pin, Clock } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface PostAuthor {
   id: number

@@ -13,7 +13,7 @@ import {
   BarChart3, ArrowUp, ArrowDown
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface AnalyticsData {
   totalViews: number

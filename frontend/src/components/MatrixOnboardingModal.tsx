@@ -59,7 +59,7 @@ export function MatrixOnboardingModal({ onClose }: MatrixOnboardingModalProps) {
       // Mark Matrix onboarding as seen in backend
   const token = localStorage.getItem('access_token');
       if (token) {
-  await fetch(`${import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'}/api/v1/auth/mark-matrix-onboarding-seen`, {
+  await fetch(`${import.meta.env.VITE_API_URL || 'https://workshelf.dev'}/api/v1/auth/mark-matrix-onboarding-seen`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

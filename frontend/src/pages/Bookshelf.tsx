@@ -64,7 +64,7 @@ export default function Bookshelf() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
   useEffect(() => {
     loadUser()
