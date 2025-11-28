@@ -182,14 +182,16 @@ export default function Store() {
   const allGenres = Array.from(new Set(books.flatMap(b => b.genres || [])))
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="store" />
       
       {/* Header */}
-      <div className="bg-primary text-primary-foreground py-16">
+      <div className="text-white py-16" style={{ 
+        background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
+      }}>
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4">eBooks</h1>
-          <p className="text-xl text-primary-foreground/80">Discover free classics and purchase quality ebooks. Read instantly in our beautiful EPUB reader.</p>
+          <p className="text-xl" style={{ color: '#B3B2B0' }}>Discover free classics and purchase quality ebooks. Read instantly in our beautiful EPUB reader.</p>
         </div>
       </div>
 
@@ -198,41 +200,56 @@ export default function Store() {
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            }`}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'all' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
           >
             All Books
           </button>
           <button
             onClick={() => setActiveTab('free')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'free' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            }`}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'free' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
           >
             Free Classics ({freeBooks.length})
           </button>
           <button
             onClick={() => setActiveTab('paid')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === 'paid' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            }`}
+            className="px-6 py-3 rounded-lg font-semibold transition-all"
+            style={activeTab === 'paid' 
+              ? { backgroundColor: '#B34B0C', color: '#FFFFFF' }
+              : { backgroundColor: '#524944', color: '#B3B2B0' }
+            }
           >
             Premium Books ({books.length})
           </button>
         </div>
         {/* Search and Filters */}
-        <div className="rounded-xl shadow-lg p-6 mb-8 bg-card border border-border">
+        <div className="rounded-xl shadow-lg p-6 mb-8" style={{ 
+          backgroundColor: '#524944',
+          borderColor: '#6C6A68',
+          borderWidth: '1px'
+        }}>
           <div className="flex gap-4 flex-wrap items-center">
             {/* Search */}
             <div className="flex-1 min-w-64 relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-3 w-5 h-5" style={{ color: '#B3B2B0' }} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search books or authors..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground"
+                className="w-full pl-10 pr-4 py-2 rounded-lg text-white placeholder-gray-400"
+                style={{ 
+                  backgroundColor: '#37322E',
+                  borderColor: '#6C6A68',
+                  borderWidth: '1px'
+                }}
               />
             </div>
 
@@ -240,18 +257,26 @@ export default function Store() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 rounded-lg bg-background border border-border text-foreground"
+              className="px-4 py-2 rounded-lg text-white"
+              style={{ 
+                backgroundColor: '#37322E',
+                borderColor: '#6C6A68',
+                borderWidth: '1px'
+              }}
             >
-              <option value="published_at">Newest</option>
-              <option value="popular">Most Popular</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
+              <option value="published_at" style={{ backgroundColor: '#37322E' }}>Newest</option>
+              <option value="popular" style={{ backgroundColor: '#37322E' }}>Most Popular</option>
+              <option value="price_asc" style={{ backgroundColor: '#37322E' }}>Price: Low to High</option>
+              <option value="price_desc" style={{ backgroundColor: '#37322E' }}>Price: High to Low</option>
             </select>
 
             {/* Filters Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted text-foreground hover:bg-muted/80 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-white hover:opacity-80"
+              style={{ 
+                backgroundColor: '#6C6A68'
+              }}
             >
               <Filter className="w-5 h-5" />
               Filters
@@ -260,7 +285,11 @@ export default function Store() {
             {(searchQuery || selectedGenre || priceRange.min || priceRange.max) && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  color: '#B34B0C',
+                  backgroundColor: 'rgba(179, 75, 12, 0.1)'
+                }}
               >
                 <X className="w-5 h-5" />
                 Clear
@@ -270,42 +299,55 @@ export default function Store() {
 
           {/* Extended Filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-border">
+            <div className="mt-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4" style={{ 
+              borderTopColor: '#6C6A68',
+              borderTopWidth: '1px'
+            }}>
               {/* Genre Filter */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-foreground">Genre</label>
+                <label className="block text-sm font-medium mb-2 text-white">Genre</label>
                 <select
                   value={selectedGenre}
                   onChange={(e) => setSelectedGenre(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground"
+                  className="w-full px-3 py-2 rounded-lg text-white"
+                  style={{ 
+                    backgroundColor: '#37322E',
+                    borderColor: '#6C6A68',
+                    borderWidth: '1px'
+                  }}
                 >
-                  <option value="">All Genres</option>
+                  <option value="" style={{ backgroundColor: '#37322E' }}>All Genres</option>
                   {allGenres.map(genre => (
-                    <option key={genre} value={genre}>{genre}</option>
+                    <option key={genre} value={genre} style={{ backgroundColor: '#37322E' }}>{genre}</option>
                   ))}
                 </select>
               </div>
 
               {/* Price Range */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-foreground">Min Price</label>
+                <label className="block text-sm font-medium mb-2 text-white">Min Price</label>
                 <input
                   type="number"
                   value={priceRange.min}
                   onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                   placeholder="$0"
-                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-lg text-white placeholder-gray-400"
+                  style={{ 
+                    backgroundColor: '#37322E',
+                    borderColor: '#6C6A68',
+                    borderWidth: '1px'
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-foreground">Max Price</label>
+                <label className="block text-sm font-medium mb-2 text-white">Max Price</label>
                 <input
                   type="number"
                   value={priceRange.max}
                   onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                   placeholder="$100"
-                  className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-lg text-white placeholder-gray-400"
                   style={{ 
                     backgroundColor: '#37322E',
                     borderColor: '#6C6A68',
@@ -321,8 +363,8 @@ export default function Store() {
         {(activeTab === 'all' || activeTab === 'paid') && featuredBooks.length > 0 && !searchQuery && !selectedGenre && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Featured Books</h2>
+              <Sparkles className="w-6 h-6" style={{ color: '#B34B0C' }} />
+              <h2 className="text-3xl font-bold text-white">Featured Books</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredBooks.slice(0, 4).map(book => (
@@ -336,8 +378,8 @@ export default function Store() {
         {(activeTab === 'all' || activeTab === 'paid') && bestsellers.length > 0 && !searchQuery && !selectedGenre && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Bestsellers</h2>
+              <TrendingUp className="w-6 h-6" style={{ color: '#B34B0C' }} />
+              <h2 className="text-3xl font-bold text-white">Bestsellers</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {bestsellers.slice(0, 4).map(book => (
@@ -351,8 +393,8 @@ export default function Store() {
         {(activeTab === 'all' || activeTab === 'free') && freeBooks.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <BookOpen className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">Free Classics from Project Gutenberg</h2>
+              <BookOpen className="w-6 h-6" style={{ color: '#B34B0C' }} />
+              <h2 className="text-3xl font-bold text-white">Free Classics from Project Gutenberg</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {freeBooks.slice(0, activeTab === 'free' ? freeBooks.length : 8).map(book => (
@@ -365,18 +407,24 @@ export default function Store() {
         {/* All Books / Search Results */}
         {(activeTab === 'all' || activeTab === 'paid') && (
           <section>
-            <h2 className="text-3xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl font-bold text-white mb-6">
               {searchQuery ? `Search Results for "${searchQuery}"` : activeTab === 'paid' ? 'Premium Books' : 'All Premium Books'}
             </h2>
           
           {loading ? (
             <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-12 w-12" style={{ 
+                borderBottomColor: '#B34B0C',
+                borderBottomWidth: '2px',
+                borderTopColor: 'transparent',
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent'
+              }}></div>
             </div>
           ) : books.length === 0 ? (
             <div className="text-center py-20">
-              <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-xl text-muted-foreground">No books found</p>
+              <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
+              <p className="text-xl" style={{ color: '#B3B2B0' }}>No books found</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -420,12 +468,17 @@ function BookCard({ book, featured }: BookCardProps) {
   return (
     <div 
       onClick={handleCardClick}
-      className={`rounded-lg overflow-hidden transition-all duration-300 cursor-pointer hover:scale-105 border group ${
-        featured ? 'border-2 border-primary' : 'border border-border'
-      } bg-card`}
+      className={`rounded-lg overflow-hidden transition-all duration-300 cursor-pointer hover:scale-105 border group`}
+      style={{ 
+        backgroundColor: '#524944',
+        borderColor: featured ? '#B34B0C' : '#6C6A68',
+        borderWidth: featured ? '2px' : '1px'
+      }}
     >
       {/* Cover Image */}
-      <div className="relative aspect-[2/3] bg-muted">
+      <div className="relative aspect-[2/3]" style={{ 
+        background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)'
+      }}>
         {book.cover_url ? (
           <img
             src={book.cover_url}
@@ -435,7 +488,7 @@ function BookCard({ book, featured }: BookCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="w-12 h-12 text-muted-foreground" />
+            <BookOpen className="w-12 h-12" style={{ color: '#B3B2B0' }} />
           </div>
         )}
         
@@ -448,7 +501,7 @@ function BookCard({ book, featured }: BookCardProps) {
             </span>
           )}
           {book.is_featured && (
-            <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#B34B0C' }}>
               Featured
             </span>
           )}
@@ -467,7 +520,7 @@ function BookCard({ book, featured }: BookCardProps) {
         {/* Discount Badge */}
         {book.discount_percentage > 0 && (
           <div className="absolute top-2 left-2">
-            <span className="bg-primary/80 text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#7C3306' }}>
               -{book.discount_percentage}%
             </span>
           </div>
@@ -476,10 +529,10 @@ function BookCard({ book, featured }: BookCardProps) {
 
       {/* Book Info */}
       <div className="p-3">
-        <h3 className="text-sm font-semibold text-foreground mb-1 line-clamp-2 text-left">
+        <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2 text-left">
           {book.title}
         </h3>
-        <p className="text-xs mb-2 text-left text-muted-foreground">
+        <p className="text-xs mb-2 text-left" style={{ color: '#B3B2B0' }}>
           {book.author_name}
         </p>
         
@@ -487,7 +540,10 @@ function BookCard({ book, featured }: BookCardProps) {
         {book.genres && book.genres.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
             {book.genres.slice(0, 2).map(genre => (
-              <span key={genre} className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+              <span key={genre} className="text-xs px-1.5 py-0.5 rounded" style={{ 
+                backgroundColor: 'rgba(179, 75, 12, 0.2)',
+                color: '#B34B0C'
+              }}>
                 {genre}
               </span>
             ))}
@@ -498,8 +554,8 @@ function BookCard({ book, featured }: BookCardProps) {
         {book.rating_average && book.rating_count > 0 && (
           <div className="flex items-center gap-1 mb-2">
             <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs font-semibold text-foreground">{book.rating_average.toFixed(1)}</span>
-            <span className="text-xs text-muted-foreground">({book.rating_count})</span>
+            <span className="text-xs font-semibold text-white">{book.rating_average.toFixed(1)}</span>
+            <span className="text-xs" style={{ color: '#B3B2B0' }}>({book.rating_count})</span>
           </div>
         )}
 
@@ -519,21 +575,29 @@ function BookCard({ book, featured }: BookCardProps) {
           {/* Check Local Library Button */}
           <button
             onClick={handleLocalLibraryClick}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors"
+            style={{ 
+              backgroundColor: 'rgba(37, 99, 235, 0.8)',
+              color: '#FFFFFF'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 1)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.8)'}
           >
             <ExternalLink className="w-3 h-3" />
             Check Local Library
           </button>
 
           {/* Price - now styled as purchase button */}
-          <div className="flex items-center justify-center px-3 py-2 rounded-lg bg-primary">
+          <div className="flex items-center justify-center px-3 py-2 rounded-lg" style={{ 
+            backgroundColor: '#B34B0C',
+          }}>
             {book.discount_percentage > 0 ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-primary-foreground">${book.final_price.toFixed(2)}</span>
-                <span className="text-xs line-through text-primary-foreground/60">${book.price_usd.toFixed(2)}</span>
+                <span className="text-sm font-bold text-white">${book.final_price.toFixed(2)}</span>
+                <span className="text-xs line-through" style={{ color: '#FED7AA' }}>${book.price_usd.toFixed(2)}</span>
               </div>
             ) : (
-              <span className="text-sm font-bold text-primary-foreground">
+              <span className="text-sm font-bold text-white">
                 {book.price_usd === 0 ? 'Free' : `Buy for $${book.price_usd.toFixed(2)}`}
               </span>
             )}
@@ -575,10 +639,17 @@ function FreeBookCard({ book }: FreeBookCardProps) {
 
   return (
     <div 
-      className="rounded-lg overflow-hidden transition-all duration-300 cursor-pointer hover:scale-105 border border-border bg-card group"
+      className="rounded-lg overflow-hidden transition-all duration-300 cursor-pointer hover:scale-105 border group"
+      style={{ 
+        backgroundColor: '#524944',
+        borderColor: '#6C6A68',
+        borderWidth: '1px'
+      }}
     >
       {/* Book Cover */}
-      <div className="relative aspect-[2/3] bg-muted">
+      <div className="relative aspect-[2/3]" style={{ 
+        background: 'linear-gradient(135deg, #6C6A68 0%, #524944 100%)'
+      }}>
         {book.cover_url ? (
           <img 
             src={book.cover_url} 
@@ -588,13 +659,13 @@ function FreeBookCard({ book }: FreeBookCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="w-16 h-16 text-muted-foreground" />
+            <BookOpen className="w-16 h-16" style={{ color: '#B3B2B0' }} />
           </div>
         )}
         
         {/* Free Badge */}
         <div className="absolute top-2 left-2">
-          <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#B34B0C' }}>
             FREE
           </span>
         </div>
@@ -603,7 +674,8 @@ function FreeBookCard({ book }: FreeBookCardProps) {
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <button
             onClick={handleAddToShelf}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            className="px-4 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#B34B0C' }}
           >
             Add to Shelf
           </button>
@@ -612,10 +684,10 @@ function FreeBookCard({ book }: FreeBookCardProps) {
 
       {/* Book Info */}
       <div className="p-3">
-        <h3 className="text-sm font-semibold text-foreground mb-1 line-clamp-2 text-left">
+        <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2 text-left">
           {book.title}
         </h3>
-        <p className="text-xs mb-2 text-left text-muted-foreground">
+        <p className="text-xs mb-2 text-left" style={{ color: '#B3B2B0' }}>
           {book.author}
         </p>
         
@@ -623,7 +695,10 @@ function FreeBookCard({ book }: FreeBookCardProps) {
         {book.genres && book.genres.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
             {book.genres.slice(0, 2).map((genre, idx) => (
-              <span key={idx} className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+              <span key={idx} className="text-xs px-1.5 py-0.5 rounded" style={{ 
+                backgroundColor: 'rgba(179, 75, 12, 0.2)',
+                color: '#B34B0C'
+              }}>
                 {genre.length > 15 ? genre.substring(0, 15) + '...' : genre}
               </span>
             ))}
@@ -631,10 +706,10 @@ function FreeBookCard({ book }: FreeBookCardProps) {
         )}
 
         {/* Source */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs" style={{ color: '#B3B2B0' }}>
           <span>{book.source}</span>
           {book.epub_url && (
-            <span className="font-medium text-primary">EPUB</span>
+            <span className="font-medium" style={{ color: '#B34B0C' }}>EPUB</span>
           )}
         </div>
       </div>

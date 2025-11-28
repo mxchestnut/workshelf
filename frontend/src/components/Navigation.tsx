@@ -244,7 +244,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   }`}
                 >
                   <ShoppingBag className="w-5 h-5" />
-                  <span>Books</span>
+                  <span>Store</span>
                 </button>
               </div>
 
