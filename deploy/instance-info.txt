@@ -1,13 +1,14 @@
 Instance ID: i-00d113ad6dd246b7a
-Public IP: 100.27.250.133
+Public IP: 34.239.176.138
 Region: us-east-1
 Key Name: workshelf-key
-SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@100.27.250.133
+SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
 
 URLs:
-  Frontend: http://100.27.250.133
-  Backend API: http://100.27.250.133/api
-  Keycloak: http://100.27.250.133/auth
+  Frontend: https://admin.workshelf.dev
+  Backend API: https://workshelf.dev/api
+  Keycloak: https://keycloak.workshelf.dev
+  Collaboration: wss://collab.workshelf.dev
 
 Credentials:
   Test User: testuser / test123
