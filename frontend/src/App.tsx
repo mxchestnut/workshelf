@@ -24,8 +24,7 @@ const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module
 const Discover = lazy(() => import('./pages/Discover').then(module => ({ default: module.Discover })))
 const Groups = lazy(() => import('./pages/Groups'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
-const Studio = lazy(() => import('./pages/Studio').then(module => ({ default: module.Studio })))
-const StudioV2 = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
+const Studio = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
@@ -62,7 +61,7 @@ const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 const ContentIntegrity = lazy(() => import('./pages/ContentIntegrity').then(module => ({ default: module.ContentIntegrity })))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'studio-v2' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -121,12 +120,8 @@ function App() {
       setCurrentPage('group-detail')
     } else if (path === '/me') {
       setCurrentPage('profile')
-    } else if (path === '/studio-v2') {
-      setCurrentPage('studio-v2')
     } else if (path === '/studio') {
-      // Redirect old studio to new studio-v2
-      window.history.replaceState({}, '', '/studio-v2')
-      setCurrentPage('studio-v2')
+      setCurrentPage('studio')
     } else if (path.startsWith('/project/')) {
       setCurrentPage('project-detail')
     } else if (path === '/projects') {
@@ -268,15 +263,9 @@ function App() {
       return <PublicProfile />
     }
     
-    if (currentPage === 'studio-v2') {
-      return <StudioV2 />
-    }
-    
     if (currentPage === 'studio') {
       return <Studio />
-    }
-    
-    if (currentPage === 'project-detail') {
+    }    if (currentPage === 'project-detail') {
       return <ProjectDetail />
     }
     
