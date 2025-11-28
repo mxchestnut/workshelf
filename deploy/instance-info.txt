@@ -10,12 +10,12 @@ Project Directory: /home/ubuntu/workshelf
 Status: ✅ FULLY DEPLOYED WITH SUBDOMAIN ARCHITECTURE
 
 Production URLs (HTTPS - Live):
-  Frontend/Admin: https://admin.workshelf.dev
+  Homepage/Frontend: https://workshelf.dev
+  Admin Dashboard: https://admin.workshelf.dev
   Backend API: https://workshelf.dev/api/v1
   Backend Health: https://workshelf.dev/health
   API Docs: https://workshelf.dev/docs
   Keycloak: https://keycloak.workshelf.dev
-  Root Domain: https://workshelf.dev (redirects to admin)
 
 Direct Access URLs (Development):
   Frontend: http://34.239.176.138:5173
@@ -42,14 +42,14 @@ SSL Certificates:
   Domains: workshelf.dev, admin.workshelf.dev, keycloak.workshelf.dev
 
 Architecture:
-  - admin.workshelf.dev → Frontend (React/Vite on port 5173)
+  - workshelf.dev → Homepage/Frontend (React/Vite on port 5173)
+  - admin.workshelf.dev → Admin Dashboard (same frontend, subdomain-aware routing)
   - workshelf.dev/api → Backend API (FastAPI on port 8000)
-  - workshelf.dev/ → Redirects to admin.workshelf.dev
   - keycloak.workshelf.dev → Keycloak IdP (port 8080)
   
 CORS Configuration:
-  - Backend allows: admin.workshelf.dev, workshelf.dev, localhost:5173
-  - Keycloak client redirects: admin.workshelf.dev/callback
+  - Backend allows: workshelf.dev, admin.workshelf.dev, localhost:5173
+  - Keycloak client redirects: workshelf.dev/*, admin.workshelf.dev/*
   - Frontend VITE_API_URL: https://workshelf.dev
   - Frontend VITE_KEYCLOAK_URL: https://keycloak.workshelf.dev
 
