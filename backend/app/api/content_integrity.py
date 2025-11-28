@@ -163,10 +163,28 @@ async def create_integrity_check(
     
     check = result["check"]
     
-    # Run AI detection if requested
-    if request.check_type in ["ai_detection", "combined"]:
+    # Run checks based on type requested
+    if request.check_type == "ai_detection":
         background_tasks.add_task(
             ContentIntegrityService.run_ai_detection,
+            db=db,
+            check_id=check.id
+        )
+    elif request.check_type == "plagiarism":
+        background_tasks.add_task(
+            ContentIntegrityService.run_plagiarism_check,
+            db=db,
+            check_id=check.id
+        )
+    elif request.check_type == "combined":
+        # Run both checks sequentially
+        background_tasks.add_task(
+            ContentIntegrityService.run_ai_detection,
+            db=db,
+            check_id=check.id
+        )
+        background_tasks.add_task(
+            ContentIntegrityService.run_plagiarism_check,
             db=db,
             check_id=check.id
         )
