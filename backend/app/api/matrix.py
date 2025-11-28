@@ -26,6 +26,7 @@ router = APIRouter(prefix="/matrix", tags=["matrix"])
 # Configuration - set these in environment variables
 MATRIX_HOMESERVER = os.getenv("MATRIX_HOMESERVER", "https://matrix.workshelf.dev")
 MATRIX_SERVER_NAME = os.getenv("MATRIX_SERVER_NAME", "workshelf.dev")
+MATRIX_PUBLIC_HOMESERVER = os.getenv("MATRIX_PUBLIC_HOMESERVER", "https://workshelf.dev")
 MATRIX_SHARED_SECRET = os.getenv("MATRIX_REGISTRATION_SHARED_SECRET")
 MATRIX_ADMIN_ACCESS_TOKEN = os.getenv("MATRIX_ADMIN_ACCESS_TOKEN")
 MATRIX_ADMIN_ACCESS_TOKEN_SECRET_NAME = os.getenv("MATRIX_ADMIN_ACCESS_TOKEN_SECRET_NAME", "workshelf/matrix-admin-access-token")
@@ -204,7 +205,7 @@ async def register_matrix_user(
                 return {
                     "matrix_user_id": matrix_user_id_full,
                     "matrix_access_token": access_token,
-                    "homeserver": MATRIX_HOMESERVER
+                    "homeserver": MATRIX_PUBLIC_HOMESERVER
                 }
             # Other 400
             raise HTTPException(status_code=400, detail=f"Matrix registration failed: {error_data.get('error','Unknown error')}")
@@ -247,7 +248,7 @@ async def register_matrix_user(
         return {
             "matrix_user_id": matrix_data["user_id"],
             "matrix_access_token": matrix_data["access_token"],
-            "homeserver": MATRIX_HOMESERVER
+            "homeserver": MATRIX_PUBLIC_HOMESERVER
         }
         
     except requests.exceptions.RequestException as e:
@@ -359,7 +360,7 @@ async def get_matrix_credentials(
                 return {
                     "matrix_user_id": matrix_user_id,
                     "matrix_access_token": matrix_token,
-                    "homeserver": user_data[2] or MATRIX_HOMESERVER
+                    "homeserver": MATRIX_PUBLIC_HOMESERVER
                 }
         except Exception as e:
             print(f"[MATRIX] Token verification failed: {e}")
@@ -410,7 +411,7 @@ async def get_matrix_credentials(
                             return {
                                 "matrix_user_id": matrix_user_id,
                                 "matrix_access_token": new_token,
-                                "homeserver": user_data[2] or MATRIX_HOMESERVER
+                                "homeserver": MATRIX_PUBLIC_HOMESERVER
                             }
                 except Exception as e:
                     print(f"[MATRIX] Admin API login failed: {e}")
@@ -467,7 +468,7 @@ async def get_matrix_credentials(
             return {
                 "matrix_user_id": matrix_user_id,
                 "matrix_access_token": new_token,
-                "homeserver": user_data[2] or MATRIX_HOMESERVER
+                "homeserver": MATRIX_PUBLIC_HOMESERVER
             }
             
         except HTTPException:

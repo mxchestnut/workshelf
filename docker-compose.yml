@@ -127,6 +127,7 @@ services:
       MINIO_SECRET_KEY: minioadmin
       MATRIX_HOMESERVER: http://synapse:8008
       MATRIX_SERVER_NAME: workshelf.dev
+      MATRIX_PUBLIC_HOMESERVER: https://workshelf.dev
       MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
       ENVIRONMENT: development
     ports:
