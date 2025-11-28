@@ -67,7 +67,24 @@ function App() {
     // Check authentication and route
     const checkRoute = () => {
       const path = window.location.pathname
+      const hostname = window.location.hostname
       const isAuthenticated = authService.isAuthenticated()
+
+      // Check if we're on admin subdomain
+      const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
+
+      // If on admin subdomain and at root, redirect to /staff or /admin
+      if (isAdminSubdomain && path === '/') {
+        if (isAuthenticated) {
+          // Check if user is staff - for now just redirect to admin dashboard
+          window.location.href = '/admin'
+          return
+        } else {
+          // Not authenticated on admin subdomain - redirect to main site
+          window.location.href = 'https://workshelf.dev/'
+          return
+        }
+      }
 
       // Public pages that don't require authentication
       const publicPaths = new Set<string>([
