@@ -175,7 +175,7 @@ export function Profile() {
       }
 
       // Update account information (username, interests, etc)
-      const accountResponse = await fetch(`${API_URL}/v1/users/me/account`, {
+      const accountResponse = await fetch(`${API_URL}/api/v1/users/me/account`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -195,7 +195,7 @@ export function Profile() {
       }
 
       // Update profile information (bio, location, etc)
-      const profileResponse = await fetch(`${API_URL}/v1/users/me/profile`, {
+      const profileResponse = await fetch(`${API_URL}/api/v1/users/me/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -558,7 +558,7 @@ export function Profile() {
                     setMatrixPwMessage({ type: 'error', text: 'Not authenticated.' })
                     return
                   }
-                  const resp = await fetch(`${API_URL}/v1/matrix/set-password`, {
+                  const resp = await fetch(`${API_URL}/api/v1/matrix/set-password`, {
                     method: 'POST',
                     headers: {
                       'Authorization': `Bearer ${token}`,

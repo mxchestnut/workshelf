@@ -120,16 +120,16 @@ export function WritingStreakWidget() {
           {getStreakMessage(streak.currentStreak, streak.isActiveToday)}
         </p>
         {!streak.isActiveToday && streak.currentStreak > 0 && (
-          <div className="bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-3 mb-3">
-            <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
+          <div className="bg-muted border border-border rounded-lg p-3 mb-3">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
               <span className="text-xl">⚠️</span>
               <span>Don't break your streak! Write something today.</span>
             </p>
           </div>
         )}
         {streak.isActiveToday && (
-          <div className="bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg p-3 mb-3">
-            <p className="text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
+          <div className="bg-muted border border-border rounded-lg p-3 mb-3">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
               <span className="text-xl">✅</span>
               <span>You've written today! Streak intact.</span>
             </p>
@@ -191,7 +191,7 @@ export function WritingStreakWidget() {
         </div>
         
         {goalProgress >= 100 && (
-          <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
             <span className="text-base">🎉</span>
             Goal completed! Amazing work!
           </p>
