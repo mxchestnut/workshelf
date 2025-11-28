@@ -25,6 +25,7 @@ class Settings(BaseSettings):
         "https://workshelf.dev",
         "https://www.workshelf.dev",
         "https://app.workshelf.dev",
+        "https://admin.workshelf.dev",
         "https://kits-macbook-pro.tail41ebb6.ts.net"  # Tailscale admin access
     ]
     
@@ -58,8 +59,10 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "https://workshelf.dev"
     
     # Keycloak
-    KEYCLOAK_SERVER_URL: str = "http://keycloak:8080"  # Internal Docker network
-    KEYCLOAK_INTERNAL_URL: str = ""  # Internal URL for ECS (bypasses DNS/SSL issues)
+    # Public issuer URL should match Keycloak's external hostname for token "iss"
+    KEYCLOAK_SERVER_URL: str = "https://keycloak.workshelf.dev"
+    # Internal URL used by the backend to fetch JWKS via Docker network
+    KEYCLOAK_INTERNAL_URL: str = "http://keycloak:8080"
     KEYCLOAK_REALM: str = "workshelf"
     KEYCLOAK_CLIENT_ID: str = "workshelf-backend"
     KEYCLOAK_CLIENT_SECRET: str = ""
