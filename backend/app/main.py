@@ -4,6 +4,7 @@ Main entry point for the backend API
 """
 import os
 from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -44,63 +45,21 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# Custom CORS middleware to ensure headers are always sent
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    origin = request.headers.get("origin")
-    allowed_origins = [
+# Standard CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
         "https://workshelf.dev",
         "https://www.workshelf.dev",
         "https://app.workshelf.dev",
         "https://admin.workshelf.dev",
-    ]
-    
-    # Log for debugging
-    print(f"[CORS] Method: {request.method}, Origin: {origin}, URL: {request.url}")
-    
-    # Handle preflight - be more permissive
-    if request.method == "OPTIONS":
-        response = Response()
-        # Always set CORS headers for OPTIONS, even if origin not in list
-        response_origin = origin if origin in allowed_origins else "https://workshelf.dev"
-        response.headers["Access-Control-Allow-Origin"] = response_origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
-        response.headers["Access-Control-Max-Age"] = "3600"
-        print(f"[CORS] Preflight response for origin: {response_origin}")
-        return response
-    
-    try:
-        response = await call_next(request)
-    except Exception as exc:
-        # Ensure CORS headers are also present on error responses
-        status_code = 500
-        detail = "Internal Server Error"
-        if isinstance(exc, HTTPException):
-            status_code = exc.status_code
-            detail = exc.detail
-        response = JSONResponse(status_code=status_code, content={"detail": detail})
-    
-    # Add CORS headers to response
-    if origin in allowed_origins:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Expose-Headers"] = "*"
-        # Helpful for some browsers to see allowed headers outside preflight
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-    
-    # Add cache control to prevent browser caching CORS issues
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    
-    return response
-
-# NOTE: FastAPI CORSMiddleware removed because it was rejecting origins before our custom middleware could handle them
-# Our custom middleware above handles all CORS logic
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 # Health check endpoints
 @app.get("/health")
