@@ -63,7 +63,7 @@ export function Profile() {
 
   const loadAvailableInterests = async () => {
     try {
-      const response = await fetch(`${API_URL}/v1/interests`)
+      const response = await fetch(`${API_URL}/api/v1/interests`)
       if (response.ok) {
         const interests = await response.json()
         setAvailableInterests(interests)
@@ -86,7 +86,7 @@ export function Profile() {
         return
       }
 
-      const response = await fetch(`${API_URL}/v1/users/me/profile`, {
+      const response = await fetch(`${API_URL}/api/v1/users/me/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
