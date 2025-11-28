@@ -4,16 +4,48 @@ Region: us-east-1
 Key Name: workshelf-key
 SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
 
-URLs:
+Deployed: November 28, 2025
+Latest Commit: 2910e1e (Fix double /api/api path issue)
+Project Directory: /home/ubuntu/workshelf
+
+Direct Access URLs (Development):
+  Frontend: http://34.239.176.138:5173
+  Backend API: http://34.239.176.138:8000
+  Backend Health: http://34.239.176.138:8000/health
+  Keycloak: http://34.239.176.138:8080
+  MinIO Console: http://34.239.176.138:9001
+
+Production URLs (with Nginx/SSL - needs setup):
   Frontend: https://admin.workshelf.dev
   Backend API: https://workshelf.dev/api
   Keycloak: https://keycloak.workshelf.dev
   Collaboration: wss://collab.workshelf.dev
 
+Docker Services Status:
+  ✅ PostgreSQL (port 5432)
+  ✅ Redis (port 6379)
+  ✅ Keycloak (port 8080)
+  ✅ MinIO (ports 9000, 9001)
+  ✅ Matrix Synapse (port 8008)
+  ✅ Backend API (port 8000)
+  ✅ Frontend (port 5173)
+
 Credentials:
   Test User: testuser / test123
   Keycloak Admin: admin / admin
+  MinIO: minioadmin / minioadmin
 
-To stop instance: aws ec2 stop-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
-To start instance: aws ec2 start-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
-To terminate: aws ec2 terminate-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+AWS Management Commands:
+  Stop instance: aws ec2 stop-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+  Start instance: aws ec2 start-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+  Terminate: aws ec2 terminate-instances --region us-east-1 --instance-ids i-00d113ad6dd246b7a
+
+Docker Management (on EC2):
+  View logs: cd ~/workshelf && sudo docker-compose logs -f
+  Restart services: cd ~/workshelf && sudo docker-compose restart
+  Stop services: cd ~/workshelf && sudo docker-compose down
+  Start services: cd ~/workshelf && sudo docker-compose up -d
+  Update code: cd ~/workshelf && git pull origin main && sudo docker-compose restart
+
+Database Access:
+  Connect to PostgreSQL: sudo docker exec -it workshelf-postgres psql -U workshelf -d workshelf
