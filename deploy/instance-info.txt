@@ -10,7 +10,7 @@ Project Directory: /home/ubuntu/workshelf
 Status: ✅ FULLY DEPLOYED WITH SSL
 
 Production URLs (HTTPS - Live):
-  Frontend: https://admin.workshelf.dev
+  Website/Frontend: https://workshelf.dev
   Backend API: https://workshelf.dev/api
   Backend Health: https://workshelf.dev/health
   API Docs: https://workshelf.dev/docs
@@ -38,7 +38,7 @@ SSL Certificates:
   Issuer: Let's Encrypt
   Expires: February 26, 2026
   Auto-renewal: Enabled
-  Domains: workshelf.dev, admin.workshelf.dev, keycloak.workshelf.dev
+  Domains: workshelf.dev, keycloak.workshelf.dev
 
 Credentials:
   Test User: testuser / test123
