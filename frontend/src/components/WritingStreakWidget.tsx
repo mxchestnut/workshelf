@@ -86,21 +86,21 @@ export function WritingStreakWidget() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-8 bg-muted rounded w-1/2 mb-4"></div>
+          <div className="h-4 bg-muted rounded w-3/4"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg shadow-sm border border-orange-200 p-6">
+    <div className="bg-card rounded-lg shadow-sm border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <Flame className="w-5 h-5 text-orange-500" />
+        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <Flame className="w-5 h-5 text-primary" />
           Writing Streak
         </h3>
         <span className="text-3xl">{getStreakEmoji(streak.currentStreak)}</span>
@@ -109,27 +109,27 @@ export function WritingStreakWidget() {
       {/* Current Streak */}
       <div className="mb-4">
         <div className="flex items-baseline gap-2 mb-1">
-          <span className="text-4xl font-bold text-orange-600">
+          <span className="text-4xl font-bold text-primary">
             {streak.currentStreak}
           </span>
-          <span className="text-lg text-gray-600">
+          <span className="text-lg text-muted-foreground">
             {streak.currentStreak === 1 ? 'day' : 'days'}
           </span>
         </div>
-        <p className="text-sm text-gray-600 mb-2">
+        <p className="text-sm text-muted-foreground mb-2">
           {getStreakMessage(streak.currentStreak, streak.isActiveToday)}
         </p>
         {!streak.isActiveToday && streak.currentStreak > 0 && (
-          <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-3">
-            <p className="text-sm text-yellow-800 flex items-center gap-2">
+          <div className="bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-3 mb-3">
+            <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
               <span className="text-xl">⚠️</span>
               <span>Don't break your streak! Write something today.</span>
             </p>
           </div>
         )}
         {streak.isActiveToday && (
-          <div className="bg-green-100 border border-green-300 rounded-lg p-3 mb-3">
-            <p className="text-sm text-green-800 flex items-center gap-2">
+          <div className="bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg p-3 mb-3">
+            <p className="text-sm text-green-800 dark:text-green-300 flex items-center gap-2">
               <span className="text-xl">✅</span>
               <span>You've written today! Streak intact.</span>
             </p>
@@ -141,64 +141,64 @@ export function WritingStreakWidget() {
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <Award className="w-4 h-4 text-purple-500" />
-            <span className="text-2xl font-bold text-gray-900">
+            <Award className="w-4 h-4 text-primary" />
+            <span className="text-2xl font-bold text-foreground">
               {streak.longestStreak}
             </span>
           </div>
-          <p className="text-xs text-gray-600">Best Streak</p>
+          <p className="text-xs text-muted-foreground">Best Streak</p>
         </div>
         
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <Calendar className="w-4 h-4 text-blue-500" />
-            <span className="text-2xl font-bold text-gray-900">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="text-2xl font-bold text-foreground">
               {progress.documentsEdited}
             </span>
           </div>
-          <p className="text-xs text-gray-600">Docs Today</p>
+          <p className="text-xs text-muted-foreground">Docs Today</p>
         </div>
         
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-2xl font-bold text-gray-900">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span className="text-2xl font-bold text-foreground">
               {progress.wordsWritten}
             </span>
           </div>
-          <p className="text-xs text-gray-600">Words Today</p>
+          <p className="text-xs text-muted-foreground">Words Today</p>
         </div>
       </div>
 
       {/* Daily Goal Progress */}
-      <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="bg-muted rounded-lg p-4 border border-border">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-semibold text-gray-900">Daily Goal</span>
+            <Target className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Daily Goal</span>
           </div>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             {progress.wordsWritten} / {goal.dailyWordCount} words
           </span>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-background rounded-full h-3 overflow-hidden border border-border">
           <div
-            className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-orange-400 to-red-500"
+            className="h-full rounded-full transition-all duration-500 bg-primary"
             style={{ width: `${goalProgress}%` }}
           />
         </div>
         
         {goalProgress >= 100 && (
-          <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+          <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
             <span className="text-base">🎉</span>
             Goal completed! Amazing work!
           </p>
         )}
         
         {goalProgress > 0 && goalProgress < 100 && (
-          <p className="text-xs text-gray-600 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             {Math.ceil((goal.dailyWordCount - progress.wordsWritten) / 100) * 100} words to go!
           </p>
         )}
@@ -207,7 +207,7 @@ export function WritingStreakWidget() {
       {/* Quick Action Button */}
       <button
         onClick={() => window.location.href = '/documents'}
-        className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all font-semibold flex items-center justify-center gap-2"
+        className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all font-semibold flex items-center justify-center gap-2"
       >
         {streak.isActiveToday ? 'Keep Writing' : 'Start Writing'}
         <span>→</span>
