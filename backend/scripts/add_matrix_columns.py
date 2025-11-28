@@ -18,17 +18,17 @@ async def add_matrix_columns():
             FROM information_schema.columns 
             WHERE table_name = 'users' 
             AND column_name IN (
-                'matrix_user_id', 'matrix_access_token', 'matrix_homeserver', 'matrix_onboarding_seen'
+                'matrix_user_id', 'matrix_access_token', 'matrix_homeserver', 'matrix_onboarding_seen', 'matrix_password'
             )
             """
         ))
         existing_columns = [row[0] for row in result.fetchall()]
 
         if all(col in existing_columns for col in [
-            'matrix_user_id', 'matrix_access_token', 'matrix_homeserver', 'matrix_onboarding_seen']):
+            'matrix_user_id', 'matrix_access_token', 'matrix_homeserver', 'matrix_onboarding_seen', 'matrix_password']):
             print("✓ All Matrix user columns already exist")
         else:
-            print(f"Adding Matrix columns to users table... (found {len(existing_columns)}/4)")
+            print(f"Adding Matrix columns to users table... (found {len(existing_columns)}/5)")
 
             # Add matrix_user_id if missing
             if 'matrix_user_id' not in existing_columns:
@@ -69,6 +69,16 @@ async def add_matrix_columns():
                     """
                 ))
                 print("✓ Added matrix_onboarding_seen column")
+
+            # Add matrix_password if missing
+            if 'matrix_password' not in existing_columns:
+                await conn.execute(text(
+                    """
+                    ALTER TABLE users 
+                    ADD COLUMN matrix_password VARCHAR(255)
+                    """
+                ))
+                print("✓ Added matrix_password column")
 
             # Create unique index on matrix_user_id
             try:
