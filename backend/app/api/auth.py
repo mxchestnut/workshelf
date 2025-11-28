@@ -2,6 +2,7 @@
 Authentication API endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+import os
 from typing import Dict, Any
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -129,7 +130,14 @@ async def get_user_info(
     except HTTPException:
         raise
     except Exception as e:
+        # Log full stack trace
         logger.exception("[AUTH /me] unexpected error: %s", str(e))
+        # Provide richer error detail in development to speed debugging
+        if os.getenv("ENVIRONMENT", "development").lower() == "development":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to retrieve user info: {type(e).__name__}: {str(e)}"
+            )
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve user info")
 
 

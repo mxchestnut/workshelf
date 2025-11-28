@@ -114,7 +114,8 @@ services:
     
     container_name: workshelf-backend
     working_dir: /app
-    command: bash -c "pip install -q -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    # Use startup script to ensure tables exist & migrations run before app launches
+    command: bash -c "pip install -q -r requirements.txt && bash start.sh"
     environment:
       DATABASE_URL: postgresql+asyncpg://workshelf:workshelf_password@postgres:5432/workshelf
       KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev

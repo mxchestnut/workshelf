@@ -63,7 +63,8 @@ services:
     image: python:3.11-slim
     platform: linux/arm64/v8
     working_dir: /app
-    command: sh -c "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    # Run comprehensive startup (table creation, migrations, staff grants) before launching API
+    command: bash -c "pip install -q -r requirements.txt && bash start.sh"
     volumes:
       - ./backend:/app
     ports:
@@ -75,6 +76,7 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
       REDIS_URL: ${REDIS_URL}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
