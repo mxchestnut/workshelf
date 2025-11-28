@@ -186,55 +186,12 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto p-6">
             <div className="space-y-1">
-              {/* Main Navigation */}
-              <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-                  Main
-                </p>
-                
-                <button 
-                  onClick={() => navigateTo('/feed')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/feed')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Home className="w-5 h-5" />
-                  <span>Feed</span>
-                </button>
-
-                <button 
-                  onClick={() => navigateTo('/groups')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/groups')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Users className="w-5 h-5" />
-                  <span>Groups</span>
-                </button>
-              </div>
-
               {/* Library Section */}
               <div className="mb-6">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
                   Library
                 </p>
                 
-                <button 
-                  onClick={() => navigateTo('/bookshelf')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/bookshelf')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <BookMarked className="w-5 h-5" />
-                  <span>Bookshelf</span>
-                </button>
-
                 <button 
                   onClick={() => navigateTo('/store')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
@@ -254,18 +211,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   My Studio
                 </p>
                 
-                <button 
-                  onClick={() => navigateTo('/studio')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/studio')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Studio</span>
-                </button>
-
                 <button 
                   onClick={() => navigateTo('/beta-marketplace')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
