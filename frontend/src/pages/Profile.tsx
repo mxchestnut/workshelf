@@ -254,12 +254,12 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" className="bg-background">
+      <div className="min-h-screen bg-background">
         <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
         <div className="max-w-4xl mx-auto p-6">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'hsl(var(--primary))' }}></div>
-            <p className="mt-4" className="text-muted-foreground">Loading profile...</p>
+            <p className="mt-4 text-muted-foreground">Loading profile...</p>
           </div>
         </div>
       </div>
@@ -268,7 +268,7 @@ export function Profile() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen" className="bg-background">
+      <div className="min-h-screen bg-background">
         <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
         <div className="max-w-4xl mx-auto p-6">
           <div className="text-center py-12">
@@ -280,15 +280,14 @@ export function Profile() {
   }
 
   return (
-    <div className="min-h-screen" className="bg-background">
+    <div className="min-h-screen bg-background">
       <Navigation user={profile as any} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
       <div className="max-w-4xl mx-auto p-6">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b" className="border-border">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
         <button
           onClick={() => window.location.href = '/feed'}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
-          className="text-muted-foreground"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80 text-muted-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
@@ -296,8 +295,7 @@ export function Profile() {
         
         <button
           onClick={() => window.location.href = `/users/${profile.username}`}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80"
-          className="text-muted-foreground"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80 text-muted-foreground"
         >
           <ExternalLink className="w-4 h-4" />
           View Public Profile
@@ -319,8 +317,7 @@ export function Profile() {
         {!editing ? (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
-            className="bg-primary text-primary-foreground"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-primary text-primary-foreground"
           >
             <Edit2 className="w-4 h-4" />
             Edit Profile
@@ -329,8 +326,7 @@ export function Profile() {
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
-              className="bg-muted text-foreground"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-muted text-foreground"
               disabled={saving}
             >
               <X className="w-4 h-4" />
@@ -338,8 +334,7 @@ export function Profile() {
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
-              className="bg-primary text-primary-foreground"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-opacity hover:opacity-90 bg-primary text-primary-foreground"
               disabled={saving}
             >
               <Save className="w-4 h-4" />
@@ -350,7 +345,7 @@ export function Profile() {
       </div>
 
       {/* Profile Tabs */}
-      <div className="border-b mb-6" className="border-border">
+      <div className="border-b mb-6 border-border">
         <nav className="flex gap-1">
           <button
             onClick={() => setActiveTab('general')}
@@ -416,13 +411,13 @@ export function Profile() {
       {/* Profile Form */}
       <div className="space-y-6">
         {/* Account Information */}
-        <div className="rounded-lg p-6 border" className="bg-card border-border">
-          <h2 className="text-xl font-semibold mb-4" className="text-foreground">Account Information</h2>
+        <div className="rounded-lg p-6 border bg-card border-border">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Account Information</h2>
           
           <div className="space-y-4">
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Email
               </label>
               <input
@@ -432,12 +427,12 @@ export function Profile() {
                 className="w-full px-4 py-2 border rounded-lg cursor-not-allowed"
                 style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
               />
-              <p className="text-xs mt-1" className="text-muted-foreground">Email cannot be changed</p>
+              <p className="text-xs mt-1 text-muted-foreground">Email cannot be changed</p>
             </div>
 
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Username *
               </label>
               <input
@@ -452,7 +447,7 @@ export function Profile() {
 
             {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Phone Number
               </label>
               <input
@@ -468,7 +463,7 @@ export function Profile() {
 
             {/* Birth Year */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Birth Year
               </label>
               <input
@@ -485,17 +480,17 @@ export function Profile() {
         </div>
 
         {/* Messaging: Set Matrix Password */}
-        <div className="rounded-lg p-6 border" className="bg-card border-border">
-          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2" className="text-foreground">
+        <div className="rounded-lg p-6 border bg-card border-border">
+          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-foreground">
             <Lock className="w-5 h-5" /> Messaging
           </h2>
-          <p className="text-sm mb-4" className="text-muted-foreground">
+          <p className="text-sm mb-4 text-muted-foreground">
             Your messages sync across devices with Element. Set a password to sign in on mobile or desktop and continue your conversations anywhere.
           </p>
 
           <div className="mb-4 p-4 rounded-lg border" style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}>
             <h3 className="font-semibold mb-2 text-white">Sign into Element</h3>
-            <div className="text-sm space-y-1" className="text-muted-foreground">
+            <div className="text-sm space-y-1 text-muted-foreground">
               <p><strong>Homeserver:</strong> https://matrix.workshelf.dev</p>
               <p><strong>Username:</strong> {profile.username}</p>
               <p><strong>Password:</strong> Set below</p>
@@ -522,7 +517,7 @@ export function Profile() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">New Matrix Password</label>
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">New Matrix Password</label>
               <input
                 type="password"
                 value={matrixPassword}
@@ -533,7 +528,7 @@ export function Profile() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">Confirm Password</label>
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">Confirm Password</label>
               <input
                 type="password"
                 value={matrixPassword2}
@@ -595,9 +590,9 @@ export function Profile() {
         </div>
 
         {/* Interests */}
-        <div className="rounded-lg p-6 border" className="bg-card border-border">
-          <h2 className="text-xl font-semibold mb-4" className="text-foreground">Your Interests</h2>
-          <p className="text-sm mb-4" className="text-muted-foreground">
+        <div className="rounded-lg p-6 border bg-card border-border">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Your Interests</h2>
+          <p className="text-sm mb-4 text-muted-foreground">
             Select interests from active groups to get better recommendations
           </p>
           
@@ -631,13 +626,13 @@ export function Profile() {
         </div>
 
         {/* Profile Details */}
-        <div className="rounded-lg p-6 border" className="bg-card border-border">
-          <h2 className="text-xl font-semibold mb-4" className="text-foreground">Profile Details</h2>
+        <div className="rounded-lg p-6 border bg-card border-border">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Profile Details</h2>
           
           <div className="space-y-4">
             {/* Bio */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Bio
               </label>
               <textarea
@@ -650,14 +645,14 @@ export function Profile() {
                 className="w-full px-4 py-2 border rounded-lg disabled:opacity-50 resize-none"
                 style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
               />
-              <p className="text-xs mt-1" className="text-muted-foreground">
+              <p className="text-xs mt-1 text-muted-foreground">
                 {formData.bio.length}/500 characters
               </p>
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Location
               </label>
               <input
@@ -673,7 +668,7 @@ export function Profile() {
 
             {/* Website */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Website
               </label>
               <input
@@ -689,7 +684,7 @@ export function Profile() {
 
             {/* Social Link */}
             <div>
-              <label className="block text-sm font-medium mb-1" className="text-muted-foreground">
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
                 Social Link
               </label>
               <input
@@ -709,14 +704,14 @@ export function Profile() {
         )}
 
         {activeTab === 'writer' && (
-        <div className="rounded-lg border p-8" className="bg-card border-border">
+        <div className="rounded-lg border p-8 bg-card border-border">
           <div className="text-center py-12">
             <Edit2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
             <h3 className="text-xl font-semibold mb-2 text-white">Writer Profile</h3>
-            <p className="mb-4" className="text-muted-foreground">
+            <p className="mb-4 text-muted-foreground">
               Showcase your published works, writing style, and connect with readers.
             </p>
-            <p className="text-sm" className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Coming soon: Writer bio, published works, writing genres, and reader engagement stats.
             </p>
           </div>
@@ -724,11 +719,11 @@ export function Profile() {
         )}
 
         {activeTab === 'beta' && (
-        <div className="rounded-lg border p-8" className="bg-card border-border">
+        <div className="rounded-lg border p-8 bg-card border-border">
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
             <h3 className="text-xl font-semibold mb-2 text-white">Beta Reader Profile</h3>
-            <p className="mb-4" className="text-muted-foreground">
+            <p className="mb-4 text-muted-foreground">
               Set up your beta reading profile to offer feedback services to writers.
             </p>
             <button

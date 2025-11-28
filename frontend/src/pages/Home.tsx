@@ -274,8 +274,7 @@ export default function Home() {
                   <button
                     key={book.id}
                     onClick={() => handleNavigation(`/book/${book.id}`)}
-                    className="rounded-lg overflow-hidden transition-all group border"
-                    className="bg-card border border-border"
+                    className="rounded-lg overflow-hidden transition-all group border bg-card border-border"
                   >
                     {book.cover_image_url ? (
                       <img 

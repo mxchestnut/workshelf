@@ -4,7 +4,6 @@
  */
 import { 
   BookOpen, 
-  FileText, 
   Menu,
   X,
   LogIn,
