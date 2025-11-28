@@ -5,8 +5,16 @@ Key Name: workshelf-key
 SSH Command: ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
 
 Deployed: November 28, 2025
-Latest Commit: 2910e1e (Fix double /api/api path issue)
+Latest Commit: 10d933f (Add missing index.html for frontend)
 Project Directory: /home/ubuntu/workshelf
+Status: ✅ FULLY DEPLOYED WITH SSL
+
+Production URLs (HTTPS - Live):
+  Frontend: https://admin.workshelf.dev
+  Backend API: https://workshelf.dev/api
+  Backend Health: https://workshelf.dev/health
+  API Docs: https://workshelf.dev/docs
+  Keycloak: https://keycloak.workshelf.dev
 
 Direct Access URLs (Development):
   Frontend: http://34.239.176.138:5173
@@ -15,20 +23,22 @@ Direct Access URLs (Development):
   Keycloak: http://34.239.176.138:8080
   MinIO Console: http://34.239.176.138:9001
 
-Production URLs (with Nginx/SSL - needs setup):
-  Frontend: https://admin.workshelf.dev
-  Backend API: https://workshelf.dev/api
-  Keycloak: https://keycloak.workshelf.dev
-  Collaboration: wss://collab.workshelf.dev
-
 Docker Services Status:
-  ✅ PostgreSQL (port 5432)
-  ✅ Redis (port 6379)
-  ✅ Keycloak (port 8080)
-  ✅ MinIO (ports 9000, 9001)
-  ✅ Matrix Synapse (port 8008)
-  ✅ Backend API (port 8000)
-  ✅ Frontend (port 5173)
+  ✅ PostgreSQL (port 5432) - Healthy
+  ✅ Redis (port 6379) - Healthy
+  ✅ Keycloak (port 8080) - Running with HTTPS
+  ✅ MinIO (ports 9000, 9001) - Healthy
+  ✅ Matrix Synapse (port 8008) - Running
+  ✅ Backend API (port 8000) - Running with HTTPS
+  ✅ Frontend (port 5173) - Running with HTTPS
+  ✅ Nginx - Configured with SSL/TLS certificates
+  ✅ Let's Encrypt - Auto-renewal enabled
+
+SSL Certificates:
+  Issuer: Let's Encrypt
+  Expires: February 26, 2026
+  Auto-renewal: Enabled
+  Domains: workshelf.dev, admin.workshelf.dev, keycloak.workshelf.dev
 
 Credentials:
   Test User: testuser / test123
