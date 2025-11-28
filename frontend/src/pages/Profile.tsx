@@ -698,6 +698,7 @@ export function Profile() {
           </div>
         </div>
       </div>
+        </div>
         )}
 
         {activeTab === 'writer' && (
