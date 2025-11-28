@@ -519,10 +519,10 @@ export function Profile() {
               <label className="block text-sm font-medium mb-1 text-muted-foreground">New Matrix Password</label>
               <input
                 type="password"
-                value={matrixPassword2}
-                onChange={(e) => setMatrixPassword2(e.target.value)}
+                value={matrixPassword}
+                onChange={(e) => setMatrixPassword(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
-                placeholder="Confirm password"
+                placeholder="At least 8 characters"
               />
             </div>
             <div>
@@ -531,8 +531,8 @@ export function Profile() {
                 type="password"
                 value={matrixPassword2}
                 onChange={(e) => setMatrixPassword2(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
+                className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                placeholder="Confirm password"
               />
             </div>
           </div>
