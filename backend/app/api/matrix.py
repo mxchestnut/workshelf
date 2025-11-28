@@ -656,14 +656,14 @@ async def set_matrix_password(
         from urllib.parse import quote
         user_path = quote(matrix_user_id, safe='')
 
-        resp = requests.put(
-            f"{MATRIX_HOMESERVER}/_synapse/admin/v2/users/{user_path}/password",
+        resp = requests.post(
+            f"{MATRIX_HOMESERVER}/_synapse/admin/v1/reset_password/{user_path}",
             headers={
                 "Authorization": f"Bearer {admin_token}",
                 "Content-Type": "application/json",
             },
             json={
-                "password": payload.password,
+                "new_password": payload.password,
                 "logout_devices": False
             },
             timeout=15
