@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import type * as Matrix from 'matrix-js-sdk'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface MatrixContextType {
   client: Matrix.MatrixClient | null

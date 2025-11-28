@@ -54,7 +54,7 @@ export function Profile() {
     twitter_handle: ''
   })
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
   useEffect(() => {
     loadProfile()
