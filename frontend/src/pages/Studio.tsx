@@ -323,7 +323,7 @@ export function Studio() {
 
       {/* Section Tabs */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="px-6">
           <div className="flex gap-6">
             <button
               onClick={() => setActiveSection('overview')}
