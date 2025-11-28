@@ -392,7 +392,6 @@ export function Profile() {
       </div>
 
       {/* Tab Content */}
-      <div>
         {activeTab === 'general' && (
         <div>
           {/* Success/Error Messages */}
@@ -736,8 +735,6 @@ export function Profile() {
           </div>
         </div>
         )}
-      </div>
-      </div>
     </div>
   )
 }
