@@ -17,7 +17,7 @@ cryptography>=41.0.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.18
 # Security: pin ecdsa to patched version (python-jose dependency)
-ecdsa>=0.20.0
+ecdsa>=0.19.0
 
 # Payment Processing
 stripe==11.3.0
