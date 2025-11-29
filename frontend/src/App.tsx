@@ -70,9 +70,10 @@ const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module
 const Messages = lazy(() => import('./pages/Messages').then(module => ({ default: module.Messages })))
 const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 const Relationships = lazy(() => import('./pages/Relationships'))
+const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -244,6 +245,8 @@ function App() {
       setCurrentPage('ai-policy')
     } else if (path === '/relationships') {
       setCurrentPage('relationships')
+    } else if (path === '/creator-earnings') {
+      setCurrentPage('creator-earnings')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -465,6 +468,9 @@ function App() {
     }
     if (currentPage === 'ai-policy') {
       return <AIPolicy />
+    }
+    if (currentPage === 'creator-earnings') {
+      return <CreatorEarnings />
     }
 
     // Home page - new dedicated landing page
