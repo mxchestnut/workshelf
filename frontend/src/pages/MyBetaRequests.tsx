@@ -78,6 +78,30 @@ export default function MyBetaRequests() {
     }
   }
 
+  const cancelRequest = async (id: number) => {
+    try {
+      const token = await authService.getAccessToken()
+      const resp = await fetch(`/api/v1/beta-requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' })
+      })
+      if (resp.ok) load()
+    } catch {}
+  }
+
+  const markCompleted = async (id: number) => {
+    try {
+      const token = await authService.getAccessToken()
+      const resp = await fetch(`/api/v1/beta-requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      })
+      if (resp.ok) load()
+    } catch {}
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -111,6 +135,16 @@ export default function MyBetaRequests() {
                     <p className="text-muted-foreground mt-1">{item.document_title || 'Untitled Document'}</p>
                     {item.message && <p className="text-muted-foreground mt-1 line-clamp-2">{item.message}</p>}
                     <div className="text-xs text-muted-foreground mt-2">{new Date(item.created_at).toLocaleString()}</div>
+                    {item.status === 'pending' && (
+                      <div className="mt-3">
+                        <button onClick={() => cancelRequest(item.id)} className="px-3 py-2 rounded bg-gray-700 text-white">Cancel Request</button>
+                      </div>
+                    )}
+                    {item.status === 'accepted' && (
+                      <div className="mt-3">
+                        <button onClick={() => markCompleted(item.id)} className="px-3 py-2 rounded bg-blue-600 text-white">Mark Completed</button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
