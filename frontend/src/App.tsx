@@ -61,9 +61,10 @@ const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 const ContentIntegrity = lazy(() => import('./pages/ContentIntegrity').then(module => ({ default: module.ContentIntegrity })))
 const AIAssistance = lazy(() => import('./pages/AIAssistance').then(module => ({ default: module.AIAssistance })))
 const ExportCenter = lazy(() => import('./pages/ExportCenter').then(module => ({ default: module.ExportCenter })))
+const AccessibilitySettings = lazy(() => import('./pages/AccessibilitySettings').then(module => ({ default: module.AccessibilitySettings })))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -212,6 +213,9 @@ function App() {
     } else if (path === '/export-center') {
       // Export center for documents, data, and Matrix
       setCurrentPage('export-center')
+    } else if (path === '/accessibility') {
+      // Accessibility settings and WCAG checker
+      setCurrentPage('accessibility')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -400,6 +404,10 @@ function App() {
 
     if (currentPage === 'export-center') {
       return <ExportCenter />
+    }
+
+    if (currentPage === 'accessibility') {
+      return <AccessibilitySettings />
     }
 
     // Home page - new dedicated landing page

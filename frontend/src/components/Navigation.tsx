@@ -17,7 +17,8 @@ import {
   BarChart,
   Settings,
   Shield,
-  Download
+  Download,
+  Eye
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -278,6 +279,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <Download className="w-5 h-5" />
                   <span>Export Center</span>
+                </button>
+
+                {/* Accessibility Settings - WCAG compliance and preferences */}
+                <button 
+                  onClick={() => navigateTo('/accessibility')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/accessibility')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <Eye className="w-5 h-5" />
+                  <span>Accessibility</span>
                 </button>
 
                 {/* Admin - For group owners */}
