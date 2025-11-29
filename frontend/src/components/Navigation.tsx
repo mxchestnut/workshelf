@@ -18,6 +18,7 @@ import {
   Settings,
   Shield,
   Download,
+  Search as SearchIcon,
   Eye
 } from 'lucide-react'
 import { useState } from 'react'
@@ -279,6 +280,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <Download className="w-5 h-5" />
                   <span>Export Center</span>
+                </button>
+
+                {/* Advanced Search */}
+                <button 
+                  onClick={() => navigateTo('/advanced-search')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/advanced-search')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <SearchIcon className="w-5 h-5" />
+                  <span>Advanced Search</span>
                 </button>
 
                 {/* Accessibility Settings - WCAG compliance and preferences */}
