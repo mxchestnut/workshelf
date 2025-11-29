@@ -51,7 +51,8 @@ import {
   Maximize,
   Minimize,
   Save,
-  Check
+  Check,
+  MessageSquare
 } from 'lucide-react'
 
 interface EditorProps {
@@ -299,6 +300,23 @@ export function Editor({
             title="Redo (Cmd+Shift+Z)"
           >
             <Redo className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              const sel = window.getSelection()
+              const text = sel?.toString() || ''
+              if (!text.trim()) return
+              const anchor = {
+                text: text.trim(),
+                length: text.trim().length,
+                created_at: Date.now()
+              }
+              ;(window as any).setPendingCommentAnchor?.(anchor)
+            }}
+            className="p-2 rounded hover:bg-neutral-lightest transition-colors"
+            title="Comment on selection"
+          >
+            <MessageSquare className="w-4 h-4" />
           </button>
         </div>
 
