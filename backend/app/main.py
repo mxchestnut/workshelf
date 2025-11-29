@@ -121,7 +121,11 @@ logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger("workshelf")
 
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
-RATE_LIMIT_REDIS_PREFIX = "rate:ip:"  # key namespace
+# Stricter limit for auth endpoints to mitigate brute-force / token abuse
+AUTH_RATE_LIMIT_PER_MINUTE = int(os.getenv("AUTH_RATE_LIMIT_PER_MINUTE", "30"))
+RATE_LIMIT_REDIS_PREFIX = "rate:ip:"  # key namespace (general)
+RATE_LIMIT_AUTH_REDIS_PREFIX = "rate:auth:ip:"  # key namespace (auth)
+HEALTH_ENDPOINTS = {"/health", "/health/live", "/health/ready"}  # Exclude from rate limits
 
 try:
     import redis  # optional; if unavailable, fallback to in-memory
@@ -141,9 +145,24 @@ async def request_context_middleware(request: Request, call_next):
     # Rate limiting (simple IP-based)
     limited = False
     remaining = None
-    if RATE_LIMIT_PER_MINUTE > 0:
+    path = request.url.path
+    
+    # Skip rate limiting for health endpoints (used by orchestrators/uptime monitors)
+    if path in HEALTH_ENDPOINTS:
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+    
+    # Pick limit based on path: stricter for auth endpoints
+    selected_limit = RATE_LIMIT_PER_MINUTE
+    key_prefix = RATE_LIMIT_REDIS_PREFIX
+    if path.startswith("/api/v1/auth"):
+        selected_limit = AUTH_RATE_LIMIT_PER_MINUTE
+        key_prefix = RATE_LIMIT_AUTH_REDIS_PREFIX
+
+    if selected_limit > 0:
         window = int(time.time() // 60)  # current minute bucket
-        key = f"{RATE_LIMIT_REDIS_PREFIX}{client_ip}:{window}"
+        key = f"{key_prefix}{client_ip}:{window}"
         try:
             if _redis_client:
                 hits = _redis_client.incr(key)
@@ -152,8 +171,8 @@ async def request_context_middleware(request: Request, call_next):
             else:
                 hits = _in_memory_hits.get(key, 0) + 1
                 _in_memory_hits[key] = hits
-            remaining = max(RATE_LIMIT_PER_MINUTE - hits, 0)
-            if hits > RATE_LIMIT_PER_MINUTE:
+            remaining = max(selected_limit - hits, 0)
+            if hits > selected_limit:
                 limited = True
         except Exception as e:
             logger.error(f"rate_limit_error={e}")
@@ -161,7 +180,7 @@ async def request_context_middleware(request: Request, call_next):
     if limited:
         body = {
             "detail": "Rate limit exceeded",
-            "limit": RATE_LIMIT_PER_MINUTE,
+            "limit": selected_limit,
             "retry_after_seconds": 60 - (int(time.time()) % 60),
             "request_id": request_id,
         }
@@ -169,9 +188,9 @@ async def request_context_middleware(request: Request, call_next):
             "event": "rate_limited",
             "request_id": request_id,
             "ip": client_ip,
-            "path": request.url.path,
+            "path": path,
             "method": request.method,
-            "limit": RATE_LIMIT_PER_MINUTE,
+            "limit": selected_limit,
         }
         logger.info(json.dumps(log_line))
         return JSONResponse(status_code=429, content=body, headers={"X-Request-ID": request_id})
@@ -197,7 +216,7 @@ async def request_context_middleware(request: Request, call_next):
         "event": "request",
         "request_id": request_id,
         "ip": client_ip,
-        "path": request.url.path,
+        "path": path,
         "method": request.method,
         "status_code": response.status_code,
         "duration_ms": duration_ms,
@@ -206,7 +225,7 @@ async def request_context_middleware(request: Request, call_next):
     logger.info(json.dumps(log_line))
     response.headers["X-Request-ID"] = request_id
     if remaining is not None:
-        response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_PER_MINUTE)
+        response.headers["X-RateLimit-Limit"] = str(selected_limit)
         response.headers["X-RateLimit-Remaining"] = str(remaining)
     return response
 

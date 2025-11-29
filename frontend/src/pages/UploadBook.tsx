@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Upload, CheckCircle, AlertCircle, Loader2, Shield, FileText } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 export default function UploadBook() {
   const [step, setStep] = useState<'form' | 'uploading' | 'verifying' | 'success' | 'error'>('form')

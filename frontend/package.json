@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sentry/react": "^10.27.0",
     "@tiptap/core": "^3.11.0",
     "@tiptap/extension-bubble-menu": "^3.11.0",
     "@tiptap/extension-character-count": "^3.11.0",

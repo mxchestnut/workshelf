@@ -18,7 +18,7 @@ import Superscript from '@tiptap/extension-superscript'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Author {
   id: number

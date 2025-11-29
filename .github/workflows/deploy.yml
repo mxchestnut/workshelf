@@ -1,0 +1,108 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual trigger only
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm'
+        required: true
+      skip_tests:
+        description: 'Skip tests (not recommended)'
+        type: boolean
+        default: false
+
+jobs:
+  # Gate: ensure CI passed on this commit
+  verify-ci:
+    name: Verify CI Status
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'deploy'
+    
+    steps:
+      - name: Check CI status
+        if: ${{ !inputs.skip_tests }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              head_sha: context.sha,
+              status: 'completed',
+            });
+            
+            const ciRun = runs.data.workflow_runs[0];
+            if (!ciRun || ciRun.conclusion !== 'success') {
+              core.setFailed('CI workflow must pass before deploying');
+            }
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: verify-ci
+    if: github.event.inputs.confirm == 'deploy'
+    environment:
+      name: production
+      url: https://workshelf.dev
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
+          chmod 600 ~/.ssh/workshelf-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
+            set -e
+            cd /opt/workshelf
+            
+            echo "📥 Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            echo "🔧 Setting release tracking..."
+            echo "GIT_SHA=${{ github.sha }}" >> deploy/.env.tmp
+            grep -v "^GIT_SHA=" deploy/.env > deploy/.env.old || true
+            cat deploy/.env.old deploy/.env.tmp > deploy/.env
+            rm deploy/.env.tmp deploy/.env.old
+            
+            echo "🏗️ Rebuilding services..."
+            cd deploy
+            sudo docker-compose -f docker-compose.prod.yml build --no-cache backend frontend
+            
+            echo "♻️  Restarting services..."
+            sudo docker-compose -f docker-compose.prod.yml up -d backend frontend
+            
+            echo "⏳ Waiting for services to stabilize..."
+            sleep 10
+            
+            echo "🏥 Health checks..."
+            curl -f https://api.workshelf.dev/health || exit 1
+            curl -f https://workshelf.dev/health || exit 1
+            
+            echo "✅ Deployment complete!"
+          DEPLOY
+      
+      - name: Notify Sentry of release
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          export SENTRY_RELEASE="${{ github.sha }}"
+          sentry-cli releases new "$SENTRY_RELEASE" || true
+          sentry-cli releases set-commits "$SENTRY_RELEASE" --auto || true
+          sentry-cli releases finalize "$SENTRY_RELEASE" || true
+          sentry-cli releases deploys "$SENTRY_RELEASE" new -e production || true

@@ -77,6 +77,13 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      # Rate limiting
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-120}
+      AUTH_RATE_LIMIT_PER_MINUTE: ${AUTH_RATE_LIMIT_PER_MINUTE:-30}
+      # Error tracking
+      SENTRY_DSN: ${SENTRY_DSN}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      GIT_SHA: ${GIT_SHA:-unknown}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
@@ -98,6 +105,9 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL}
         VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        VITE_ENVIRONMENT: ${ENVIRONMENT:-production}
+        VITE_RELEASE: ${GIT_SHA:-unknown}
         CACHE_BUST: ${CACHE_BUST-1}
     image: workshelf-frontend:latest
     platform: linux/amd64

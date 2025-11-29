@@ -63,7 +63,7 @@ export default function PublicProfile() {
   const [followLoading, setFollowLoading] = useState(false)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
   const checkIfFollowing = async (userId: number) => {
     try {

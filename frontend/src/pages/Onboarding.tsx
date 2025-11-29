@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authService } from '../services/auth';
 
 // Use same fallback pattern as auth.ts
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
 
 // Default interests if no groups exist yet
 const DEFAULT_INTERESTS = [

@@ -7,7 +7,7 @@ import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
 import { BookOpen, Clock, CheckCircle, MessageSquare, Calendar } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface BetaRelease {
   id: number

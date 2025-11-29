@@ -7,7 +7,7 @@ import { Users, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
 import { authService, User } from '../services/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Group {
   id: number

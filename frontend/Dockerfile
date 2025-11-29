@@ -5,8 +5,14 @@ WORKDIR /app
 # Accept build args for API and Keycloak URLs with secure defaults
 ARG VITE_API_URL=https://api.workshelf.dev
 ARG VITE_KEYCLOAK_URL=https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io
+ARG VITE_SENTRY_DSN
+ARG VITE_ENVIRONMENT=production
+ARG VITE_RELEASE=unknown
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
+ENV VITE_RELEASE=$VITE_RELEASE
 
 # Force cache bust for environment variable changes
 ARG CACHE_BUST=1
@@ -14,6 +20,8 @@ RUN echo "=== BUILD INFO ===" && \
     echo "Cache bust: $CACHE_BUST" && \
     echo "VITE_API_URL: $VITE_API_URL" && \
     echo "VITE_KEYCLOAK_URL: $VITE_KEYCLOAK_URL" && \
+    echo "VITE_ENVIRONMENT: $VITE_ENVIRONMENT" && \
+    echo "VITE_RELEASE: $VITE_RELEASE" && \
     echo "=================="
 
 # Install dependencies

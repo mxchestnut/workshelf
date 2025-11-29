@@ -9,7 +9,7 @@ import { toast } from '../components/Toast'
 // Lazy load the EPUB reader (large dependency)
 const EpubReader = lazy(() => import('../components/EpubReader'))
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface BookshelfItem {
   id: number
