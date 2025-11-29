@@ -44,7 +44,7 @@ fi
 echo "✅ Got admin token"
 
 # Create realm
-echo "🏗️  Creating realm '$REALM_NAME'..."
+echo "🏗️  Creating realm '$REALM_NAME' with hardened settings..."
 curl -s -X POST "$KEYCLOAK_URL/admin/realms" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
     -H "Content-Type: application/json" \
@@ -52,18 +52,33 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms" \
         "realm": "'$REALM_NAME'",
         "enabled": true,
         "displayName": "WorkShelf",
-        "registrationAllowed": true,
+        "registrationAllowed": false,
         "loginWithEmailAllowed": true,
         "duplicateEmailsAllowed": false,
         "resetPasswordAllowed": true,
         "editUsernameAllowed": false,
-        "bruteForceProtected": true
-    }' || echo "Realm might already exist"
+        "bruteForceProtected": true,
+        "rememberMe": true,
+        "sslRequired": "external",
+        "passwordPolicy": "length(12) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1)",
+        "failureFactor": 5,
+        "waitIncrement": 1000,
+        "quickLoginCheckMilliSeconds": 1000,
+        "maxFailureWaitSeconds": 900,
+        "minimumQuickLoginWaitSeconds": 5,
+        "offlineSessionIdleTimeout": 2592000,
+        "accessTokenLifespan": 900,
+        "accessTokenLifespanForImplicitFlow": 600,
+        "ssoSessionIdleTimeout": 3600,
+        "ssoSessionMaxLifespan": 86400,
+        "clientSessionIdleTimeout": 3600,
+        "clientSessionMaxLifespan": 86400
+    }' || echo "Realm might already exist / not patched (will patch if exists)"
 
 echo "✅ Realm created or already exists"
 
 # Create backend client (confidential)
-echo "🔧 Creating backend client 'workshelf-api'..."
+echo "🔧 Creating backend client 'workshelf-api' (restricted origins)..."
 curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM_NAME/clients" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
     -H "Content-Type: application/json" \
@@ -76,39 +91,41 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM_NAME/clients" \
         "secret": "workshelf-api-secret",
         "publicClient": false,
         "standardFlowEnabled": true,
-        "directAccessGrantsEnabled": true,
+        "directAccessGrantsEnabled": false,
         "serviceAccountsEnabled": true,
         "authorizationServicesEnabled": false,
-        "redirectUris": ["*"],
-        "webOrigins": ["*"]
+        "redirectUris": ["https://api.workshelf.dev/*"],
+        "webOrigins": ["https://api.workshelf.dev"],
+        "attributes": {
+          "access.token.lifespan": "900"
+        }
     }' || echo "Client might already exist"
 
 echo "✅ Backend client created"
 
 # Create frontend client (public)
-echo "🔧 Creating frontend client 'workshelf-frontend'..."
+echo "🔧 Creating frontend client 'workshelf-frontend' (PKCE, strict origins)..."
 curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM_NAME/clients" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
     -H "Content-Type: application/json" \
     -d '{
         "clientId": "workshelf-frontend",
         "name": "WorkShelf Frontend",
-        "description": "React frontend client",
+        "description": "Public SPA client",
         "enabled": true,
         "publicClient": true,
         "standardFlowEnabled": true,
-        "directAccessGrantsEnabled": true,
+        "directAccessGrantsEnabled": false,
         "implicitFlowEnabled": false,
         "redirectUris": [
-            "http://localhost:5173/*",
-            "http://localhost:3000/*"
+          "https://workshelf.dev/*"
         ],
         "webOrigins": [
-            "http://localhost:5173",
-            "http://localhost:3000"
+          "https://workshelf.dev"
         ],
         "attributes": {
-            "pkce.code.challenge.method": "S256"
+          "pkce.code.challenge.method": "S256",
+          "access.token.lifespan": "900"
         }
     }' || echo "Client might already exist"
 
