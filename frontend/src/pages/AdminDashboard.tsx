@@ -23,7 +23,11 @@ import {
   X,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  DollarSign,
+  CreditCard,
+  ArrowUpCircle,
+  Download
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -61,6 +65,38 @@ interface PendingUser {
   created_at: string
 }
 
+interface CreatorEarnings {
+  total_earnings_cents: number
+  total_earnings_usd: number
+  available_balance_cents: number
+  available_balance_usd: number
+  pending_balance_cents: number
+  pending_balance_usd: number
+  lifetime_payouts_cents: number
+  lifetime_payouts_usd: number
+  stripe_account_id: string | null
+  stripe_onboarding_complete: boolean
+}
+
+interface Payout {
+  id: number
+  amount_cents: number
+  amount_usd: number
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+  payout_method: string
+  notes: string | null
+  created_at: string
+  processed_at: string | null
+}
+
+interface EarningsDashboard {
+  earnings: CreatorEarnings
+  recent_payouts: Payout[]
+  available_for_payout_cents: number
+  available_for_payout_usd: number
+  minimum_payout_usd: number
+}
+
 interface AdminDashboardProps {
   embedded?: boolean  // When true, don't render Navigation (for use in Dashboard tabs)
 }
@@ -70,7 +106,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [managedGroups, setManagedGroups] = useState<Group[]>([])
-  const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation' | 'site-admin'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation' | 'site-admin' | 'creator-earnings'>('overview')
   const [isStaff, setIsStaff] = useState(false)
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -78,6 +114,11 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [inviteMessage, setInviteMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
   const [pendingUsersLoading, setPendingUsersLoading] = useState(false)
+  const [earningsDashboard, setEarningsDashboard] = useState<EarningsDashboard | null>(null)
+  const [earningsLoading, setEarningsLoading] = useState(false)
+  const [payoutAmount, setPayoutAmount] = useState('')
+  const [payoutLoading, setPayoutLoading] = useState(false)
+  const [stripeConnectStatus, setStripeConnectStatus] = useState<any>(null)
 
   useEffect(() => {
     loadUser()
@@ -287,6 +328,146 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
           text: approve ? 'User approved successfully!' : 'User rejected successfully.' 
         })
         setTimeout(() => setInviteMessage(null), 3000)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error approving user:', error)
+    }
+  }
+
+  const loadEarningsDashboard = async () => {
+    setEarningsLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/creator/dashboard`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setEarningsDashboard(data)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading earnings:', error)
+    } finally {
+      setEarningsLoading(false)
+    }
+  }
+
+  const loadStripeConnectStatus = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/creator/connect/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStripeConnectStatus(data)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading Stripe Connect status:', error)
+    }
+  }
+
+  const setupStripeConnect = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/creator/connect/setup`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ country: 'US' })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Redirect to Stripe onboarding
+        window.location.href = data.onboarding_url
+      } else {
+        const error = await response.json()
+        setInviteMessage({ type: 'error', text: error.detail || 'Failed to setup Stripe Connect' })
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error setting up Stripe Connect:', error)
+      setInviteMessage({ type: 'error', text: 'Failed to setup Stripe Connect' })
+    }
+  }
+
+  const requestPayout = async () => {
+    if (!payoutAmount || payoutLoading) return
+    
+    const amountCents = Math.round(parseFloat(payoutAmount) * 100)
+    
+    if (amountCents < 1000) {
+      setInviteMessage({ type: 'error', text: 'Minimum payout is $10.00' })
+      return
+    }
+
+    setPayoutLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/creator/payout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount_cents: amountCents,
+          payout_method: 'stripe',
+          notes: null
+        })
+      })
+
+      if (response.ok) {
+        setInviteMessage({ type: 'success', text: 'Payout requested successfully!' })
+        setPayoutAmount('')
+        // Reload earnings dashboard
+        loadEarningsDashboard()
+        setTimeout(() => setInviteMessage(null), 3000)
+      } else {
+        const error = await response.json()
+        setInviteMessage({ type: 'error', text: error.detail || 'Failed to request payout' })
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error requesting payout:', error)
+      setInviteMessage({ type: 'error', text: 'Failed to request payout' })
+    } finally {
+      setPayoutLoading(false)
+    }
+  }
+
+  const getPayoutStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'text-green-600 dark:text-green-400'
+      case 'processing': return 'text-blue-600 dark:text-blue-400'
+      case 'pending': return 'text-yellow-600 dark:text-yellow-400'
+      case 'failed': return 'text-red-600 dark:text-red-400'
+      case 'cancelled': return 'text-gray-600 dark:text-gray-400'
+      default: return 'text-gray-600'
+    }
+  }
+
+  const getPayoutStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="h-5 w-5" />
+      case 'processing': return <Clock className="h-5 w-5 animate-spin" />
+      case 'pending': return <Clock className="h-5 w-5" />
+      case 'failed': return <XCircle className="h-5 w-5" />
+      case 'cancelled': return <X className="h-5 w-5" />
+      default: return <Clock className="h-5 w-5" />
+    }
+  }
       } else {
         const error = await response.json()
         setInviteMessage({ type: 'error', text: error.detail || 'Failed to process approval' })
@@ -306,6 +487,14 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       loadPendingUsers()
     }
   }, [activeTab, isStaff])
+
+  // Load earnings dashboard when Creator Earnings tab becomes active
+  useEffect(() => {
+    if (activeTab === 'creator-earnings') {
+      loadEarningsDashboard()
+      loadStripeConnectStatus()
+    }
+  }, [activeTab])
 
   const navigateToGroup = (slug: string) => {
     window.location.href = `/groups/${slug}`
@@ -382,6 +571,19 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               <div className="flex items-center gap-2">
                 <Flag className="w-5 h-5" />
                 Moderation
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('creator-earnings')}
+              className={`px-4 py-3 border-b-2 transition-colors ${
+                activeTab === 'creator-earnings'
+                  ? 'border-[#B34B0C] text-white font-semibold'
+                  : 'border-transparent text-[#B3B2B0] hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Creator Earnings
               </div>
             </button>
             {/* Site Admin tab - only for staff */}
@@ -832,6 +1034,269 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <p style={{ color: '#B3B2B0' }}>Activity feed coming soon</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Creator Earnings Tab */}
+        {activeTab === 'creator-earnings' && (
+          <div className="space-y-8">
+            {earningsLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading earnings data...</div>
+              </div>
+            ) : (
+              <>
+                {/* Earnings Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <DollarSign className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                      <div>
+                        <p className="text-2xl font-bold text-white">
+                          ${earningsDashboard?.earnings.total_earnings_usd.toFixed(2) || '0.00'}
+                        </p>
+                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Earnings</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <CreditCard className="w-8 h-8" style={{ color: '#10b981' }} />
+                      <div>
+                        <p className="text-2xl font-bold text-white">
+                          ${earningsDashboard?.earnings.available_balance_usd.toFixed(2) || '0.00'}
+                        </p>
+                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Available Balance</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Clock className="w-8 h-8" style={{ color: '#f59e0b' }} />
+                      <div>
+                        <p className="text-2xl font-bold text-white">
+                          ${earningsDashboard?.earnings.pending_balance_usd.toFixed(2) || '0.00'}
+                        </p>
+                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Pending</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Download className="w-8 h-8" style={{ color: '#6366f1' }} />
+                      <div>
+                        <p className="text-2xl font-bold text-white">
+                          ${earningsDashboard?.earnings.lifetime_payouts_usd.toFixed(2) || '0.00'}
+                        </p>
+                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Lifetime Payouts</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stripe Connect Status */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <CreditCard className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                      Stripe Connect Status
+                    </h3>
+                    {stripeConnectStatus?.connected && stripeConnectStatus?.charges_enabled && (
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-600/20 text-green-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="text-sm font-medium">Active</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {!stripeConnectStatus?.connected || !stripeConnectStatus?.charges_enabled ? (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border-2 border-yellow-600/30 bg-yellow-600/10">
+                        <p className="text-sm text-yellow-200 mb-3">
+                          To receive payouts, you need to connect your Stripe account. This allows us to securely transfer your earnings.
+                        </p>
+                        <button
+                          onClick={setupStripeConnect}
+                          className="px-6 py-3 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity flex items-center gap-2"
+                          style={{ backgroundColor: '#B34B0C' }}
+                        >
+                          <ArrowUpCircle className="w-5 h-5" />
+                          Connect Stripe Account
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p style={{ color: '#B3B2B0' }}>Account ID</p>
+                          <p className="text-white font-mono">{stripeConnectStatus.account_id}</p>
+                        </div>
+                        <div>
+                          <p style={{ color: '#B3B2B0' }}>Payouts Enabled</p>
+                          <p className={stripeConnectStatus.payouts_enabled ? 'text-green-400' : 'text-red-400'}>
+                            {stripeConnectStatus.payouts_enabled ? 'Yes' : 'No'}
+                          </p>
+                        </div>
+                        <div>
+                          <p style={{ color: '#B3B2B0' }}>Charges Enabled</p>
+                          <p className={stripeConnectStatus.charges_enabled ? 'text-green-400' : 'text-red-400'}>
+                            {stripeConnectStatus.charges_enabled ? 'Yes' : 'No'}
+                          </p>
+                        </div>
+                        <div>
+                          <p style={{ color: '#B3B2B0' }}>Details Submitted</p>
+                          <p className={stripeConnectStatus.details_submitted ? 'text-green-400' : 'text-red-400'}>
+                            {stripeConnectStatus.details_submitted ? 'Yes' : 'No'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Request Payout */}
+                {stripeConnectStatus?.connected && stripeConnectStatus?.payouts_enabled && (
+                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                      <ArrowUpCircle className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                      Request Payout
+                    </h3>
+
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm mb-2" style={{ color: '#B3B2B0' }}>
+                          Available for payout: <span className="text-white font-bold text-lg">
+                            ${earningsDashboard?.available_for_payout_usd.toFixed(2) || '0.00'}
+                          </span>
+                        </p>
+                        <p className="text-xs" style={{ color: '#B3B2B0' }}>
+                          Minimum payout: ${earningsDashboard?.minimum_payout_usd.toFixed(2) || '10.00'}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <label className="text-sm mb-2 block" style={{ color: '#B3B2B0' }}>
+                            Payout Amount (USD)
+                          </label>
+                          <input
+                            type="number"
+                            min="10"
+                            step="0.01"
+                            value={payoutAmount}
+                            onChange={(e) => setPayoutAmount(e.target.value)}
+                            placeholder="10.00"
+                            className="w-full px-4 py-2 rounded-lg bg-[#37322E] border-2 text-white placeholder-[#6C6A68] focus:border-[#B34B0C] focus:outline-none"
+                            style={{ borderColor: '#6C6A68' }}
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <button
+                            onClick={requestPayout}
+                            disabled={payoutLoading || !payoutAmount || parseFloat(payoutAmount) < 10}
+                            className="px-6 py-2 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            style={{ backgroundColor: '#B34B0C' }}
+                          >
+                            {payoutLoading ? (
+                              <>
+                                <Clock className="w-5 h-5 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-5 h-5" />
+                                Request Payout
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {inviteMessage && (
+                        <div className={`p-3 rounded-lg ${
+                          inviteMessage.type === 'success' 
+                            ? 'bg-green-600/20 text-green-400' 
+                            : 'bg-red-600/20 text-red-400'
+                        }`}>
+                          <p className="text-sm">{inviteMessage.text}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Payout History */}
+                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                    Payout History
+                  </h3>
+
+                  {!earningsDashboard?.recent_payouts || earningsDashboard.recent_payouts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Download className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
+                      <p className="font-semibold text-white mb-1">No payouts yet</p>
+                      <p className="text-sm" style={{ color: '#B3B2B0' }}>
+                        Your payout history will appear here
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {earningsDashboard.recent_payouts.map((payout) => (
+                        <div
+                          key={payout.id}
+                          className="p-4 rounded-lg border-2 flex items-center justify-between"
+                          style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <p className="text-lg font-bold text-white">
+                                ${payout.amount_usd.toFixed(2)}
+                              </p>
+                              <div className={`flex items-center gap-1 ${getPayoutStatusColor(payout.status)}`}>
+                                {getPayoutStatusIcon(payout.status)}
+                                <span className="text-sm font-medium capitalize">{payout.status}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm" style={{ color: '#B3B2B0' }}>
+                              <span>Method: {payout.payout_method}</span>
+                              <span>Requested {new Date(payout.created_at).toLocaleDateString()}</span>
+                              {payout.processed_at && (
+                                <span>Processed {new Date(payout.processed_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                            {payout.notes && (
+                              <p className="text-sm mt-2" style={{ color: '#B3B2B0' }}>
+                                Note: {payout.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Info Box */}
+                <div className="p-4 rounded-lg border-2 border-blue-600/30 bg-blue-600/10">
+                  <h4 className="font-medium text-blue-200 mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    About Creator Earnings
+                  </h4>
+                  <ul className="space-y-1 text-sm text-blue-300">
+                    <li>• Earnings are tracked from book sales, premium content, and other monetization features</li>
+                    <li>• Minimum payout is $10.00 USD</li>
+                    <li>• Payouts are processed via Stripe Connect</li>
+                    <li>• Processing typically takes 2-5 business days</li>
+                    <li>• You can request payouts at any time once your available balance meets the minimum</li>
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
