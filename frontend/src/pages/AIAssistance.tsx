@@ -13,6 +13,7 @@ import {
   Sparkles, Lightbulb, Users, TrendingUp, BookOpen, 
   List, Type, RefreshCw, AlertCircle, Zap, HelpCircle
 } from 'lucide-react'
+import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -75,13 +76,17 @@ export function AIAssistance() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to generate prompts')
+        const message = errorData.detail || 'Failed to generate prompts'
+        toast.error(message)
+        throw new Error(message)
       }
 
       const data = await response.json()
       setResult(data)
+      toast.success('AI assistance complete')
     } catch (err: any) {
       setError(err.message)
+      toast.error(err?.message || 'AI assistance failed')
     } finally {
       setLoading(false)
     }

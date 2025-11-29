@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Upload, CheckCircle, AlertCircle, Loader2, Shield, FileText } from 'lucide-react'
+import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -77,18 +78,22 @@ export default function UploadBook() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.detail || 'Upload failed')
+        const message = error.detail || 'Upload failed'
+        toast.error(message)
+        throw new Error(message)
       }
 
       const result = await response.json()
       setSubmissionId(result.id)
       setStep('verifying')
+      toast.success('Upload successful. Verifying EPUB...')
 
       // Poll for verification results
       pollVerification(result.id)
     } catch (err: any) {
       setError(err.message || 'Upload failed')
       setStep('error')
+      toast.error(err?.message || 'Upload failed')
     }
   }
 
@@ -114,10 +119,13 @@ export default function UploadBook() {
             
             if (submission.status === 'verified' || submission.status === 'approved') {
               setStep('success')
+              toast.success('EPUB verification completed!')
             } else if (submission.status === 'needs_review') {
               setStep('success') // Show success with review notice
+              toast.success('Submitted for manual review by moderators.')
             } else {
               setError('Content verification failed. Please check the requirements.')
+              toast.error('Content verification failed')
               setStep('error')
             }
             return
@@ -131,6 +139,7 @@ export default function UploadBook() {
         } else {
           setError('Verification is taking longer than expected. Check back later.')
           setStep('error')
+          toast.error('Verification taking longer than expected')
         }
       } catch (err) {
         console.error('Polling error:', err)

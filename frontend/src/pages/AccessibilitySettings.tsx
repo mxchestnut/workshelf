@@ -16,6 +16,7 @@ import {
   BarChart3,
   Settings
 } from 'lucide-react'
+import { toast } from '../services/toast'
 
 interface AccessibilitySettings {
   font_size: number
@@ -130,6 +131,7 @@ export function AccessibilitySettings() {
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Settings saved successfully!' })
+        toast.success('Accessibility settings saved')
         
         // Apply settings to the page immediately
         applySettings(settings)
@@ -137,10 +139,13 @@ export function AccessibilitySettings() {
         setTimeout(() => setMessage(null), 3000)
       } else {
         const error = await response.json()
-        setMessage({ type: 'error', text: error.detail || 'Failed to save settings' })
+        const message = error.detail || 'Failed to save settings'
+        setMessage({ type: 'error', text: message })
+        toast.error(message)
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save settings' })
+      toast.error('Failed to save settings')
     } finally {
       setSaving(false)
     }
@@ -188,12 +193,16 @@ export function AccessibilitySettings() {
       if (response.ok) {
         const result = await response.json()
         setCheckResult(result)
+        toast.success('Document accessibility check complete')
       } else {
         const error = await response.json()
-        setMessage({ type: 'error', text: error.detail || 'Failed to check document' })
+        const message = error.detail || 'Failed to check document'
+        setMessage({ type: 'error', text: message })
+        toast.error(message)
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to check document' })
+      toast.error('Failed to check document')
     } finally {
       setChecking(false)
     }
@@ -211,9 +220,11 @@ export function AccessibilitySettings() {
       if (response.ok) {
         const data = await response.json()
         setReport(data)
+        toast.success('Accessibility report loaded')
       }
     } catch (error) {
       console.error('Failed to load report:', error)
+      toast.error('Failed to load accessibility report')
     } finally {
       setLoadingReport(false)
     }

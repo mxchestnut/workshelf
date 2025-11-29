@@ -17,6 +17,7 @@ import {
   XCircle, AlertCircle, RefreshCw, Trash2, ExternalLink,
   MessageSquare, Send
 } from 'lucide-react'
+import { toast } from '../services/toast'
 import { useMatrix } from '../hooks/useMatrixClient'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -207,10 +208,12 @@ export function ExportCenter() {
 
       const result = await response.json()
       setSuccess(`Export job created! Job ID: ${result.job_id}. Check the History tab to track progress.`)
+      toast.success('Document export job created')
       setActiveTab('history')
       loadExportJobs()
     } catch (err: any) {
       setError(err.message)
+      toast.error(err.message || 'Failed to export document')
     } finally {
       setLoading(false)
     }
@@ -249,10 +252,12 @@ export function ExportCenter() {
 
       const result = await response.json()
       setSuccess(`Export job created! Job ID: ${result.job_id}. Check the History tab to track progress.`)
+      toast.success('Studio export job created')
       setActiveTab('history')
       loadExportJobs()
     } catch (err: any) {
       setError(err.message)
+      toast.error(err.message || 'Failed to export studio')
     } finally {
       setLoading(false)
     }
@@ -280,10 +285,12 @@ export function ExportCenter() {
 
       const result = await response.json()
       setSuccess(`GDPR data export started! Job ID: ${result.job_id}. Check the History tab to track progress.`)
+      toast.success('GDPR data export started')
       setActiveTab('history')
       loadExportJobs()
     } catch (err: any) {
       setError(err.message)
+      toast.error(err.message || 'Failed to export GDPR data')
     } finally {
       setLoading(false)
     }
@@ -328,11 +335,13 @@ export function ExportCenter() {
       if (matrixClient) {
         await matrixClient.sendTextMessage(selectedRoomId, `📄 ${docData.title}\n\n${textContent}`)
         setSuccess('Document sent to Matrix room successfully!')
+        toast.success('Sent to Matrix room')
       } else {
         throw new Error('Matrix client not initialized')
       }
     } catch (err: any) {
       setError(err.message)
+      toast.error(err.message || 'Failed to send to Matrix')
     } finally {
       setMatrixExportLoading(false)
     }
@@ -373,11 +382,12 @@ export function ExportCenter() {
       }
 
       const data = await response.json()
-      
+      toast.success('Preparing download...')
       // Open download URL in new tab
       window.open(data.file_url, '_blank')
     } catch (err: any) {
       setError(err.message)
+      toast.error(err.message || 'Failed to get download URL')
     }
   }
 
