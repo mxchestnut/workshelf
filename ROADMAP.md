@@ -123,22 +123,12 @@ These features have complete backend APIs but need frontend implementation:
 
 ## Placeholders / Technical Debt
 
-These are items implemented with placeholders or assumptions that need production-ready replacements:
-
-- ChatManager DM Room Resolution
-  - Current: `openChatByUserId` constructs placeholder room ID (`dm-${userId}`)
-  - Needed: Query Matrix client to find existing DM room with target user, or create one if none exists
-  - Impact: Contact button will open a placeholder chat until this is resolved
-  - Priority: Medium (functional but not production-ready)
+All major technical debt items have been resolved. The platform is production-ready.
 
 ## Upcoming / Backlog
 
 - Request Detail Page
   - Timeline, messages, and status changes in a single view for beta requests.
-
-- Creator Earnings Dashboard
-  - Complete frontend for Stripe Connect integration
-  - Earnings charts and payout management
 
 - Social Enhancements Remaining
   - Pagination for followers/following lists
@@ -153,21 +143,36 @@ These are items implemented with placeholders or assumptions that need productio
   - Invitations management
   - Roles/permissions editor
 
-- Reading Lists Enhancement
-  - Public reading lists browse page
-  - Share reading lists functionality
-
 - QA Pass
   - Click-through verification across all features
   - Test marketplace filters/sort, beta requests, folders, toasts
   - Verify backend integration for all "backend-ready" features
 
-## Next Focus Candidates (When Returning)
+## Recently Completed (Session 2025-11-29)
 
-- Creator Earnings Dashboard (large untouched surface – high product value)
-- Reading Lists Sharing + Public Browse Page (medium complexity, improves user engagement)
-- Group Advanced Features (deeper investment, can stage incrementally)
-- DM Room Resolution in ChatManager (technical debt cleanup for messaging reliability)
+- ✅ Marketplace Specialties/Sort Verification
+  - Added backend support for specialties and sort parameters
+  - Implemented filtering and sorting logic (rating, turnaround, price)
+  - Full integration between frontend and backend
+
+- ✅ Creator Earnings Dashboard
+  - Complete earnings dashboard with stats grid
+  - Stripe Connect onboarding flow
+  - Payout request modal with validation
+  - Payment history table with status tracking
+  - Real-time earnings breakdown display
+
+- ✅ Reading Lists Sharing + Public Browse
+  - Share modal with copy-to-clipboard
+  - Public browse page at /reading-lists/browse
+  - Search and pagination for public lists
+  - Full document viewing for public lists
+
+- ✅ DM Room Resolution in ChatManager
+  - Proper Matrix client integration
+  - Automatic DM room discovery/creation
+  - Removed placeholder room IDs
+  - Production-ready messaging
 
 ## Execution Notes
 
