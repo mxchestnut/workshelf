@@ -49,6 +49,9 @@ export default function BetaProfileView() {
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<Review[]>([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [newReview, setNewReview] = useState<{ rating: number; comment: string }>({ rating: 5, comment: '' })
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviewMessage, setReviewMessage] = useState<string | null>(null)
 
   useEffect(() => {
     load()
@@ -92,6 +95,45 @@ export default function BetaProfileView() {
   const requestBetaRead = () => {
     // Navigate to a request creation page if exists; fallback to messaging
     window.location.href = `/me?request_beta_for=${profile?.user_id}`
+  }
+
+  const submitReview = async () => {
+    if (!userId) return
+    setSubmittingReview(true)
+    setReviewMessage(null)
+    try {
+      const token = await authService.getAccessToken()
+      const resp = await fetch(`/api/v1/beta-profiles/${userId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rating: newReview.rating, comment: newReview.comment })
+      })
+      if (resp.ok) {
+        setReviewMessage('Review submitted!')
+        setNewReview({ rating: 5, comment: '' })
+        // Reload reviews
+        try {
+          setReviewsLoading(true)
+          const r = await fetch(`/api/v1/beta-profiles/${userId}/reviews`)
+          if (r.ok) {
+            const rd = await r.json()
+            setReviews(rd.reviews || rd || [])
+          }
+        } finally {
+          setReviewsLoading(false)
+        }
+      } else {
+        const err = await resp.json().catch(() => ({}))
+        setReviewMessage(err.detail || 'Failed to submit review')
+      }
+    } catch (e) {
+      setReviewMessage('Network error submitting review')
+    } finally {
+      setSubmittingReview(false)
+    }
   }
 
   const formatRate = (cents: number | null) => {
@@ -294,6 +336,37 @@ export default function BetaProfileView() {
                 <p className="text-xs text-muted-foreground mt-2">{new Date(rev.created_at).toLocaleDateString()}</p>
               </div>
             ))}
+          </div>
+
+          {/* Submit Review */}
+          <div className="mt-6 border-t border-border pt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-foreground font-medium">Leave a Review</span>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              {[1,2,3,4,5].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setNewReview(prev => ({ ...prev, rating: n }))}
+                  className={`p-2 rounded ${newReview.rating >= n ? 'bg-yellow-600/30 border border-yellow-600' : 'bg-muted'}`}
+                >
+                  <Star className={`w-4 h-4 ${newReview.rating >= n ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={newReview.comment}
+              onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+              placeholder="Share your experience working with this beta reader..."
+              className="w-full p-3 rounded-lg bg-muted text-foreground border border-border"
+              rows={4}
+            />
+            <div className="mt-3 flex items-center gap-3">
+              <button onClick={submitReview} disabled={submittingReview || !newReview.comment.trim()} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground">
+                {submittingReview ? 'Submitting...' : 'Submit Review'}
+              </button>
+              {reviewMessage && <span className="text-muted-foreground">{reviewMessage}</span>}
+            </div>
           </div>
         </div>
       </div>

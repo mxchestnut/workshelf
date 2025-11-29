@@ -56,11 +56,12 @@ export default function BetaMarketplace() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [sortBy, setSortBy] = useState<'rating' | 'turnaround' | 'price' | ''>('')
 
   useEffect(() => {
     loadUser()
     loadProfiles()
-  }, [page, selectedGenres, selectedSpecialties, availability, minBetaScore, onlyFree, searchQuery])
+  }, [page, selectedGenres, selectedSpecialties, availability, minBetaScore, onlyFree, searchQuery, sortBy])
 
   const loadUser = async () => {
     const currentUser = await authService.getCurrentUser()
@@ -80,6 +81,7 @@ export default function BetaMarketplace() {
       if (minBetaScore !== null) params.append('min_beta_score', minBetaScore.toString())
       if (onlyFree) params.append('only_free', 'true')
       if (searchQuery) params.append('search', searchQuery)
+      if (sortBy) params.append('sort', sortBy)
       if (selectedSpecialties.length > 0) params.append('specialties', selectedSpecialties.join(','))
 
       const response = await fetch(`/api/v1/beta-profiles/marketplace?${params}`)
@@ -177,6 +179,18 @@ export default function BetaMarketplace() {
                 placeholder="Search by name or bio..."
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-muted text-foreground border border-border focus:border-primary focus:outline-none"
               />
+            </div>
+            <div>
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value as any); setPage(1); }}
+                className="px-4 py-3 rounded-lg bg-muted text-foreground border border-border"
+              >
+                <option value="">Sort: Default</option>
+                <option value="rating">Sort: Rating</option>
+                <option value="turnaround">Sort: Turnaround</option>
+                <option value="price">Sort: Price</option>
+              </select>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
