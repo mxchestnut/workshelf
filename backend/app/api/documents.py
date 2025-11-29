@@ -47,6 +47,7 @@ async def list_documents(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     status_filter: Optional[DocumentStatus] = Query(None, description="Filter by status"),
+        folder_id: Optional[int] = Query(None, description="Filter by folder ID"),
     db: AsyncSession = Depends(get_db),
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
@@ -61,7 +62,7 @@ async def list_documents(
     
     # Get documents (function expects page number, not skip)
     documents, total = await document_service.list_user_documents(
-        db, user.id, page, page_size, status_filter
+        db, user.id, page, page_size, status_filter, folder_id
     )
     
     # Calculate skip for response metadata

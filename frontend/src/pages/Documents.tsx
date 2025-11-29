@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { WritingStreakWidget } from '../components/WritingStreakWidget'
+import { FolderTree } from '../components/FolderTree'
 import { FileText, Plus, Search, Clock, TrendingUp } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -25,12 +26,13 @@ export function Documents() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+    const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
     loadUser()
     loadDocuments()
-  }, [])
+  }, [selectedFolderId])
 
   const loadUser = async () => {
     try {
@@ -50,7 +52,9 @@ export function Documents() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/documents?page=1&page_size=100`, {
+
+      const folderParam = selectedFolderId ? `&folder_id=${selectedFolderId}` : ''
+      const response = await fetch(`${API_URL}/api/v1/documents?page=1&page_size=100${folderParam}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -118,6 +122,8 @@ export function Documents() {
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
         </div>
+              </div>
+            </div>
       </div>
     )
   }
@@ -125,9 +131,17 @@ export function Documents() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
-      
-      {/* Header */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+
+      <div className="flex h-screen pt-16">
+        {/* Folder Sidebar */}
+        <div className="w-64 border-r overflow-y-auto" style={{ backgroundColor: '#2E2A27', borderColor: '#6C6A68' }}>
+          <FolderTree onSelectFolder={setSelectedFolderId} />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Header */}
+          <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -174,12 +188,14 @@ export function Documents() {
           <div className="text-center py-16">
             <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
             <h3 className="text-xl font-semibold mb-2" style={{ color: 'white' }}>
-              {searchQuery ? 'No documents found' : 'No documents yet'}
+              {searchQuery ? 'No documents found' : selectedFolderId ? 'No documents in this folder' : 'No documents yet'}
             </h3>
             <p className="mb-6" style={{ color: '#B3B2B0' }}>
               {searchQuery
                 ? 'Try a different search term'
-                : 'Start writing your first document'}
+                : selectedFolderId
+                  ? 'Create a document or move one to this folder'
+                  : 'Start writing your first document'}
             </p>
             {!searchQuery && (
               <button

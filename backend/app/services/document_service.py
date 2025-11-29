@@ -205,7 +205,8 @@ async def list_user_documents(
     user_id: int,
     page: int = 1,
     page_size: int = 20,
-    status_filter: Optional[DocumentStatus] = None
+    status_filter: Optional[DocumentStatus] = None,
+    folder_id: Optional[int] = None
 ) -> Tuple[List[Document], int]:
     """
     List documents owned by a user
@@ -216,12 +217,18 @@ async def list_user_documents(
         page: Page number (1-indexed)
         page_size: Items per page
         status_filter: Optional status filter
+            folder_id: Optional folder ID filter (filters by project.folder_id)
         
     Returns:
         Tuple of (documents list, total count)
     """
-    # Base query
+    # Base query - join with Project to filter by folder
     query = select(Document).where(Document.owner_id == user_id)
+    
+    # Apply folder filter (via project relationship)
+    if folder_id is not None:
+        from app.models.project import Project
+        query = query.join(Project, Document.project_id == Project.id).where(Project.folder_id == folder_id)
     
     # Apply status filter
     if status_filter:
@@ -232,6 +239,9 @@ async def list_user_documents(
     
     # Get total count
     count_query = select(func.count()).select_from(Document).where(Document.owner_id == user_id)
+    if folder_id is not None:
+        from app.models.project import Project
+        count_query = count_query.join(Project, Document.project_id == Project.id).where(Project.folder_id == folder_id)
     if status_filter:
         count_query = count_query.where(Document.status == status_filter)
     
