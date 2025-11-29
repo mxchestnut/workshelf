@@ -32,6 +32,16 @@ This document tracks active initiatives, status, and next actions. Remove items 
     - Comments: post/reaction errors and successes.
     - Auth: login/logout/invitation accept.
 
+## Placeholders / Technical Debt
+
+These are items implemented with placeholders or assumptions that need production-ready replacements:
+
+- ChatManager DM Room Resolution
+  - Current: `openChatByUserId` constructs placeholder room ID (`dm-${userId}`)
+  - Needed: Query Matrix client to find existing DM room with target user, or create one if none exists
+  - Impact: Contact button will open a placeholder chat until this is resolved
+  - Priority: Medium (functional but not production-ready)
+
 ## Upcoming / Backlog (Add as needed)
 
 - Request Detail Page
