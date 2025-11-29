@@ -8,6 +8,7 @@ import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
 import { ArrowLeft, Trash2, ExternalLink, Sparkles } from 'lucide-react'
 import '../components/Editor.css'
 import { CommentsThread } from '../components/CommentsThread'
+import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
@@ -218,8 +219,10 @@ export function Document() {
 
       const data = await response.json()
       setDocument(data)
+      toast.success('Document saved successfully')
     } catch (err) {
       console.error('Error saving document:', err)
+      toast.error('Failed to save document')
       throw err // Let the Editor component handle the error
     }
   }
@@ -249,14 +252,15 @@ export function Document() {
           // If response isn't JSON, use default message
         }
         console.error('Delete error:', errorMessage)
-        alert(`Failed to delete document: ${errorMessage}`)
+        toast.error(`Failed to delete: ${errorMessage}`)
         return
       }
 
+      toast.success('Document deleted successfully')
       window.location.href = '/documents'
     } catch (err) {
       console.error('Error deleting document:', err)
-      alert('Failed to delete document: Network error')
+      toast.error('Failed to delete document')
     }
   }
 

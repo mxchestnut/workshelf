@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2, CheckCircle, XCircle, Users } from 'lucide-react'
 import { authService } from '../services/auth'
+import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -117,20 +118,26 @@ export function Invite() {
       if (response.ok) {
         const data = await response.json()
         setStatus('success')
-        setMessage(`You've successfully joined ${groupInvitation.group_name}!`)
+        const successMsg = `You've successfully joined ${groupInvitation.group_name}!`
+        setMessage(successMsg)
+        toast.success(successMsg)
         // Redirect to group page after success
         setTimeout(() => {
           window.location.href = `/group/${data.slug || groupInvitation.group_slug}`
         }, 2000)
       } else {
         const errorData = await response.json()
+        const errorMsg = errorData.detail || 'Failed to accept invitation'
         setStatus('invalid')
-        setMessage(errorData.detail || 'Failed to accept invitation')
+        setMessage(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (error) {
       console.error('[Invite] Error accepting invitation:', error)
+      const errorMsg = 'Failed to accept invitation'
       setStatus('invalid')
-      setMessage('Failed to accept invitation')
+      setMessage(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setIsAccepting(false)
     }

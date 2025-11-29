@@ -68,9 +68,10 @@ const AccessibilitySettings = lazy(() => import('./pages/AccessibilitySettings')
 const AdvancedSearch = lazy(() => import('./pages/AdvancedSearch').then(module => ({ default: module.AdvancedSearch })))
 const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module => ({ default: module.BookSuggestions })))
 const Messages = lazy(() => import('./pages/Messages').then(module => ({ default: module.Messages })))
+const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -237,6 +238,9 @@ function App() {
       setCurrentPage('book-suggestions')
     } else if (path === '/messages') {
       setCurrentPage('messages')
+    } else if (path === '/ai-policy') {
+      // AI Policy and ethical use guidelines
+      setCurrentPage('ai-policy')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -452,6 +456,9 @@ function App() {
     }
     if (currentPage === 'messages') {
       return <Messages />
+    }
+    if (currentPage === 'ai-policy') {
+      return <AIPolicy />
     }
 
     // Home page - new dedicated landing page

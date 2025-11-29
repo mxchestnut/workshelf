@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { MessageSquare, Send, Loader2 } from 'lucide-react'
+import { toast } from '../services/toast'
 
 interface Reaction {
   id: number
@@ -108,8 +109,11 @@ export function CommentsThread({ documentId }: Props) {
       setNewComment('')
       setPendingAnchor(null)
       await loadComments()
+      toast.success('Comment posted successfully')
     } catch (err: any) {
-      setError(err.message || 'Failed to post comment')
+      const errorMsg = err.message || 'Failed to post comment'
+      setError(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setSubmitting(false)
     }
@@ -129,7 +133,9 @@ export function CommentsThread({ documentId }: Props) {
       if (!response.ok) throw new Error('Failed to react')
       await loadComments()
     } catch (err: any) {
-      setError(err.message || 'Failed to react')
+      const errorMsg = err.message || 'Failed to react'
+      setError(errorMsg)
+      toast.error(errorMsg)
     }
   }
 

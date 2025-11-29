@@ -3,6 +3,8 @@
  * Handles Keycloak authentication, token management, and user info
  */
 
+import { toast } from './toast'
+
 export interface User {
   id: string
   email: string
@@ -123,7 +125,9 @@ class AuthService {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       console.error('[AuthService] Token exchange failed:', response.status, errorData)
-      throw new Error(errorData.error_description || 'Failed to exchange authorization code for token')
+      const errorMsg = errorData.error_description || 'Failed to exchange authorization code for token'
+      toast.error(`Login failed: ${errorMsg}`)
+      throw new Error(errorMsg)
     }
 
     const data = await response.json()
@@ -144,7 +148,9 @@ class AuthService {
     } catch {}
 
     // Fetch user info from our backend
-    return await this.fetchUserInfo()
+    const user = await this.fetchUserInfo()
+    toast.success('Successfully logged in')
+    return user
   }
 
   /**
@@ -243,6 +249,8 @@ class AuthService {
     this.user = null
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    
+    toast.success('Successfully logged out')
     
     // Redirect to Keycloak logout, then back to home page
     const redirectUri = window.location.origin + '/'

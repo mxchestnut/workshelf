@@ -76,6 +76,7 @@ export function Documents() {
       setLoading(false)
     } catch (err) {
       console.error('Error loading documents:', err)
+      toast.error('Failed to load documents')
       setLoading(false)
     }
   }
