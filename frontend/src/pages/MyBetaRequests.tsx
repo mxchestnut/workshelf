@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { Clock, CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 interface BetaRequestItem {
   id: number
@@ -70,11 +71,13 @@ export default function MyBetaRequests() {
         body: JSON.stringify({ status })
       })
       if (resp.ok) {
-        // Refresh lists
+        toast.success(`Request ${status}`)
         load()
+      } else {
+        toast.error('Failed to update request')
       }
     } catch (e) {
-      // Ignore errors for now
+      toast.error('Network error updating request')
     }
   }
 
@@ -86,8 +89,15 @@ export default function MyBetaRequests() {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'cancelled' })
       })
-      if (resp.ok) load()
-    } catch {}
+      if (resp.ok) {
+        toast.success('Request cancelled')
+        load()
+      } else {
+        toast.error('Failed to cancel request')
+      }
+    } catch {
+      toast.error('Network error cancelling request')
+    }
   }
 
   const markCompleted = async (id: number) => {
@@ -98,8 +108,15 @@ export default function MyBetaRequests() {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'completed' })
       })
-      if (resp.ok) load()
-    } catch {}
+      if (resp.ok) {
+        toast.success('Request marked completed')
+        load()
+      } else {
+        toast.error('Failed to mark completed')
+      }
+    } catch {
+      toast.error('Network error marking completed')
+    }
   }
 
   if (loading) {

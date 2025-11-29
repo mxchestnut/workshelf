@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { Send, FileText, Calendar, Users } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 export default function BetaRequest() {
   const [params] = useSearchParams()
@@ -45,13 +46,17 @@ export default function BetaRequest() {
         })
       })
       if (resp.ok) {
+        toast.success('Beta request sent!')
         setMessage('Request sent!')
         setForm({ project_title: '', word_count: '', desired_start: '', notes: '' })
       } else {
         const err = await resp.json().catch(() => ({}))
-        setMessage(err.detail || 'Failed to send request')
+        const msg = err.detail || 'Failed to send request'
+        toast.error(msg)
+        setMessage(msg)
       }
     } catch (e) {
+      toast.error('Network error sending request')
       setMessage('Network error')
     } finally {
       setSaving(false)

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { BookOpen, Star, Clock, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, MessageSquare, Send } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 interface PortfolioLink {
   title: string
@@ -112,6 +113,7 @@ export default function BetaProfileView() {
         body: JSON.stringify({ rating: newReview.rating, comment: newReview.comment })
       })
       if (resp.ok) {
+        toast.success('Review submitted!')
         setReviewMessage('Review submitted!')
         setNewReview({ rating: 5, comment: '' })
         // Reload reviews
@@ -127,9 +129,12 @@ export default function BetaProfileView() {
         }
       } else {
         const err = await resp.json().catch(() => ({}))
-        setReviewMessage(err.detail || 'Failed to submit review')
+        const msg = err.detail || 'Failed to submit review'
+        toast.error(msg)
+        setReviewMessage(msg)
       }
     } catch (e) {
+      toast.error('Network error submitting review')
       setReviewMessage('Network error submitting review')
     } finally {
       setSubmittingReview(false)
