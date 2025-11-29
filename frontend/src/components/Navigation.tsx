@@ -16,7 +16,8 @@ import {
   Users,
   BarChart,
   Settings,
-  Shield
+  Shield,
+  Download
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -264,6 +265,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <BarChart className="w-5 h-5" />
                   <span>Dashboard</span>
+                </button>
+
+                {/* Export Center - Data exports and Matrix integration */}
+                <button 
+                  onClick={() => navigateTo('/export-center')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/export-center')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Export Center</span>
                 </button>
 
                 {/* Admin - For group owners */}
