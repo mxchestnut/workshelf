@@ -60,13 +60,12 @@ services:
     restart: unless-stopped
 
   backend:
-    image: python:3.11-slim
+    image: workshelf-backend:latest
+    pull_policy: never
     platform: linux/amd64
     working_dir: /app
+    env_file: .env
     # Run comprehensive startup (table creation, migrations, staff grants) before launching API
-    command: sh -c "pip install -q -r requirements.txt && sh start.sh"
-    volumes:
-      - ./backend:/app
     ports:
       - "8000:8000"
     environment:
