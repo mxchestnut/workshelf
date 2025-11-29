@@ -133,3 +133,84 @@ async def get_list_documents(list_id: int, current_user: Dict[str, Any] = Depend
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     items = await ReadingListService.get_list_items(db, list_id, user.id)
     return {"items": items, "count": len(items)}
+
+
+# ============================================================================
+# Public Reading Lists Discovery
+# ============================================================================
+
+@router.get("/public/browse")
+async def browse_public_lists(
+    skip: int = 0, 
+    limit: int = 20, 
+    search: str | None = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Browse public reading lists. No auth required."""
+    lists, total = await ReadingListService.get_public_lists(db, skip, limit, search)
+    
+    # Add document count to each list
+    for item in lists:
+        item_count = len(await ReadingListService.get_list_items(db, item.id, None))
+        item.document_count = item_count
+    
+    return {"items": lists, "total": total, "skip": skip, "limit": limit}
+
+
+@router.get("/public/{list_id}")
+async def get_public_list(list_id: int, db: AsyncSession = Depends(get_db)):
+    """Get a public reading list by ID. No auth required."""
+    reading_list = await ReadingListService.get_public_list(db, list_id)
+    if not reading_list:
+        raise HTTPException(status_code=404, detail="Public reading list not found")
+    
+    # Add document count
+    item_count = len(await ReadingListService.get_list_items(db, list_id, None))
+    reading_list.document_count = item_count
+    
+    return reading_list
+
+
+@router.get("/public/{list_id}/documents")
+async def get_public_list_documents(list_id: int, db: AsyncSession = Depends(get_db)):
+    """Get documents in a public reading list. No auth required."""
+    # First verify the list is public
+    reading_list = await ReadingListService.get_public_list(db, list_id)
+    if not reading_list:
+        raise HTTPException(status_code=404, detail="Public reading list not found")
+    
+    items = await ReadingListService.get_list_items(db, list_id, None)
+    return {"items": items, "count": len(items)}
+
+
+@router.post("/{list_id}/share")
+async def get_share_link(
+    list_id: int, 
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a shareable link for a reading list. Makes list public if it wasn't."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    reading_list = await ReadingListService.get_list(db, list_id, user.id)
+    
+    if not reading_list:
+        raise HTTPException(status_code=404, detail="Reading list not found")
+    
+    # Make list public if it wasn't
+    if not reading_list.is_public:
+        reading_list = await ReadingListService.update_list(
+            db, list_id, user.id, 
+            reading_list.name, 
+            reading_list.description, 
+            is_public=True
+        )
+    
+    # Generate share link (assuming workshelf.dev is the domain)
+    share_url = f"https://workshelf.dev/reading-lists/public/{list_id}"
+    
+    return {
+        "share_url": share_url,
+        "list_id": list_id,
+        "is_public": True
+    }
+

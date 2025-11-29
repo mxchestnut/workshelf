@@ -299,3 +299,56 @@ class ReadingListService:
         
         result = await db.execute(stmt)
         return list(result.scalars().all())
+    
+    @staticmethod
+    async def get_public_lists(
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 20,
+        search: Optional[str] = None
+    ) -> tuple[List[ReadingList], int]:
+        """Get public reading lists for discovery."""
+        stmt = select(ReadingList).filter(ReadingList.is_public == True)
+        
+        if search:
+            search_term = f"%{search}%"
+            stmt = stmt.filter(
+                (ReadingList.name.ilike(search_term)) |
+                (ReadingList.description.ilike(search_term))
+            )
+        
+        # Order by most recently updated
+        stmt = stmt.order_by(ReadingList.updated_at.desc()).offset(skip).limit(limit)
+        
+        result = await db.execute(stmt)
+        items = list(result.scalars().all())
+        
+        # Count total
+        count_stmt = select(func.count()).select_from(ReadingList).filter(
+            ReadingList.is_public == True
+        )
+        if search:
+            search_term = f"%{search}%"
+            count_stmt = count_stmt.filter(
+                (ReadingList.name.ilike(search_term)) |
+                (ReadingList.description.ilike(search_term))
+            )
+        count_result = await db.execute(count_stmt)
+        total = count_result.scalar()
+        
+        return items, total
+    
+    @staticmethod
+    async def get_public_list(
+        db: AsyncSession,
+        list_id: int
+    ) -> Optional[ReadingList]:
+        """Get a public reading list by ID."""
+        stmt = select(ReadingList).filter(
+            and_(
+                ReadingList.id == list_id,
+                ReadingList.is_public == True
+            )
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()

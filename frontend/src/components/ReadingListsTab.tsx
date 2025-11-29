@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Save, X, Loader2, Edit2, Trash2, List as ListIcon } from 'lucide-react'
+import { Plus, Save, X, Loader2, Edit2, Trash2, List as ListIcon, Share2, Copy, Check } from 'lucide-react'
+import { toast } from '../services/toast'
 
 interface ReadingList {
   id: number
@@ -45,6 +46,8 @@ export function ReadingListsTab({
   const [listDocuments, setListDocuments] = useState<ListDocument[]>([])
   const [savingList, setSavingList] = useState(false)
   const [deletingListId, setDeletingListId] = useState<number | null>(null)
+  const [shareModal, setShareModal] = useState<{ listId: number, shareUrl: string } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return
@@ -99,6 +102,38 @@ export function ReadingListsTab({
     setListDocuments(prev => prev.filter(doc => doc.id !== documentId))
     if (selectedList) {
       setSelectedList({ ...selectedList, document_count: selectedList.document_count - 1 })
+    }
+  }
+
+  const handleShareList = async (listId: number) => {
+    try {
+      const response = await fetch(`/api/v1/reading-lists/${listId}/share`, {
+        method: 'POST'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setShareModal({ listId, shareUrl: data.share_url })
+        toast.success('Share link generated')
+      } else {
+        toast.error('Failed to generate share link')
+      }
+    } catch (error) {
+      console.error('Error sharing list:', error)
+      toast.error('Failed to generate share link')
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!shareModal) return
+    
+    try {
+      await navigator.clipboard.writeText(shareModal.shareUrl)
+      setCopied(true)
+      toast.success('Link copied to clipboard')
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      toast.error('Failed to copy link')
     }
   }
 
@@ -199,6 +234,13 @@ export function ReadingListsTab({
                   <span>{selectedList.is_public ? 'Public' : 'Private'}</span>
                 </div>
               </div>
+              <button
+                onClick={() => handleShareList(selectedList.id)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
             </div>
             
             {listDocuments.length === 0 ? (
@@ -319,9 +361,17 @@ export function ReadingListsTab({
                     </div>
                     <button
                       onClick={() => handleViewDocuments(list)}
-                      className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                      className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center justify-center gap-2"
                     >
+                      <ListIcon className="w-4 h-4" />
                       View Documents
+                    </button>
+                    <button
+                      onClick={() => handleShareList(list.id)}
+                      className="mt-2 w-full px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors text-sm flex items-center justify-center gap-2"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share
                     </button>
                   </>
                 )}
@@ -329,6 +379,51 @@ export function ReadingListsTab({
             ))}
           </div>
         )
+      )}
+
+      {/* Share Modal */}
+      {shareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card border border-border rounded-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-semibold mb-4">Share Reading List</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Anyone with this link can view your reading list. The list is now public.
+            </p>
+            <div className="flex gap-2 mb-6">
+              <input
+                type="text"
+                value={shareModal.shareUrl}
+                readOnly
+                className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+              />
+              <button
+                onClick={handleCopyLink}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setShareModal(null)
+                setCopied(false)
+              }}
+              className="w-full px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
