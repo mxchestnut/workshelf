@@ -359,6 +359,19 @@ export default function BetaMarketplace() {
                     )}
                   </div>
                 )}
+                {profile.specialties && profile.specialties.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Users className="w-4 h-4 text-primary" />
+                    {profile.specialties.slice(0, 4).map(spec => (
+                      <span key={spec} className="px-2 py-1 rounded text-xs font-medium bg-muted text-foreground">
+                        {spec}
+                      </span>
+                    ))}
+                    {profile.specialties.length > 4 && (
+                      <span className="text-xs text-muted-foreground">+{profile.specialties.length - 4} more</span>
+                    )}
+                  </div>
+                )}
                 
                 {profile.turnaround_days && (
                   <div className="flex items-center gap-2">

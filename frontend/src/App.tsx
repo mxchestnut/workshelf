@@ -56,6 +56,7 @@ const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
 const BetaFeed = lazy(() => import('./pages/BetaFeed'))
 const MyBetaProfile = lazy(() => import('./pages/MyBetaProfile'))
 const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
+const BetaProfileView = lazy(() => import('./pages/BetaProfileView'))
 const Invite = lazy(() => import('./pages/Invite'))
 const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 const ContentIntegrity = lazy(() => import('./pages/ContentIntegrity').then(module => ({ default: module.ContentIntegrity })))
@@ -189,6 +190,9 @@ function App() {
       setCurrentPage('my-beta-profile')
     } else if (path === '/beta-marketplace') {
       setCurrentPage('beta-marketplace')
+    } else if (path.match(/^\/profile\/\d+$/)) {
+      // Beta profile viewer: /profile/:userId
+      setCurrentPage('beta-profile')
     } else if (path === '/free-books') {
       setCurrentPage('free-books')
     } else if (path === '/upload-book') {
@@ -380,6 +384,10 @@ function App() {
 
     if (currentPage === 'beta-marketplace') {
       return <BetaMarketplace />
+    }
+    
+    if (currentPage === 'beta-profile') {
+      return <BetaProfileView />
     }
 
     if (currentPage === 'free-books') {
