@@ -11,6 +11,7 @@ import {
   Check,
   X
 } from 'lucide-react'
+import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -66,6 +67,7 @@ export function FolderTree({ onSelectFolder, selectedFolderId }: Props) {
     }
   }
 
+        
   const createFolder = async (name: string, parentId: number | null) => {
     try {
       const token = getToken()
@@ -86,6 +88,7 @@ export function FolderTree({ onSelectFolder, selectedFolderId }: Props) {
       setNewFolderName('')
     } catch (err: any) {
       setError(err.message || 'Failed to create folder')
+      toast.error('Failed to create folder')
     }
   }
 
@@ -106,6 +109,7 @@ export function FolderTree({ onSelectFolder, selectedFolderId }: Props) {
       setEditFolderName('')
     } catch (err: any) {
       setError(err.message || 'Failed to update folder')
+      toast.error('Failed to rename folder')
     }
   }
 
@@ -122,8 +126,10 @@ export function FolderTree({ onSelectFolder, selectedFolderId }: Props) {
       if (selectedFolderId === id) {
         onSelectFolder(null)
       }
+      toast.success('Folder deleted')
     } catch (err: any) {
       setError(err.message || 'Failed to delete folder')
+      toast.error('Failed to delete folder')
     }
   }
 
