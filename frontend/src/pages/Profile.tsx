@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2 } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
-type ProfileTab = 'general' | 'beta' | 'writer'
+type ProfileTab = 'general' | 'beta' | 'writer' | 'connections'
 
 interface UserProfile {
   id: number
@@ -42,6 +42,22 @@ export function Profile() {
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
   const [activeTab, setActiveTab] = useState<ProfileTab>('general')
 
+  // Connections state
+  interface ConnectionUser {
+    id: number
+    email: string
+    full_name: string | null
+    avatar_url: string | null
+    followed_at: string
+  }
+
+  const [followers, setFollowers] = useState<ConnectionUser[]>([])
+  const [following, setFollowing] = useState<ConnectionUser[]>([])
+  const [followersTotal, setFollowersTotal] = useState(0)
+  const [followingTotal, setFollowingTotal] = useState(0)
+  const [connectionsLoading, setConnectionsLoading] = useState(false)
+  const [unfollowingId, setUnfollowingId] = useState<number | null>(null)
+
   // Form state
   const [formData, setFormData] = useState({
     username: '',
@@ -60,6 +76,12 @@ export function Profile() {
     loadProfile()
     loadAvailableInterests()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'connections') {
+      loadConnections()
+    }
+  }, [activeTab])
 
   const loadAvailableInterests = async () => {
     try {
@@ -252,6 +274,67 @@ export function Profile() {
     }))
   }
 
+  // Connections functions
+  const loadConnections = async () => {
+    setConnectionsLoading(true)
+    try {
+      const token = authService.getToken()
+      if (!token) return
+
+      // Load followers
+      const followersRes = await fetch(`${API_URL}/api/v1/relationships/followers`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (followersRes.ok) {
+        const followersData = await followersRes.json()
+        setFollowers(followersData.followers || [])
+        setFollowersTotal(followersData.total || 0)
+      }
+
+      // Load following
+      const followingRes = await fetch(`${API_URL}/api/v1/relationships/following`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (followingRes.ok) {
+        const followingData = await followingRes.json()
+        setFollowing(followingData.following || [])
+        setFollowingTotal(followingData.total || 0)
+      }
+    } catch (error) {
+      console.error('Failed to load connections:', error)
+    } finally {
+      setConnectionsLoading(false)
+    }
+  }
+
+  const unfollowUser = async (userId: number) => {
+    setUnfollowingId(userId)
+    try {
+      const token = authService.getToken()
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/relationships/unfollow/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        // Remove from following list
+        setFollowing(prev => prev.filter(u => u.id !== userId))
+        setFollowingTotal(prev => prev - 1)
+      }
+    } catch (error) {
+      console.error('Failed to unfollow user:', error)
+    } finally {
+      setUnfollowingId(null)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -387,6 +470,20 @@ export function Profile() {
           >
             <BookOpen className="w-4 h-4" />
             Beta Reader Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'connections' 
+                ? 'text-foreground' 
+                : 'text-muted-foreground hover:text-white'
+            }`}
+            style={{ 
+              borderColor: activeTab === 'connections' ? 'hsl(var(--primary))' : 'transparent'
+            }}
+          >
+            <UsersIcon className="w-4 h-4" />
+            Connections
           </button>
         </nav>
       </div>
@@ -735,6 +832,124 @@ export function Profile() {
               </div>
             </button>
           </div>
+        </div>
+        )}
+
+        {activeTab === 'connections' && (
+        <div className="space-y-6">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-card border border-border rounded-lg p-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">{followersTotal}</div>
+                <div className="text-sm text-muted-foreground mt-1">Followers</div>
+              </div>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">{followingTotal}</div>
+                <div className="text-sm text-muted-foreground mt-1">Following</div>
+              </div>
+            </div>
+          </div>
+
+          {connectionsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Followers */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <UsersIcon className="w-5 h-5 text-primary" />
+                  Followers ({followersTotal})
+                </h3>
+                {followers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No followers yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {followers.map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-background rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.full_name || user.email} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              <User className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium">{user.full_name || user.email}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Followed {formatDate(user.followed_at)}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => window.location.href = `/users/${user.id}`}
+                          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                        >
+                          View
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Following */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <UsersIcon className="w-5 h-5 text-primary" />
+                  Following ({followingTotal})
+                </h3>
+                {following.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Not following anyone yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {following.map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-background rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.full_name || user.email} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              <User className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium">{user.full_name || user.email}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Following since {formatDate(user.followed_at)}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => unfollowUser(user.id)}
+                          disabled={unfollowingId === user.id}
+                          className="flex items-center gap-2 px-3 py-1 text-sm bg-red-500/10 text-red-500 border border-red-500/20 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                        >
+                          {unfollowingId === user.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <UserMinus className="w-4 h-4" />
+                              Unfollow
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         )}
     </div>
