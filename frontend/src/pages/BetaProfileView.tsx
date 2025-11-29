@@ -93,8 +93,8 @@ export default function BetaProfileView() {
   }
 
   const requestBetaRead = () => {
-    // Navigate to a request creation page if exists; fallback to messaging
-    window.location.href = `/me?request_beta_for=${profile?.user_id}`
+    if (!profile) return
+    window.location.href = `/beta-request?user_id=${profile.user_id}`
   }
 
   const submitReview = async () => {
