@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { User, authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle } from 'lucide-react'
+import { toast } from '../services/toast'
 
 interface BetaProfile {
   id: number
@@ -90,9 +91,13 @@ export default function BetaMarketplace() {
         setProfiles(data.profiles)
         setTotal(data.total)
         setTotalPages(data.total_pages)
+        if ((selectedSpecialties.length > 0 || !!sortBy) && Array.isArray(data.profiles)) {
+          toast.success('Marketplace filters applied')
+        }
       }
     } catch (error) {
       console.error('Error loading profiles:', error)
+      toast.error('Failed to load marketplace profiles')
     } finally {
       setLoading(false)
     }
