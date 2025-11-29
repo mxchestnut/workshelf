@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye, ShieldAlert } from 'lucide-react'
+import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye, ShieldAlert, Mail, TrendingUp } from 'lucide-react'
 import { RoleEditor } from '../components/RoleEditor'
 import { MemberRoleManager } from '../components/MemberRoleManager'
 import ModerationLog from '../components/ModerationLog'
@@ -130,7 +130,7 @@ export default function GroupAdmin() {
   const [roles, setRoles] = useState<GroupRole[]>([])
   const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])
   const [groupTheme, setGroupTheme] = useState<GroupTheme | null>(null)
-  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains' | 'theme' | 'moderation'>('members')
+  const [activeTab, setActiveTab] = useState<'members' | 'roles' | 'settings' | 'publications' | 'domains' | 'theme' | 'moderation' | 'invitations' | 'analytics'>('members')
   const [newDomain, setNewDomain] = useState('')
   const [domainError, setDomainError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -139,6 +139,8 @@ export default function GroupAdmin() {
   const [editingRole, setEditingRole] = useState<GroupRole | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([])
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false)
 
   // Extract group slug from URL
   useEffect(() => {
@@ -268,10 +270,39 @@ export default function GroupAdmin() {
     }
   }
 
-  // Load invitations when activeTab changes to members
+  const loadAnalytics = async () => {
+    if (!groupId) return
+    
+    setLoadingAnalytics(true)
+    try {
+      const token = authService.getAccessToken()
+      const res = await fetch(`${API_URL}/api/v1/groups/${groupId}/analytics`, {
+        credentials: 'include',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setAnalyticsData(data)
+      }
+    } catch (err) {
+      console.error('Failed to load analytics:', err)
+    } finally {
+      setLoadingAnalytics(false)
+    }
+  }
+
+  // Load invitations when activeTab changes to members or invitations
   useEffect(() => {
-    if (activeTab === 'members' && groupId) {
+    if ((activeTab === 'members' || activeTab === 'invitations') && groupId) {
       loadInvitations()
+    }
+  }, [activeTab, groupId])
+
+  // Load analytics when activeTab changes to analytics
+  useEffect(() => {
+    if (activeTab === 'analytics' && groupId) {
+      loadAnalytics()
     }
   }, [activeTab, groupId])
 
@@ -312,6 +343,27 @@ export default function GroupAdmin() {
       }
     } catch (err) {
       setError('Failed to remove member')
+    }
+  }
+
+  const revokeInvitation = async (invitationId: number) => {
+    if (!confirm('Are you sure you want to revoke this invitation?')) return
+
+    try {
+      const token = authService.getAccessToken()
+      const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations/${invitationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        setSuccess('Invitation revoked')
+        loadInvitations()
+      } else {
+        setError('Failed to revoke invitation')
+      }
+    } catch (err) {
+      setError('Failed to revoke invitation')
     }
   }
 
@@ -636,6 +688,26 @@ export default function GroupAdmin() {
           >
             <ShieldAlert className="w-5 h-5" />
             Audit Log
+          </button>
+          <button
+            onClick={() => setActiveTab('invitations')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'invitations' ? 'text-white border-b-2' : 'text-gray-400'
+            }`}
+            style={activeTab === 'invitations' ? { borderColor: '#B34B0C' } : {}}
+          >
+            <UserPlus className="w-5 h-5" />
+            Invitations
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'analytics' ? 'text-white border-b-2' : 'text-gray-400'
+            }`}
+            style={activeTab === 'analytics' ? { borderColor: '#B34B0C' } : {}}
+          >
+            <Globe className="w-5 h-5" />
+            Analytics
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -1738,6 +1810,189 @@ export default function GroupAdmin() {
                   Save Settings
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'invitations' && (
+          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Manage Invitations</h2>
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="px-4 py-2 rounded-lg font-medium text-white flex items-center gap-2"
+                style={{ backgroundColor: '#B34B0C' }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Send Invitations
+              </button>
+            </div>
+
+            {pendingInvitations.length === 0 ? (
+              <div className="text-center py-12">
+                <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+                <p className="text-gray-400 mb-2">No pending invitations</p>
+                <p className="text-sm text-gray-500">Click "Send Invitations" to invite members to your group</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pendingInvitations.map((invitation) => (
+                  <div
+                    key={invitation.id}
+                    className="p-4 rounded-lg flex items-center justify-between"
+                    style={{ backgroundColor: '#37322E' }}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <Mail className="w-4 h-4 text-gray-400" />
+                        <span className="text-white font-medium">{invitation.email}</span>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: '#7C3306', color: '#FFF' }}>
+                          {invitation.role}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-400 ml-7">
+                        Invited by {invitation.inviter_name} • Expires {new Date(invitation.expires_at).toLocaleDateString()}
+                      </div>
+                      {invitation.message && (
+                        <div className="text-sm text-gray-300 ml-7 mt-1 italic">
+                          "{invitation.message}"
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => revokeInvitation(invitation.id)}
+                      className="px-3 py-1.5 rounded text-sm font-medium text-white hover:opacity-80 transition-opacity"
+                      style={{ backgroundColor: '#DC2626' }}
+                    >
+                      Revoke
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'analytics' && groupId && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <h2 className="text-xl font-bold text-white mb-6">Group Analytics</h2>
+              
+              {loadingAnalytics ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-3"></div>
+                  <p className="text-gray-400">Loading analytics...</p>
+                </div>
+              ) : analyticsData ? (
+                <>
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Followers</span>
+                        <Users className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {analyticsData.followers?.total || 0}
+                      </div>
+                      <div className="text-xs" style={{ color: analyticsData.followers?.new > 0 ? '#10B981' : '#6B7280' }}>
+                        {analyticsData.followers?.new > 0 && '+'}{analyticsData.followers?.new || 0} new
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Members</span>
+                        <Users className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {analyticsData.members?.total || 0}
+                      </div>
+                      <div className="text-xs" style={{ color: analyticsData.members?.new > 0 ? '#10B981' : '#6B7280' }}>
+                        {analyticsData.members?.new > 0 && '+'}{analyticsData.members?.new || 0} new
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Posts</span>
+                        <FileText className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {analyticsData.posts?.total || 0}
+                      </div>
+                      <div className="text-xs" style={{ color: analyticsData.posts?.new > 0 ? '#10B981' : '#6B7280' }}>
+                        {analyticsData.posts?.new > 0 && '+'}{analyticsData.posts?.new || 0} new
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-400">Engagement</span>
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {(analyticsData.engagement?.comments || 0) + 
+                         (analyticsData.engagement?.reactions || 0) + 
+                         (analyticsData.engagement?.shares || 0)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {analyticsData.engagement?.comments || 0} comments, {analyticsData.engagement?.reactions || 0} reactions
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Growth Rate Cards */}
+                  {analyticsData.growth_rates && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                        <div className="text-sm text-gray-400 mb-1">Follower Growth</div>
+                        <div className="text-lg font-bold" style={{ color: analyticsData.growth_rates.followers >= 0 ? '#10B981' : '#EF4444' }}>
+                          {analyticsData.growth_rates.followers >= 0 && '+'}{analyticsData.growth_rates.followers.toFixed(1)}%
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                        <div className="text-sm text-gray-400 mb-1">Member Growth</div>
+                        <div className="text-lg font-bold" style={{ color: analyticsData.growth_rates.members >= 0 ? '#10B981' : '#EF4444' }}>
+                          {analyticsData.growth_rates.members >= 0 && '+'}{analyticsData.growth_rates.members.toFixed(1)}%
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                        <div className="text-sm text-gray-400 mb-1">Post Growth</div>
+                        <div className="text-lg font-bold" style={{ color: analyticsData.growth_rates.posts >= 0 ? '#10B981' : '#EF4444' }}>
+                          {analyticsData.growth_rates.posts >= 0 && '+'}{analyticsData.growth_rates.posts.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Top Posts */}
+                  {analyticsData.top_posts && analyticsData.top_posts.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-3">Top Posts</h3>
+                      <div className="space-y-2">
+                        {analyticsData.top_posts.map((post: any, index: number) => (
+                          <div key={post.id} className="p-4 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#37322E' }}>
+                            <div className="text-2xl font-bold text-gray-500">#{index + 1}</div>
+                            <div className="flex-1">
+                              <div className="text-white font-medium mb-1">{post.title}</div>
+                              <div className="text-sm text-gray-400">
+                                {post.reaction_count || 0} reactions • {post.comment_count || 0} comments
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <Globe className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+                  <p className="mb-2">No analytics data available</p>
+                  <p className="text-sm text-gray-500">Analytics will appear once your group has some activity</p>
+                </div>
+              )}
             </div>
           </div>
         )}

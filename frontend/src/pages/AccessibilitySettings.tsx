@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react'
 import { 
   Eye, 
   Type, 
-  Palette, 
   Keyboard, 
   Loader2,
   CheckCircle,

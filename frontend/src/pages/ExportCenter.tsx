@@ -14,7 +14,7 @@ import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
 import { 
   Download, FileText, Package, Shield, Clock, CheckCircle, 
-  XCircle, AlertCircle, RefreshCw, Trash2, ExternalLink,
+  XCircle, AlertCircle, RefreshCw, Trash2,
   MessageSquare, Send
 } from 'lucide-react'
 import { toast } from '../services/toast'
