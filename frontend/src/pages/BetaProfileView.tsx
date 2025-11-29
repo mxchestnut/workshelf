@@ -89,8 +89,11 @@ export default function BetaProfileView() {
   }
 
   const contactBetaReader = () => {
-    // If platform messaging exists, navigate to chat with user
-    window.location.href = `/me?chat_with=${profile?.user_id}`
+    if (!profile) return
+    // Navigate to messages and dispatch event to open chat popup for this user
+    window.history.pushState({}, '', '/messages')
+    window.dispatchEvent(new CustomEvent('openChatByUserId', { detail: { userId: profile.user_id, displayName: profile.display_name } }))
+    toast.success('Opening conversation...')
   }
 
   const requestBetaRead = () => {

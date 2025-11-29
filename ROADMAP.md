@@ -6,23 +6,27 @@ This document tracks active initiatives, status, and next actions. Remove items 
 
 - Contact → Chat/Messaging
   - Goal: Wire the “Contact” action to a real chat or messaging route.
-  - Status: Planning
+  - Status: In progress
+  - Completed:
+    - Added `'/messages'` route in `frontend/src/App.tsx` and lazy load `Messages` page.
+    - Updated `BetaProfileView` “Contact” button to navigate to `/messages` and dispatch chat-open event with target userId.
   - Next:
-    - Decide route: `/messages` page or inline chat modal.
-    - Backend check: available endpoints for threads/messages.
-    - Minimal UI: conversation list + thread view.
+    - Ensure `ChatManager` listens for `openChatByUserId` and opens the appropriate DM.
+    - Add “Contact” buttons in other relevant views (cards, marketplace).
 
 - Marketplace Specialties/Sort Verification
   - Goal: Confirm backend accepts `specialties` and `sort` query params used by `BetaMarketplace`.
-  - Status: Pending verification
+  - Status: In progress
+  - Completed:
+    - Added toasts in `BetaMarketplace.tsx` to signal filters applied and capture load errors.
   - Next:
-    - Hit endpoint with sample params; verify response shape and filtering.
-    - Adjust frontend param names if needed.
+    - Hit `/api/v1/beta-profiles/marketplace` with sample `specialties` and `sort` params; log response shape during dev.
+    - Adjust frontend param names if needed; document findings here.
 
 - Sitewide Toasts
   - Goal: Ensure all user-facing flows surface success/error notifications consistently.
   - Status: In progress
-  - Done: Folders CRUD, Beta Requests (create/accept/decline/cancel/complete), Beta Reviews, AI Assistance, UploadBook, Accessibility, Export Center.
+  - Done: Folders CRUD, Beta Requests (create/accept/decline/cancel/complete), Beta Reviews, AI Assistance, UploadBook, Accessibility, Export Center, Marketplace filters.
   - Next:
     - Documents: create/save/delete, sharing actions.
     - Comments: post/reaction errors and successes.
