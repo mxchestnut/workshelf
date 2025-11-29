@@ -211,6 +211,18 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 </p>
                 
                 <button 
+                  onClick={() => navigateTo('/ai-assistance')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/ai-assistance')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <PenTool className="w-5 h-5" />
+                  <span>Writing Prompts</span>
+                </button>
+                
+                <button 
                   onClick={() => navigateTo('/beta-marketplace')}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive('/beta-marketplace')

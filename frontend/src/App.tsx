@@ -59,9 +59,10 @@ const BetaMarketplace = lazy(() => import('./pages/BetaMarketplace'))
 const Invite = lazy(() => import('./pages/Invite'))
 const PendingApproval = lazy(() => import('./pages/PendingApproval'))
 const ContentIntegrity = lazy(() => import('./pages/ContentIntegrity').then(module => ({ default: module.ContentIntegrity })))
+const AIAssistance = lazy(() => import('./pages/AIAssistance').then(module => ({ default: module.AIAssistance })))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -204,6 +205,9 @@ function App() {
     } else if (path === '/content-integrity') {
       // Content integrity checking page
       setCurrentPage('content-integrity')
+    } else if (path === '/ai-assistance') {
+      // AI writing prompts and brainstorming tools
+      setCurrentPage('ai-assistance')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -384,6 +388,10 @@ function App() {
 
     if (currentPage === 'content-integrity') {
       return <ContentIntegrity />
+    }
+
+    if (currentPage === 'ai-assistance') {
+      return <AIAssistance />
     }
 
     // Home page - new dedicated landing page
