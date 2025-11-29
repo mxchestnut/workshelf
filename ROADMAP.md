@@ -68,11 +68,11 @@ These features have complete backend APIs but need frontend implementation:
   - Recent follow activity feed ✅
   - Next: Pagination, interest-based suggestions, mutual-only filter, UI polish
 
-7. **Reading Lists** (has basic component, needs full page)
+7. **Reading Lists** ✅ (has full sharing and public browse)
    - Create custom reading lists ✅ (basic UI exists)
    - Manage reading lists ✅ (basic UI exists)
-   - Share reading lists (add share UI)
-   - Public reading lists browse page
+   - Share reading lists ✅ (share modal with copy link)
+   - Public reading lists browse page ✅ (/reading-lists/browse)
 
 8. **Activity Feed** (has basic Feed page)
    - Personal activity feed ✅ (exists)

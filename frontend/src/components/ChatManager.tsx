@@ -5,6 +5,7 @@
  */
 import { useState, useEffect } from 'react'
 import { ChatPopup } from './ChatPopup'
+import { useMatrix } from '../hooks/useMatrixClient'
 
 interface Chat {
   id: string
@@ -16,20 +17,30 @@ interface Chat {
 
 export function ChatManager() {
   const [openChats, setOpenChats] = useState<Chat[]>([])
+  const { openChat: openMatrixChat, isReady } = useMatrix()
 
   useEffect(() => {
     // Listen for custom events to open new chats
     const handleOpenChat = (event: CustomEvent) => {
       const { roomId, userName, userAvatar } = event.detail
-      openChat(roomId, userName, userAvatar)
+      openChatWindow(roomId, userName, userAvatar)
     }
 
-    const handleOpenChatByUserId = (event: CustomEvent) => {
-      const { userId, displayName } = event.detail
-      // For now, open chat by constructing a DM room ID or finding existing room
-      // This is a placeholder; in production you'd query Matrix for the DM room
-      const dmRoomId = `dm-${userId}` // Placeholder room ID
-      openChat(dmRoomId, displayName || `User ${userId}`)
+    const handleOpenChatByUserId = async (event: CustomEvent) => {
+      const { userId, displayName, avatarUrl } = event.detail
+      
+      if (!isReady) {
+        console.warn('[ChatManager] Matrix client not ready yet')
+        return
+      }
+      
+      // Use the useMatrix hook's openChat function to find/create DM room
+      // This will trigger 'openChat' event once room is ready
+      try {
+        await openMatrixChat(userId, displayName || `User ${userId}`, avatarUrl)
+      } catch (error) {
+        console.error('[ChatManager] Failed to open chat:', error)
+      }
     }
 
     window.addEventListener('openChat', handleOpenChat as EventListener)
@@ -39,9 +50,9 @@ export function ChatManager() {
       window.removeEventListener('openChat', handleOpenChat as EventListener)
       window.removeEventListener('openChatByUserId', handleOpenChatByUserId as EventListener)
     }
-  }, [openChats])
+  }, [openChats, isReady, openMatrixChat])
 
-  const openChat = (roomId: string, recipientName: string, recipientAvatar?: string) => {
+  const openChatWindow = (roomId: string, recipientName: string, recipientAvatar?: string) => {
     // Check if chat already open
     const existingChat = openChats.find(chat => chat.roomId === roomId)
     
