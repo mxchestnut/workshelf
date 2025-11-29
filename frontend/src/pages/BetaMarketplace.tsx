@@ -144,6 +144,13 @@ export default function BetaMarketplace() {
     window.location.href = `/profile/${userId}`
   }
 
+  const contactBetaReader = (e: React.MouseEvent, profile: BetaProfile) => {
+    e.stopPropagation()
+    window.history.pushState({}, '', '/messages')
+    window.dispatchEvent(new CustomEvent('openChatByUserId', { detail: { userId: profile.user_id, displayName: profile.display_name } }))
+    toast.success('Opening conversation...')
+  }
+
   if (loading && profiles.length === 0) {
     return (
       <div className="min-h-screen bg-background">
@@ -423,16 +430,25 @@ export default function BetaMarketplace() {
                 
                 {profile.turnaround_days && (
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="text-muted-foreground">Typical turnaround: {profile.turnaround_days} days</span>
-                  </div>
-                )}
-              </div>
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="text-muted-foreground">Typical turnaround: {profile.turnaround_days} days</span>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
 
-        {/* Empty State */}
+            {/* Contact Button */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <button
+                onClick={(e) => contactBetaReader(e, profile)}
+                className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Contact
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>        {/* Empty State */}
         {profiles.length === 0 && !loading && (
           <div className="text-center py-12">
             <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />

@@ -5,14 +5,14 @@ This document tracks active initiatives, status, and next actions. Remove items 
 ## Active Initiatives
 
 - Contact → Chat/Messaging
-  - Goal: Wire the “Contact” action to a real chat or messaging route.
+  - Goal: Wire the "Contact" action to a real chat or messaging route.
   - Status: In progress
   - Completed:
     - Added `'/messages'` route in `frontend/src/App.tsx` and lazy load `Messages` page.
-    - Updated `BetaProfileView` “Contact” button to navigate to `/messages` and dispatch chat-open event with target userId.
+    - Updated `BetaProfileView` "Contact" button to navigate to `/messages` and dispatch chat-open event with target userId.
+    - `ChatManager` now listens for `openChatByUserId` and opens the appropriate DM.
   - Next:
-    - Ensure `ChatManager` listens for `openChatByUserId` and opens the appropriate DM.
-    - Add “Contact” buttons in other relevant views (cards, marketplace).
+    - Add "Contact" buttons in marketplace profile cards and other relevant views.
 
 - Marketplace Specialties/Sort Verification
   - Goal: Confirm backend accepts `specialties` and `sort` query params used by `BetaMarketplace`.
