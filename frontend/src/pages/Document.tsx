@@ -7,6 +7,7 @@ import { Editor } from '../components/Editor'
 import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
 import { ArrowLeft, Trash2, ExternalLink, Sparkles } from 'lucide-react'
 import '../components/Editor.css'
+import { CommentsThread } from '../components/CommentsThread'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
@@ -418,6 +419,13 @@ export function Document() {
           autoSave={true}
           placeholder="Start writing your story..."
         />
+      </div>
+
+      {/* Comments */}
+      <div className="border-t border-neutral-light bg-white px-4 py-3">
+        <div className="max-w-7xl mx-auto">
+          <CommentsThread documentId={document.id} />
+        </div>
       </div>
 
       {/* Writing Prompts Sidebar */}
