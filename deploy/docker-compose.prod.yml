@@ -91,22 +91,19 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: node:20-alpine
+    # Build and run the production nginx image (multi-stage Dockerfile inside ../frontend)
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+        CACHE_BUST: ${CACHE_BUST-1}
+    image: workshelf-frontend:latest
     platform: linux/amd64
-    working_dir: /app
-    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
-    volumes:
-      # Mount frontend source (relative to this deploy directory)
-      # Use parent directory path so container sees actual project frontend
-      - ../frontend:/app
     ports:
-      - "5173:5173"
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
-      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
-      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
-      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
-      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER}
+      # Keep external port consistent with previous 5173 usage
+      - "5173:80"
     depends_on:
       - backend
     networks:
