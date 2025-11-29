@@ -24,10 +24,20 @@ export function ChatManager() {
       openChat(roomId, userName, userAvatar)
     }
 
+    const handleOpenChatByUserId = (event: CustomEvent) => {
+      const { userId, displayName } = event.detail
+      // For now, open chat by constructing a DM room ID or finding existing room
+      // This is a placeholder; in production you'd query Matrix for the DM room
+      const dmRoomId = `dm-${userId}` // Placeholder room ID
+      openChat(dmRoomId, displayName || `User ${userId}`)
+    }
+
     window.addEventListener('openChat', handleOpenChat as EventListener)
+    window.addEventListener('openChatByUserId', handleOpenChatByUserId as EventListener)
 
     return () => {
       window.removeEventListener('openChat', handleOpenChat as EventListener)
+      window.removeEventListener('openChatByUserId', handleOpenChatByUserId as EventListener)
     }
   }, [openChats])
 
