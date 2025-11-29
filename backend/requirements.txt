@@ -16,6 +16,8 @@ python-jose[cryptography]==3.4.0
 cryptography>=41.0.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.18
+# Security: pin ecdsa to patched version (python-jose dependency)
+ecdsa>=0.20.0
 
 # Payment Processing
 stripe==11.3.0
@@ -50,3 +52,5 @@ httpx==0.25.2
 # Development
 python-dotenv==1.0.0
 requests==2.32.4  # For Keycloak setup script
+# Security: pin urllib3 to patched version (requests/boto3 dependency)
+urllib3>=2.5.0
