@@ -67,7 +67,7 @@ services:
     env_file: .env
     # Run comprehensive startup (table creation, migrations, staff grants) before launching API
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
