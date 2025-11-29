@@ -9,6 +9,7 @@ from app.api import (
     registration,  # Registration validation endpoints
     documents,
     studios,
+    users,  # User management endpoints
     user_profiles,
     tags,
     search,
@@ -88,6 +89,7 @@ async def api_status():
 api_router.include_router(auth.router)
 api_router.include_router(bootstrap.router)  # Emergency admin access
 api_router.include_router(registration.router)  # Registration validation
+api_router.include_router(users.router)  # User management
 api_router.include_router(documents.router)
 api_router.include_router(studios.router)
 api_router.include_router(user_profiles.router)
