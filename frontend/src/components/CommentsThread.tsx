@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import { MessageSquare, Send, ThumbsUp, Loader2 } from 'lucide-react'
+import { MessageSquare, Send, Loader2 } from 'lucide-react'
+
+interface Reaction {
+  id: number
+  comment_id: number
+  user_id: number
+  user: { id: number; username: string }
+  reaction_type: string
+  created_at: string
+}
 
 interface Comment {
   id: number
@@ -9,7 +18,7 @@ interface Comment {
   user?: { id: number; username: string }
   author?: { id: number; username: string }
   content: string
-  reactions?: { reaction_type: string; count: number }[]
+  reactions?: Reaction[]
   created_at: string
   updated_at?: string
   replies?: Comment[]
@@ -23,18 +32,39 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 export function CommentsThread({ documentId }: Props) {
   const [pendingAnchor, setPendingAnchor] = useState<Record<string, any> | null>(null)
+  const [highlightedAnchor, setHighlightedAnchor] = useState<Record<string, any> | null>(null)
   ;(window as any).setPendingCommentAnchor = (anchor: Record<string, any>) => {
     setPendingAnchor(anchor)
   }
+  ;(window as any).getHighlightedCommentAnchor = () => highlightedAnchor
+  
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [newComment, setNewComment] = useState<string>('')
   const [submitting, setSubmitting] = useState<boolean>(false)
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
   useEffect(() => {
     loadComments()
+    loadCurrentUser()
   }, [documentId])
+
+  const loadCurrentUser = async () => {
+    try {
+      const token = getToken()
+      if (!token) return
+      const response = await fetch(`${API_URL}/api/v1/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentUserId(data.id)
+      }
+    } catch (err) {
+      console.error('Failed to load current user:', err)
+    }
+  }
 
   const getToken = () => localStorage.getItem('access_token')
 
@@ -76,6 +106,7 @@ export function CommentsThread({ documentId }: Props) {
       })
       if (!response.ok) throw new Error('Failed to post comment')
       setNewComment('')
+      setPendingAnchor(null)
       await loadComments()
     } catch (err: any) {
       setError(err.message || 'Failed to post comment')
@@ -102,6 +133,20 @@ export function CommentsThread({ documentId }: Props) {
     }
   }
 
+  const removeReaction = async (commentId: number, reaction_type: string) => {
+    try {
+      const token = getToken()
+      const response = await fetch(`${API_URL}/api/comments/${commentId}/reactions/${reaction_type}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+      if (!response.ok) throw new Error('Failed to remove reaction')
+      await loadComments()
+    } catch (err: any) {
+      setError(err.message || 'Failed to remove reaction')
+    }
+  }
+
   const CommentItem = ({ c }: { c: Comment }) => {
     const [reply, setReply] = useState('')
     const [replying, setReplying] = useState(false)
@@ -115,26 +160,58 @@ export function CommentsThread({ documentId }: Props) {
     }
 
     const reactionTypes = ['like','love','insightful','question']
+    
+    // Aggregate reaction counts
+    const reactionCounts = reactionTypes.reduce((acc, type) => {
+      const count = c.reactions?.filter(r => r.reaction_type === type).length || 0
+      acc[type] = count
+      return acc
+    }, {} as Record<string, number>)
+
+    // Check if current user has reacted with each type
+    const userReactions = reactionTypes.reduce((acc, type) => {
+      acc[type] = c.reactions?.some(r => r.user_id === currentUserId && r.reaction_type === type) || false
+      return acc
+    }, {} as Record<string, boolean>)
+
+    const toggleReaction = async (type: string) => {
+      if (userReactions[type]) {
+        await removeReaction(c.id, type)
+      } else {
+        await react(c.id, type)
+      }
+    }
 
     return (
-      <div className="py-4">
+      <div className="py-4"
+        onMouseEnter={() => c.anchor?.text && setHighlightedAnchor(c.anchor)}
+        onMouseLeave={() => setHighlightedAnchor(null)}
+      >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="text-sm font-semibold">{c.author?.username || c.user?.username || 'User'}</div>
             <div className="text-sm mt-1">{c.content}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {new Date(c.created_at).toLocaleString()}
-              {c.anchor?.text && ` • “${c.anchor.text.slice(0,40)}${c.anchor.text.length>40?'…':''}”`}
+              {c.anchor?.text && (
+                <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded cursor-pointer" title="Anchored to text">
+                  📍 "{c.anchor.text.slice(0,40)}{c.anchor.text.length>40?'…':''}"
+                </span>
+              )}
             </div>
             <div className="flex gap-2 mt-2">
               {reactionTypes.map(rt => (
                 <button
                   key={rt}
-                  onClick={() => react(c.id, rt)}
-                  className="text-xs px-2 py-1 rounded border border-border hover:bg-neutral-lightest"
-                  title={`React: ${rt}`}
+                  onClick={() => toggleReaction(rt)}
+                  className={`text-xs px-2 py-1 rounded border transition-colors ${
+                    userReactions[rt]
+                      ? 'border-primary bg-primary/10 text-primary font-semibold'
+                      : 'border-border hover:bg-neutral-lightest'
+                  }`}
+                  title={userReactions[rt] ? `Remove ${rt}` : `React: ${rt}`}
                 >
-                  {rt}
+                  {rt} {reactionCounts[rt] > 0 && `(${reactionCounts[rt]})`}
                 </button>
               ))}
             </div>
@@ -174,7 +251,7 @@ export function CommentsThread({ documentId }: Props) {
         <MessageSquare className="w-5 h-5" />
         <h3 className="text-sm font-semibold">Comments</h3>
         <div className="ml-auto flex gap-1 text-xs">
-          <span className="px-2 py-1 rounded bg-neutral-lightest">Anchor via editor selection → 💬</span>
+          <span className="px-2 py-1 rounded bg-neutral-lightest">💬 Select text → Click 💬 in toolbar</span>
         </div>
       </div>
       <div className="p-4">
@@ -196,7 +273,10 @@ export function CommentsThread({ documentId }: Props) {
             </button>
           </div>
           {pendingAnchor && (
-            <div className="text-xs text-muted-foreground px-2">Anchored to selection: “{pendingAnchor.text?.slice(0,60)}{pendingAnchor.text?.length>60?'…':''}” <button className="ml-2 underline" onClick={() => setPendingAnchor(null)}>Clear</button></div>
+            <div className="text-xs text-muted-foreground px-2">
+              📍 Anchored to: "{pendingAnchor.text?.slice(0,60)}{pendingAnchor.text?.length>60?'…':''}" 
+              <button className="ml-2 underline hover:text-primary" onClick={() => setPendingAnchor(null)}>Clear</button>
+            </div>
           )}
         </div>
 
