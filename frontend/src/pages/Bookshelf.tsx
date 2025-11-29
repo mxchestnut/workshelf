@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List, Trash2, Edit2, Save, X, Loader2 } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
+import { ReadingListsTab } from '../components/ReadingListsTab'
 
 interface BookshelfItem {
   id: number
@@ -52,6 +53,22 @@ interface BookshelfStats {
   books_read_this_year: number
 }
 
+interface ReadingList {
+  id: number
+  name: string
+  description: string | null
+  is_public: boolean
+  document_count: number
+  created_at: string
+  updated_at: string
+}
+
+interface ListDocument {
+  id: number
+  title: string
+  added_at: string
+}
+
 export default function Bookshelf() {
   const [books, setBooks] = useState<BookshelfItem[]>([])
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
@@ -64,6 +81,19 @@ export default function Bookshelf() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
 
+  // Reading Lists state
+  const [readingLists, setReadingLists] = useState<ReadingList[]>([])
+  const [selectedList, setSelectedList] = useState<ReadingList | null>(null)
+  const [listDocuments, setListDocuments] = useState<ListDocument[]>([])
+  const [showCreateList, setShowCreateList] = useState(false)
+  const [newListName, setNewListName] = useState('')
+  const [newListDescription, setNewListDescription] = useState('')
+  const [newListPublic, setNewListPublic] = useState(false)
+  const [editingList, setEditingList] = useState<ReadingList | null>(null)
+  const [loadingLists, setLoadingLists] = useState(false)
+  const [savingList, setSavingList] = useState(false)
+  const [deletingListId, setDeletingListId] = useState<number | null>(null)
+
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
   useEffect(() => {
@@ -72,6 +102,9 @@ export default function Bookshelf() {
     loadStats()
     if (activeTab === 'recommendations') {
       loadRecommendations()
+    }
+    if (activeTab === 'reading-lists') {
+      loadReadingLists()
     }
   }, [activeTab])
 
@@ -213,6 +246,168 @@ export default function Bookshelf() {
         return 'bg-gray-100 text-gray-800 border-gray-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  // Reading Lists functions
+  const loadReadingLists = async () => {
+    setLoadingLists(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReadingLists(data.items || [])
+      }
+    } catch (error) {
+      console.error('Failed to load reading lists:', error)
+    } finally {
+      setLoadingLists(false)
+    }
+  }
+
+  const createReadingList = async () => {
+    if (!newListName.trim()) return
+
+    setSavingList(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: newListName,
+          description: newListDescription || null,
+          is_public: newListPublic
+        })
+      })
+
+      if (response.ok) {
+        setNewListName('')
+        setNewListDescription('')
+        setNewListPublic(false)
+        setShowCreateList(false)
+        await loadReadingLists()
+      }
+    } catch (error) {
+      console.error('Failed to create reading list:', error)
+    } finally {
+      setSavingList(false)
+    }
+  }
+
+  const updateReadingList = async () => {
+    if (!editingList) return
+
+    setSavingList(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/${editingList.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: editingList.name,
+          description: editingList.description,
+          is_public: editingList.is_public
+        })
+      })
+
+      if (response.ok) {
+        setEditingList(null)
+        await loadReadingLists()
+      }
+    } catch (error) {
+      console.error('Failed to update reading list:', error)
+    } finally {
+      setSavingList(false)
+    }
+  }
+
+  const deleteReadingList = async (listId: number) => {
+    if (!confirm('Are you sure you want to delete this reading list?')) return
+
+    setDeletingListId(listId)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        await loadReadingLists()
+        if (selectedList?.id === listId) {
+          setSelectedList(null)
+          setListDocuments([])
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete reading list:', error)
+    } finally {
+      setDeletingListId(null)
+    }
+  }
+
+  const viewListDocuments = async (list: ReadingList) => {
+    setSelectedList(list)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/${list.id}/documents`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setListDocuments(data.items || [])
+      }
+    } catch (error) {
+      console.error('Failed to load list documents:', error)
+    }
+  }
+
+  const removeFromList = async (listId: number, documentId: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}/documents/${documentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        setListDocuments(prev => prev.filter(doc => doc.id !== documentId))
+        // Update the document count
+        setReadingLists(prev => prev.map(list => 
+          list.id === listId 
+            ? { ...list, document_count: list.document_count - 1 }
+            : list
+        ))
+        if (selectedList) {
+          setSelectedList({ ...selectedList, document_count: selectedList.document_count - 1 })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to remove from list:', error)
     }
   }
 
@@ -401,12 +596,90 @@ export default function Bookshelf() {
             >
               <Sparkles className="w-4 h-4" />
               Recommendations
+                        <button
+                          onClick={() => setActiveTab('reading-lists')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+                          style={{
+                            backgroundColor: activeTab === 'reading-lists' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+                            color: activeTab === 'reading-lists' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
+                          }}
+                        >
+                          <List className="w-4 h-4" />
+                          Reading Lists
+                        </button>
             </button>
           </div>
         </div>
 
         {/* Books Grid */}
-        {activeTab === 'recommendations' ? (
+        {activeTab === 'reading-lists' ? (
+          <ReadingListsTab
+            lists={readingLists}
+            loading={loadingLists}
+            onCreateList={async (name, description, isPublic) => {
+              const token = localStorage.getItem('access_token')
+              if (!token) return
+              const response = await fetch(`${API_URL}/api/v1/reading-lists/`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description: description || null, is_public: isPublic })
+              })
+              if (response.ok) await loadReadingLists()
+            }}
+            onUpdateList={async (list) => {
+              const token = localStorage.getItem('access_token')
+              if (!token) return
+              const response = await fetch(`${API_URL}/api/v1/reading-lists/${list.id}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: list.name, description: list.description, is_public: list.is_public })
+              })
+              if (response.ok) await loadReadingLists()
+            }}
+            onDeleteList={async (listId) => {
+              const token = localStorage.getItem('access_token')
+              if (!token) return
+              const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+              })
+              if (response.ok) await loadReadingLists()
+            }}
+            onViewDocuments={async (list) => {
+              const token = localStorage.getItem('access_token')
+              if (!token) return []
+              const response = await fetch(`${API_URL}/api/v1/reading-lists/${list.id}/documents`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              })
+              if (response.ok) {
+                const data = await response.json()
+                return data.items || []
+              }
+              return []
+            }}
+            onRemoveDocument={async (listId, documentId) => {
+              const token = localStorage.getItem('access_token')
+              if (!token) return
+              const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}/documents/${documentId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+              })
+              if (response.ok) {
+                setReadingLists(prev => prev.map(list => 
+                  list.id === listId 
+                    ? { ...list, document_count: list.document_count - 1 }
+                    : list
+                ))
+              }
+            }}
+          />
+        ) : activeTab === 'recommendations' ? (
           loadingRecs ? (
             <div className="text-center text-gray-400 py-12">Loading recommendations...</div>
           ) : recommendations.length === 0 ? (
