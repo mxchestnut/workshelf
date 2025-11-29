@@ -58,6 +58,26 @@ export default function MyBetaRequests() {
     return <span className={`px-2 py-1 rounded text-xs text-white ${map[status]}`}>{status}</span>
   }
 
+  const updateStatus = async (id: number, status: 'accepted' | 'declined') => {
+    try {
+      const token = await authService.getAccessToken()
+      const resp = await fetch(`/api/v1/beta-requests/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      })
+      if (resp.ok) {
+        // Refresh lists
+        load()
+      }
+    } catch (e) {
+      // Ignore errors for now
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -115,6 +135,16 @@ export default function MyBetaRequests() {
                     <p className="text-muted-foreground mt-1">{item.document_title || 'Untitled Document'}</p>
                     {item.message && <p className="text-muted-foreground mt-1 line-clamp-2">{item.message}</p>}
                     <div className="text-xs text-muted-foreground mt-2">{new Date(item.created_at).toLocaleString()}</div>
+                    {item.status === 'pending' && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <button onClick={() => updateStatus(item.id, 'accepted')} className="px-3 py-2 rounded bg-green-600 text-white flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" /> Accept
+                        </button>
+                        <button onClick={() => updateStatus(item.id, 'declined')} className="px-3 py-2 rounded bg-red-600 text-white flex items-center gap-2">
+                          <XCircle className="w-4 h-4" /> Decline
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
