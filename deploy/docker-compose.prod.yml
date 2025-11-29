@@ -64,7 +64,7 @@ services:
     platform: linux/amd64
     working_dir: /app
     # Run comprehensive startup (table creation, migrations, staff grants) before launching API
-    command: bash -c "pip install -q -r requirements.txt && bash start.sh"
+    command: sh -c "pip install -q -r requirements.txt && sh start.sh"
     volumes:
       - ./backend:/app
     ports:
