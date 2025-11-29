@@ -4,15 +4,6 @@ This document tracks active initiatives, status, and next actions. Remove items 
 
 ## Active Initiatives
 
-- Marketplace Specialties/Sort Verification
-  - Goal: Confirm backend accepts `specialties` and `sort` query params used by `BetaMarketplace`.
-  - Status: Deferred (backend down during test attempt)
-  - Completed:
-    - Added toasts in `BetaMarketplace.tsx` to signal filters applied and capture load errors.
-  - Next:
-    - When backend is running: Hit `/api/v1/beta-profiles/marketplace` with sample `specialties` and `sort` params; log response shape.
-    - Adjust frontend param names if needed; document findings here.
-
 - Sitewide Toasts ✅
   - Goal: Ensure all user-facing flows surface success/error notifications consistently.
   - Status: Complete
@@ -96,6 +87,8 @@ These features have complete backend APIs but need frontend implementation:
 10. **Beta Reader Profiles** ✅ (has marketplace and profile pages)
     - Full beta reader profile management ✅ (MyBetaProfile exists)
     - Beta reader search/filtering ✅ (BetaMarketplace exists)
+    - Specialties filtering ✅ (backend + frontend)
+    - Sort by rating/turnaround/price ✅ (backend + frontend)
     - Portfolio/specialties ✅
     - Beta requests ✅ (create, manage, accept/decline)
     - Reviews system ✅
@@ -147,10 +140,12 @@ These are items implemented with placeholders or assumptions that need productio
   - Complete frontend for Stripe Connect integration
   - Earnings charts and payout management
 
-- Social Features Enhancement
-  - Follow/unfollow buttons on all profile types
-  - Followers/following lists
-  - Activity feed on public profiles
+- Social Enhancements Remaining
+  - Pagination for followers/following lists
+  - Interest-based follow suggestions (derive from profile interests)
+  - Mutual-only filter toggle
+  - Visual polish (empty states, skeleton loaders)
+  - Public profile activity feed integration
 
 - Group Advanced Features
   - Theme customization UI
@@ -166,6 +161,13 @@ These are items implemented with placeholders or assumptions that need productio
   - Click-through verification across all features
   - Test marketplace filters/sort, beta requests, folders, toasts
   - Verify backend integration for all "backend-ready" features
+
+## Next Focus Candidates (When Returning)
+
+- Creator Earnings Dashboard (large untouched surface – high product value)
+- Reading Lists Sharing + Public Browse Page (medium complexity, improves user engagement)
+- Group Advanced Features (deeper investment, can stage incrementally)
+- DM Room Resolution in ChatManager (technical debt cleanup for messaging reliability)
 
 ## Execution Notes
 

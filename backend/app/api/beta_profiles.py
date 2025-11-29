@@ -134,6 +134,7 @@ def create_or_update_my_profile(
 @router.get("/marketplace", response_model=dict)
 def browse_marketplace(
     genres: Optional[str] = Query(None, description="Comma-separated genres"),
+    specialties: Optional[str] = Query(None, description="Comma-separated specialties"),
     availability: Optional[str] = Query(None, pattern="^(available|busy|not_accepting)$"),
     min_beta_score: Optional[int] = Query(None, ge=0, le=5),
     max_hourly_rate: Optional[int] = Query(None, ge=0),
@@ -143,6 +144,7 @@ def browse_marketplace(
     search: Optional[str] = Query(None, max_length=100),
     only_free: bool = Query(False),
     featured_first: bool = Query(True),
+    sort: Optional[str] = Query(None, pattern="^(rating|turnaround|price)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -160,6 +162,11 @@ def browse_marketplace(
         genre_list = [g.strip() for g in genres.split(',') if g.strip()]
         if genre_list:
             query = query.filter(BetaReaderProfile.genres.overlap(genre_list))
+    
+    if specialties:
+        specialty_list = [s.strip() for s in specialties.split(',') if s.strip()]
+        if specialty_list:
+            query = query.filter(BetaReaderProfile.specialties.overlap(specialty_list))
     
     if availability:
         query = query.filter(BetaReaderProfile.availability == availability)
@@ -219,7 +226,19 @@ def browse_marketplace(
         )
     
     # Sorting
-    if featured_first:
+    if sort == "rating":
+        query = query.order_by(BetaReaderProfile.average_rating.desc().nullslast())
+    elif sort == "turnaround":
+        query = query.order_by(BetaReaderProfile.turnaround_days.asc().nullslast())
+    elif sort == "price":
+        # Sort by lowest price (prioritize per-word, then per-manuscript, then hourly)
+        # Nulls last means free profiles come after paid
+        query = query.order_by(
+            BetaReaderProfile.per_word_rate.asc().nullslast(),
+            BetaReaderProfile.per_manuscript_rate.asc().nullslast(),
+            BetaReaderProfile.hourly_rate.asc().nullslast()
+        )
+    elif featured_first:
         query = query.order_by(
             BetaReaderProfile.is_featured.desc(),
             User.beta_score.desc(),
