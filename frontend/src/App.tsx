@@ -69,9 +69,10 @@ const AdvancedSearch = lazy(() => import('./pages/AdvancedSearch').then(module =
 const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module => ({ default: module.BookSuggestions })))
 const Messages = lazy(() => import('./pages/Messages').then(module => ({ default: module.Messages })))
 const AIPolicy = lazy(() => import('./pages/AIPolicy'))
+const Relationships = lazy(() => import('./pages/Relationships'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -241,6 +242,8 @@ function App() {
     } else if (path === '/ai-policy') {
       // AI Policy and ethical use guidelines
       setCurrentPage('ai-policy')
+    } else if (path === '/relationships') {
+      setCurrentPage('relationships')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -456,6 +459,9 @@ function App() {
     }
     if (currentPage === 'messages') {
       return <Messages />
+    }
+    if (currentPage === 'relationships') {
+      return <Relationships />
     }
     if (currentPage === 'ai-policy') {
       return <AIPolicy />

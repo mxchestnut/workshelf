@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus, MessageCircle } from 'lucide-react'
+import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus, MessageCircle, X } from 'lucide-react'
 import { useMatrix } from '../hooks/useMatrixClient.tsx'
+import { toast } from '../services/toast'
 
 interface PublicProfileData {
   id: number
@@ -62,6 +63,11 @@ export default function PublicProfile() {
   const [followingCount, setFollowingCount] = useState(0)
   const [followLoading, setFollowLoading] = useState(false)
   const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [showFollowersModal, setShowFollowersModal] = useState(false)
+  const [showFollowingModal, setShowFollowingModal] = useState(false)
+  const [followersList, setFollowersList] = useState<any[]>([])
+  const [followingList, setFollowingList] = useState<any[]>([])
+  const [listLoading, setListLoading] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -110,12 +116,13 @@ export default function PublicProfile() {
       if (response.ok) {
         setIsFollowing(true)
         setFollowersCount(prev => prev + 1)
+        toast.success('Followed user')
       } else {
-        alert('Failed to follow user')
+        toast.error('Failed to follow user')
       }
     } catch (err) {
       console.error('Error following user:', err)
-      alert('Failed to follow user')
+      toast.error('Failed to follow user')
     } finally {
       setFollowLoading(false)
     }
@@ -143,12 +150,13 @@ export default function PublicProfile() {
       if (response.ok) {
         setIsFollowing(false)
         setFollowersCount(prev => prev - 1)
+        toast.success('Unfollowed user')
       } else {
-        alert('Failed to unfollow user')
+        toast.error('Failed to unfollow user')
       }
     } catch (err) {
       console.error('Error unfollowing user:', err)
-      alert('Failed to unfollow user')
+      toast.error('Failed to unfollow user')
     } finally {
       setFollowLoading(false)
     }
@@ -174,16 +182,17 @@ export default function PublicProfile() {
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}))
         console.error('[Message] Lookup failed:', data)
-        alert(data.detail || 'User has not set up messaging yet')
+        toast.error(data.detail || 'User has not set up messaging yet')
         return
       }
       const data = await resp.json()
       const matrixUserId = data.matrix_user_id as string
       const displayName = profile.display_name || profile.username
       await openChat(matrixUserId, displayName, profile.avatar_url)
+      toast.success('Opened chat')
     } catch (err) {
       console.error('[Message] Failed to open chat:', err)
-      alert('Failed to open chat')
+      toast.error('Failed to open chat')
     }
   }
 
@@ -367,15 +376,90 @@ export default function PublicProfile() {
                 
                 {/* Follower Counts */}
                 <div className="flex items-center gap-4 text-sm mb-4">
-                  <button className="text-gray-300 hover:text-white">
+                  <button className="text-gray-300 hover:text-white" onClick={() => openFollowers()}>
                     <span className="font-semibold">{followersCount}</span>
                     <span className="text-gray-400"> {followersCount === 1 ? 'follower' : 'followers'}</span>
                   </button>
-                  <button className="text-gray-300 hover:text-white">
+                  <button className="text-gray-300 hover:text-white" onClick={() => openFollowing()}>
                     <span className="font-semibold">{followingCount}</span>
                     <span className="text-gray-400"> following</span>
                   </button>
                 </div>
+  const openFollowers = async () => {
+    if (!profile) return
+    setShowFollowersModal(true)
+    setListLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+      const resp = await fetch(`${API_URL}/api/v1/relationships/followers`, { headers: { 'Authorization': `Bearer ${token}` } })
+      if (resp.ok) {
+        const data = await resp.json()
+        setFollowersList(data.followers || [])
+      }
+    } catch (err) {
+      console.error('Failed to load followers:', err)
+      toast.error('Failed to load followers')
+    } finally {
+      setListLoading(false)
+    }
+  }
+
+  const openFollowing = async () => {
+    if (!profile) return
+    setShowFollowingModal(true)
+    setListLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+      const resp = await fetch(`${API_URL}/api/v1/relationships/following`, { headers: { 'Authorization': `Bearer ${token}` } })
+      if (resp.ok) {
+        const data = await resp.json()
+        setFollowingList(data.following || [])
+      }
+    } catch (err) {
+      console.error('Failed to load following:', err)
+      toast.error('Failed to load following')
+    } finally {
+      setListLoading(false)
+    }
+  }
+
+  const closeFollowers = () => setShowFollowersModal(false)
+  const closeFollowing = () => setShowFollowingModal(false)
+
+  const modalBase = 'fixed inset-0 flex items-center justify-center z-50'
+  const overlayBase = 'absolute inset-0 bg-black/60 backdrop-blur-sm'
+  const panelBase = 'relative bg-gray-800 border border-gray-700 rounded-lg w-full max-w-md mx-auto shadow-xl'
+
+  const renderUserList = (list: any[]) => (
+    <div className="divide-y divide-gray-700">
+      {list.length === 0 && (
+        <div className="p-6 text-center text-gray-400">No users</div>
+      )}
+      {list.map(user => (
+        <div key={user.id} className="p-4 flex items-center gap-3">
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt={user.full_name || user.email} className="w-10 h-10 rounded-full object-cover" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+              <User className="w-5 h-5 text-gray-400" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-white truncate">{user.full_name || user.email}</div>
+            {user.followed_at && (
+              <div className="text-xs text-gray-400">Since {new Date(user.followed_at).toLocaleDateString()}</div>
+            )}
+          </div>
+          <button
+            onClick={() => window.location.href = `/users/${user.email.split('@')[0]}`}
+            className="text-xs px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded"
+          >View</button>
+        </div>
+      ))}
+    </div>
+  )
 
                 {/* Meta Info */}
                 <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
@@ -538,6 +622,38 @@ export default function PublicProfile() {
             {activeTab === 'documents' && (
               <div>
                 {documents.length === 0 ? (
+            {showFollowersModal && (
+              <div className={modalBase}>
+                <div className={overlayBase} onClick={closeFollowers} />
+                <div className={panelBase}>
+                  <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                    <h3 className="text-white font-semibold">Followers</h3>
+                    <button onClick={closeFollowers} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+                  </div>
+                  {listLoading ? (
+                    <div className="p-6 text-center text-gray-400">Loading...</div>
+                  ) : (
+                    renderUserList(followersList)
+                  )}
+                </div>
+              </div>
+            )}
+            {showFollowingModal && (
+              <div className={modalBase}>
+                <div className={overlayBase} onClick={closeFollowing} />
+                <div className={panelBase}>
+                  <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                    <h3 className="text-white font-semibold">Following</h3>
+                    <button onClick={closeFollowing} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+                  </div>
+                  {listLoading ? (
+                    <div className="p-6 text-center text-gray-400">Loading...</div>
+                  ) : (
+                    renderUserList(followingList)
+                  )}
+                </div>
+              </div>
+            )}
                   <div className="text-center text-gray-400 py-12">
                     <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No public documents yet</p>

@@ -67,11 +67,12 @@ These features have complete backend APIs but need frontend implementation:
    - Document accessibility checker ✅
    - Accessibility reports ✅
 
-6. **Relationships/Social**
-   - Follow/Unfollow buttons on profiles
-   - Followers list modal/page
-   - Following list modal/page
-   - User relationship management dashboard
+6. **Relationships/Social** (initial UI implemented ✅)
+  - Follow/Unfollow buttons on public profiles ✅
+  - Followers list modal ✅
+  - Following list modal ✅
+  - Relationships dashboard page (`/relationships`) ✅
+  - Next: Add mutual follow indicators, follow suggestions, activity integration
 
 7. **Reading Lists** (has basic component, needs full page)
    - Create custom reading lists ✅ (basic UI exists)
