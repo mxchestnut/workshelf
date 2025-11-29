@@ -50,6 +50,7 @@ export default function BetaMarketplace() {
   const [minBetaScore, setMinBetaScore] = useState<number | null>(null)
   const [onlyFree, setOnlyFree] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([])
   
   // Pagination
   const [page, setPage] = useState(1)
@@ -59,7 +60,7 @@ export default function BetaMarketplace() {
   useEffect(() => {
     loadUser()
     loadProfiles()
-  }, [page, selectedGenres, availability, minBetaScore, onlyFree, searchQuery])
+  }, [page, selectedGenres, selectedSpecialties, availability, minBetaScore, onlyFree, searchQuery])
 
   const loadUser = async () => {
     const currentUser = await authService.getCurrentUser()
@@ -79,6 +80,7 @@ export default function BetaMarketplace() {
       if (minBetaScore !== null) params.append('min_beta_score', minBetaScore.toString())
       if (onlyFree) params.append('only_free', 'true')
       if (searchQuery) params.append('search', searchQuery)
+      if (selectedSpecialties.length > 0) params.append('specialties', selectedSpecialties.join(','))
 
       const response = await fetch(`/api/v1/beta-profiles/marketplace?${params}`)
       if (response.ok) {
@@ -97,6 +99,13 @@ export default function BetaMarketplace() {
   const toggleGenre = (genre: string) => {
     setSelectedGenres(prev =>
       prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre]
+    )
+    setPage(1)
+  }
+
+  const toggleSpecialty = (spec: string) => {
+    setSelectedSpecialties(prev =>
+      prev.includes(spec) ? prev.filter(s => s !== spec) : [...prev, spec]
     )
     setPage(1)
   }
@@ -250,6 +259,26 @@ export default function BetaMarketplace() {
                       }`}
                     >
                       {genre}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Specialties */}
+              <div>
+                <label className="block text-foreground font-medium mb-2">Specialties</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Plot Holes','Character Development','Pacing','Dialogue','World Building','Grammar & Spelling','Consistency','Emotional Impact','Structure','Voice','Setting','Conflict & Tension','Theme','POV Issues','Show vs Tell'].map(spec => (
+                    <button
+                      key={spec}
+                      onClick={() => toggleSpecialty(spec)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        selectedSpecialties.includes(spec)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {spec}
                     </button>
                   ))}
                 </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
-import { BookOpen, Star, Clock, DollarSign, Users, Link as LinkIcon, Award, CheckCircle } from 'lucide-react'
+import { BookOpen, Star, Clock, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, MessageSquare, Send } from 'lucide-react'
 
 interface PortfolioLink {
   title: string
@@ -34,11 +34,21 @@ interface BetaProfile {
   preferred_contact: string | null
 }
 
+interface Review {
+  id: number
+  reviewer_display_name: string
+  rating: number
+  comment: string
+  created_at: string
+}
+
 export default function BetaProfileView() {
   const { userId } = useParams()
   const [viewer, setViewer] = useState<User | null>(null)
   const [profile, setProfile] = useState<BetaProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewsLoading, setReviewsLoading] = useState(false)
 
   useEffect(() => {
     load()
@@ -54,11 +64,34 @@ export default function BetaProfileView() {
         const data = await response.json()
         setProfile(data)
       }
+      // Load reviews (if endpoint exists)
+      try {
+        setReviewsLoading(true)
+        const r = await fetch(`/api/v1/beta-profiles/${userId}/reviews`)
+        if (r.ok) {
+          const rd = await r.json()
+          setReviews(rd.reviews || rd || [])
+        }
+      } catch (e) {
+        // Silently ignore if not available
+      } finally {
+        setReviewsLoading(false)
+      }
     } catch (e) {
       console.error('Error loading beta profile:', e)
     } finally {
       setLoading(false)
     }
+  }
+
+  const contactBetaReader = () => {
+    // If platform messaging exists, navigate to chat with user
+    window.location.href = `/me?chat_with=${profile?.user_id}`
+  }
+
+  const requestBetaRead = () => {
+    // Navigate to a request creation page if exists; fallback to messaging
+    window.location.href = `/me?request_beta_for=${profile?.user_id}`
   }
 
   const formatRate = (cents: number | null) => {
@@ -156,6 +189,15 @@ export default function BetaProfileView() {
               <span className="text-green-400 font-medium">Free</span>
             )}
           </div>
+          {/* Contact / Request Actions */}
+          <div className="flex flex-col gap-2 ml-6">
+            <button onClick={contactBetaReader} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" /> Contact
+            </button>
+            <button onClick={requestBetaRead} className="px-4 py-2 rounded-lg bg-muted text-foreground border border-border flex items-center gap-2">
+              <Send className="w-4 h-4" /> Request Beta Read
+            </button>
+          </div>
         </div>
 
         {/* Bio */}
@@ -221,6 +263,37 @@ export default function BetaProfileView() {
             {(!profile.portfolio_links || profile.portfolio_links.length === 0) && (
               <p className="text-muted-foreground">No portfolio items added</p>
             )}
+          </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-8 bg-card rounded-lg p-6 border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              <span className="text-foreground font-medium">Reviews</span>
+            </div>
+          </div>
+          {reviewsLoading && (
+            <p className="text-muted-foreground">Loading reviews...</p>
+          )}
+          {!reviewsLoading && reviews.length === 0 && (
+            <p className="text-muted-foreground">No reviews yet.</p>
+          )}
+          <div className="space-y-4">
+            {reviews.map((rev) => (
+              <div key={rev.id} className="p-4 bg-muted rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="text-foreground font-medium">{rev.reviewer_display_name}</div>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span className="text-foreground">{rev.rating}/5</span>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mt-2 whitespace-pre-line">{rev.comment}</p>
+                <p className="text-xs text-muted-foreground mt-2">{new Date(rev.created_at).toLocaleDateString()}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
