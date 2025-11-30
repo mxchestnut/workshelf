@@ -4,9 +4,9 @@ Test Phase 5: Studio Customization & Analytics
 import pytest
 import asyncio
 from httpx import AsyncClient
+from app.main import app
 
 
-BASE_URL = "http://localhost:8000/api/v1"
 STUDIO_ID = 1
 DOCUMENT_ID = 1
 
@@ -14,7 +14,7 @@ DOCUMENT_ID = 1
 @pytest.mark.asyncio
 async def test_phase5_theme_customization():
     """Test studio theme customization (colors, fonts, CSS)."""
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         
         # 1. Create/update theme
         theme_data = {
@@ -66,7 +66,7 @@ async def test_phase5_theme_customization():
 @pytest.mark.asyncio
 async def test_phase5_custom_domains():
     """Test custom domain management with DNS verification."""
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         
         # 1. Add custom domain
         domain_data = {
@@ -119,7 +119,7 @@ async def test_phase5_custom_domains():
 @pytest.mark.asyncio
 async def test_phase5_view_tracking():
     """Test document view tracking with analytics."""
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         
         # 1. Record multiple views
         view_data = {
@@ -166,7 +166,7 @@ async def test_phase5_view_tracking():
 @pytest.mark.asyncio
 async def test_phase5_analytics():
     """Test studio and document analytics."""
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         
         # 1. Get studio metrics
         response = await client.get(
