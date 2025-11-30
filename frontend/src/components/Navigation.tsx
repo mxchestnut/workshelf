@@ -1,20 +1,8 @@
 /**
  * Main Navigation Component
  * Provides consistent navigation across all pages with proper linking
-          <a
-            href="/advanced-search"
-            className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-brown-800 transition-colors ${isActive('/advanced-search') ? 'bg-brown-800 text-white' : 'text-brown-100'}`}
-          >
-            <Search className="w-5 h-5" />
-            <span>Advanced Search</span>
-          </a>
-          <a
-            href="/book-suggestions"
-            className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-brown-800 transition-colors ${isActive('/book-suggestions') ? 'bg-brown-800 text-white' : 'text-brown-100'}`}
-          >
-            <BookOpen className="w-5 h-5" />
-            <span>Book Suggestions</span>
-          </a>
+ */
+import {
   Home,
   BookMarked,
   PenTool,
@@ -26,7 +14,12 @@
   Shield,
   Download,
   Search as SearchIcon,
-  Eye
+  Eye,
+  Menu,
+  X,
+  LogIn,
+  LogOut,
+  BookOpen
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
