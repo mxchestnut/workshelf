@@ -1,778 +1,571 @@
-import { useState, useEffect } from 'react'
-import { User, MapPin, Calendar, ExternalLink, Globe, Twitter, BookOpen, FileText, Book, Star, UserPlus, UserMinus, MessageCircle, X } from 'lucide-react'
+/**
+ * Public Profile Page - View user profiles with social features
+ */
+
+import { useEffect, useState } from 'react'
+import { Navigation } from '../components/Navigation'
+import { authService } from '../services/auth'
 import { useMatrix } from '../hooks/useMatrixClient.tsx'
 import { toast } from '../services/toast'
+import {
+  User, MapPin, Calendar, ExternalLink, Globe, Twitter,
+  BookOpen, FileText, Book, Star, UserPlus, UserMinus,
+  MessageCircle, X
+} from 'lucide-react'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface PublicProfileData {
-  id: number
+  user_id: number
   username: string
-  display_name: string
+  email?: string
+  display_name?: string
   bio?: string
   avatar_url?: string
   location?: string
   website?: string
   twitter_handle?: string
   created_at: string
-  interests?: string[]
-  document_count?: number
-  public_document_count?: number
-  followers_count?: number
-  following_count?: number
+  document_count: number
+  follower_count: number
+  following_count: number
+  is_following?: boolean
+  reputation_score?: number
 }
 
 interface Document {
   id: number
   title: string
-  description?: string
   word_count: number
-  reading_time: number
-  updated_at: string
   status: string
+  created_at: string
 }
 
 interface BookshelfItem {
   id: number
-  item_type: 'document' | 'book'
-  document_id?: number
-  document_title?: string
-  isbn?: string
-  title?: string
-  author?: string
+  title: string
+  author: string
   cover_url?: string
-  publisher?: string
-  publish_year?: number
-  page_count?: number
-  description?: string
   status: string
-  rating?: number
-  review?: string
-  is_favorite: boolean
-  finished_reading?: string
+}
+
+interface FollowUser {
+  user_id: number
+  username: string
+  display_name?: string
+  avatar_url?: string
+  followed_at?: string
 }
 
 export default function PublicProfile() {
-  const { openChat, isReady } = useMatrix()
   const [profile, setProfile] = useState<PublicProfileData | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [bookshelf, setBookshelf] = useState<BookshelfItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'about' | 'documents' | 'bookshelf'>('about')
-  const [isFollowing, setIsFollowing] = useState(false)
-  const [followersCount, setFollowersCount] = useState(0)
-  const [followingCount, setFollowingCount] = useState(0)
-  const [followLoading, setFollowLoading] = useState(false)
-  const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'documents' | 'bookshelf'>('documents')
   const [showFollowersModal, setShowFollowersModal] = useState(false)
   const [showFollowingModal, setShowFollowingModal] = useState(false)
-  const [followersList, setFollowersList] = useState<any[]>([])
-  const [followingList, setFollowingList] = useState<any[]>([])
-  const [listLoading, setListLoading] = useState(false)
+  const [followers, setFollowers] = useState<FollowUser[]>([])
+  const [following, setFollowing] = useState<FollowUser[]>([])
+  const [loadingFollowers, setLoadingFollowers] = useState(false)
+  
+  const { openChat } = useMatrix()
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  useEffect(() => {
+    loadCurrentUser()
+    loadProfile()
+  }, [])
 
-  const checkIfFollowing = async (userId: number) => {
+  const loadCurrentUser = async () => {
     try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-      
-      const response = await fetch(`${API_URL}/api/v1/relationships/following`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        const following = data.following || []
-        setIsFollowing(following.some((f: any) => f.id === userId))
-      }
+      const user = await authService.getCurrentUser()
+      setCurrentUser(user)
     } catch (err) {
-      console.error('Failed to check follow status:', err)
+      console.error('Error loading current user:', err)
     }
   }
 
-  const followUser = async () => {
-    if (!profile || followLoading) return
-    
+  const loadProfile = async () => {
     try {
-      setFollowLoading(true)
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        alert('Please log in to follow users')
-        setFollowLoading(false)
-        return
+      const params = new URLSearchParams(window.location.search)
+      const username = params.get('username')
+      
+      if (!username) {
+        throw new Error('No username provided')
       }
 
+      const token = localStorage.getItem('access_token')
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/users/${username}/public-profile`, {
+        headers
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to load profile')
+      }
+
+      const data = await response.json()
+      setProfile(data.profile)
+      setDocuments(data.documents || [])
+      setBookshelf(data.bookshelf || [])
+    } catch (error) {
+      console.error('Error loading profile:', error)
+      toast.error('Failed to load profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFollow = async () => {
+    if (!profile || !currentUser) {
+      toast.error('Please log in to follow users')
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/relationships/follow`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ following_id: profile.id })
+        body: JSON.stringify({
+          following_id: profile.user_id
+        })
       })
 
       if (response.ok) {
-        setIsFollowing(true)
-        setFollowersCount(prev => prev + 1)
-        toast.success('Followed user')
+        toast.success(`Now following ${profile.display_name || profile.username}`)
+        setProfile({ ...profile, is_following: true, follower_count: profile.follower_count + 1 })
       } else {
         toast.error('Failed to follow user')
       }
-    } catch (err) {
-      console.error('Error following user:', err)
+    } catch (error) {
+      console.error('Error following user:', error)
       toast.error('Failed to follow user')
-    } finally {
-      setFollowLoading(false)
     }
   }
 
-  const unfollowUser = async () => {
-    if (!profile || followLoading) return
-    
-    try {
-      setFollowLoading(true)
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        alert('Please log in to unfollow users')
-        setFollowLoading(false)
-        return
-      }
+  const handleUnfollow = async () => {
+    if (!profile || !currentUser) return
 
-      const response = await fetch(`${API_URL}/api/v1/relationships/unfollow/${profile.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (response.ok) {
-        setIsFollowing(false)
-        setFollowersCount(prev => prev - 1)
-        toast.success('Unfollowed user')
-      } else {
-        toast.error('Failed to unfollow user')
-      }
-    } catch (err) {
-      console.error('Error unfollowing user:', err)
-      toast.error('Failed to unfollow user')
-    } finally {
-      setFollowLoading(false)
-    }
-  }
-
-  const messageUser = async () => {
-    if (!profile) return
     try {
       const token = localStorage.getItem('access_token')
-      if (!token) {
-        alert('Please log in to send a message')
-        return
-      }
-      // Look up the recipient's Matrix ID
-      const resp = await fetch(`${API_URL}/api/v1/matrix/lookup-user`, {
+      const response = await fetch(`${API_URL}/api/v1/relationships/unfollow`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ work_shelf_user_id: profile.id })
+        body: JSON.stringify({
+          following_id: profile.user_id
+        })
       })
-      if (!resp.ok) {
-        const data = await resp.json().catch(() => ({}))
-        console.error('[Message] Lookup failed:', data)
-        toast.error(data.detail || 'User has not set up messaging yet')
-        return
+
+      if (response.ok) {
+        toast.success(`Unfollowed ${profile.display_name || profile.username}`)
+        setProfile({ ...profile, is_following: false, follower_count: profile.follower_count - 1 })
+      } else {
+        toast.error('Failed to unfollow user')
       }
-      const data = await resp.json()
-      const matrixUserId = data.matrix_user_id as string
-      const displayName = profile.display_name || profile.username
-      await openChat(matrixUserId, displayName, profile.avatar_url)
-      toast.success('Opened chat')
-    } catch (err) {
-      console.error('[Message] Failed to open chat:', err)
-      toast.error('Failed to open chat')
+    } catch (error) {
+      console.error('Error unfollowing user:', error)
+      toast.error('Failed to unfollow user')
     }
   }
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
+  const handleMessage = async () => {
+    if (!profile) return
+    
     try {
-      // Extract username from URL path: /users/:username
-      const path = window.location.pathname
-      const parts = path.split('/').filter(p => p) // Remove empty strings
-      
-      if (parts.length < 2 || parts[0] !== 'users') {
-        setError('Invalid profile URL')
-        setLoading(false)
-        return
-      }
-      
-      const username = parts[1]
-      
-      if (!username) {
-        setError('Invalid profile URL')
-        setLoading(false)
-        return
-      }
-
-      // Fetch public profile
-      const response = await fetch(`${API_URL}/api/v1/users/username/${username}`)
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError('User not found')
-        } else {
-          setError('Failed to load profile')
-        }
-        setLoading(false)
-        return
-      }
-
-      const data = await response.json()
-      setProfile(data)
-      
-      // Set follower counts
-      setFollowersCount(data.followers_count || 0)
-      setFollowingCount(data.following_count || 0)
-      
-      // Check if viewing own profile
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        try {
-          const currentUserResponse = await fetch(`${API_URL}/api/v1/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-          if (currentUserResponse.ok) {
-            const currentUser = await currentUserResponse.json()
-            setIsOwnProfile(currentUser.id === data.id)
-            
-            // Check if following this user
-            if (currentUser.id !== data.id) {
-              await checkIfFollowing(data.id)
-            }
-          }
-        } catch (err) {
-          console.error('Failed to check current user:', err)
-        }
-      }
-
-      // Fetch public documents
-      try {
-        const docsResponse = await fetch(`${API_URL}/api/v1/users/${data.id}/documents/public`)
-        if (docsResponse.ok) {
-          const docsData = await docsResponse.json()
-          setDocuments(docsData.documents || [])
-        }
-      } catch (err) {
-        console.error('Failed to load documents:', err)
-      }
-
-      // Fetch public bookshelf
-      try {
-        const bookshelfResponse = await fetch(`${API_URL}/api/v1/bookshelf/public/${username}`)
-        if (bookshelfResponse.ok) {
-          const bookshelfData = await bookshelfResponse.json()
-          setBookshelf(bookshelfData || [])
-        }
-      } catch (err) {
-        console.error('Failed to load bookshelf:', err)
-      }
-
-      setLoading(false)
-    } catch (err) {
-      console.error('Error loading profile:', err)
-      setError('Failed to load profile')
-      setLoading(false)
+      await openChat(profile.username, profile.display_name || profile.username, profile.avatar_url)
+      toast.success('Opening chat...')
+    } catch (error) {
+      console.error('Error starting direct message:', error)
+      toast.error('Failed to start chat')
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-  }
-
-  const formatReadingTime = (minutes: number) => {
-    if (minutes < 1) return '< 1 min read'
-    return `${minutes} min read`
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading profile...</div>
-      </div>
-    )
-  }
-
-  if (error || !profile) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🤷</div>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            {error || 'Profile not found'}
-          </h1>
-          <p className="text-gray-400 mb-6">
-            This user doesn't exist or their profile is private
-          </p>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 pb-32">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="text-white hover:text-gray-200 mb-8"
-          >
-            ← Back to Home
-          </button>
-        </div>
-      </div>
-
-      {/* Profile Card */}
-      <div className="max-w-5xl mx-auto px-6 -mt-24">
-        <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-700">
-          {/* Profile Header */}
-          <div className="p-8">
-            <div className="flex items-start gap-6">
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                {profile.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.display_name}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-700"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-4 border-gray-700">
-                    <User className="w-12 h-12 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* Profile Info */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold text-white mb-1">
-                  {profile.display_name}
-                </h1>
-                <p className="text-gray-400 mb-4">@{profile.username}</p>
-                
-                {/* Follower Counts */}
-                <div className="flex items-center gap-4 text-sm mb-4">
-                  <button className="text-gray-300 hover:text-white" onClick={() => openFollowers()}>
-                    <span className="font-semibold">{followersCount}</span>
-                    <span className="text-gray-400"> {followersCount === 1 ? 'follower' : 'followers'}</span>
-                  </button>
-                  <button className="text-gray-300 hover:text-white" onClick={() => openFollowing()}>
-                    <span className="font-semibold">{followingCount}</span>
-                    <span className="text-gray-400"> following</span>
-                  </button>
-                </div>
   const openFollowers = async () => {
     if (!profile) return
+    
     setShowFollowersModal(true)
-    setListLoading(true)
+    setLoadingFollowers(true)
+    
     try {
       const token = localStorage.getItem('access_token')
-      if (!token) return
-      const resp = await fetch(`${API_URL}/api/v1/relationships/followers`, { headers: { 'Authorization': `Bearer ${token}` } })
-      if (resp.ok) {
-        const data = await resp.json()
-        setFollowersList(data.followers || [])
+      const response = await fetch(`${API_URL}/api/v1/relationships/followers?user_id=${profile.user_id}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setFollowers(data.followers || [])
+      } else {
+        toast.error('Failed to load followers')
       }
-    } catch (err) {
-      console.error('Failed to load followers:', err)
+    } catch (error) {
+      console.error('Error loading followers:', error)
       toast.error('Failed to load followers')
     } finally {
-      setListLoading(false)
+      setLoadingFollowers(false)
     }
   }
 
   const openFollowing = async () => {
     if (!profile) return
+    
     setShowFollowingModal(true)
-    setListLoading(true)
+    setLoadingFollowers(true)
+    
     try {
       const token = localStorage.getItem('access_token')
-      if (!token) return
-      const resp = await fetch(`${API_URL}/api/v1/relationships/following`, { headers: { 'Authorization': `Bearer ${token}` } })
-      if (resp.ok) {
-        const data = await resp.json()
-        setFollowingList(data.following || [])
+      const response = await fetch(`${API_URL}/api/v1/relationships/following?user_id=${profile.user_id}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setFollowing(data.following || [])
+      } else {
+        toast.error('Failed to load following')
       }
-    } catch (err) {
-      console.error('Failed to load following:', err)
+    } catch (error) {
+      console.error('Error loading following:', error)
       toast.error('Failed to load following')
     } finally {
-      setListLoading(false)
+      setLoadingFollowers(false)
     }
   }
 
   const closeFollowers = () => setShowFollowersModal(false)
   const closeFollowing = () => setShowFollowingModal(false)
 
-  const modalBase = 'fixed inset-0 flex items-center justify-center z-50'
-  const overlayBase = 'absolute inset-0 bg-black/60 backdrop-blur-sm'
-  const panelBase = 'relative bg-gray-800 border border-gray-700 rounded-lg w-full max-w-md mx-auto shadow-xl'
-
-  const renderUserList = (list: any[]) => (
-    <div className="divide-y divide-gray-700">
-      {list.length === 0 && (
-        <div className="p-6 text-center text-gray-400">No users</div>
-      )}
-      {list.map(user => (
-        <div key={user.id} className="p-4 flex items-center gap-3">
-          {user.avatar_url ? (
-            <img src={user.avatar_url} alt={user.full_name || user.email} className="w-10 h-10 rounded-full object-cover" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-400" />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white truncate">{user.full_name || user.email}</div>
-            {user.followed_at && (
-              <div className="text-xs text-gray-400">Since {new Date(user.followed_at).toLocaleDateString()}</div>
-            )}
-          </div>
+  const renderUserList = (users: FollowUser[], title: string) => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => {
+      if (e.target === e.currentTarget) {
+        title === 'Followers' ? closeFollowers() : closeFollowing()
+      }
+    }}>
+      <div className="rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto" style={{ backgroundColor: '#524944' }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{title}</h2>
           <button
-            onClick={() => window.location.href = `/users/${user.email.split('@')[0]}`}
-            className="text-xs px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded"
-          >View</button>
+            onClick={title === 'Followers' ? closeFollowers : closeFollowing}
+            className="p-2 rounded-lg hover:bg-black/20 transition-colors"
+          >
+            <X className="w-5 h-5" style={{ color: '#B3B2B0' }} />
+          </button>
         </div>
-      ))}
+
+        {loadingFollowers ? (
+          <div className="text-center py-8" style={{ color: '#B3B2B0' }}>Loading...</div>
+        ) : users.length === 0 ? (
+          <div className="text-center py-8" style={{ color: '#B3B2B0' }}>No {title.toLowerCase()} yet</div>
+        ) : (
+          <div className="space-y-4">
+            {users.map((user) => (
+              <div key={user.user_id} className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                <div className="flex items-center gap-3">
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.username} className="w-12 h-12 rounded-full" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#6C6A68' }}>
+                      <User className="w-6 h-6" style={{ color: '#B3B2B0' }} />
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-medium" style={{ color: '#F1EEEB' }}>
+                      {user.display_name || user.username}
+                    </div>
+                    <div className="text-sm" style={{ color: '#B3B2B0' }}>@{user.username}</div>
+                    {user.followed_at && (
+                      <div className="text-xs mt-1" style={{ color: '#B3B2B0' }}>
+                        Since {new Date(user.followed_at).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => window.location.href = `/profile?username=${user.username}`}
+                  className="px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#EDAC53', color: '#2E2A27' }}
+                >
+                  View
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 
-                {/* Meta Info */}
-                <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
-                  {profile.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {profile.location}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    Joined {formatDate(profile.created_at)}
-                  </div>
-                </div>
-
-                {/* Links */}
-                <div className="flex flex-wrap gap-3">
-                  {profile.website && (
-                    <a
-                      href={profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm"
-                    >
-                      <Globe className="w-4 h-4" />
-                      Website
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                  {profile.twitter_handle && (
-                    <a
-                      href={`https://twitter.com/${profile.twitter_handle}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm"
-                    >
-                      <Twitter className="w-4 h-4" />
-                      @{profile.twitter_handle}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-              </div>
-              
-              {/* Follow Button */}
-              {!isOwnProfile && (
-                <div className="flex-shrink-0 flex items-center gap-3">
-                  {/* Message Button */}
-                  <button
-                    onClick={messageUser}
-                    disabled={!isReady}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={isReady ? 'Send Message' : 'Messaging not ready yet'}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Message
-                  </button>
-                  {isFollowing ? (
-                    <button
-                      onClick={unfollowUser}
-                      disabled={followLoading}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <UserMinus className="w-4 h-4" />
-                      {followLoading ? 'Updating...' : 'Unfollow'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={followUser}
-                      disabled={followLoading}
-                      className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      {followLoading ? 'Updating...' : 'Follow'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Bio */}
-            {profile.bio && (
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <p className="text-gray-300 text-lg leading-relaxed">{profile.bio}</p>
-              </div>
-            )}
-
-            {/* Interests */}
-            {profile.interests && profile.interests.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-400 mb-3">Interests</h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests.map((interest, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm"
-                    >
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Tabs */}
-          <div className="border-t border-gray-700">
-            <div className="flex gap-8 px-8">
-              <button
-                onClick={() => setActiveTab('about')}
-                className={`py-4 border-b-2 font-medium transition-colors ${
-                  activeTab === 'about'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  About
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('documents')}
-                className={`py-4 border-b-2 font-medium transition-colors ${
-                  activeTab === 'documents'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Public Documents ({documents.length})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('bookshelf')}
-                className={`py-4 border-b-2 font-medium transition-colors ${
-                  activeTab === 'bookshelf'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Book className="w-4 h-4" />
-                  Bookshelf ({bookshelf.length})
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-8">
-            {activeTab === 'about' && (
-              <div className="text-center text-gray-400 py-12">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>More details coming soon...</p>
-              </div>
-            )}
-
-            {activeTab === 'documents' && (
-              <div>
-                {documents.length === 0 ? (
-            {showFollowersModal && (
-              <div className={modalBase}>
-                <div className={overlayBase} onClick={closeFollowers} />
-                <div className={panelBase}>
-                  <div className="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h3 className="text-white font-semibold">Followers</h3>
-                    <button onClick={closeFollowers} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
-                  </div>
-                  {listLoading ? (
-                    <div className="p-6 text-center text-gray-400">Loading...</div>
-                  ) : (
-                    renderUserList(followersList)
-                  )}
-                </div>
-              </div>
-            )}
-            {showFollowingModal && (
-              <div className={modalBase}>
-                <div className={overlayBase} onClick={closeFollowing} />
-                <div className={panelBase}>
-                  <div className="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h3 className="text-white font-semibold">Following</h3>
-                    <button onClick={closeFollowing} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
-                  </div>
-                  {listLoading ? (
-                    <div className="p-6 text-center text-gray-400">Loading...</div>
-                  ) : (
-                    renderUserList(followingList)
-                  )}
-                </div>
-              </div>
-            )}
-                  <div className="text-center text-gray-400 py-12">
-                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No public documents yet</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {documents.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="bg-gray-700 rounded-lg p-6 hover:bg-gray-650 transition-colors cursor-pointer"
-                        onClick={() => window.location.href = `/document?id=${doc.id}`}
-                      >
-                        <h3 className="text-xl font-semibold text-white mb-2">
-                          {doc.title}
-                        </h3>
-                        {doc.description && (
-                          <p className="text-gray-400 mb-4 line-clamp-2">
-                            {doc.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <span>{doc.word_count.toLocaleString()} words</span>
-                          <span>•</span>
-                          <span>{formatReadingTime(doc.reading_time)}</span>
-                          <span>•</span>
-                          <span>Updated {formatDate(doc.updated_at)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'bookshelf' && (
-              <div>
-                {bookshelf.length === 0 ? (
-                  <div className="text-center text-gray-400 py-12">
-                    <Book className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No public book reviews yet</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {bookshelf.map((item) => {
-                      const bookTitle = item.title || item.document_title || 'Untitled'
-                      const bookAuthor = item.author || 'Unknown Author'
-                      
-                      return (
-                        <div
-                          key={item.id}
-                          className="bg-gray-700 rounded-lg overflow-hidden hover:bg-gray-650 transition-colors"
-                        >
-                          {/* Book Cover */}
-                          {item.cover_url ? (
-                            <img
-                              src={item.cover_url}
-                              alt={bookTitle}
-                              className="w-full h-64 object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-64 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-                              <BookOpen className="w-16 h-16 text-white opacity-50" />
-                            </div>
-                          )}
-
-                          {/* Book Info */}
-                          <div className="p-4">
-                            <h3 className="font-semibold text-white mb-1 line-clamp-2 text-sm">
-                              {bookTitle}
-                            </h3>
-                            <p className="text-xs text-gray-400 mb-2 line-clamp-1">
-                              {bookAuthor}
-                            </p>
-
-                            {/* Rating */}
-                            {item.rating && (
-                              <div className="flex items-center gap-1 mb-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`w-3 h-3 ${
-                                      star <= item.rating!
-                                        ? 'text-yellow-400 fill-yellow-400'
-                                        : 'text-gray-600'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Review */}
-                            {item.review && (
-                              <p className="text-xs text-gray-300 line-clamp-3 mt-2 italic">
-                                "{item.review}"
-                              </p>
-                            )}
-
-                            {/* Status Badge */}
-                            <div className="mt-3">
-                              <span className="inline-block px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">
-                                {item.status === 'read' && '✅ Read'}
-                                {item.status === 'reading' && '📖 Reading'}
-                                {item.status === 'want-to-read' && '📚 Want to Read'}
-                                {item.status === 'favorites' && '⭐ Favorite'}
-                                {item.status === 'dnf' && '❌ DNF'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading profile...</div>
         </div>
       </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+        <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="flex items-center justify-center h-screen">
+          <div style={{ color: '#B3B2B0' }}>Profile not found</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+
+      <div className="max-w-5xl mx-auto px-6 py-24">
+        {/* Profile Header */}
+        <div className="rounded-lg p-8 mb-8" style={{ backgroundColor: '#524944' }}>
+          <div className="flex items-start gap-6">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.username} className="w-32 h-32 rounded-full" />
+            ) : (
+              <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ backgroundColor: '#6C6A68' }}>
+                <User className="w-16 h-16" style={{ color: '#B3B2B0' }} />
+              </div>
+            )}
+
+            <div className="flex-1">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2" style={{ color: '#F1EEEB' }}>
+                    {profile.display_name || profile.username}
+                  </h1>
+                  <p className="text-lg" style={{ color: '#B3B2B0' }}>@{profile.username}</p>
+                </div>
+
+                {currentUser && currentUser.id !== profile.user_id && (
+                  <div className="flex gap-3">
+                    {profile.is_following ? (
+                      <button
+                        onClick={handleUnfollow}
+                        className="px-4 py-2 rounded-lg flex items-center gap-2 transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: '#6C6A68', color: '#F1EEEB' }}
+                      >
+                        <UserMinus className="w-4 h-4" />
+                        Unfollow
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleFollow}
+                        className="px-4 py-2 rounded-lg flex items-center gap-2 transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: '#EDAC53', color: '#2E2A27' }}
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Follow
+                      </button>
+                    )}
+                    <button
+                      onClick={handleMessage}
+                      className="px-4 py-2 rounded-lg flex items-center gap-2 transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#524944', borderColor: '#6C6A68', borderWidth: '1px', color: '#F1EEEB' }}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {profile.bio && (
+                <p className="mb-4" style={{ color: '#F1EEEB' }}>{profile.bio}</p>
+              )}
+
+              <div className="flex flex-wrap gap-4 mb-4 text-sm" style={{ color: '#B3B2B0' }}>
+                {profile.location && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                </div>
+                {profile.website && (
+                  <a
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                    style={{ color: '#EDAC53' }}
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span>Website</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {profile.twitter_handle && (
+                  <a
+                    href={`https://twitter.com/${profile.twitter_handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                    style={{ color: '#EDAC53' }}
+                  >
+                    <Twitter className="w-4 h-4" />
+                    <span>@{profile.twitter_handle}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+
+              <div className="flex gap-6 text-sm">
+                <button
+                  onClick={openFollowers}
+                  className="hover:opacity-80 transition-opacity"
+                  style={{ color: '#F1EEEB' }}
+                >
+                  <span className="font-bold">{profile.follower_count}</span>{' '}
+                  <span style={{ color: '#B3B2B0' }}>Followers</span>
+                </button>
+                <button
+                  onClick={openFollowing}
+                  className="hover:opacity-80 transition-opacity"
+                  style={{ color: '#F1EEEB' }}
+                >
+                  <span className="font-bold">{profile.following_count}</span>{' '}
+                  <span style={{ color: '#B3B2B0' }}>Following</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="rounded-lg p-6" style={{ backgroundColor: '#524944' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <FileText className="w-6 h-6" style={{ color: '#EDAC53' }} />
+              <span className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{profile.document_count}</span>
+            </div>
+            <p style={{ color: '#B3B2B0' }}>Documents</p>
+          </div>
+
+          <div className="rounded-lg p-6" style={{ backgroundColor: '#524944' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <BookOpen className="w-6 h-6" style={{ color: '#EDAC53' }} />
+              <span className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{bookshelf.length}</span>
+            </div>
+            <p style={{ color: '#B3B2B0' }}>Books</p>
+          </div>
+
+          <div className="rounded-lg p-6" style={{ backgroundColor: '#524944' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <Star className="w-6 h-6" style={{ color: '#EDAC53' }} />
+              <span className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{profile.reputation_score || 0}</span>
+            </div>
+            <p style={{ color: '#B3B2B0' }}>Reputation</p>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="border-b mb-6" style={{ borderColor: '#6C6A68' }}>
+          <div className="flex gap-6">
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={`pb-3 px-2 font-medium transition-colors ${
+                activeTab === 'documents' ? 'border-b-2' : ''
+              }`}
+              style={{
+                color: activeTab === 'documents' ? '#EDAC53' : '#B3B2B0',
+                borderColor: activeTab === 'documents' ? '#EDAC53' : 'transparent'
+              }}
+            >
+              Documents ({documents.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('bookshelf')}
+              className={`pb-3 px-2 font-medium transition-colors ${
+                activeTab === 'bookshelf' ? 'border-b-2' : ''
+              }`}
+              style={{
+                color: activeTab === 'bookshelf' ? '#EDAC53' : '#B3B2B0',
+                borderColor: activeTab === 'bookshelf' ? '#EDAC53' : 'transparent'
+              }}
+            >
+              Bookshelf ({bookshelf.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        {activeTab === 'documents' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {documents.length === 0 ? (
+              <div className="col-span-2 text-center py-12" style={{ color: '#B3B2B0' }}>
+                No public documents yet
+              </div>
+            ) : (
+              documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="rounded-lg p-6 hover:scale-105 transition-transform cursor-pointer"
+                  style={{ backgroundColor: '#524944' }}
+                  onClick={() => window.location.href = `/document?id=${doc.id}`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <FileText className="w-6 h-6" style={{ color: '#EDAC53' }} />
+                    <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: '#6C6A68', color: '#F1EEEB' }}>
+                      {doc.status}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: '#F1EEEB' }}>
+                    {doc.title || 'Untitled'}
+                  </h3>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>
+                    {doc.word_count.toLocaleString()} words
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {bookshelf.length === 0 ? (
+              <div className="col-span-4 text-center py-12" style={{ color: '#B3B2B0' }}>
+                No books on shelf yet
+              </div>
+            ) : (
+              bookshelf.map((book) => (
+                <div key={book.id} className="rounded-lg overflow-hidden hover:scale-105 transition-transform">
+                  {book.cover_url ? (
+                    <img src={book.cover_url} alt={book.title} className="w-full aspect-[2/3] object-cover" />
+                  ) : (
+                    <div className="w-full aspect-[2/3] flex items-center justify-center" style={{ backgroundColor: '#524944' }}>
+                      <Book className="w-12 h-12" style={{ color: '#B3B2B0' }} />
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      {showFollowersModal && renderUserList(followers, 'Followers')}
+      {showFollowingModal && renderUserList(following, 'Following')}
     </div>
   )
 }

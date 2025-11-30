@@ -468,15 +468,6 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       default: return <Clock className="h-5 w-5" />
     }
   }
-      } else {
-        const error = await response.json()
-        setInviteMessage({ type: 'error', text: error.detail || 'Failed to process approval' })
-      }
-    } catch (error) {
-      console.error('[AdminDashboard] Error approving user:', error)
-      setInviteMessage({ type: 'error', text: 'Failed to process approval' })
-    }
-  }
 
   // Load invitations and pending users when Site Admin tab becomes active
   useEffect(() => {
