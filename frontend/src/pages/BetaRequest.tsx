@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { Send, FileText, Calendar, Users } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 export default function BetaRequest() {
-  const [params] = useSearchParams()
+  const params = new URLSearchParams(window.location.search)
   const targetUserId = params.get('user_id')
   const [user, setUser] = useState<User | null>(null)
   const [saving, setSaving] = useState(false)

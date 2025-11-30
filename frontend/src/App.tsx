@@ -34,7 +34,7 @@ const ViewAllGroups = lazy(() => import('./pages/staff/ViewAllGroups').then(modu
 const GlobalModeration = lazy(() => import('./pages/staff/GlobalModeration').then(module => ({ default: module.GlobalModeration })))
 const SystemSettings = lazy(() => import('./pages/staff/SystemSettings').then(module => ({ default: module.SystemSettings })))
 const StoreAnalytics = lazy(() => import('./pages/staff/StoreAnalytics').then(module => ({ default: module.StoreAnalytics })))
-const Documents = lazy(() => import('./pages/Documents').then(module => ({ default: module.Documents })))
+const Documents = lazy(() => import('./pages/Documents'))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
 const PublicProfile = lazy(() => import('./pages/PublicProfile'))
@@ -67,14 +67,14 @@ const ExportCenter = lazy(() => import('./pages/ExportCenter').then(module => ({
 const AccessibilitySettings = lazy(() => import('./pages/AccessibilitySettings').then(module => ({ default: module.AccessibilitySettings })))
 const AdvancedSearch = lazy(() => import('./pages/AdvancedSearch').then(module => ({ default: module.AdvancedSearch })))
 const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module => ({ default: module.BookSuggestions })))
-const Messages = lazy(() => import('./pages/Messages').then(module => ({ default: module.Messages })))
+const Messages = lazy(() => import('./pages/Messages'))
 const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 const Relationships = lazy(() => import('./pages/Relationships'))
 const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'my-beta-profile' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse'>('home')
 
   useEffect(() => {
     // Check authentication and route

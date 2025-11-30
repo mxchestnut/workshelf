@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
-import { BookOpen, Star, Clock, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, MessageSquare, Send } from 'lucide-react'
+import { BookOpen, Star, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, MessageSquare, Send } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 interface PortfolioLink {
@@ -44,7 +43,8 @@ interface Review {
 }
 
 export default function BetaProfileView() {
-  const { userId } = useParams()
+  const params = new URLSearchParams(window.location.search)
+  const userId = params.get('userId')
   const [viewer, setViewer] = useState<User | null>(null)
   const [profile, setProfile] = useState<BetaProfile | null>(null)
   const [loading, setLoading] = useState(true)

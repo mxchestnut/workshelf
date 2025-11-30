@@ -43,12 +43,12 @@ export function ChatManager() {
       }
     }
 
-    window.addEventListener('openChat', handleOpenChat as EventListener)
-    window.addEventListener('openChatByUserId', handleOpenChatByUserId as EventListener)
+    window.addEventListener('openChat', handleOpenChat as unknown as EventListener)
+    window.addEventListener('openChatByUserId', handleOpenChatByUserId as unknown as EventListener)
 
     return () => {
-      window.removeEventListener('openChat', handleOpenChat as EventListener)
-      window.removeEventListener('openChatByUserId', handleOpenChatByUserId as EventListener)
+      window.removeEventListener('openChat', handleOpenChat as unknown as EventListener)
+      window.removeEventListener('openChatByUserId', handleOpenChatByUserId as unknown as EventListener)
     }
   }, [openChats, isReady, openMatrixChat])
 

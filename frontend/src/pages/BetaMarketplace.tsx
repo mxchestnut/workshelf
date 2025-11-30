@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import { User, authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
-import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle } from 'lucide-react'
+import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle, MessageSquare } from 'lucide-react'
 import { toast } from '../services/toast'
 
 interface BetaProfile {
