@@ -60,6 +60,7 @@ def current_user_dict():
 @pytest.fixture
 def pending_submission():
     """Create a pending EPUB submission"""
+    from datetime import datetime
     return EpubSubmission(
         id=1,
         user_id=2,
@@ -68,7 +69,10 @@ def pending_submission():
         file_hash="abc123",
         blob_url="epubs/abc123.epub",
         file_size_bytes=1000000,
-        status=SubmissionStatus.NEEDS_REVIEW
+        status=SubmissionStatus.NEEDS_REVIEW,
+        requires_manual_review=True,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
     )
 
 

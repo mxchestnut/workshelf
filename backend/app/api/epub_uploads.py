@@ -465,7 +465,8 @@ async def moderate_submission(
     
     await db.commit()
     
-    return {"message": f"Submission {action.action}ed successfully"}
+    action_past_tense = "approved" if action.action == "approve" else "rejected"
+    return {"message": f"Submission {action_past_tense} successfully"}
 
 
 # ============================================================================
