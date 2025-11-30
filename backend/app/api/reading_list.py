@@ -1,7 +1,7 @@
 """Reading List API - Bookmarks and curated reading lists"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -143,7 +143,7 @@ async def get_list_documents(list_id: int, current_user: Dict[str, Any] = Depend
 async def browse_public_lists(
     skip: int = 0, 
     limit: int = 20, 
-    search: str | None = None,
+    search: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Browse public reading lists. No auth required."""
