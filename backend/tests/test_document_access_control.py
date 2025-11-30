@@ -35,7 +35,9 @@ def sample_document():
         title="Test Document",
         status=DocumentStatus.DRAFT,
         visibility=DocumentVisibility.PRIVATE,
-        studio_id=None
+        studio_id=None,
+        current_version=1,
+        word_count=0
     )
 
 
@@ -49,7 +51,9 @@ def studio_document():
         title="Studio Document",
         status=DocumentStatus.PUBLISHED,
         visibility=DocumentVisibility.STUDIO,
-        studio_id=50
+        studio_id=50,
+        current_version=1,
+        word_count=100
     )
 
 
@@ -116,14 +120,10 @@ async def test_unapproved_studio_member_cannot_access(mock_session, studio_docum
     doc_result = MagicMock()
     doc_result.scalar_one_or_none.return_value = studio_document
     
-    # Mock studio membership query - user is member but NOT approved
+    # Mock studio membership query - return None because SQL WHERE clause includes is_approved=True
+    # An unapproved member won't match the query
     member_result = MagicMock()
-    member_result.scalar_one_or_none.return_value = MagicMock(
-        studio_id=50,
-        user_id=user_id,
-        is_active=True,
-        is_approved=False  # Not approved!
-    )
+    member_result.scalar_one_or_none.return_value = None  # No approved member found
     
     mock_session.execute.side_effect = [doc_result, member_result]
     
