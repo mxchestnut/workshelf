@@ -64,15 +64,16 @@ export function calculateStreak(activities: ActivityEvent[]): StreakData {
   // Calculate current streak
   let currentStreak = 0
   const startDate = isActiveToday ? today : getYesterday()
-  let checkDate = new Date(startDate)
+  const checkDate = new Date(startDate)
   
-  while (true) {
+  let continueChecking = true
+  while (continueChecking) {
     const dateStr = checkDate.toISOString().split('T')[0]
     if (sortedDates.includes(dateStr)) {
       currentStreak++
       checkDate.setDate(checkDate.getDate() - 1)
     } else {
-      break
+      continueChecking = false
     }
   }
 
