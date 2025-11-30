@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List, Trash2, Edit2, Save, X, Loader2 } from 'lucide-react'
+import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
@@ -83,16 +83,16 @@ export default function Bookshelf() {
 
   // Reading Lists state
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])
-  const [selectedList, setSelectedList] = useState<ReadingList | null>(null)
-  const [listDocuments, setListDocuments] = useState<ListDocument[]>([])
-  const [showCreateList, setShowCreateList] = useState(false)
-  const [newListName, setNewListName] = useState('')
-  const [newListDescription, setNewListDescription] = useState('')
-  const [newListPublic, setNewListPublic] = useState(false)
-  const [editingList, setEditingList] = useState<ReadingList | null>(null)
+  const [_selectedList, _setSelectedList] = useState<ReadingList | null>(null)
+  const [_listDocuments, _setListDocuments] = useState<ListDocument[]>([])
+  const [_showCreateList, _setShowCreateList] = useState(false)
+  const [_newListName, _setNewListName] = useState('')
+  const [_newListDescription, _setNewListDescription] = useState('')
+  const [_newListPublic, _setNewListPublic] = useState(false)
+  const [_editingList, _setEditingList] = useState<ReadingList | null>(null)
   const [loadingLists, setLoadingLists] = useState(false)
-  const [savingList, setSavingList] = useState(false)
-  const [deletingListId, setDeletingListId] = useState<number | null>(null)
+  const [_savingList, _setSavingList] = useState(false)
+  const [_deletingListId, _setDeletingListId] = useState<number | null>(null)
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -271,145 +271,12 @@ export default function Bookshelf() {
     }
   }
 
-  const createReadingList = async () => {
-    if (!newListName.trim()) return
-
-    setSavingList(true)
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-
-      const response = await fetch(`${API_URL}/api/v1/reading-lists/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: newListName,
-          description: newListDescription || null,
-          is_public: newListPublic
-        })
-      })
-
-      if (response.ok) {
-        setNewListName('')
-        setNewListDescription('')
-        setNewListPublic(false)
-        setShowCreateList(false)
-        await loadReadingLists()
-      }
-    } catch (error) {
-      console.error('Failed to create reading list:', error)
-    } finally {
-      setSavingList(false)
-    }
-  }
-
-  const updateReadingList = async () => {
-    if (!editingList) return
-
-    setSavingList(true)
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-
-      const response = await fetch(`${API_URL}/api/v1/reading-lists/${editingList.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: editingList.name,
-          description: editingList.description,
-          is_public: editingList.is_public
-        })
-      })
-
-      if (response.ok) {
-        setEditingList(null)
-        await loadReadingLists()
-      }
-    } catch (error) {
-      console.error('Failed to update reading list:', error)
-    } finally {
-      setSavingList(false)
-    }
-  }
-
-  const deleteReadingList = async (listId: number) => {
-    if (!confirm('Are you sure you want to delete this reading list?')) return
-
-    setDeletingListId(listId)
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-
-      const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        await loadReadingLists()
-        if (selectedList?.id === listId) {
-          setSelectedList(null)
-          setListDocuments([])
-        }
-      }
-    } catch (error) {
-      console.error('Failed to delete reading list:', error)
-    } finally {
-      setDeletingListId(null)
-    }
-  }
-
-  const viewListDocuments = async (list: ReadingList) => {
-    setSelectedList(list)
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-
-      const response = await fetch(`${API_URL}/api/v1/reading-lists/${list.id}/documents`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setListDocuments(data.items || [])
-      }
-    } catch (error) {
-      console.error('Failed to load list documents:', error)
-    }
-  }
-
-  const removeFromList = async (listId: number, documentId: number) => {
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-
-      const response = await fetch(`${API_URL}/api/v1/reading-lists/${listId}/documents/${documentId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        setListDocuments(prev => prev.filter(doc => doc.id !== documentId))
-        // Update the document count
-        setReadingLists(prev => prev.map(list => 
-          list.id === listId 
-            ? { ...list, document_count: list.document_count - 1 }
-            : list
-        ))
-        if (selectedList) {
-          setSelectedList({ ...selectedList, document_count: selectedList.document_count - 1 })
-        }
-      }
-    } catch (error) {
-      console.error('Failed to remove from list:', error)
-    }
-  }
+  // TODO: Implement reading list management features
+  // - Create reading list
+  // - Update reading list
+  // - Delete reading list
+  // - View list documents
+  // - Remove from list
 
   const filteredBooks = books.filter(book => {
     // Filter by active tab

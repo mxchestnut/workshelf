@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
-import { Clock, CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
+import { CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 interface BetaRequestItem {
