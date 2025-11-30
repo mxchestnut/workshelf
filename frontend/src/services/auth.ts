@@ -145,7 +145,9 @@ class AuthService {
     // Notify app that auth is now ready (same-tab listeners)
     try {
       window.dispatchEvent(new CustomEvent('auth:logged-in'))
-    } catch {}
+    } catch {
+      // Ignore errors dispatching auth event
+    }
 
     // Fetch user info from our backend
     const user = await this.fetchUserInfo()

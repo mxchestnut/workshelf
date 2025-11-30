@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 // Force rebuild: 2025-11-09
-const rootDir = new URL('.', import.meta.url).pathname
+// const rootDir = new URL('.', import.meta.url).pathname
 
 export default defineConfig({
   plugins: [react()],

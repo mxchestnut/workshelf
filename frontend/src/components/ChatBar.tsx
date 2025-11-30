@@ -13,7 +13,6 @@ export function ChatBar() {
 
   // Only show if user is logged in
   const isLoggedIn = !!authService.getToken()
-  if (!isLoggedIn) return null
 
   const badge = useMemo(() => {
     if (!isReady || !unreadCount) return null
@@ -25,6 +24,8 @@ export function ChatBar() {
       </span>
     )
   }, [isReady, unreadCount])
+
+  if (!isLoggedIn) return null
 
   const handleOpenMessages = () => {
     // Broadcast to toggle the ChatLauncher tray open
