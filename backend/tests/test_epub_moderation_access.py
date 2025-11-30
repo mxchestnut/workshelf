@@ -64,9 +64,10 @@ def pending_submission():
         id=1,
         user_id=2,
         title="Test Book",
-        author="Test Author",
+        author_name="Test Author",
         file_hash="abc123",
-        blob_path="epubs/abc123.epub",
+        blob_url="epubs/abc123.epub",
+        file_size_bytes=1000000,
         status=SubmissionStatus.NEEDS_REVIEW
     )
 
@@ -288,9 +289,10 @@ async def test_moderation_workflow_end_to_end(mock_db, staff_user, regular_user,
         id=1,
         user_id=regular_user.id,
         title="User's Book",
-        author="User Name",
+        author_name="User Name",
         file_hash="xyz789",
-        blob_path="epubs/xyz789.epub",
+        blob_url="epubs/xyz789.epub",
+        file_size_bytes=1000000,
         status=SubmissionStatus.NEEDS_REVIEW
     )
     
