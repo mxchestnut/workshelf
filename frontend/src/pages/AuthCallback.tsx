@@ -22,8 +22,8 @@ export function AuthCallback() {
     if (code) {
       const processedCodeKey = `oauth_code_${code}`
       if (sessionStorage.getItem(processedCodeKey)) {
-        console.error('[AuthCallback] Code already processed, aborting')
-        setError('This login link has already been used. Please try logging in again.')
+        console.log('[AuthCallback] Code already processed, waiting for redirect...')
+        // Don't set error - just wait for the first handler to complete
         return
       }
       // Mark as processing IMMEDIATELY, before any async work
