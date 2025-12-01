@@ -13,7 +13,7 @@ from datetime import datetime
 from app.core.database import get_db
 from app.core.auth import get_current_user
 
-router = APIRouter(prefix="/documents", tags=["bulk-upload"])
+router = APIRouter(prefix="/storage", tags=["bulk-upload", "storage"])
 
 
 STORAGE_TIERS = {
@@ -274,7 +274,7 @@ def derive_title_from_content(content: str, filename: str) -> str:
     return os.path.splitext(os.path.basename(filename))[0].replace('_', ' ').replace('-', ' ').title()
 
 
-@router.get("/storage")
+@router.get("/info")
 async def get_storage_info(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
