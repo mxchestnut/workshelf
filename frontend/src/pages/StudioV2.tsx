@@ -15,11 +15,22 @@ interface Project {
   target_word_count?: number
 }
 
+interface TreeFolder {
+  id: number
+  name: string
+  parent_id: number | null
+  color: string | null
+  icon: string | null
+  document_count: number
+  children: TreeFolder[]
+}
+
 interface Document {
   id: number
   title: string
   content: any
   project_id: number
+  folder_id: number | null
   status: string
   visibility: string
 }
@@ -27,8 +38,10 @@ interface Document {
 export default function StudioV2() {
   const [user, setUser] = useState<User | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
-  const [documents, setDocuments] = useState<{ [projectId: number]: Document[] }>({})
-  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [folders, setFolders] = useState<TreeFolder[]>([])
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(new Set())
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,6 +53,12 @@ export default function StudioV2() {
     loadUser()
     loadProjects()
   }, [])
+
+  useEffect(() => {
+    if (selectedProject) {
+      loadFoldersAndDocuments(selectedProject.id)
+    }
+  }, [selectedProject])
 
   const loadUser = async () => {
     const currentUser = await authService.getCurrentUser()
@@ -64,11 +83,9 @@ export default function StudioV2() {
         const data = await response.json()
         setProjects(data || [])
         
-        // Auto-expand first project and load its documents
+        // Auto-select first project
         if (data && data.length > 0) {
-          const firstProjectId = data[0].id
-          setExpandedProjects(new Set([firstProjectId]))
-          loadDocuments(firstProjectId)
+          setSelectedProject(data[0])
         }
       }
       setLoading(false)
@@ -87,27 +104,46 @@ export default function StudioV2() {
 
       if (response.ok) {
         const data = await response.json()
-        setDocuments(prev => ({ ...prev, [projectId]: data.documents || [] }))
+        setDocuments(data.documents || [])
       }
     } catch (err) {
       console.error('Error loading documents:', err)
     }
   }
 
-  const toggleProject = (projectId: number) => {
-    const newExpanded = new Set(expandedProjects)
-    if (newExpanded.has(projectId)) {
-      newExpanded.delete(projectId)
-    } else {
-      newExpanded.add(projectId)
-      if (!documents[projectId]) {
-        loadDocuments(projectId)
+  const loadFoldersAndDocuments = async (projectId: number) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      
+      // Load folder tree
+      const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree?project_id=${projectId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (foldersResponse.ok) {
+        const foldersData = await foldersResponse.json()
+        setFolders(foldersData || [])
       }
+      
+      // Load documents
+      await loadDocuments(projectId)
+    } catch (err) {
+      console.error('Error loading folders and documents:', err)
     }
-    setExpandedProjects(newExpanded)
   }
 
-  const createDocument = async (projectId: number) => {
+  const toggleFolder = (folderId: number) => {
+    const newExpanded = new Set(expandedFolders)
+    if (newExpanded.has(folderId)) {
+      newExpanded.delete(folderId)
+    } else {
+      newExpanded.add(folderId)
+    }
+    setExpandedFolders(newExpanded)
+  }
+
+  const createDocument = async (folderId: number | null = null) => {
+    if (!selectedProject) return
+
     try {
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents`, {
@@ -119,7 +155,8 @@ export default function StudioV2() {
         body: JSON.stringify({
           title: 'Untitled Document',
           content: { type: 'doc', content: [{ type: 'paragraph' }] },
-          project_id: projectId,
+          project_id: selectedProject.id,
+          folder_id: folderId,
           status: 'draft',
           visibility: 'private'
         })
@@ -127,14 +164,82 @@ export default function StudioV2() {
 
       if (response.ok) {
         const newDoc = await response.json()
-        setDocuments(prev => ({
-          ...prev,
-          [projectId]: [...(prev[projectId] || []), newDoc]
-        }))
+        setDocuments(prev => [...prev, newDoc])
         setSelectedDocument(newDoc)
       }
     } catch (err) {
       console.error('Error creating document:', err)
+    }
+  }
+
+  const createFolder = async (parentId: number | null) => {
+    if (!selectedProject) return
+    
+    const name = prompt('Folder name:')
+    if (!name) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/folders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          parent_id: parentId
+        })
+      })
+
+      if (response.ok) {
+        await loadFoldersAndDocuments(selectedProject.id)
+        if (parentId) {
+          setExpandedFolders(prev => new Set(prev).add(parentId))
+        }
+      }
+    } catch (err) {
+      console.error('Error creating folder:', err)
+    }
+  }
+
+  const renameFolder = async (folderId: number, newName: string) => {
+    if (!selectedProject) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/folders/${folderId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: newName })
+      })
+
+      if (response.ok) {
+        await loadFoldersAndDocuments(selectedProject.id)
+      }
+    } catch (err) {
+      console.error('Error renaming folder:', err)
+    }
+  }
+
+  const deleteFolder = async (folderId: number) => {
+    if (!confirm('Delete this folder? Documents inside will not be deleted.')) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/folders/${folderId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok && selectedProject) {
+        await loadFoldersAndDocuments(selectedProject.id)
+      }
+    } catch (err) {
+      console.error('Error deleting folder:', err)
     }
   }
 
@@ -182,12 +287,8 @@ export default function StudioV2() {
 
       if (response.ok) {
         setProjects(prev => prev.filter(p => p.id !== projectId))
-        setDocuments(prev => {
-          const newDocs = { ...prev }
-          delete newDocs[projectId]
-          return newDocs
-        })
-        if (selectedDocument?.project_id === projectId) {
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(projects[0] || null)
           setSelectedDocument(null)
         }
       }
@@ -211,13 +312,16 @@ export default function StudioV2() {
       if (response.ok) {
         const updated = await response.json()
         setProjects(prev => prev.map(p => p.id === projectId ? updated : p))
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(updated)
+        }
       }
     } catch (err) {
       console.error('Error renaming project:', err)
     }
   }
 
-  const deleteDocument = async (documentId: number, projectId: number) => {
+  const deleteDocument = async (documentId: number) => {
     if (!confirm('Delete this document? This cannot be undone.')) {
       return
     }
@@ -230,10 +334,7 @@ export default function StudioV2() {
       })
 
       if (response.ok) {
-        setDocuments(prev => ({
-          ...prev,
-          [projectId]: prev[projectId]?.filter(doc => doc.id !== documentId) || []
-        }))
+        setDocuments(prev => prev.filter(doc => doc.id !== documentId))
         if (selectedDocument?.id === documentId) {
           setSelectedDocument(null)
         }
@@ -267,12 +368,9 @@ export default function StudioV2() {
         const updated = await response.json()
         
         // Update in documents list
-        setDocuments(prev => ({
-          ...prev,
-          [updated.project_id]: prev[updated.project_id]?.map(doc =>
-            doc.id === updated.id ? updated : doc
-          ) || []
-        }))
+        setDocuments(prev => prev.map(doc =>
+          doc.id === updated.id ? updated : doc
+        ))
       } else if (response.status === 401) {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
@@ -305,10 +403,11 @@ export default function StudioV2() {
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
+        {/* Left Sidebar - File Explorer */}
         <div className="w-64 border-r border-border flex flex-col">
-          <div className="p-4 border-b border-border">
-            <div className="flex items-center justify-between mb-3">
+          {/* Header with Project Switcher */}
+          <div className="p-3 border-b border-border space-y-2">
+            <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold font-mono">Studio</h2>
               <button
                 onClick={() => setShowNewProjectModal(true)}
@@ -318,109 +417,55 @@ export default function StudioV2() {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
+            
+            {/* Project Switcher Dropdown */}
+            {selectedProject && (
+              <select
+                value={selectedProject.id}
+                onChange={(e) => {
+                  const project = projects.find(p => p.id === parseInt(e.target.value))
+                  if (project) setSelectedProject(project)
+                }}
+                className="w-full px-2 py-1.5 text-sm font-mono bg-background border border-border rounded-lg cursor-pointer hover:bg-accent"
+              >
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.title}</option>
+                ))}
+              </select>
+            )}
+            
             <button
               onClick={() => setShowBulkUploadModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
+              className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
             >
-              <Upload className="w-4 h-4" />
-              <span>Import Documents</span>
+              <Upload className="w-3 h-3" />
+              <span>Import</span>
             </button>
           </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          {projects.map(project => {
-            const isExpanded = expandedProjects.has(project.id)
-            const projectDocs = documents[project.id] || []
-
-            return (
-              <div key={project.id} className="border-b border-border">
-                <div
-                  className="flex items-center gap-2 p-3 hover:bg-accent cursor-pointer group"
-                  onClick={() => toggleProject(project.id)}
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                  {isExpanded ? (
-                    <FolderOpen className="w-4 h-4" />
-                  ) : (
-                    <Folder className="w-4 h-4" />
-                  )}
-                  <span className="flex-1 truncate font-mono text-sm">{project.title}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      const newTitle = prompt('Rename project:', project.title)
-                      if (newTitle && newTitle !== project.title) {
-                        renameProject(project.id, newTitle)
-                      }
-                    }}
-                    className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Rename project"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteProject(project.id)
-                    }}
-                    className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete project"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      createDocument(project.id)
-                    }}
-                    className="p-1 hover:bg-muted rounded"
-                    title="New document"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
-
-                {isExpanded && (
-                  <div className="pl-6">
-                    {projectDocs.length === 0 ? (
-                      <div className="p-3 text-xs text-muted-foreground font-mono">
-                        No documents yet
-                      </div>
-                    ) : (
-                      projectDocs.map(doc => (
-                        <div
-                          key={doc.id}
-                          className={`flex items-center gap-2 p-2 hover:bg-accent cursor-pointer group ${
-                            selectedDocument?.id === doc.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => setSelectedDocument(doc)}
-                        >
-                          <FileText className="w-3 h-3" />
-                          <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              deleteDocument(doc.id, project.id)
-                            }}
-                            className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Delete document"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          
+          {/* Folder Tree */}
+          {selectedProject ? (
+            <FolderTreeView 
+              folders={folders}
+              documents={documents}
+              expandedFolders={expandedFolders}
+              selectedDocId={selectedDocument?.id || null}
+              onToggleFolder={toggleFolder}
+              onDocumentSelect={setSelectedDocument}
+              onFolderCreate={createFolder}
+              onFolderRename={renameFolder}
+              onFolderDelete={deleteFolder}
+              onDocumentCreate={createDocument}
+              onDocumentDelete={deleteDocument}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-4 text-center">
+              <p className="text-xs text-muted-foreground font-mono">
+                No project selected
+              </p>
+            </div>
+          )}
         </div>
-      </div>
 
       {/* Main Editor Area */}
       <div className="flex-1 flex flex-col">
@@ -509,6 +554,171 @@ export default function StudioV2() {
             loadProjects()
           }}
         />
+      )}
+    </div>
+  )
+}
+
+// Folder Tree View Component
+function FolderTreeView({
+  folders,
+  documents,
+  expandedFolders,
+  selectedDocId,
+  onToggleFolder,
+  onDocumentSelect,
+  onFolderCreate,
+  onFolderRename,
+  onFolderDelete,
+  onDocumentCreate,
+  onDocumentDelete
+}: {
+  folders: TreeFolder[]
+  documents: Document[]
+  expandedFolders: Set<number>
+  selectedDocId: number | null
+  onToggleFolder: (folderId: number) => void
+  onDocumentSelect: (doc: Document) => void
+  onFolderCreate: (parentId: number | null) => void
+  onFolderRename: (folderId: number, newName: string) => void
+  onFolderDelete: (folderId: number) => void
+  onDocumentCreate: (folderId: number | null) => void
+  onDocumentDelete: (docId: number) => void
+}) {
+  const renderFolder = (folder: TreeFolder, depth: number = 0) => {
+    const isExpanded = expandedFolders.has(folder.id)
+    const folderDocs = documents.filter(d => d.folder_id === folder.id)
+    const paddingLeft = depth * 12
+
+    return (
+      <div key={`folder-${folder.id}`}>
+        <div
+          className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group"
+          style={{ paddingLeft: `${paddingLeft + 8}px` }}
+          onClick={() => onToggleFolder(folder.id)}
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-3 h-3 flex-shrink-0" />
+          ) : (
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+          )}
+          {isExpanded ? (
+            <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" style={{ color: folder.color || undefined }} />
+          ) : (
+            <Folder className="w-3.5 h-3.5 flex-shrink-0" style={{ color: folder.color || undefined }} />
+          )}
+          <span className="flex-1 truncate text-xs font-mono">{folder.name}</span>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDocumentCreate(folder.id)
+            }}
+            className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            title="New document"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              const newName = prompt('Rename folder:', folder.name)
+              if (newName && newName !== folder.name) {
+                onFolderRename(folder.id, newName)
+              }
+            }}
+            className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Rename folder"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onFolderDelete(folder.id)
+            }}
+            className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete folder"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        </div>
+
+        {isExpanded && (
+          <div>
+            {/* Render documents in this folder */}
+            {folderDocs.map(doc => (
+              <div
+                key={`doc-${doc.id}`}
+                className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
+                  selectedDocId === doc.id ? 'bg-accent' : ''
+                }`}
+                style={{ paddingLeft: `${paddingLeft + 28}px` }}
+                onClick={() => onDocumentSelect(doc)}
+              >
+                <FileText className="w-3 h-3 flex-shrink-0" />
+                <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDocumentDelete(doc.id)
+                  }}
+                  className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete document"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+
+            {/* Render subfolders */}
+            {folder.children.map(child => renderFolder(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const rootDocs = documents.filter(d => !d.folder_id)
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      {/* Root-level folders */}
+      {folders.map(folder => renderFolder(folder, 0))}
+
+      {/* Root-level documents */}
+      {rootDocs.length > 0 && (
+        <div className="border-t border-border mt-2 pt-2">
+          <div className="px-2 py-1 text-xs text-muted-foreground font-mono">Root</div>
+          {rootDocs.map(doc => (
+            <div
+              key={`doc-${doc.id}`}
+              className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
+                selectedDocId === doc.id ? 'bg-accent' : ''
+              }`}
+              onClick={() => onDocumentSelect(doc)}
+            >
+              <FileText className="w-3 h-3" />
+              <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDocumentDelete(doc.id)
+                }}
+                className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Delete document"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {folders.length === 0 && documents.length === 0 && (
+        <div className="p-4 text-center text-xs text-muted-foreground font-mono">
+          No folders or documents yet
+        </div>
       )}
     </div>
   )
