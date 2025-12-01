@@ -115,7 +115,6 @@ async def update_user_storage(db: AsyncSession, user_id: int, bytes_delta: int):
 async def bulk_upload_documents(
     files: List[UploadFile] = File(...),
     project_id: Optional[int] = Form(None),
-    folder_id: Optional[int] = Form(None),
     file_paths: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
