@@ -450,6 +450,7 @@ export default function StudioV2() {
               documents={documents}
               expandedFolders={expandedFolders}
               selectedDocId={selectedDocument?.id || null}
+              selectedProject={selectedProject}
               onToggleFolder={toggleFolder}
               onDocumentSelect={setSelectedDocument}
               onFolderCreate={createFolder}
@@ -457,6 +458,8 @@ export default function StudioV2() {
               onFolderDelete={deleteFolder}
               onDocumentCreate={createDocument}
               onDocumentDelete={deleteDocument}
+              onProjectRename={renameProject}
+              onProjectDelete={deleteProject}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center p-4 text-center">
@@ -565,18 +568,22 @@ function FolderTreeView({
   documents,
   expandedFolders,
   selectedDocId,
+  selectedProject,
   onToggleFolder,
   onDocumentSelect,
   onFolderCreate,
   onFolderRename,
   onFolderDelete,
   onDocumentCreate,
-  onDocumentDelete
+  onDocumentDelete,
+  onProjectRename,
+  onProjectDelete
 }: {
   folders: TreeFolder[]
   documents: Document[]
   expandedFolders: Set<number>
   selectedDocId: number | null
+  selectedProject: Project
   onToggleFolder: (folderId: number) => void
   onDocumentSelect: (doc: Document) => void
   onFolderCreate: (parentId: number | null) => void
@@ -584,6 +591,8 @@ function FolderTreeView({
   onFolderDelete: (folderId: number) => void
   onDocumentCreate: (folderId: number | null) => void
   onDocumentDelete: (docId: number) => void
+  onProjectRename: (projectId: number, newTitle: string) => void
+  onProjectDelete: (projectId: number) => void
 }) {
   const renderFolder = (folder: TreeFolder, depth: number = 0) => {
     const isExpanded = expandedFolders.has(folder.id)
@@ -682,44 +691,72 @@ function FolderTreeView({
   const rootDocs = documents.filter(d => !d.folder_id)
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {/* Root-level folders */}
-      {folders.map(folder => renderFolder(folder, 0))}
+    <div className="flex-1 overflow-y-auto flex flex-col">
+      <div className="flex-1">
+        {/* Root-level folders */}
+        {folders.map(folder => renderFolder(folder, 0))}
 
-      {/* Root-level documents */}
-      {rootDocs.length > 0 && (
-        <div className="border-t border-border mt-2 pt-2">
-          <div className="px-2 py-1 text-xs text-muted-foreground font-mono">Root</div>
-          {rootDocs.map(doc => (
-            <div
-              key={`doc-${doc.id}`}
-              className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
-                selectedDocId === doc.id ? 'bg-accent' : ''
-              }`}
-              onClick={() => onDocumentSelect(doc)}
-            >
-              <FileText className="w-3 h-3" />
-              <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDocumentDelete(doc.id)
-                }}
-                className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Delete document"
+        {/* Root-level documents */}
+        {rootDocs.length > 0 && (
+          <div className="border-t border-border mt-2 pt-2">
+            <div className="px-2 py-1 text-xs text-muted-foreground font-mono">Root</div>
+            {rootDocs.map(doc => (
+              <div
+                key={`doc-${doc.id}`}
+                className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
+                  selectedDocId === doc.id ? 'bg-accent' : ''
+                }`}
+                onClick={() => onDocumentSelect(doc)}
               >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                <FileText className="w-3 h-3" />
+                <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDocumentDelete(doc.id)
+                  }}
+                  className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete document"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {folders.length === 0 && documents.length === 0 && (
-        <div className="p-4 text-center text-xs text-muted-foreground font-mono">
-          No folders or documents yet
+        {folders.length === 0 && documents.length === 0 && (
+          <div className="p-4 text-center text-xs text-muted-foreground font-mono">
+            No folders or documents yet
+          </div>
+        )}
+      </div>
+
+      {/* Project Settings Section */}
+      <div className="border-t border-border mt-auto">
+        <div className="px-2 py-2">
+          <div className="text-xs text-muted-foreground font-mono mb-2 px-1">Project Settings</div>
+          <button
+            onClick={() => {
+              const newTitle = prompt('Rename project:', selectedProject.title)
+              if (newTitle && newTitle !== selectedProject.title) {
+                onProjectRename(selectedProject.id, newTitle)
+              }
+            }}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-mono hover:bg-accent rounded transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            <span>Rename Project</span>
+          </button>
+          <button
+            onClick={() => onProjectDelete(selectedProject.id)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs font-mono hover:bg-destructive/10 hover:text-destructive rounded transition-colors"
+          >
+            <Trash2 className="w-3 h-3" />
+            <span>Delete Project</span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   )
 }
