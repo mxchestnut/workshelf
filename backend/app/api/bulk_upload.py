@@ -114,13 +114,13 @@ async def bulk_upload_documents(
                         result = await db.execute(
                             text("""
                                 INSERT INTO documents (
-                                    owner_id, tenant_id, project_id, folder_id,
+                                    owner_id, tenant_id, project_id,
                                     title, content, word_count, file_size,
                                     status, visibility, current_version,
                                     created_at, updated_at
                                 )
                                 VALUES (
-                                    :owner_id, :tenant_id, :project_id, :folder_id,
+                                    :owner_id, :tenant_id, :project_id,
                                     :title, :content, :word_count, :file_size,
                                     'draft', 'private', 1,
                                     :now, :now
@@ -131,7 +131,6 @@ async def bulk_upload_documents(
                                 "owner_id": user.id,
                                 "tenant_id": user.tenant_id,
                                 "project_id": project_id,
-                                "folder_id": folder_id,
                                 "title": title,
                                 "content": clean_content,
                                 "word_count": word_count,
@@ -167,13 +166,13 @@ async def bulk_upload_documents(
             result = await db.execute(
                 text("""
                     INSERT INTO documents (
-                        owner_id, tenant_id, project_id, folder_id,
+                        owner_id, tenant_id, project_id,
                         title, content, word_count, file_size,
                         status, visibility, current_version,
                         created_at, updated_at
                     )
                     VALUES (
-                        :owner_id, :tenant_id, :project_id, :folder_id,
+                        :owner_id, :tenant_id, :project_id,
                         :title, :content, :word_count, :file_size,
                         'draft', 'private', 1,
                         :now, :now
@@ -184,7 +183,6 @@ async def bulk_upload_documents(
                     "owner_id": user.id,
                     "tenant_id": user.tenant_id,
                     "project_id": project_id,
-                    "folder_id": folder_id,
                     "title": title,
                     "content": clean_content,
                     "word_count": word_count,
