@@ -344,6 +344,7 @@ async def get_matrix_credentials(
         user_data = result.fetchone()
         
         if not user_data or not user_data[0]:  # matrix_user_id is None
+            print(f"[MATRIX CREDENTIALS] No Matrix account connected for user {current_user.id}")
             raise HTTPException(
                 status_code=404,
                 detail="No Matrix account connected. Please connect your Matrix account first."
@@ -353,20 +354,26 @@ async def get_matrix_credentials(
         matrix_token = user_data[1]
         matrix_homeserver = user_data[2] or "https://matrix.org"
         
+        print(f"[MATRIX CREDENTIALS] Found Matrix account: user_id={matrix_user_id}, homeserver={matrix_homeserver}, has_token={bool(matrix_token)}")
+        
         # Verify token is still valid
         try:
+            print(f"[MATRIX CREDENTIALS] Verifying token with homeserver: {matrix_homeserver}")
             verify_response = requests.get(
                 f"{matrix_homeserver}/_matrix/client/v3/account/whoami",
                 headers={"Authorization": f"Bearer {matrix_token}"},
                 timeout=5
             )
+            print(f"[MATRIX CREDENTIALS] Token verification response: {verify_response.status_code}")
             if verify_response.status_code == 200:
+                print(f"[MATRIX CREDENTIALS] Token valid, returning credentials")
                 return {
                     "matrix_user_id": matrix_user_id,
                     "matrix_access_token": matrix_token,
                     "homeserver": matrix_homeserver
                 }
             else:
+                print(f"[MATRIX CREDENTIALS] Token invalid, status={verify_response.status_code}, body={verify_response.text[:200]}")
                 raise HTTPException(
                     status_code=401,
                     detail="Matrix access token is invalid or expired. Please reconnect your account."
