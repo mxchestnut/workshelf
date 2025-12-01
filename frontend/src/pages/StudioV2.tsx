@@ -54,7 +54,7 @@ export default function StudioV2() {
         return
       }
 
-      const response = await fetch(`${API_URL}/v1/projects/?skip=0&limit=100`, {
+      const response = await fetch(`${API_URL}/api/v1/projects/?skip=0&limit=100`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -79,7 +79,7 @@ export default function StudioV2() {
   const loadDocuments = async (projectId: number) => {
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/v1/documents?project_id=${projectId}`, {
+      const response = await fetch(`${API_URL}/api/v1/documents?project_id=${projectId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
@@ -108,7 +108,7 @@ export default function StudioV2() {
   const createDocument = async (projectId: number) => {
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/v1/documents`, {
+      const response = await fetch(`${API_URL}/api/v1/documents`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -141,7 +141,7 @@ export default function StudioV2() {
 
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/v1/projects/`, {
+      const response = await fetch(`${API_URL}/api/v1/projects/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -172,7 +172,7 @@ export default function StudioV2() {
     setSaving(true)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/v1/documents/${selectedDocument.id}`, {
+      const response = await fetch(`${API_URL}/api/v1/documents/${selectedDocument.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
