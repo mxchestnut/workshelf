@@ -1,7 +1,7 @@
 """add folder_id to documents
 
-Revision ID: 006
-Revises: 005
+Revision ID: 008
+Revises: 007
 Create Date: 2025-12-01
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '006'
-down_revision = '005'
+revision = '008'
+down_revision = '007'
 branch_labels = None
 depends_on = None
 
