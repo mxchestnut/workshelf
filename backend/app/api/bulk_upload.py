@@ -9,6 +9,8 @@ from typing import Optional, List
 import zipfile
 import io
 import os
+import json
+import re
 from datetime import datetime
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -105,6 +107,9 @@ async def bulk_upload_documents(
                         # Extract metadata from Obsidian-style frontmatter
                         title, clean_content = parse_frontmatter(file_content, file_path)
                         
+                        # Convert markdown to TipTap JSON format
+                        tiptap_content = markdown_to_tiptap(clean_content)
+                        
                         # Determine folder structure
                         folder_name = os.path.dirname(file_path)
                         
@@ -132,7 +137,7 @@ async def bulk_upload_documents(
                                 "tenant_id": user.tenant_id,
                                 "project_id": project_id,
                                 "title": title,
-                                "content": clean_content,
+                                "content": json.dumps(tiptap_content),
                                 "word_count": word_count,
                                 "file_size": file_size_bytes,
                                 "now": datetime.utcnow()
@@ -161,6 +166,10 @@ async def bulk_upload_documents(
             file_size_bytes = len(content)
             
             title, clean_content = parse_frontmatter(file_content, file.filename)
+            
+            # Convert markdown to TipTap JSON format
+            tiptap_content = markdown_to_tiptap(clean_content)
+            
             word_count = len(clean_content.split())
             
             result = await db.execute(
@@ -184,7 +193,7 @@ async def bulk_upload_documents(
                     "tenant_id": user.tenant_id,
                     "project_id": project_id,
                     "title": title,
-                    "content": clean_content,
+                    "content": json.dumps(tiptap_content),
                     "word_count": word_count,
                     "file_size": file_size_bytes,
                     "now": datetime.utcnow()
@@ -224,6 +233,204 @@ async def bulk_upload_documents(
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+
+def markdown_to_tiptap(markdown: str) -> dict:
+    """
+    Convert markdown text to TipTap JSON format.
+    Supports common markdown features: headings, bold, italic, lists, links, code, etc.
+    """
+    content = []
+    lines = markdown.split('\n')
+    i = 0
+    
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        
+        # Empty line
+        if not stripped:
+            i += 1
+            continue
+        
+        # Headings
+        if stripped.startswith('#'):
+            level = len(stripped) - len(stripped.lstrip('#'))
+            level = min(level, 3)  # Max level 3
+            text = stripped.lstrip('#').strip()
+            content.append({
+                "type": "heading",
+                "attrs": {"level": level},
+                "content": parse_inline_markdown(text)
+            })
+            i += 1
+            continue
+        
+        # Bullet list
+        if stripped.startswith(('- ', '* ', '+ ')):
+            list_items = []
+            while i < len(lines) and lines[i].strip().startswith(('- ', '* ', '+ ')):
+                item_text = lines[i].strip()[2:]
+                list_items.append({
+                    "type": "listItem",
+                    "content": [{
+                        "type": "paragraph",
+                        "content": parse_inline_markdown(item_text)
+                    }]
+                })
+                i += 1
+            content.append({
+                "type": "bulletList",
+                "content": list_items
+            })
+            continue
+        
+        # Numbered list
+        if re.match(r'^\d+\.\s', stripped):
+            list_items = []
+            while i < len(lines) and re.match(r'^\d+\.\s', lines[i].strip()):
+                item_text = re.sub(r'^\d+\.\s', '', lines[i].strip())
+                list_items.append({
+                    "type": "listItem",
+                    "content": [{
+                        "type": "paragraph",
+                        "content": parse_inline_markdown(item_text)
+                    }]
+                })
+                i += 1
+            content.append({
+                "type": "orderedList",
+                "content": list_items
+            })
+            continue
+        
+        # Blockquote
+        if stripped.startswith('>'):
+            quote_lines = []
+            while i < len(lines) and lines[i].strip().startswith('>'):
+                quote_lines.append(lines[i].strip()[1:].strip())
+                i += 1
+            content.append({
+                "type": "blockquote",
+                "content": [{
+                    "type": "paragraph",
+                    "content": parse_inline_markdown(' '.join(quote_lines))
+                }]
+            })
+            continue
+        
+        # Code block
+        if stripped.startswith('```'):
+            code_lines = []
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith('```'):
+                code_lines.append(lines[i])
+                i += 1
+            i += 1  # Skip closing ```
+            content.append({
+                "type": "codeBlock",
+                "content": [{
+                    "type": "text",
+                    "text": '\n'.join(code_lines)
+                }]
+            })
+            continue
+        
+        # Regular paragraph
+        para_lines = [line]
+        i += 1
+        while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith(('#', '-', '*', '+', '>', '```')) and not re.match(r'^\d+\.\s', lines[i].strip()):
+            para_lines.append(lines[i])
+            i += 1
+        
+        content.append({
+            "type": "paragraph",
+            "content": parse_inline_markdown(' '.join(para_lines))
+        })
+    
+    return {
+        "type": "doc",
+        "content": content
+    }
+
+
+def parse_inline_markdown(text: str) -> list:
+    """Parse inline markdown formatting (bold, italic, code, links)"""
+    if not text:
+        return [{"type": "text", "text": ""}]
+    
+    parts = []
+    current_text = ""
+    i = 0
+    
+    while i < len(text):
+        # Bold **text**
+        if text[i:i+2] == '**':
+            if current_text:
+                parts.append({"type": "text", "text": current_text})
+                current_text = ""
+            end = text.find('**', i + 2)
+            if end != -1:
+                parts.append({
+                    "type": "text",
+                    "text": text[i+2:end],
+                    "marks": [{"type": "bold"}]
+                })
+                i = end + 2
+                continue
+        
+        # Italic *text*
+        if text[i] == '*' and (i == 0 or text[i-1] != '*') and (i+1 >= len(text) or text[i+1] != '*'):
+            if current_text:
+                parts.append({"type": "text", "text": current_text})
+                current_text = ""
+            end = text.find('*', i + 1)
+            if end != -1 and (end+1 >= len(text) or text[end+1] != '*'):
+                parts.append({
+                    "type": "text",
+                    "text": text[i+1:end],
+                    "marks": [{"type": "italic"}]
+                })
+                i = end + 1
+                continue
+        
+        # Code `text`
+        if text[i] == '`':
+            if current_text:
+                parts.append({"type": "text", "text": current_text})
+                current_text = ""
+            end = text.find('`', i + 1)
+            if end != -1:
+                parts.append({
+                    "type": "text",
+                    "text": text[i+1:end],
+                    "marks": [{"type": "code"}]
+                })
+                i = end + 1
+                continue
+        
+        # Links [text](url)
+        if text[i] == '[':
+            link_match = re.match(r'\[([^\]]+)\]\(([^)]+)\)', text[i:])
+            if link_match:
+                if current_text:
+                    parts.append({"type": "text", "text": current_text})
+                    current_text = ""
+                parts.append({
+                    "type": "text",
+                    "text": link_match.group(1),
+                    "marks": [{"type": "link", "attrs": {"href": link_match.group(2)}}]
+                })
+                i += len(link_match.group(0))
+                continue
+        
+        current_text += text[i]
+        i += 1
+    
+    if current_text:
+        parts.append({"type": "text", "text": current_text})
+    
+    return parts if parts else [{"type": "text", "text": ""}]
 
 
 def parse_frontmatter(content: str, filename: str) -> tuple[str, str]:
