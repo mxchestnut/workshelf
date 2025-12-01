@@ -227,103 +227,103 @@ async def bulk_upload_documents(
                             if not validate_markdown_content(file_content):
                                 errors.append(f"Skipped {safe_filename}: Content validation failed")
                                 continue
-                        
-                        file_size_bytes = len(file_content.encode('utf-8'))
-                        
-                        # Extract metadata from Obsidian-style frontmatter
-                        title, clean_content = parse_frontmatter(file_content, safe_filename)
-                        
-                        # Convert markdown to TipTap JSON format
-                        tiptap_content = markdown_to_tiptap(clean_content)
-                        
-                        # Handle folder structure - create project from top-level folder
-                        folder_path = os.path.dirname(file_path)
-                        target_project_id = project_id  # Use provided project_id if given
-                        
-                        if folder_path and not project_id:
-                            # Get the top-level folder name (first component of path)
-                            folder_parts = folder_path.split('/')
-                            top_folder = folder_parts[0] if folder_parts else None
                             
-                            if top_folder:
-                                # Create or reuse project for this folder
-                                if top_folder not in folder_to_project:
-                                    # Create new project for this folder
-                                    project_result = await db.execute(
-                                        text("""
-                                            INSERT INTO projects (
-                                                owner_id, tenant_id, title, project_type,
-                                                description, created_at, updated_at
-                                            )
-                                            VALUES (
-                                                :owner_id, :tenant_id, :title, 'NOVEL',
-                                                :description, :now, :now
-                                            )
-                                            RETURNING id
-                                        """),
-                                        {
-                                            "owner_id": user.id,
-                                            "tenant_id": user.tenant_id,
-                                            "title": top_folder,
-                                            "description": f"Imported from {file.filename}",
-                                            "now": datetime.utcnow()
-                                        }
-                                    )
-                                    new_project = project_result.first()
-                                    folder_to_project[top_folder] = new_project[0]
-                                    print(f"[BULK UPLOAD] Created project '{top_folder}' with ID {new_project[0]}")
+                            file_size_bytes = len(file_content.encode('utf-8'))
+                            
+                            # Extract metadata from Obsidian-style frontmatter
+                            title, clean_content = parse_frontmatter(file_content, safe_filename)
+                            
+                            # Convert markdown to TipTap JSON format
+                            tiptap_content = markdown_to_tiptap(clean_content)
+                            
+                            # Handle folder structure - create project from top-level folder
+                            folder_path = os.path.dirname(file_path)
+                            target_project_id = project_id  # Use provided project_id if given
+                            
+                            if folder_path and not project_id:
+                                # Get the top-level folder name (first component of path)
+                                folder_parts = folder_path.split('/')
+                                top_folder = folder_parts[0] if folder_parts else None
                                 
-                                target_project_id = folder_to_project[top_folder]
-                        
-                        # Create document
-                        word_count = len(clean_content.split())
-                        
-                        result = await db.execute(
-                            text("""
-                                INSERT INTO documents (
-                                    owner_id, tenant_id, project_id,
-                                    title, content, word_count, file_size,
-                                    status, visibility, current_version,
-                                    created_at, updated_at
-                                )
-                                VALUES (
-                                    :owner_id, :tenant_id, :project_id,
-                                    :title, :content, :word_count, :file_size,
-                                    'DRAFT', 'PRIVATE', 1,
-                                    :now, :now
-                                )
-                                RETURNING id, title
-                            """),
-                            {
-                                "owner_id": user.id,
-                                "tenant_id": user.tenant_id,
+                                if top_folder:
+                                    # Create or reuse project for this folder
+                                    if top_folder not in folder_to_project:
+                                        # Create new project for this folder
+                                        project_result = await db.execute(
+                                            text("""
+                                                INSERT INTO projects (
+                                                    owner_id, tenant_id, title, project_type,
+                                                    description, created_at, updated_at
+                                                )
+                                                VALUES (
+                                                    :owner_id, :tenant_id, :title, 'NOVEL',
+                                                    :description, :now, :now
+                                                )
+                                                RETURNING id
+                                            """),
+                                            {
+                                                "owner_id": user.id,
+                                                "tenant_id": user.tenant_id,
+                                                "title": top_folder,
+                                                "description": f"Imported from {file.filename}",
+                                                "now": datetime.utcnow()
+                                            }
+                                        )
+                                        new_project = project_result.first()
+                                        folder_to_project[top_folder] = new_project[0]
+                                        print(f"[BULK UPLOAD] Created project '{top_folder}' with ID {new_project[0]}")
+                                    
+                                    target_project_id = folder_to_project[top_folder]
+                            
+                            # Create document
+                            word_count = len(clean_content.split())
+                            
+                            result = await db.execute(
+                                text("""
+                                    INSERT INTO documents (
+                                        owner_id, tenant_id, project_id,
+                                        title, content, word_count, file_size,
+                                        status, visibility, current_version,
+                                        created_at, updated_at
+                                    )
+                                    VALUES (
+                                        :owner_id, :tenant_id, :project_id,
+                                        :title, :content, :word_count, :file_size,
+                                        'DRAFT', 'PRIVATE', 1,
+                                        :now, :now
+                                    )
+                                    RETURNING id, title
+                                """),
+                                {
+                                    "owner_id": user.id,
+                                    "tenant_id": user.tenant_id,
+                                    "project_id": target_project_id,
+                                    "title": title,
+                                    "content": json.dumps(tiptap_content),
+                                    "word_count": word_count,
+                                    "file_size": file_size_bytes,
+                                    "now": datetime.utcnow()
+                                }
+                            )
+                            
+                            doc = result.first()
+                            imported_docs.append({
+                                "id": doc[0],
+                                "title": doc[1],
+                                "path": file_path,
+                                "folder": folder_path or "root",
                                 "project_id": target_project_id,
-                                "title": title,
-                                "content": json.dumps(tiptap_content),
-                                "word_count": word_count,
-                                "file_size": file_size_bytes,
-                                "now": datetime.utcnow()
-                            }
-                        )
-                        
-                        doc = result.first()
-                        imported_docs.append({
-                            "id": doc[0],
-                            "title": doc[1],
-                            "path": file_path,
-                            "folder": folder_path or "root",
-                            "project_id": target_project_id,
-                            "size": file_size_bytes,
-                            "words": word_count
-                        })
-                        total_bytes += file_size_bytes
-                        
-                    except Exception as e:
-                        print(f"[BULK UPLOAD] Error processing {file_path}: {str(e)}")
-                        errors.append({
-                            "file": file_path,
-                            "error": str(e)
-                        })
+                                "size": file_size_bytes,
+                                "words": word_count
+                            })
+                            total_bytes += file_size_bytes
+                            
+                        except Exception as e:
+                            print(f"[BULK UPLOAD] Error processing {file_path}: {str(e)}")
+                            errors.append({
+                                "file": file_path,
+                                "error": str(e)
+                            })
             
             except zipfile.BadZipFile:
                 raise HTTPException(status_code=400, detail="Invalid or corrupted zip file")
