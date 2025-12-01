@@ -25,6 +25,7 @@ const Discover = lazy(() => import('./pages/Discover').then(module => ({ default
 const Groups = lazy(() => import('./pages/Groups'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
 const Studio = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
+const StudioSettings = lazy(() => import('./pages/StudioSettings').then(module => ({ default: module.default })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })))
@@ -74,7 +75,7 @@ const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -152,6 +153,8 @@ function App() {
       setCurrentPage('profile')
     } else if (path === '/studio') {
       setCurrentPage('studio')
+    } else if (path.startsWith('/studio/') && path.includes('/settings')) {
+      setCurrentPage('studio-settings')
     } else if (path.startsWith('/project/')) {
       setCurrentPage('project-detail')
     } else if (path === '/projects') {
@@ -328,7 +331,13 @@ function App() {
     
     if (currentPage === 'studio') {
       return <Studio />
-    }    if (currentPage === 'project-detail') {
+    }
+    
+    if (currentPage === 'studio-settings') {
+      return <StudioSettings />
+    }
+    
+    if (currentPage === 'project-detail') {
       return <ProjectDetail />
     }
     

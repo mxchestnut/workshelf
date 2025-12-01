@@ -178,8 +178,8 @@ class ProjectService:
     @staticmethod
     async def get_or_create_uncategorized_project(
         db: AsyncSession,
-        user_id: str,
-        tenant_id: str
+        user_id: int,
+        tenant_id: int
     ) -> Project:
         """Get or create the default 'Uncategorized' project for orphaned documents."""
         # Try to find existing uncategorized project

@@ -79,7 +79,7 @@ async def create_document(
     if not project_id:
         from app.services.project_service import ProjectService
         uncategorized_project = await ProjectService.get_or_create_uncategorized_project(
-            session, str(owner_id), str(tenant_id)
+            session, owner_id, tenant_id
         )
         project_id = uncategorized_project.id
     
