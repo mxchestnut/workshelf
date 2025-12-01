@@ -212,7 +212,9 @@ async def bulk_upload_documents(
                             parts = folder_path.split('/')
                             for i in range(len(parts)):
                                 folder_path_segment = '/'.join(parts[:i+1])
-                                unique_folders.add(folder_path_segment)
+                                # Skip macOS metadata folders
+                                if '__MACOSX' not in folder_path_segment and not any(p.startswith('.') for p in folder_path_segment.split('/')):
+                                    unique_folders.add(folder_path_segment)
                     
                     # Sort folders by depth (parents before children)
                     sorted_folders = sorted(unique_folders, key=lambda x: x.count('/'))
