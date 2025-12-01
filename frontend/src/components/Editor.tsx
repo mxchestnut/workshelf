@@ -31,16 +31,9 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import FontFamily from '@tiptap/extension-font-family'
 import Focus from '@tiptap/extension-focus'
-import Gapcursor from '@tiptap/extension-gapcursor'
-import Dropcursor from '@tiptap/extension-dropcursor'
-import BubbleMenu from '@tiptap/extension-bubble-menu'
-import FloatingMenu from '@tiptap/extension-floating-menu'
 import Youtube from '@tiptap/extension-youtube'
 import Mention from '@tiptap/extension-mention'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import HardBreak from '@tiptap/extension-hard-break'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import History from '@tiptap/extension-history'
 import { createLowlight } from 'lowlight'
 import javascript from 'highlight.js/lib/languages/javascript'
 import typescript from 'highlight.js/lib/languages/typescript'
@@ -107,13 +100,9 @@ export function Editor({
           levels: [1, 2, 3]
         },
         codeBlock: false, // Disable default code block to use CodeBlockLowlight
-        hardBreak: false, // Disable default hard break to use HardBreak extension
-        horizontalRule: false, // Disable default to use HorizontalRule extension
-        history: false, // Disable default to use History extension
+        dropcursor: false, // Will use Dropcursor extension instead
+        gapcursor: false, // Will use Gapcursor extension instead
       }),
-      History,
-      HardBreak,
-      HorizontalRule,
       CodeBlockLowlight.configure({
         lowlight,
       }),
@@ -157,10 +146,6 @@ export function Editor({
         className: 'has-focus',
         mode: 'all',
       }),
-      Gapcursor,
-      Dropcursor,
-      BubbleMenu,
-      FloatingMenu,
       Youtube.configure({
         controls: true,
         nocookie: true,
