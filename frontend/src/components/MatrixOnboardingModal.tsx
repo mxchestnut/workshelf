@@ -110,10 +110,13 @@ export function MatrixOnboardingModal({ onClose }: MatrixOnboardingModalProps) {
           </div>
 
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-            <h3 className="font-semibold text-gray-900 mb-2">Set Your Chat Password</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">Connect Your Matrix Account</h3>
             <p>
-              A Matrix account has been created for you automatically. To sign in to Element, 
-              you'll need to set a password. You can do this from your <strong>Profile → Messaging</strong> section.
+              To use messaging features with Element, you'll need to connect your Matrix account. 
+              You can do this from your <strong>Profile → Messaging</strong> section.
+            </p>
+            <p className="mt-2 text-sm">
+              Don't have a Matrix account? Create one at <a href="https://app.element.io/#/register" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Element</a> first.
             </p>
           </div>
 

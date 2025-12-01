@@ -37,8 +37,24 @@ export function Profile() {
   const [success, setSuccess] = useState(false)
   const [matrixPwMessage, setMatrixPwMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [matrixPwLoading, setMatrixPwLoading] = useState(false)
-  const [matrixPassword, setMatrixPassword] = useState('')
-  const [matrixPassword2, setMatrixPassword2] = useState('')
+  
+  // Matrix connection state
+  const [matrixConnected, setMatrixConnected] = useState(false)
+  const [matrixUserId, setMatrixUserId] = useState('')
+  const [matrixHomeserver, setMatrixHomeserver] = useState('')
+  const [matrixConnectionLoading, setMatrixConnectionLoading] = useState(false)
+  const [showManualConnect, setShowManualConnect] = useState(false)
+  
+  // Manual connection form
+  const [manualUserId, setManualUserId] = useState('')
+  const [manualAccessToken, setManualAccessToken] = useState('')
+  const [manualHomeserver, setManualHomeserver] = useState('https://matrix.org')
+  
+  // Login connection form
+  const [loginUsername, setLoginUsername] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginHomeserver, setLoginHomeserver] = useState('https://matrix.org')
+  
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
   const [activeTab, setActiveTab] = useState<ProfileTab>('general')
 
@@ -75,6 +91,7 @@ export function Profile() {
   useEffect(() => {
     loadProfile()
     loadAvailableInterests()
+    checkMatrixConnection()
   }, [])
 
   useEffect(() => {
@@ -82,6 +99,28 @@ export function Profile() {
       loadConnections()
     }
   }, [activeTab])
+
+  const checkMatrixConnection = async () => {
+    try {
+      const token = authService.getToken()
+      if (!token) return
+      
+      const response = await fetch(`${API_URL}/api/v1/matrix/connection-status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setMatrixConnected(data.connected)
+        if (data.connected) {
+          setMatrixUserId(data.matrix_user_id || '')
+          setMatrixHomeserver(data.matrix_homeserver || '')
+        }
+      }
+    } catch (err) {
+      console.error('Failed to check Matrix connection:', err)
+    }
+  }
 
   const loadAvailableInterests = async () => {
     try {
@@ -575,113 +614,305 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Messaging: Set Matrix Password */}
+        {/* Messaging: Connect Matrix Account */}
         <div className="rounded-lg p-6 border bg-card border-border">
           <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-foreground">
             <Lock className="w-5 h-5" /> Messaging
           </h2>
           <p className="text-sm mb-4 text-muted-foreground">
-            Your messages sync across devices with Element. Set a password to sign in on mobile or desktop and continue your conversations anywhere.
+            Connect your existing Matrix account to use messaging features. You can use any Matrix homeserver like matrix.org or your own.
           </p>
 
-          <div className="mb-4 p-4 rounded-lg border" style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}>
-            <h3 className="font-semibold mb-2 text-white">Sign into Element</h3>
-            <div className="text-sm space-y-1 text-muted-foreground">
-              <p><strong>Homeserver:</strong> https://matrix.workshelf.dev</p>
-              <p><strong>Username:</strong> {profile.username}</p>
-              <p><strong>Password:</strong> Set below</p>
-            </div>
-            <div className="mt-3 flex gap-3">
-              <a
-                href="https://element.io/download"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded text-sm font-medium text-white hover:opacity-80"
-                style={{ backgroundColor: 'hsl(var(--primary))' }}
-              >
-                <ExternalLink className="w-4 h-4" />
-                Download Element
-              </a>
-            </div>
-          </div>
+          {matrixConnected ? (
+            // Connected state
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border border-green-700 bg-green-900/40">
+                <h3 className="font-semibold mb-2 text-green-300">✓ Matrix Account Connected</h3>
+                <div className="text-sm space-y-1 text-green-200">
+                  <p><strong>User ID:</strong> {matrixUserId}</p>
+                  <p><strong>Homeserver:</strong> {matrixHomeserver}</p>
+                </div>
+              </div>
 
-          {matrixPwMessage && (
-            <div className={`mb-4 p-3 rounded border ${matrixPwMessage.type === 'success' ? 'bg-green-900/40 border-green-700 text-green-300' : 'bg-red-900/40 border-red-700 text-red-300'}`}>
-              {matrixPwMessage.text}
+              {matrixPwMessage && (
+                <div className={`p-3 rounded border ${matrixPwMessage.type === 'success' ? 'bg-green-900/40 border-green-700 text-green-300' : 'bg-red-900/40 border-red-700 text-red-300'}`}>
+                  {matrixPwMessage.text}
+                </div>
+              )}
+
+              <button
+                onClick={async () => {
+                  if (!confirm('Are you sure you want to disconnect your Matrix account?')) return
+                  try {
+                    setMatrixPwLoading(true)
+                    const token = authService.getToken()
+                    if (!token) return
+                    
+                    const response = await fetch(`${API_URL}/api/v1/matrix/disconnect-account`, {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    
+                    if (response.ok) {
+                      setMatrixConnected(false)
+                      setMatrixUserId('')
+                      setMatrixHomeserver('')
+                      setMatrixPwMessage({ type: 'success', text: 'Matrix account disconnected.' })
+                    } else {
+                      const err = await response.json().catch(() => ({}))
+                      setMatrixPwMessage({ type: 'error', text: err.detail || 'Failed to disconnect.' })
+                    }
+                  } catch (e) {
+                    setMatrixPwMessage({ type: 'error', text: 'Unexpected error.' })
+                  } finally {
+                    setMatrixPwLoading(false)
+                  }
+                }}
+                disabled={matrixPwLoading}
+                className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 bg-red-600 hover:bg-red-700"
+              >
+                {matrixPwLoading ? 'Disconnecting…' : 'Disconnect Account'}
+              </button>
+            </div>
+          ) : (
+            // Not connected state
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border" style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}>
+                <h3 className="font-semibold mb-2 text-white">Two Ways to Connect</h3>
+                <div className="text-sm space-y-3 text-muted-foreground">
+                  <div>
+                    <strong className="text-white">Option 1: Login with Username/Password</strong>
+                    <p>Enter your Matrix credentials and we'll connect automatically.</p>
+                  </div>
+                  <div>
+                    <strong className="text-white">Option 2: Manual Connection</strong>
+                    <p>Get your access token from Element settings and connect manually.</p>
+                  </div>
+                </div>
+              </div>
+
+              {matrixPwMessage && (
+                <div className={`p-3 rounded border ${matrixPwMessage.type === 'success' ? 'bg-green-900/40 border-green-700 text-green-300' : 'bg-red-900/40 border-red-700 text-red-300'}`}>
+                  {matrixPwMessage.text}
+                </div>
+              )}
+
+              {/* Login with username/password */}
+              {!showManualConnect && (
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-white">Connect with Login</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-muted-foreground">Matrix Username</label>
+                      <input
+                        type="text"
+                        value={loginUsername}
+                        onChange={(e) => setLoginUsername(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                        placeholder="your_username"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-muted-foreground">Password</label>
+                      <input
+                        type="password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                        placeholder="Your Matrix password"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Homeserver URL</label>
+                    <input
+                      type="text"
+                      value={loginHomeserver}
+                      onChange={(e) => setLoginHomeserver(e.target.value)}
+                      className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                      placeholder="https://matrix.org"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={async () => {
+                        setMatrixPwMessage(null)
+                        if (!loginUsername || !loginPassword) {
+                          setMatrixPwMessage({ type: 'error', text: 'Username and password required.' })
+                          return
+                        }
+                        try {
+                          setMatrixConnectionLoading(true)
+                          const token = authService.getToken()
+                          if (!token) return
+                          
+                          const response = await fetch(`${API_URL}/api/v1/matrix/login-and-connect`, {
+                            method: 'POST',
+                            headers: {
+                              'Authorization': `Bearer ${token}`,
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                              username: loginUsername,
+                              password: loginPassword,
+                              homeserver: loginHomeserver
+                            })
+                          })
+                          
+                          if (response.ok) {
+                            const data = await response.json()
+                            setMatrixConnected(true)
+                            setMatrixUserId(data.matrix_user_id)
+                            setMatrixHomeserver(data.matrix_homeserver)
+                            setMatrixPwMessage({ type: 'success', text: 'Matrix account connected successfully!' })
+                            setLoginUsername('')
+                            setLoginPassword('')
+                          } else {
+                            const err = await response.json().catch(() => ({}))
+                            setMatrixPwMessage({ type: 'error', text: err.detail || 'Failed to connect account.' })
+                          }
+                        } catch (e) {
+                          setMatrixPwMessage({ type: 'error', text: 'Unexpected error. Please try again.' })
+                        } finally {
+                          setMatrixConnectionLoading(false)
+                        }
+                      }}
+                      disabled={matrixConnectionLoading}
+                      className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+                      style={{ backgroundColor: 'hsl(var(--primary))' }}
+                    >
+                      {matrixConnectionLoading ? 'Connecting…' : 'Connect with Login'}
+                    </button>
+                    <button
+                      onClick={() => setShowManualConnect(true)}
+                      className="px-4 py-2 rounded-lg font-medium border border-border text-foreground hover:bg-accent"
+                    >
+                      Use Manual Connection
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Manual connection with access token */}
+              {showManualConnect && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-white">Manual Connection</h3>
+                    <button
+                      onClick={() => setShowManualConnect(false)}
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      ← Back to Login
+                    </button>
+                  </div>
+                  <div className="p-3 bg-blue-900/40 border border-blue-700 rounded text-sm text-blue-200">
+                    <strong>Get your access token:</strong> Open Element → Settings → Help & About → Advanced → Access Token
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Matrix User ID</label>
+                    <input
+                      type="text"
+                      value={manualUserId}
+                      onChange={(e) => setManualUserId(e.target.value)}
+                      className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                      placeholder="@username:matrix.org"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Access Token</label>
+                    <input
+                      type="password"
+                      value={manualAccessToken}
+                      onChange={(e) => setManualAccessToken(e.target.value)}
+                      className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                      placeholder="syt_..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Homeserver URL</label>
+                    <input
+                      type="text"
+                      value={manualHomeserver}
+                      onChange={(e) => setManualHomeserver(e.target.value)}
+                      className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
+                      placeholder="https://matrix.org"
+                    />
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setMatrixPwMessage(null)
+                      if (!manualUserId || !manualAccessToken) {
+                        setMatrixPwMessage({ type: 'error', text: 'User ID and access token required.' })
+                        return
+                      }
+                      try {
+                        setMatrixConnectionLoading(true)
+                        const token = authService.getToken()
+                        if (!token) return
+                        
+                        const response = await fetch(`${API_URL}/api/v1/matrix/connect-account`, {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                            matrix_user_id: manualUserId,
+                            access_token: manualAccessToken,
+                            homeserver: manualHomeserver
+                          })
+                        })
+                        
+                        if (response.ok) {
+                          setMatrixConnected(true)
+                          setMatrixUserId(manualUserId)
+                          setMatrixHomeserver(manualHomeserver)
+                          setMatrixPwMessage({ type: 'success', text: 'Matrix account connected successfully!' })
+                          setManualUserId('')
+                          setManualAccessToken('')
+                        } else {
+                          const err = await response.json().catch(() => ({}))
+                          setMatrixPwMessage({ type: 'error', text: err.detail || 'Failed to connect account.' })
+                        }
+                      } catch (e) {
+                        setMatrixPwMessage({ type: 'error', text: 'Unexpected error. Please try again.' })
+                      } finally {
+                        setMatrixConnectionLoading(false)
+                      }
+                    }}
+                    disabled={matrixConnectionLoading}
+                    className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+                    style={{ backgroundColor: 'hsl(var(--primary))' }}
+                  >
+                    {matrixConnectionLoading ? 'Connecting…' : 'Connect Account'}
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-4 p-4 rounded-lg border border-border bg-background/50">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Don't have a Matrix account?</strong> Create one at{' '}
+                  <a
+                    href="https://app.element.io/#/register"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    Element <ExternalLink className="w-3 h-3" />
+                  </a>
+                  {' '}or{' '}
+                  <a
+                    href="https://matrix.org/clients/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    any Matrix client <ExternalLink className="w-3 h-3" />
+                  </a>
+                </p>
+              </div>
             </div>
           )}
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-muted-foreground">New Matrix Password</label>
-              <input
-                type="password"
-                value={matrixPassword}
-                onChange={(e) => setMatrixPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
-                placeholder="At least 8 characters"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-muted-foreground">Confirm Password</label>
-              <input
-                type="password"
-                value={matrixPassword2}
-                onChange={(e) => setMatrixPassword2(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground"
-                placeholder="Confirm password"
-              />
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <button
-              onClick={async () => {
-                setMatrixPwMessage(null)
-                if (!matrixPassword || matrixPassword.length < 8) {
-                  setMatrixPwMessage({ type: 'error', text: 'Password must be at least 8 characters.' })
-                  return
-                }
-                if (matrixPassword !== matrixPassword2) {
-                  setMatrixPwMessage({ type: 'error', text: 'Passwords do not match.' })
-                  return
-                }
-                try {
-                  setMatrixPwLoading(true)
-                  const token = authService.getToken()
-                  if (!token) {
-                    setMatrixPwMessage({ type: 'error', text: 'Not authenticated.' })
-                    return
-                  }
-                  const resp = await fetch(`${API_URL}/api/v1/matrix/set-password`, {
-                    method: 'POST',
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ password: matrixPassword })
-                  })
-                  if (!resp.ok) {
-                    const err = await resp.json().catch(() => ({}))
-                    setMatrixPwMessage({ type: 'error', text: err.detail || 'Failed to set password.' })
-                  } else {
-                    setMatrixPwMessage({ type: 'success', text: 'Matrix password updated. You can now sign into Element.' })
-                    setMatrixPassword('')
-                    setMatrixPassword2('')
-                  }
-                } catch (e) {
-                  setMatrixPwMessage({ type: 'error', text: 'Unexpected error. Please try again.' })
-                } finally {
-                  setMatrixPwLoading(false)
-                }
-              }}
-              disabled={matrixPwLoading}
-              className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
-              style={{ backgroundColor: 'hsl(var(--primary))' }}
-            >
-              {matrixPwLoading ? 'Saving…' : 'Set Matrix Password'}
-            </button>
-          </div>
         </div>
 
         {/* Interests */}
