@@ -24,10 +24,12 @@ interface StorageInfo {
   limit_formatted: string
   available_formatted: string
   tier: string
-  tier_details: {
-    name: string
-    storage_limit_gb: number
-    price_monthly: number
+  tiers_available?: {
+    [key: string]: {
+      limit: number
+      formatted: string
+      price: string
+    }
   }
 }
 
@@ -197,7 +199,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
               />
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-muted-foreground">{storageInfo.tier_details.name} Plan</span>
+              <span className="text-xs text-muted-foreground capitalize">{storageInfo.tier} Plan</span>
               <span className="text-xs text-muted-foreground">{storageInfo.available_formatted} available</span>
             </div>
           </div>
