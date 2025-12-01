@@ -12,7 +12,7 @@ import os
 from datetime import datetime
 from app.core.database import get_db
 from app.core.auth import get_current_user
-from app.services import user as user_service
+from app.services import user_service
 
 router = APIRouter(prefix="/storage", tags=["bulk-upload", "storage"])
 
