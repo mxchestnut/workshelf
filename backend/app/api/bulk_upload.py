@@ -18,6 +18,62 @@ from app.services import user_service
 
 router = APIRouter(prefix="/storage", tags=["bulk-upload", "storage"])
 
+# Security configurations
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per upload
+MAX_ZIP_ENTRIES = 1000  # Max files in a zip
+MAX_FILENAME_LENGTH = 255
+ALLOWED_EXTENSIONS = {'.md', '.markdown'}
+BLOCKED_FILENAMES = {'__MACOSX', '.DS_Store', 'thumbs.db', 'desktop.ini'}
+
+def is_safe_path(path: str) -> bool:
+    """Check if path is safe (no directory traversal, no absolute paths)"""
+    # Normalize path and check for suspicious patterns
+    normalized = os.path.normpath(path)
+    
+    # Block absolute paths
+    if os.path.isabs(normalized):
+        return False
+    
+    # Block directory traversal attempts
+    if '..' in normalized or normalized.startswith('/'):
+        return False
+    
+    # Block hidden files and system files
+    parts = normalized.split(os.sep)
+    for part in parts:
+        if part.startswith('.') or part.lower() in BLOCKED_FILENAMES:
+            return False
+    
+    return True
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize filename to prevent injection attacks"""
+    # Remove directory components
+    filename = os.path.basename(filename)
+    
+    # Remove null bytes and control characters
+    filename = ''.join(c for c in filename if ord(c) > 31 and c not in '<>:"|?*')
+    
+    # Limit length
+    if len(filename) > MAX_FILENAME_LENGTH:
+        name, ext = os.path.splitext(filename)
+        filename = name[:MAX_FILENAME_LENGTH - len(ext)] + ext
+    
+    return filename
+
+def validate_markdown_content(content: str) -> bool:
+    """Basic validation that content appears to be text/markdown"""
+    # Check for null bytes (binary files)
+    if '\x00' in content:
+        return False
+    
+    # Check for excessive non-printable characters
+    non_printable = sum(1 for c in content if ord(c) < 32 and c not in '\n\r\t')
+    if non_printable > len(content) * 0.1:  # More than 10% non-printable
+        return False
+    
+    return True
+
 
 STORAGE_TIERS = {
     "free": 104857600,        # 100 MB
@@ -66,6 +122,14 @@ async def bulk_upload_documents(
     Bulk upload documents from a zip file or multiple markdown files.
     Supports Obsidian vault structure with folders and metadata.
     
+    Security measures:
+    - File size limits (100 MB per upload)
+    - Extension whitelist (.md, .markdown only)
+    - Path traversal prevention
+    - Filename sanitization
+    - Content validation (text-only)
+    - Zip bomb protection (max 1000 entries)
+    
     Returns import summary with created documents and any errors.
     """
     
@@ -78,6 +142,21 @@ async def bulk_upload_documents(
     # Read file content
     content = await file.read()
     file_size = len(content)
+    
+    # Security: Check max file size
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
+        )
+    
+    # Security: Validate file extension
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS and file_ext != '.zip':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Only .md, .markdown, and .zip files are allowed"
+        )
     
     if file_size > storage["available"]:
         return {
@@ -94,18 +173,60 @@ async def bulk_upload_documents(
     try:
         # Handle zip file
         if file.filename.endswith('.zip'):
-            with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
-                # Get all markdown files from zip
-                md_files = [f for f in zip_ref.namelist() if f.endswith(('.md', '.markdown')) and not f.startswith('__MACOSX')]
+            try:
+                with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
+                    # Security: Check for zip bombs (too many entries)
+                    if len(zip_ref.namelist()) > MAX_ZIP_ENTRIES:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Zip file contains too many entries. Maximum is {MAX_ZIP_ENTRIES}"
+                        )
+                    
+                    # Get all markdown files from zip
+                    md_files = []
+                    for f in zip_ref.namelist():
+                        # Security: Validate path safety
+                        if not is_safe_path(f):
+                            errors.append(f"Skipped unsafe path: {f}")
+                            continue
+                        
+                        # Security: Check file extension
+                        if f.endswith(('.md', '.markdown')):
+                            md_files.append(f)
+            except zipfile.BadZipFile:
+                raise HTTPException(status_code=400, detail="Invalid or corrupted zip file")
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Error reading zip file: {str(e)}")
                 
                 for file_path in md_files:
                     try:
+                        # Security: Sanitize filename
+                        safe_filename = sanitize_filename(file_path)
+                        
                         # Read file content
-                        file_content = zip_ref.read(file_path).decode('utf-8', errors='ignore')
+                        raw_content = zip_ref.read(file_path)
+                        
+                        # Security: Check for excessive size (decompression bomb)
+                        if len(raw_content) > MAX_FILE_SIZE:
+                            errors.append(f"Skipped {safe_filename}: File too large after decompression")
+                            continue
+                        
+                        # Decode content
+                        try:
+                            file_content = raw_content.decode('utf-8')
+                        except UnicodeDecodeError:
+                            errors.append(f"Skipped {safe_filename}: Not a valid text file")
+                            continue
+                        
+                        # Security: Validate content is actually text/markdown
+                        if not validate_markdown_content(file_content):
+                            errors.append(f"Skipped {safe_filename}: Content validation failed")
+                            continue
+                        
                         file_size_bytes = len(file_content.encode('utf-8'))
                         
                         # Extract metadata from Obsidian-style frontmatter
-                        title, clean_content = parse_frontmatter(file_content, file_path)
+                        title, clean_content = parse_frontmatter(file_content, safe_filename)
                         
                         # Convert markdown to TipTap JSON format
                         tiptap_content = markdown_to_tiptap(clean_content)
@@ -162,10 +283,22 @@ async def bulk_upload_documents(
         
         # Handle single markdown file
         elif file.filename.endswith(('.md', '.markdown')):
-            file_content = content.decode('utf-8', errors='ignore')
+            # Security: Sanitize filename
+            safe_filename = sanitize_filename(file.filename)
+            
+            # Decode content
+            try:
+                file_content = content.decode('utf-8')
+            except UnicodeDecodeError:
+                raise HTTPException(status_code=400, detail="File is not a valid text file")
+            
+            # Security: Validate content
+            if not validate_markdown_content(file_content):
+                raise HTTPException(status_code=400, detail="Content validation failed")
+            
             file_size_bytes = len(content)
             
-            title, clean_content = parse_frontmatter(file_content, file.filename)
+            title, clean_content = parse_frontmatter(file_content, safe_filename)
             
             # Convert markdown to TipTap JSON format
             tiptap_content = markdown_to_tiptap(clean_content)
