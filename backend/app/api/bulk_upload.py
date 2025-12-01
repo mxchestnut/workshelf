@@ -201,18 +201,15 @@ async def bulk_upload_documents(
                     folder_to_project = {}
                     
                     print(f"[BULK UPLOAD] Processing {len(md_files)} markdown files from zip")
-            except zipfile.BadZipFile:
-                raise HTTPException(status_code=400, detail="Invalid or corrupted zip file")
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Error reading zip file: {str(e)}")
-                
-                for file_path in md_files:
-                    try:
-                        # Security: Sanitize filename
-                        safe_filename = sanitize_filename(os.path.basename(file_path))
-                        
-                        # Read file content
-                        raw_content = zip_ref.read(file_path)
+                    
+                    # Process each markdown file
+                    for file_path in md_files:
+                        try:
+                            # Security: Sanitize filename
+                            safe_filename = sanitize_filename(os.path.basename(file_path))
+                            
+                            # Read file content
+                            raw_content = zip_ref.read(file_path)
                         
                         # Security: Check for excessive size (decompression bomb)
                         if len(raw_content) > MAX_FILE_SIZE:
@@ -327,6 +324,11 @@ async def bulk_upload_documents(
                             "file": file_path,
                             "error": str(e)
                         })
+            
+            except zipfile.BadZipFile:
+                raise HTTPException(status_code=400, detail="Invalid or corrupted zip file")
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Error reading zip file: {str(e)}")
         
         # Handle single markdown file
         elif file.filename.endswith(('.md', '.markdown')):
