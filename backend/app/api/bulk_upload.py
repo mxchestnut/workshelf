@@ -336,16 +336,24 @@ def markdown_to_tiptap(markdown: str) -> dict:
             })
             continue
         
-        # Regular paragraph
+        # Regular paragraph - preserve line breaks within paragraph
         para_lines = [line]
         i += 1
         while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith(('#', '-', '*', '+', '>', '```')) and not re.match(r'^\d+\.\s', lines[i].strip()):
             para_lines.append(lines[i])
             i += 1
         
+        # Parse paragraph with line breaks preserved
+        para_content = []
+        for idx, pline in enumerate(para_lines):
+            para_content.extend(parse_inline_markdown(pline))
+            # Add hard break between lines (except last line)
+            if idx < len(para_lines) - 1:
+                para_content.append({"type": "hardBreak"})
+        
         content.append({
             "type": "paragraph",
-            "content": parse_inline_markdown(' '.join(para_lines))
+            "content": para_content
         })
     
     return {
