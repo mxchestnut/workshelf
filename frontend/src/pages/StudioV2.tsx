@@ -115,8 +115,8 @@ export default function StudioV2() {
     try {
       const token = localStorage.getItem('access_token')
       
-      // Load folder tree
-      const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree?project_id=${projectId}`, {
+      // Load folder tree (folders are global per user, not per project)
+      const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (foldersResponse.ok) {
