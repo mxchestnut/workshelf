@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Upload, X, FileText, Folder, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev/api'
@@ -46,9 +46,9 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load storage info on mount
-  useState(() => {
+  useEffect(() => {
     loadStorageInfo()
-  })
+  }, [])
 
   const loadStorageInfo = async () => {
     try {
