@@ -15,9 +15,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
 import Typography from '@tiptap/extension-typography'
 import Highlight from '@tiptap/extension-highlight'
-import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
-import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import { Table } from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
@@ -112,16 +110,9 @@ export function Editor({
       CharacterCount,
       Typography,
       Highlight.configure({ multicolor: true }),
-      Underline,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right', 'justify'],
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-orange-600 hover:text-orange-700 underline cursor-pointer',
-        },
       }),
       Image.configure({
         inline: true,

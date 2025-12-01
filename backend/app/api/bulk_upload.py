@@ -248,8 +248,12 @@ def markdown_to_tiptap(markdown: str) -> dict:
         line = lines[i]
         stripped = line.strip()
         
-        # Empty line
+        # Empty line - add empty paragraph to preserve spacing
         if not stripped:
+            content.append({
+                "type": "paragraph",
+                "content": []
+            })
             i += 1
             continue
         
