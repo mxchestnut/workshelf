@@ -191,8 +191,16 @@ async def bulk_upload_documents(
                             continue
                         
                         # Security: Check file extension
-                        if f.endswith(('.md', '.markdown')):
+                        if f.endswith(('.md', '.markdown')) and not os.path.basename(f).startswith('.'):
                             md_files.append(f)
+                    
+                    # Sort files to process them in a predictable order
+                    md_files.sort()
+                    
+                    # Track created folders/projects by path
+                    folder_to_project = {}
+                    
+                    print(f"[BULK UPLOAD] Processing {len(md_files)} markdown files from zip")
             except zipfile.BadZipFile:
                 raise HTTPException(status_code=400, detail="Invalid or corrupted zip file")
             except Exception as e:
@@ -201,7 +209,7 @@ async def bulk_upload_documents(
                 for file_path in md_files:
                     try:
                         # Security: Sanitize filename
-                        safe_filename = sanitize_filename(file_path)
+                        safe_filename = sanitize_filename(os.path.basename(file_path))
                         
                         # Read file content
                         raw_content = zip_ref.read(file_path)
@@ -231,8 +239,44 @@ async def bulk_upload_documents(
                         # Convert markdown to TipTap JSON format
                         tiptap_content = markdown_to_tiptap(clean_content)
                         
-                        # Determine folder structure
-                        folder_name = os.path.dirname(file_path)
+                        # Handle folder structure - create project from top-level folder
+                        folder_path = os.path.dirname(file_path)
+                        target_project_id = project_id  # Use provided project_id if given
+                        
+                        if folder_path and not project_id:
+                            # Get the top-level folder name (first component of path)
+                            folder_parts = folder_path.split('/')
+                            top_folder = folder_parts[0] if folder_parts else None
+                            
+                            if top_folder:
+                                # Create or reuse project for this folder
+                                if top_folder not in folder_to_project:
+                                    # Create new project for this folder
+                                    project_result = await db.execute(
+                                        text("""
+                                            INSERT INTO projects (
+                                                owner_id, tenant_id, title, project_type,
+                                                description, created_at, updated_at
+                                            )
+                                            VALUES (
+                                                :owner_id, :tenant_id, :title, 'NOVEL',
+                                                :description, :now, :now
+                                            )
+                                            RETURNING id
+                                        """),
+                                        {
+                                            "owner_id": user.id,
+                                            "tenant_id": user.tenant_id,
+                                            "title": top_folder,
+                                            "description": f"Imported from {file.filename}",
+                                            "now": datetime.utcnow()
+                                        }
+                                    )
+                                    new_project = project_result.first()
+                                    folder_to_project[top_folder] = new_project[0]
+                                    print(f"[BULK UPLOAD] Created project '{top_folder}' with ID {new_project[0]}")
+                                
+                                target_project_id = folder_to_project[top_folder]
                         
                         # Create document
                         word_count = len(clean_content.split())
@@ -256,7 +300,7 @@ async def bulk_upload_documents(
                             {
                                 "owner_id": user.id,
                                 "tenant_id": user.tenant_id,
-                                "project_id": project_id,
+                                "project_id": target_project_id,
                                 "title": title,
                                 "content": json.dumps(tiptap_content),
                                 "word_count": word_count,
@@ -270,12 +314,15 @@ async def bulk_upload_documents(
                             "id": doc[0],
                             "title": doc[1],
                             "path": file_path,
+                            "folder": folder_path or "root",
+                            "project_id": target_project_id,
                             "size": file_size_bytes,
                             "words": word_count
                         })
                         total_bytes += file_size_bytes
                         
                     except Exception as e:
+                        print(f"[BULK UPLOAD] Error processing {file_path}: {str(e)}")
                         errors.append({
                             "file": file_path,
                             "error": str(e)
