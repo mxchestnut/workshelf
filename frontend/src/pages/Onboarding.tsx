@@ -41,7 +41,7 @@ export default function Onboarding() {
 
   const loadAvailableInterests = async () => {
     try {
-      const response = await fetch(`${API_URL}/v1/interests`);
+      const response = await fetch(`${API_URL}/api/v1/interests`);
       if (response.ok) {
         const interests = await response.json();
         setAvailableInterests(interests);

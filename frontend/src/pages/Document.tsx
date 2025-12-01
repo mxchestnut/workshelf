@@ -98,7 +98,7 @@ export function Document() {
         return
       }
 
-      const response = await fetch(`${API_URL}/v1/documents/${id}`, {
+      const response = await fetch(`${API_URL}/api/v1/documents/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -191,7 +191,7 @@ export function Document() {
 
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/v1/documents/${document.id}`, {
+      const response = await fetch(`${API_URL}/api/v1/documents/${document.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
