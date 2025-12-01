@@ -16,7 +16,7 @@ import os
 import hmac
 import hashlib
 from app.core.database import get_db
-from app.core.auth import get_current_user_from_db
+from app.core.auth import get_current_user_from_db, get_current_user
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from functools import lru_cache
@@ -319,13 +319,17 @@ async def login_existing_matrix_user(
 @router.get("/credentials")
 async def get_matrix_credentials(
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user_from_db)
+    current_user_payload = Depends(get_current_user)
 ):
     """
     Get user's Matrix credentials for client login.
     Returns credentials if user has connected their Matrix account.
     """
     try:
+        # Ensure user exists in database (auto-create from Keycloak if needed)
+        from app.services import user_service
+        current_user = await user_service.get_or_create_user_from_keycloak(db, current_user_payload)
+        
         # Check if user has connected a Matrix account
         result = await db.execute(
             text("""
