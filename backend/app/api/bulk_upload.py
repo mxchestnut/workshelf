@@ -253,11 +253,11 @@ async def bulk_upload_documents(
                                             text("""
                                                 INSERT INTO projects (
                                                     user_id, tenant_id, title, project_type,
-                                                    description, created_at, updated_at
+                                                    description, current_word_count, created_at, updated_at
                                                 )
                                                 VALUES (
-                                                    :user_id, :tenant_id, :title, 'NOVEL',
-                                                    :description, :now, :now
+                                                    :user_id, :tenant_id, :title, 'novel',
+                                                    :description, 0, :now, :now
                                                 )
                                                 RETURNING id
                                             """),
