@@ -326,9 +326,11 @@ async def get_matrix_credentials(
     Returns credentials if user has connected their Matrix account.
     """
     try:
+        print(f"[MATRIX CREDENTIALS] Starting, user payload: {current_user_payload.get('sub') if current_user_payload else 'None'}")
         # Ensure user exists in database (auto-create from Keycloak if needed)
         from app.services import user_service
         current_user = await user_service.get_or_create_user_from_keycloak(db, current_user_payload)
+        print(f"[MATRIX CREDENTIALS] User from DB: id={current_user.id} email={current_user.email}")
         
         # Check if user has connected a Matrix account
         result = await db.execute(
