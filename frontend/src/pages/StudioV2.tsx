@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
+import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+import { BulkUploadModal } from '../components/BulkUploadModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev/api'
 
@@ -32,6 +33,7 @@ export default function StudioV2() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false)
   const [newProjectTitle, setNewProjectTitle] = useState('')
 
   useEffect(() => {
@@ -230,14 +232,23 @@ export default function StudioV2() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
         <div className="w-64 border-r border-border flex flex-col">
-          <div className="p-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-lg font-bold font-mono">Studio</h2>
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold font-mono">Studio</h2>
+              <button
+                onClick={() => setShowNewProjectModal(true)}
+                className="p-1.5 hover:bg-accent rounded transition-colors"
+                title="New Project"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
             <button
-              onClick={() => setShowNewProjectModal(true)}
-              className="p-1.5 hover:bg-accent rounded transition-colors"
-              title="New Project"
+              onClick={() => setShowBulkUploadModal(true)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
             >
-              <Plus className="w-4 h-4" />
+              <Upload className="w-4 h-4" />
+              <span>Import Documents</span>
             </button>
           </div>
         
@@ -378,6 +389,17 @@ export default function StudioV2() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Bulk Upload Modal */}
+      {showBulkUploadModal && (
+        <BulkUploadModal
+          onClose={() => setShowBulkUploadModal(false)}
+          onSuccess={() => {
+            // Reload projects and documents after successful upload
+            loadProjects()
+          }}
+        />
       )}
     </div>
   )
