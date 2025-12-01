@@ -159,6 +159,8 @@ services:
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-workshelf}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-workshelf-frontend}
       VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-https://workshelf.dev}
+      VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-https://b8c5190474974430cdd1396231416148@o4510280685977605.ingest.us.sentry.io/4510448574726144}
+      VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
     ports:
       - "5173:5173"
     depends_on:
