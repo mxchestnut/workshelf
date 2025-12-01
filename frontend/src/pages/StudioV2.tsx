@@ -607,6 +607,9 @@ function FolderTreeView({
     const isExpanded = expandedFolders.has(folder.id)
     const folderDocs = documents.filter(d => d.folder_id === folder.id)
     const paddingLeft = depth * 12
+    
+    // Count total items (direct docs + subfolders)
+    const itemCount = folderDocs.length + folder.children.length
 
     return (
       <div key={`folder-${folder.id}`}>
@@ -626,6 +629,7 @@ function FolderTreeView({
             <Folder className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
           )}
           <span className="flex-1 truncate text-xs font-mono font-medium">{folder.name}</span>
+          <span className="text-xs text-muted-foreground font-mono mr-1">{itemCount}</span>
           
           <button
             onClick={(e) => {
@@ -664,7 +668,10 @@ function FolderTreeView({
 
         {isExpanded && (
           <div>
-            {/* Render documents in this folder */}
+            {/* Subfolders first */}
+            {folder.children.map(child => renderFolder(child, depth + 1))}
+            
+            {/* Then documents in this folder */}
             {folderDocs.map(doc => (
               <div
                 key={`doc-${doc.id}`}
@@ -674,7 +681,7 @@ function FolderTreeView({
                 style={{ paddingLeft: `${paddingLeft + 28}px` }}
                 onClick={() => onDocumentSelect(doc)}
               >
-                <FileText className="w-3 h-3 flex-shrink-0" />
+                <FileText className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
                 <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
                 <button
                   onClick={(e) => {
@@ -688,9 +695,6 @@ function FolderTreeView({
                 </button>
               </div>
             ))}
-
-            {/* Render subfolders */}
-            {folder.children.map(child => renderFolder(child, depth + 1))}
           </div>
         )}
       </div>
