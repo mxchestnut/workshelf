@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '006_add_matrix_account_connection'
-down_revision = '005_add_phase5_studio_customization_tables'
+down_revision = '005_phase5_tables'
 branch_labels = None
 depends_on = None
 
