@@ -199,8 +199,53 @@ async def bulk_upload_documents(
                     
                     # Track created folders/projects by path
                     folder_to_project = {}
+                    folder_id_map = {}  # Maps folder path to folder ID
                     
                     print(f"[BULK UPLOAD] Processing {len(md_files)} markdown files from zip")
+                    
+                    # First pass: Create all unique folders from directory structure
+                    unique_folders = set()
+                    for file_path in md_files:
+                        folder_path = os.path.dirname(file_path)
+                        if folder_path:
+                            # Add all parent folders too (for nested structure)
+                            parts = folder_path.split('/')
+                            for i in range(len(parts)):
+                                folder_path_segment = '/'.join(parts[:i+1])
+                                unique_folders.add(folder_path_segment)
+                    
+                    # Sort folders by depth (parents before children)
+                    sorted_folders = sorted(unique_folders, key=lambda x: x.count('/'))
+                    
+                    print(f"[BULK UPLOAD] Found {len(sorted_folders)} unique folders to create")
+                    
+                    # Create folder records
+                    for folder_path in sorted_folders:
+                        parts = folder_path.split('/')
+                        folder_name = parts[-1]
+                        parent_path = '/'.join(parts[:-1]) if len(parts) > 1 else None
+                        parent_id = folder_id_map.get(parent_path) if parent_path else None
+                        
+                        # Create folder record
+                        folder_result = await db.execute(
+                            text("""
+                                INSERT INTO folders (
+                                    user_id, tenant_id, name, parent_id, created_at, updated_at
+                                )
+                                VALUES (:user_id, :tenant_id, :name, :parent_id, :now, :now)
+                                RETURNING id
+                            """),
+                            {
+                                "user_id": user.id,
+                                "tenant_id": user.tenant_id,
+                                "name": folder_name,
+                                "parent_id": parent_id,
+                                "now": datetime.utcnow()
+                            }
+                        )
+                        new_folder = folder_result.first()
+                        folder_id_map[folder_path] = new_folder[0]
+                        print(f"[BULK UPLOAD] Created folder '{folder_name}' (path: {folder_path}) with ID {new_folder[0]}")
                     
                     # Process each markdown file
                     for file_path in md_files:
@@ -239,6 +284,11 @@ async def bulk_upload_documents(
                             # Handle folder structure - create project from top-level folder
                             folder_path = os.path.dirname(file_path)
                             target_project_id = project_id  # Use provided project_id if given
+                            target_folder_id = None
+                            
+                            # Get folder_id from the path
+                            if folder_path and folder_path in folder_id_map:
+                                target_folder_id = folder_id_map[folder_path]
                             
                             if folder_path and not project_id:
                                 # Get the top-level folder name (first component of path)
@@ -281,13 +331,13 @@ async def bulk_upload_documents(
                             result = await db.execute(
                                 text("""
                                     INSERT INTO documents (
-                                        owner_id, tenant_id, project_id,
+                                        owner_id, tenant_id, project_id, folder_id,
                                         title, content, word_count, file_size,
                                         status, visibility, current_version,
                                         created_at, updated_at
                                     )
                                     VALUES (
-                                        :owner_id, :tenant_id, :project_id,
+                                        :owner_id, :tenant_id, :project_id, :folder_id,
                                         :title, :content, :word_count, :file_size,
                                         'DRAFT', 'PRIVATE', 1,
                                         :now, :now
@@ -298,6 +348,7 @@ async def bulk_upload_documents(
                                     "owner_id": user.id,
                                     "tenant_id": user.tenant_id,
                                     "project_id": target_project_id,
+                                    "folder_id": target_folder_id,
                                     "title": title,
                                     "content": json.dumps(tiptap_content),
                                     "word_count": word_count,
@@ -312,6 +363,7 @@ async def bulk_upload_documents(
                                 "title": doc[1],
                                 "path": file_path,
                                 "folder": folder_path or "root",
+                                "folder_id": target_folder_id,
                                 "project_id": target_project_id,
                                 "size": file_size_bytes,
                                 "words": word_count

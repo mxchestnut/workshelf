@@ -3,9 +3,10 @@ Folders Service Layer - Document organization.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models.folder import Folder
+from app.models.document import Document
 from app.schemas.project import FolderCreate, FolderUpdate, FolderResponse
 from app.core.exceptions import NotFoundError
 
@@ -164,3 +165,55 @@ class FolderService:
         await db.delete(folder)
         await db.commit()
         return True
+
+    @staticmethod
+    async def get_folder_tree(
+        db: AsyncSession,
+        user_id: str,
+        tenant_id: str,
+        project_id: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get complete folder tree for a project.
+        Returns folders organized hierarchically with children nested.
+        """
+        # Query all folders for user/tenant
+        stmt = select(Folder).where(
+            and_(
+                Folder.tenant_id == tenant_id,
+                Folder.user_id == user_id
+            )
+        ).order_by(Folder.name)
+        
+        result = await db.execute(stmt)
+        folders = result.scalars().all()
+        
+        # Build folder map with document counts
+        folder_map: Dict[int, Dict[str, Any]] = {}
+        for folder in folders:
+            # Count documents in this folder
+            doc_stmt = select(func.count()).select_from(Document).where(
+                Document.folder_id == folder.id
+            )
+            doc_count = await db.scalar(doc_stmt) or 0
+            
+            folder_map[folder.id] = {
+                "id": folder.id,
+                "name": folder.name,
+                "parent_id": folder.parent_id,
+                "color": folder.color,
+                "icon": folder.icon,
+                "document_count": doc_count,
+                "children": []
+            }
+        
+        # Build tree structure
+        tree = []
+        for folder in folders:
+            folder_dict = folder_map[folder.id]
+            if folder.parent_id and folder.parent_id in folder_map:
+                folder_map[folder.parent_id]["children"].append(folder_dict)
+            else:
+                tree.append(folder_dict)
+        
+        return tree

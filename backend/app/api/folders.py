@@ -68,6 +68,19 @@ async def update_folder(
     )
 
 
+@router.get("/tree", response_model=List[Dict[str, Any]])
+async def get_folder_tree(
+    project_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Get complete folder tree for a project."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    return await FolderService.get_folder_tree(
+        db, user.id, user.tenant_id, project_id
+    )
+
+
 @router.delete("/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_folder(
     folder_id: int,
