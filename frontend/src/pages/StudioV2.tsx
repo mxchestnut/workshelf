@@ -122,6 +122,15 @@ export default function StudioV2() {
       if (foldersResponse.ok) {
         const foldersData = await foldersResponse.json()
         setFolders(foldersData || [])
+        
+        // Auto-expand root-level folders on first load
+        if (foldersData && foldersData.length > 0) {
+          const newExpanded = new Set(expandedFolders)
+          foldersData.forEach((folder: TreeFolder) => {
+            newExpanded.add(folder.id)
+          })
+          setExpandedFolders(newExpanded)
+        }
       }
       
       // Load documents
@@ -607,16 +616,16 @@ function FolderTreeView({
           onClick={() => onToggleFolder(folder.id)}
         >
           {isExpanded ? (
-            <ChevronDown className="w-3 h-3 flex-shrink-0" />
+            <ChevronDown className="w-4 h-4 flex-shrink-0 text-foreground" />
           ) : (
-            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 flex-shrink-0 text-foreground" />
           )}
           {isExpanded ? (
-            <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" style={{ color: folder.color || undefined }} />
+            <FolderOpen className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
           ) : (
-            <Folder className="w-3.5 h-3.5 flex-shrink-0" style={{ color: folder.color || undefined }} />
+            <Folder className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
           )}
-          <span className="flex-1 truncate text-xs font-mono">{folder.name}</span>
+          <span className="flex-1 truncate text-xs font-mono font-medium">{folder.name}</span>
           
           <button
             onClick={(e) => {
