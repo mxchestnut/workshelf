@@ -26,6 +26,29 @@ async def create_folder(
     )
 
 
+# IMPORTANT: /tree must come BEFORE /{folder_id} to avoid route matching conflict
+@router.get("/tree", response_model=List[Dict[str, Any]])
+async def get_folder_tree(
+    project_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Get complete folder tree for a project."""
+    try:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        print(f"[FOLDER TREE] user_id={user.id}, tenant_id={user.tenant_id}, project_id={project_id}")
+        result = await FolderService.get_folder_tree(
+            db, user.id, user.tenant_id, project_id
+        )
+        print(f"[FOLDER TREE] Returning {len(result)} root folders")
+        return result
+    except Exception as e:
+        print(f"[FOLDER TREE ERROR] {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
+
+
 @router.get("/{folder_id}", response_model=FolderResponse)
 async def get_folder(
     folder_id: int,
@@ -66,28 +89,6 @@ async def update_folder(
     return await FolderService.update_folder(
         db, folder_id, data, user.id, user.tenant_id
     )
-
-
-@router.get("/tree", response_model=List[Dict[str, Any]])
-async def get_folder_tree(
-    project_id: Optional[int] = Query(None),
-    db: AsyncSession = Depends(get_db),
-    current_user: Dict[str, Any] = Depends(get_current_user)
-):
-    """Get complete folder tree for a project."""
-    try:
-        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
-        print(f"[FOLDER TREE] user_id={user.id}, tenant_id={user.tenant_id}, project_id={project_id}")
-        result = await FolderService.get_folder_tree(
-            db, user.id, user.tenant_id, project_id
-        )
-        print(f"[FOLDER TREE] Returning {len(result)} root folders")
-        return result
-    except Exception as e:
-        print(f"[FOLDER TREE ERROR] {type(e).__name__}: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise
 
 
 @router.delete("/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
