@@ -75,10 +75,19 @@ async def get_folder_tree(
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """Get complete folder tree for a project."""
-    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
-    return await FolderService.get_folder_tree(
-        db, user.id, user.tenant_id, project_id
-    )
+    try:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        print(f"[FOLDER TREE] user_id={user.id}, tenant_id={user.tenant_id}, project_id={project_id}")
+        result = await FolderService.get_folder_tree(
+            db, user.id, user.tenant_id, project_id
+        )
+        print(f"[FOLDER TREE] Returning {len(result)} root folders")
+        return result
+    except Exception as e:
+        print(f"[FOLDER TREE ERROR] {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 @router.delete("/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
