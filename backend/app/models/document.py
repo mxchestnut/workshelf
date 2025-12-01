@@ -48,6 +48,9 @@ class Document(Base, TimestampMixin, TenantMixin):
     # Project association (optional)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='SET NULL'), index=True)
     
+    # Folder association (optional) - for organizing documents
+    folder_id = Column(Integer, ForeignKey('folders.id', ondelete='SET NULL'), index=True)
+    
     # Studio association (optional)
     studio_id = Column(Integer, ForeignKey('studios.id', ondelete='SET NULL'), index=True)
     
