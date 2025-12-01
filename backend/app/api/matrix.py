@@ -322,13 +322,11 @@ async def get_matrix_credentials(
     current_user = Depends(get_current_user_from_db)
 ):
     """
-    Get user's Matrix credentials for client login
-    Auto-registers if user doesn't have Matrix account yet
-    Auto-refreshes token if expired using admin API
+    Get user's Matrix credentials for client login.
+    Returns credentials if user has connected their Matrix account.
     """
     try:
-        print(f"[MATRIX] Getting credentials for user {current_user.id}")
-        # Check if user already has Matrix credentials
+        # Check if user has connected a Matrix account
         result = await db.execute(
             text("""
             SELECT matrix_user_id, matrix_access_token, matrix_homeserver 
@@ -338,31 +336,36 @@ async def get_matrix_credentials(
             {"id": current_user.id}
         )
         user_data = result.fetchone()
-        print(f"[MATRIX] User data: {user_data}")
         
         if not user_data or not user_data[0]:  # matrix_user_id is None
-            print(f"[MATRIX] No Matrix credentials found, auto-registering user")
-            # Auto-register user
-            return await register_matrix_user(db, current_user)
+            raise HTTPException(
+                status_code=404,
+                detail="No Matrix account connected. Please connect your Matrix account first."
+            )
         
-        # Verify token is still valid
         matrix_user_id = user_data[0]
         matrix_token = user_data[1]
+        matrix_homeserver = user_data[2] or "https://matrix.org"
         
+        # Verify token is still valid
         try:
             verify_response = requests.get(
-                f"{MATRIX_HOMESERVER}/_matrix/client/v3/account/whoami",
+                f"{matrix_homeserver}/_matrix/client/v3/account/whoami",
                 headers={"Authorization": f"Bearer {matrix_token}"},
                 timeout=5
             )
             if verify_response.status_code == 200:
-                print(f"[MATRIX] Token valid, returning existing credentials")
                 return {
                     "matrix_user_id": matrix_user_id,
                     "matrix_access_token": matrix_token,
-                    "homeserver": MATRIX_PUBLIC_HOMESERVER
+                    "homeserver": matrix_homeserver
                 }
-        except Exception as e:
+            else:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Matrix access token is invalid or expired. Please reconnect your account."
+                )
+        except requests.RequestException as e:
             print(f"[MATRIX] Token verification failed: {e}")
         
         # Token is invalid - need to login again
@@ -609,79 +612,205 @@ async def create_direct_message_room(
         )
 
 
-class SetMatrixPasswordRequest(BaseModel):
-    password: str = Field(min_length=8, description="New Matrix password")
+class ConnectMatrixAccountRequest(BaseModel):
+    matrix_user_id: str = Field(description="Full Matrix user ID (e.g., @user:matrix.org)")
+    access_token: str = Field(description="Matrix access token from Element settings")
+    homeserver: str = Field(default="https://matrix.org", description="Matrix homeserver URL")
 
 
-@router.post("/set-password")
-async def set_matrix_password(
-    payload: SetMatrixPasswordRequest,
+class MatrixLoginRequest(BaseModel):
+    username: str = Field(description="Matrix username (without @)")
+    password: str = Field(description="Matrix password")
+    homeserver: str = Field(default="https://matrix.org", description="Matrix homeserver URL")
+
+
+@router.post("/connect-account")
+async def connect_matrix_account(
+    payload: ConnectMatrixAccountRequest,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_from_db)
 ):
     """
-    Set or reset the user's Matrix account password so they can sign into Element.
-    Requires MATRIX_ADMIN_ACCESS_TOKEN to be configured on the backend.
-    If the user does not yet have a Matrix account, this will auto-register it first.
+    Connect an existing Matrix account (from matrix.org or any homeserver) to this WorkShelf account.
+    Users provide their Matrix user ID and access token.
     """
-    admin_token = get_admin_access_token()
-    if not admin_token:
-        raise HTTPException(
-            status_code=501,
-            detail="Matrix admin access token not configured on server"
-        )
-
     try:
-        # Ensure the user has Matrix credentials
-        result = await db.execute(
-            text(
-                """
-                SELECT matrix_user_id
-                FROM users
-                WHERE id = :id
-                """
-            ),
-            {"id": current_user.id}
+        # Verify the credentials work by calling the Matrix API
+        resp = requests.get(
+            f"{payload.homeserver}/_matrix/client/r0/account/whoami",
+            headers={"Authorization": f"Bearer {payload.access_token}"},
+            timeout=10
         )
-        row = result.fetchone()
-
-        matrix_user_id = row[0] if row else None
-        if not matrix_user_id:
-            creds = await register_matrix_user(db, current_user)
-            matrix_user_id = creds["matrix_user_id"]
-
-        # Synapse admin API: set password
-        # Endpoint: PUT /_synapse/admin/v2/users/{userId}/password
-        # userId must be URL-escaped
-        from urllib.parse import quote
-        user_path = quote(matrix_user_id, safe='')
-
-        resp = requests.post(
-            f"{MATRIX_HOMESERVER}/_synapse/admin/v1/reset_password/{user_path}",
-            headers={
-                "Authorization": f"Bearer {admin_token}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "new_password": payload.password,
-                "logout_devices": False
-            },
-            timeout=15
-        )
-
+        
         if not resp.ok:
-            try:
-                err = resp.json()
-            except Exception:
-                err = {"error": resp.text}
-            raise HTTPException(status_code=resp.status_code, detail=f"Synapse password set failed: {err.get('error')}")
-
-        return {"success": True}
-
+            raise HTTPException(status_code=400, detail="Invalid Matrix credentials")
+        
+        whoami = resp.json()
+        if whoami.get("user_id") != payload.matrix_user_id:
+            raise HTTPException(status_code=400, detail="Matrix user ID doesn't match access token")
+        
+        # Store credentials in database
+        await db.execute(
+            text("""
+                UPDATE users 
+                SET matrix_user_id = :matrix_user_id,
+                    matrix_access_token = :access_token,
+                    matrix_homeserver = :homeserver
+                WHERE id = :user_id
+            """),
+            {
+                "matrix_user_id": payload.matrix_user_id,
+                "access_token": payload.access_token,
+                "homeserver": payload.homeserver,
+                "user_id": current_user.id
+            }
+        )
+        await db.commit()
+        
+        return {
+            "success": True,
+            "matrix_user_id": payload.matrix_user_id,
+            "homeserver": payload.homeserver
+        }
+        
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to set Matrix password: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to connect Matrix account: {str(e)}")
+
+
+@router.post("/login-and-connect")
+async def login_and_connect_matrix(
+    payload: MatrixLoginRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_from_db)
+):
+    """
+    Login to Matrix with username/password and store the access token.
+    This is a convenience method for users who don't want to manually get their token.
+    """
+    try:
+        # Login to Matrix to get access token
+        resp = requests.post(
+            f"{payload.homeserver}/_matrix/client/r0/login",
+            json={
+                "type": "m.login.password",
+                "user": payload.username,
+                "password": payload.password
+            },
+            timeout=10
+        )
+        
+        if not resp.ok:
+            raise HTTPException(status_code=400, detail="Matrix login failed")
+        
+        login_data = resp.json()
+        matrix_user_id = login_data.get("user_id")
+        access_token = login_data.get("access_token")
+        
+        if not matrix_user_id or not access_token:
+            raise HTTPException(status_code=500, detail="Invalid Matrix login response")
+        
+        # Store credentials
+        await db.execute(
+            text("""
+                UPDATE users 
+                SET matrix_user_id = :matrix_user_id,
+                    matrix_access_token = :access_token,
+                    matrix_homeserver = :homeserver
+                WHERE id = :user_id
+            """),
+            {
+                "matrix_user_id": matrix_user_id,
+                "access_token": access_token,
+                "homeserver": payload.homeserver,
+                "user_id": current_user.id
+            }
+        )
+        await db.commit()
+        
+        return {
+            "success": True,
+            "matrix_user_id": matrix_user_id,
+            "homeserver": payload.homeserver
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to login to Matrix: {str(e)}")
+
+
+@router.post("/disconnect-account")
+async def disconnect_matrix_account(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_from_db)
+):
+    """
+    Disconnect the Matrix account from this WorkShelf account.
+    """
+    try:
+        await db.execute(
+            text("""
+                UPDATE users 
+                SET matrix_user_id = NULL,
+                    matrix_access_token = NULL,
+                    matrix_homeserver = NULL
+                WHERE id = :user_id
+            """),
+            {"user_id": current_user.id}
+        )
+        await db.commit()
+        
+        return {"success": True}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to disconnect Matrix account: {str(e)}")
+
+
+@router.get("/connection-status")
+async def get_matrix_connection_status(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_from_db)
+):
+    """
+    Check if the user has connected a Matrix account.
+    """
+    try:
+        result = await db.execute(
+            text("""
+                SELECT matrix_user_id, matrix_homeserver
+                FROM users
+                WHERE id = :user_id
+            """),
+            {"user_id": current_user.id}
+        )
+        row = result.fetchone()
+        
+        if row and row[0]:
+            return {
+                "connected": True,
+                "matrix_user_id": row[0],
+                "homeserver": row[1] or "https://matrix.org"
+            }
+        else:
+            return {"connected": False}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to check connection status: {str(e)}")
+
+
+# Legacy endpoint - kept for backwards compatibility but now returns error
+@router.post("/set-password")
+async def set_matrix_password_legacy():
+    """
+    Legacy endpoint. WorkShelf no longer manages Matrix passwords.
+    Users should connect their existing Matrix accounts instead.
+    """
+    raise HTTPException(
+        status_code=410,
+        detail="This endpoint is deprecated. Please connect your existing Matrix account using /matrix/connect-account or /matrix/login-and-connect"
+    )
 
 
 @router.post("/create-space")

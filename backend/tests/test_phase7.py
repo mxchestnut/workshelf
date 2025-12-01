@@ -2,68 +2,35 @@
 Phase 7 Feature Tests
 Tests for content integrity, export, and accessibility features
 
-NOTE: These tests are currently skipped pending fixture refactoring.
-The async fixture pattern needs to be updated to avoid "coroutine not subscriptable" errors.
-See test_group_multitenant.py for the working pattern (create AsyncClient in each test).
+Authentication is mocked via conftest.py
 """
 import pytest
 from httpx import AsyncClient
 from app.main import app
 
-pytestmark = pytest.mark.skip(reason="Async fixture refactoring needed - see file docstring")
 
-
-# Test user credentials
-TEST_USER = {
-    "username": "testwriter",
-    "email": "test@example.com",
-    "password": "SecurePass123!"
-}
-
-
-@pytest.fixture
-async def auth_headers():
-    """Get authentication headers"""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # Register user
-        await client.post("/api/v1/auth/register", json=TEST_USER)
-        
-        # Login
-        response = await client.post(
-            "/api/v1/auth/login",
-            data={
-                "username": TEST_USER["username"],
-                "password": TEST_USER["password"]
-            }
-        )
-        token = response.json()["access_token"]
-        return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-async def test_document(auth_headers):
-    """Create a test document"""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.post(
-            "/api/v1/documents",
-            headers=auth_headers,
-            json={
-                "title": "Test Document for Phase 7",
-                "content": "# Introduction\n\nThis is a test document with multiple paragraphs.\n\n![](image.jpg)\n\nSome more content here."
-            }
-        )
-        return response.json()
+async def create_test_document(client: AsyncClient):
+    """Helper to create a test document (auth is mocked via conftest.py)"""
+    response = await client.post(
+        "/api/v1/documents",
+        json={
+            "title": "Test Document for Phase 7",
+            "content": "# Introduction\n\nThis is a test document with multiple paragraphs.\n\n![](image.jpg)\n\nSome more content here."
+        }
+    )
+    return response.json()
 
 
 # ===== CONTENT INTEGRITY TESTS =====
 
 @pytest.mark.asyncio
-async def test_create_plagiarism_check(auth_headers, test_document):
+async def test_create_plagiarism_check():
     """Test creating a plagiarism check"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
@@ -78,12 +45,13 @@ async def test_create_plagiarism_check(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_create_ai_detection_check(auth_headers, test_document):
+async def test_create_ai_detection_check():
     """Test creating an AI detection check"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "ai_detection"
@@ -96,12 +64,13 @@ async def test_create_ai_detection_check(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_create_combined_check(auth_headers, test_document):
+async def test_create_combined_check():
     """Test creating a combined plagiarism + AI check"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "combined"
@@ -114,13 +83,14 @@ async def test_create_combined_check(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_get_check_results(auth_headers, test_document):
+async def test_get_check_results():
     """Test retrieving check results"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         # Create check
         create_response = await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
@@ -130,8 +100,7 @@ async def test_get_check_results(auth_headers, test_document):
         
         # Get results
         response = await client.get(
-            f"/api/v1/integrity/check/{check_id}",
-            headers=auth_headers
+            f"/api/v1/integrity/check/{check_id}"
         )
         
         assert response.status_code == 200
@@ -140,13 +109,14 @@ async def test_get_check_results(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_get_document_checks(auth_headers, test_document):
+async def test_get_document_checks():
     """Test getting all checks for a document"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         # Create multiple checks
         await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
@@ -154,7 +124,6 @@ async def test_get_document_checks(auth_headers, test_document):
         )
         await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "ai_detection"
@@ -163,8 +132,7 @@ async def test_get_document_checks(auth_headers, test_document):
         
         # Get all checks
         response = await client.get(
-            f"/api/v1/integrity/document/{test_document['id']}/checks",
-            headers=auth_headers
+            f"/api/v1/integrity/document/{test_document['id']}/checks"
         )
         
         assert response.status_code == 200
@@ -174,12 +142,13 @@ async def test_get_document_checks(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_get_my_checks(auth_headers, test_document):
+async def test_get_my_checks():
     """Test getting all checks for current user"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        await create_test_document(client)
+        
         response = await client.get(
-            "/api/v1/integrity/my-checks",
-            headers=auth_headers
+            "/api/v1/integrity/my-checks"
         )
         
         assert response.status_code == 200
@@ -190,12 +159,13 @@ async def test_get_my_checks(auth_headers, test_document):
 # ===== EXPORT TESTS =====
 
 @pytest.mark.asyncio
-async def test_export_document_markdown(auth_headers, test_document):
+async def test_export_document_markdown():
     """Test exporting a document as Markdown"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={
                 "export_format": "markdown",
                 "include_metadata": True
@@ -210,12 +180,13 @@ async def test_export_document_markdown(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_export_document_html(auth_headers, test_document):
+async def test_export_document_html():
     """Test exporting a document as HTML"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={
                 "export_format": "html",
                 "include_metadata": True,
@@ -229,12 +200,13 @@ async def test_export_document_html(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_export_document_json(auth_headers, test_document):
+async def test_export_document_json():
     """Test exporting a document as JSON"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={
                 "export_format": "json",
                 "include_metadata": True
@@ -247,12 +219,13 @@ async def test_export_document_json(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_export_document_txt(auth_headers, test_document):
+async def test_export_document_txt():
     """Test exporting a document as plain text"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={
                 "export_format": "txt"
             }
@@ -264,12 +237,11 @@ async def test_export_document_txt(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_export_gdpr_data(auth_headers):
+async def test_export_gdpr_data():
     """Test GDPR data export"""
     async with AsyncClient(app=app, base_url="http://test") as client:
         response = await client.post(
-            "/api/v1/export/gdpr",
-            headers=auth_headers
+            "/api/v1/export/gdpr"
         )
         
         assert response.status_code == 200
@@ -279,20 +251,20 @@ async def test_export_gdpr_data(auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_get_export_jobs(auth_headers, test_document):
+async def test_get_export_jobs():
     """Test getting all export jobs"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         # Create an export
         await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={"export_format": "markdown"}
         )
         
         # Get all jobs
         response = await client.get(
-            "/api/v1/export/jobs",
-            headers=auth_headers
+            "/api/v1/export/jobs"
         )
         
         assert response.status_code == 200
@@ -302,21 +274,21 @@ async def test_get_export_jobs(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_get_export_job_detail(auth_headers, test_document):
+async def test_get_export_job_detail():
     """Test getting export job details"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         # Create export
         create_response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={"export_format": "markdown"}
         )
         job_id = create_response.json()["job"]["id"]
         
         # Get job details
         response = await client.get(
-            f"/api/v1/export/job/{job_id}",
-            headers=auth_headers
+            f"/api/v1/export/job/{job_id}"
         )
         
         assert response.status_code == 200
@@ -327,12 +299,11 @@ async def test_get_export_job_detail(auth_headers, test_document):
 # ===== ACCESSIBILITY TESTS =====
 
 @pytest.mark.asyncio
-async def test_get_accessibility_settings(auth_headers):
+async def test_get_accessibility_settings():
     """Test getting default accessibility settings"""
     async with AsyncClient(app=app, base_url="http://test") as client:
         response = await client.get(
-            "/api/v1/accessibility/settings",
-            headers=auth_headers
+            "/api/v1/accessibility/settings"
         )
         
         assert response.status_code == 200
@@ -343,12 +314,11 @@ async def test_get_accessibility_settings(auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_update_accessibility_settings(auth_headers):
+async def test_update_accessibility_settings():
     """Test updating accessibility settings"""
     async with AsyncClient(app=app, base_url="http://test") as client:
         response = await client.put(
             "/api/v1/accessibility/settings",
-            headers=auth_headers,
             json={
                 "font_size": 18,
                 "high_contrast": True,
@@ -364,12 +334,11 @@ async def test_update_accessibility_settings(auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_update_color_blind_mode(auth_headers):
+async def test_update_color_blind_mode():
     """Test setting color blind mode"""
     async with AsyncClient(app=app, base_url="http://test") as client:
         response = await client.put(
             "/api/v1/accessibility/settings",
-            headers=auth_headers,
             json={"color_blind_mode": "protanopia"}
         )
         
@@ -379,12 +348,13 @@ async def test_update_color_blind_mode(auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_check_document_accessibility(auth_headers, test_document):
+async def test_check_document_accessibility():
     """Test running WCAG compliance check"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         response = await client.post(
-            f"/api/v1/accessibility/check-document/{test_document['id']}",
-            headers=auth_headers
+            f"/api/v1/accessibility/check-document/{test_document['id']}"
         )
         
         assert response.status_code == 200
@@ -399,12 +369,13 @@ async def test_check_document_accessibility(auth_headers, test_document):
 
 
 @pytest.mark.asyncio
-async def test_accessibility_report(auth_headers, test_document):
+async def test_accessibility_report():
     """Test generating accessibility report"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        await create_test_document(client)
+        
         response = await client.get(
-            "/api/v1/accessibility/report",
-            headers=auth_headers
+            "/api/v1/accessibility/report"
         )
         
         assert response.status_code == 200
@@ -418,13 +389,14 @@ async def test_accessibility_report(auth_headers, test_document):
 # ===== INTEGRATION TESTS =====
 
 @pytest.mark.asyncio
-async def test_full_workflow(auth_headers, test_document):
+async def test_full_workflow():
     """Test full Phase 7 workflow"""
     async with AsyncClient(app=app, base_url="http://test") as client:
+        test_document = await create_test_document(client)
+        
         # 1. Check content integrity
         integrity_response = await client.post(
             "/api/v1/integrity/check",
-            headers=auth_headers,
             json={
                 "document_id": test_document["id"],
                 "check_type": "combined"
@@ -434,15 +406,13 @@ async def test_full_workflow(auth_headers, test_document):
         
         # 2. Check accessibility
         accessibility_response = await client.post(
-            f"/api/v1/accessibility/check-document/{test_document['id']}",
-            headers=auth_headers
+            f"/api/v1/accessibility/check-document/{test_document['id']}"
         )
         assert accessibility_response.status_code == 200
         
         # 3. Export document
         export_response = await client.post(
             f"/api/v1/export/document/{test_document['id']}",
-            headers=auth_headers,
             json={"export_format": "html"}
         )
         assert export_response.status_code == 200
@@ -450,7 +420,6 @@ async def test_full_workflow(auth_headers, test_document):
         # 4. Update accessibility settings
         settings_response = await client.put(
             "/api/v1/accessibility/settings",
-            headers=auth_headers,
             json={"font_size": 20}
         )
         assert settings_response.status_code == 200
