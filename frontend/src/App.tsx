@@ -2,9 +2,6 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import './App.css'
-import { ChatManager } from './components/ChatManager'
-import { ChatLauncher } from './components/ChatLauncher'
-import { ChatBar } from './components/ChatBar'
 import { authService } from './services/auth'
 
 // Cache bust: 2025-11-09 14:00
@@ -499,10 +496,6 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         {renderContent()}
       </Suspense>
-      {/* Global chat UI */}
-      <ChatManager />
-      <ChatLauncher />
-      <ChatBar />
       <ToastContainer />
     </>
   )
