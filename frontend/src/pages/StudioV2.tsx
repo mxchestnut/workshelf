@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload } from 'lucide-react'
+import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload, Trash2 } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
@@ -168,6 +168,60 @@ export default function StudioV2() {
     }
   }
 
+  const deleteProject = async (projectId: number) => {
+    if (!confirm('Delete this project and all its documents? This cannot be undone.')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+        setDocuments(prev => {
+          const newDocs = { ...prev }
+          delete newDocs[projectId]
+          return newDocs
+        })
+        if (selectedDocument?.project_id === projectId) {
+          setSelectedDocument(null)
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting project:', err)
+    }
+  }
+
+  const deleteDocument = async (documentId: number, projectId: number) => {
+    if (!confirm('Delete this document? This cannot be undone.')) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/documents/${documentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        setDocuments(prev => ({
+          ...prev,
+          [projectId]: prev[projectId]?.filter(doc => doc.id !== documentId) || []
+        }))
+        if (selectedDocument?.id === documentId) {
+          setSelectedDocument(null)
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting document:', err)
+    }
+  }
+
   const saveDocument = async () => {
     if (!selectedDocument) return
 
@@ -260,7 +314,7 @@ export default function StudioV2() {
             return (
               <div key={project.id} className="border-b border-border">
                 <div
-                  className="flex items-center gap-2 p-3 hover:bg-accent cursor-pointer"
+                  className="flex items-center gap-2 p-3 hover:bg-accent cursor-pointer group"
                   onClick={() => toggleProject(project.id)}
                 >
                   {isExpanded ? (
@@ -277,9 +331,20 @@ export default function StudioV2() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
+                      deleteProject(project.id)
+                    }}
+                    className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete project"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
                       createDocument(project.id)
                     }}
                     className="p-1 hover:bg-muted rounded"
+                    title="New document"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -295,13 +360,23 @@ export default function StudioV2() {
                       projectDocs.map(doc => (
                         <div
                           key={doc.id}
-                          className={`flex items-center gap-2 p-2 hover:bg-accent cursor-pointer ${
+                          className={`flex items-center gap-2 p-2 hover:bg-accent cursor-pointer group ${
                             selectedDocument?.id === doc.id ? 'bg-accent' : ''
                           }`}
                           onClick={() => setSelectedDocument(doc)}
                         >
                           <FileText className="w-3 h-3" />
                           <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteDocument(doc.id, project.id)
+                            }}
+                            className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Delete document"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
                       ))
                     )}
