@@ -15,6 +15,7 @@ from app.api import (
     search,
     projects,
     folders,
+    bulk_upload,  # Bulk document upload (Obsidian vaults, etc)
     relationships,
     notifications,
     sharing,
@@ -91,6 +92,7 @@ api_router.include_router(bootstrap.router)  # Emergency admin access
 api_router.include_router(registration.router)  # Registration validation
 api_router.include_router(users.router)  # User management
 api_router.include_router(documents.router)
+api_router.include_router(bulk_upload.router)  # Bulk document upload
 api_router.include_router(studios.router)
 api_router.include_router(user_profiles.router)
 api_router.include_router(tags.router)
