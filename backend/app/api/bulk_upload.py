@@ -210,23 +210,23 @@ async def bulk_upload_documents(
                             
                             # Read file content
                             raw_content = zip_ref.read(file_path)
-                        
-                        # Security: Check for excessive size (decompression bomb)
-                        if len(raw_content) > MAX_FILE_SIZE:
-                            errors.append(f"Skipped {safe_filename}: File too large after decompression")
-                            continue
-                        
-                        # Decode content
-                        try:
-                            file_content = raw_content.decode('utf-8')
-                        except UnicodeDecodeError:
-                            errors.append(f"Skipped {safe_filename}: Not a valid text file")
-                            continue
-                        
-                        # Security: Validate content is actually text/markdown
-                        if not validate_markdown_content(file_content):
-                            errors.append(f"Skipped {safe_filename}: Content validation failed")
-                            continue
+                            
+                            # Security: Check for excessive size (decompression bomb)
+                            if len(raw_content) > MAX_FILE_SIZE:
+                                errors.append(f"Skipped {safe_filename}: File too large after decompression")
+                                continue
+                            
+                            # Decode content
+                            try:
+                                file_content = raw_content.decode('utf-8')
+                            except UnicodeDecodeError:
+                                errors.append(f"Skipped {safe_filename}: Not a valid text file")
+                                continue
+                            
+                            # Security: Validate content is actually text/markdown
+                            if not validate_markdown_content(file_content):
+                                errors.append(f"Skipped {safe_filename}: Content validation failed")
+                                continue
                         
                         file_size_bytes = len(file_content.encode('utf-8'))
                         
