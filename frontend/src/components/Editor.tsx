@@ -37,6 +37,27 @@ import BubbleMenu from '@tiptap/extension-bubble-menu'
 import FloatingMenu from '@tiptap/extension-floating-menu'
 import Youtube from '@tiptap/extension-youtube'
 import Mention from '@tiptap/extension-mention'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import HardBreak from '@tiptap/extension-hard-break'
+import HorizontalRule from '@tiptap/extension-horizontal-rule'
+import History from '@tiptap/extension-history'
+import { createLowlight } from 'lowlight'
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import python from 'highlight.js/lib/languages/python'
+import css from 'highlight.js/lib/languages/css'
+import html from 'highlight.js/lib/languages/xml'
+import json from 'highlight.js/lib/languages/json'
+import markdown from 'highlight.js/lib/languages/markdown'
+
+const lowlight = createLowlight()
+lowlight.register('javascript', javascript)
+lowlight.register('typescript', typescript)
+lowlight.register('python', python)
+lowlight.register('css', css)
+lowlight.register('html', html)
+lowlight.register('json', json)
+lowlight.register('markdown', markdown)
 import { useState, useCallback } from 'react'
 import { 
   Bold, 
@@ -84,7 +105,17 @@ export function Editor({
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3]
-        }
+        },
+        codeBlock: false, // Disable default code block to use CodeBlockLowlight
+        hardBreak: false, // Disable default hard break to use HardBreak extension
+        horizontalRule: false, // Disable default to use HorizontalRule extension
+        history: false, // Disable default to use History extension
+      }),
+      History,
+      HardBreak,
+      HorizontalRule,
+      CodeBlockLowlight.configure({
+        lowlight,
       }),
       Placeholder.configure({
         placeholder
