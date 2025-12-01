@@ -12,6 +12,7 @@ import os
 from datetime import datetime
 from app.core.database import get_db
 from app.core.auth import get_current_user
+from app.services import user as user_service
 
 router = APIRouter(prefix="/storage", tags=["bulk-upload", "storage"])
 
@@ -66,8 +67,11 @@ async def bulk_upload_documents(
     Returns import summary with created documents and any errors.
     """
     
+    # Get or create user in database
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
     # Check storage quota
-    storage = await get_user_storage(db, current_user["id"])
+    storage = await get_user_storage(db, user.id)
     
     # Read file content
     content = await file.read()
@@ -124,8 +128,8 @@ async def bulk_upload_documents(
                                 RETURNING id, title
                             """),
                             {
-                                "owner_id": current_user["id"],
-                                "tenant_id": current_user.get("tenant_id"),
+                                "owner_id": user.id,
+                                "tenant_id": user.tenant_id,
                                 "project_id": project_id,
                                 "folder_id": folder_id,
                                 "title": title,
@@ -177,8 +181,8 @@ async def bulk_upload_documents(
                     RETURNING id, title
                 """),
                 {
-                    "owner_id": current_user["id"],
-                    "tenant_id": current_user.get("tenant_id"),
+                    "owner_id": user.id,
+                    "tenant_id": user.tenant_id,
                     "project_id": project_id,
                     "folder_id": folder_id,
                     "title": title,
@@ -203,12 +207,12 @@ async def bulk_upload_documents(
         
         # Update storage usage
         if total_bytes > 0:
-            await update_user_storage(db, current_user["id"], total_bytes)
+            await update_user_storage(db, user.id, total_bytes)
         
         await db.commit()
         
         # Get updated storage info
-        updated_storage = await get_user_storage(db, current_user["id"])
+        updated_storage = await get_user_storage(db, user.id)
         
         return {
             "success": True,
@@ -280,7 +284,9 @@ async def get_storage_info(
     db: AsyncSession = Depends(get_db)
 ):
     """Get current user's storage usage and limits"""
-    storage = await get_user_storage(db, current_user["id"])
+    # Get or create user in database
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    storage = await get_user_storage(db, user.id)
     
     return {
         "used_bytes": storage["used"],
