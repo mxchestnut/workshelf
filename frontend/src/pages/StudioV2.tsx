@@ -196,6 +196,27 @@ export default function StudioV2() {
     }
   }
 
+  const renameProject = async (projectId: number, newTitle: string) => {
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title: newTitle })
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        setProjects(prev => prev.map(p => p.id === projectId ? updated : p))
+      }
+    } catch (err) {
+      console.error('Error renaming project:', err)
+    }
+  }
+
   const deleteDocument = async (documentId: number, projectId: number) => {
     if (!confirm('Delete this document? This cannot be undone.')) {
       return
@@ -328,6 +349,19 @@ export default function StudioV2() {
                     <Folder className="w-4 h-4" />
                   )}
                   <span className="flex-1 truncate font-mono text-sm">{project.title}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const newTitle = prompt('Rename project:', project.title)
+                      if (newTitle && newTitle !== project.title) {
+                        renameProject(project.id, newTitle)
+                      }
+                    }}
+                    className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Rename project"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
