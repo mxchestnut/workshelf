@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional, List
+import ast
 import zipfile
 import io
 import os
@@ -112,14 +113,15 @@ async def update_user_storage(db: AsyncSession, user_id: int, bytes_delta: int):
 
 @router.post("/bulk-upload")
 async def bulk_upload_documents(
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     project_id: Optional[int] = Form(None),
     folder_id: Optional[int] = Form(None),
+    file_paths: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Bulk upload documents from a zip file or multiple markdown files.
+    Bulk upload documents from zip file, multiple markdown files, or folder structures.
     Supports Obsidian vault structure with folders and metadata.
     
     Security measures:
@@ -139,16 +141,28 @@ async def bulk_upload_documents(
     # Check storage quota
     storage = await get_user_storage(db, user.id)
     
-    # Read file content
-    content = await file.read()
-    file_size = len(content)
+    # Parse file paths if provided (for folder uploads)
+    path_map = {}
+    if file_paths:
+        try:
+            import json
+            path_map = json.loads(file_paths)
+        except:
+            pass
     
-    # Security: Check max file size
-    if file_size > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=413,
-            detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
-        )
+    # Handle single file vs multiple files
+    if len(files) == 1 and files[0].filename.endswith('.zip'):
+        # Single zip file - use existing logic
+        file = files[0]
+        content = await file.read()
+        file_size = len(content)
+        
+        # Security: Check max file size
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
+            )
     
     # Security: Validate file extension
     file_ext = os.path.splitext(file.filename)[1].lower()

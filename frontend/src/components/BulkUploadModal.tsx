@@ -42,10 +42,12 @@ interface BulkUploadModalProps {
 export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadModalProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState<UploadResult | null>(null)
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
 
   // Load storage info on mount
   useEffect(() => {
@@ -103,12 +105,20 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) {
-      setSelectedFile(files[0])
+      if (files.length === 1 && files[0].name.endsWith('.zip')) {
+        // Single zip file
+        setSelectedFile(files[0])
+        setSelectedFiles([])
+      } else {
+        // Multiple files or folder
+        setSelectedFile(null)
+        setSelectedFiles(Array.from(files))
+      }
     }
   }
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile && selectedFiles.length === 0) return
 
     setUploading(true)
     setResult(null)
@@ -116,7 +126,22 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
     try {
       const token = localStorage.getItem('access_token')
       const formData = new FormData()
-      formData.append('file', selectedFile)
+      
+      if (selectedFile) {
+        // Single zip file
+        formData.append('files', selectedFile)
+      } else {
+        // Multiple files with paths
+        const pathMap: Record<string, string> = {}
+        selectedFiles.forEach((file, idx) => {
+          formData.append('files', file)
+          // @ts-ignore - webkitRelativePath exists on File
+          const relativePath = file.webkitRelativePath || file.name
+          pathMap[idx.toString()] = relativePath
+        })
+        formData.append('file_paths', JSON.stringify(pathMap))
+      }
+      
       if (projectId) {
         formData.append('project_id', projectId.toString())
       }
@@ -222,24 +247,33 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
               >
                 <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 
-                {selectedFile ? (
+                {selectedFile || selectedFiles.length > 0 ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-center gap-2">
-                      {selectedFile.name.endsWith('.zip') ? (
-                        <Folder className="w-5 h-5" />
+                      {selectedFile ? (
+                        <>
+                          {selectedFile.name.endsWith('.zip') ? (
+                            <Folder className="w-5 h-5" />
+                          ) : (
+                            <FileText className="w-5 h-5" />
+                          )}
+                          <span className="font-mono text-sm">{selectedFile.name}</span>
+                        </>
                       ) : (
-                        <FileText className="w-5 h-5" />
+                        <>
+                          <Folder className="w-5 h-5" />
+                          <span className="font-mono text-sm">{selectedFiles.length} files selected</span>
+                        </>
                       )}
-                      <span className="font-mono text-sm">{selectedFile.name}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatBytes(selectedFile.size)}
+                      {selectedFile ? formatBytes(selectedFile.size) : formatBytes(selectedFiles.reduce((sum, f) => sum + f.size, 0))}
                     </p>
                     <button
-                      onClick={() => setSelectedFile(null)}
+                      onClick={() => { setSelectedFile(null); setSelectedFiles([]) }}
                       className="text-sm text-primary hover:underline"
                     >
-                      Choose different file
+                      Choose different file(s)
                     </button>
                   </div>
                 ) : (
@@ -250,16 +284,34 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                     <p className="text-sm text-muted-foreground mb-4">
                       or click to browse
                     </p>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                    >
-                      Select File
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        Select File
+                      </button>
+                      <button
+                        onClick={() => folderInputRef.current?.click()}
+                        className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        Select Folder
+                      </button>
+                    </div>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept=".zip,.md,.markdown"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <input
+                      ref={folderInputRef}
+                      type="file"
+                      /* @ts-ignore */
+                      webkitdirectory=""
+                      directory=""
+                      multiple
                       onChange={handleFileSelect}
                       className="hidden"
                     />
@@ -271,6 +323,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                 <p className="text-sm font-mono mb-2">Supported formats:</p>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• <strong>.zip</strong> - Obsidian vault archives (preserves folder structure)</li>
+                  <li>• <strong>Folders</strong> - Direct folder upload preserves full structure</li>
                   <li>• <strong>.md, .markdown</strong> - Individual markdown files</li>
                   <li>• Obsidian YAML frontmatter will be parsed and preserved</li>
                 </ul>
@@ -353,7 +406,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
             </button>
             <button
               onClick={handleUpload}
-              disabled={!selectedFile || uploading}
+              disabled={(!selectedFile && selectedFiles.length === 0) || uploading}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
             >
               {uploading ? (
@@ -377,6 +430,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
               onClick={() => {
                 setResult(null)
                 setSelectedFile(null)
+                setSelectedFiles([])
               }}
               className="px-4 py-2 rounded-lg bg-muted text-foreground hover:opacity-90"
             >
