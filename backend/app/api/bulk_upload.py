@@ -252,17 +252,17 @@ async def bulk_upload_documents(
                                         project_result = await db.execute(
                                             text("""
                                                 INSERT INTO projects (
-                                                    owner_id, tenant_id, title, project_type,
+                                                    user_id, tenant_id, title, project_type,
                                                     description, created_at, updated_at
                                                 )
                                                 VALUES (
-                                                    :owner_id, :tenant_id, :title, 'NOVEL',
+                                                    :user_id, :tenant_id, :title, 'NOVEL',
                                                     :description, :now, :now
                                                 )
                                                 RETURNING id
                                             """),
                                             {
-                                                "owner_id": user.id,
+                                                "user_id": user.id,
                                                 "tenant_id": user.tenant_id,
                                                 "title": top_folder,
                                                 "description": f"Imported from {file.filename}",
