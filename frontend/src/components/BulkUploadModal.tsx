@@ -394,7 +394,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
                     </p>
                     {result.errors && result.errors.length > 0 && (
                       <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                        {result.errors.map((error, idx) => (
+                        {result.errors.map((error: any, idx: number) => (
                           <li key={idx}>
                             • {typeof error === 'string' ? error : `${error.file}: ${error.error}`}
                           </li>
