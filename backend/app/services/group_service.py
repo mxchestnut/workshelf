@@ -358,10 +358,8 @@ class GroupService:
             selectinload(GroupMember.user)
         ).where(GroupMember.group_id == group_id)
         
-        if active_only:
-            query = query.where(GroupMember.is_active == True)
-        
-        query = query.order_by(GroupMember.joined_at)
+        # Order by created_at (from TimestampMixin)
+        query = query.order_by(GroupMember.created_at)
         
         result = await db.execute(query)
         return result.scalars().all()
