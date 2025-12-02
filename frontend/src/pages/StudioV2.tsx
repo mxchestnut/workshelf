@@ -126,23 +126,6 @@ export default function StudioV2() {
         const foldersData = await foldersResponse.json()
         console.log('[FOLDER TREE] Received folders:', foldersData)
         setFolders(foldersData || [])
-        
-        // Auto-expand all folders recursively
-        if (foldersData && foldersData.length > 0) {
-          const newExpanded = new Set(expandedFolders)
-          
-          const expandRecursive = (folders: TreeFolder[]) => {
-            folders.forEach((folder: TreeFolder) => {
-              newExpanded.add(folder.id)
-              if (folder.children && folder.children.length > 0) {
-                expandRecursive(folder.children)
-              }
-            })
-          }
-          
-          expandRecursive(foldersData)
-          setExpandedFolders(newExpanded)
-        }
       }
       
       // Load documents
@@ -163,16 +146,6 @@ export default function StudioV2() {
     if (targetIndex !== -1) {
       setFolderPath(folderPath.slice(0, targetIndex + 1))
     }
-  }
-
-  const toggleFolder = (folderId: number) => {
-    const newExpanded = new Set(expandedFolders)
-    if (newExpanded.has(folderId)) {
-      newExpanded.delete(folderId)
-    } else {
-      newExpanded.add(folderId)
-    }
-    setExpandedFolders(newExpanded)
   }
 
   const createDocument = async (folderId: number | null = null) => {
