@@ -98,7 +98,7 @@ export default function StudioV2() {
   const loadDocuments = async (projectId: number) => {
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/documents?project_id=${projectId}`, {
+      const response = await fetch(`${API_URL}/api/v1/documents?project_id=${projectId}&page_size=1000`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
