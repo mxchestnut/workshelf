@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload, Trash2 } from 'lucide-react'
+import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
@@ -41,7 +41,8 @@ export default function StudioV2() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [folders, setFolders] = useState<TreeFolder[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
-  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(new Set())
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null) // Current folder being viewed
+  const [folderPath, setFolderPath] = useState<Array<{ id: number | null; name: string }>>([{ id: null, name: 'Root' }]) // Breadcrumb path
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -148,6 +149,19 @@ export default function StudioV2() {
       await loadDocuments(projectId)
     } catch (err) {
       console.error('Error loading folders and documents:', err)
+    }
+  }
+
+  const navigateToFolder = (folderId: number, folderName: string) => {
+    setCurrentFolderId(folderId)
+    setFolderPath(prev => [...prev, { id: folderId, name: folderName }])
+  }
+
+  const navigateBack = (targetFolderId: number | null) => {
+    setCurrentFolderId(targetFolderId)
+    const targetIndex = folderPath.findIndex(p => p.id === targetFolderId)
+    if (targetIndex !== -1) {
+      setFolderPath(folderPath.slice(0, targetIndex + 1))
     }
   }
 
@@ -454,6 +468,25 @@ export default function StudioV2() {
               </select>
             )}
             
+            <div className="flex gap-2">
+              <button
+                onClick={() => createFolder(currentFolderId)}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
+                title="New Folder"
+              >
+                <FolderPlus className="w-3 h-3" />
+                <span>Folder</span>
+              </button>
+              <button
+                onClick={() => createDocument(currentFolderId)}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
+                title="New Document"
+              >
+                <FilePlus className="w-3 h-3" />
+                <span>File</span>
+              </button>
+            </div>
+            
             <button
               onClick={() => setShowBulkUploadModal(true)}
               className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm"
@@ -468,10 +501,12 @@ export default function StudioV2() {
             <FolderTreeView 
               folders={folders}
               documents={documents}
-              expandedFolders={expandedFolders}
+              currentFolderId={currentFolderId}
+              folderPath={folderPath}
               selectedDocId={selectedDocument?.id || null}
               selectedProject={selectedProject}
-              onToggleFolder={toggleFolder}
+              onNavigateToFolder={navigateToFolder}
+              onNavigateBack={navigateBack}
               onDocumentSelect={setSelectedDocument}
               onFolderCreate={createFolder}
               onFolderRename={renameFolder}
@@ -589,10 +624,12 @@ export default function StudioV2() {
 function FolderTreeView({
   folders,
   documents,
-  expandedFolders,
+  currentFolderId,
+  folderPath,
   selectedDocId,
   selectedProject,
-  onToggleFolder,
+  onNavigateToFolder,
+  onNavigateBack,
   onDocumentSelect,
   onFolderCreate,
   onFolderRename,
@@ -604,10 +641,12 @@ function FolderTreeView({
 }: {
   folders: TreeFolder[]
   documents: Document[]
-  expandedFolders: Set<number>
+  currentFolderId: number | null
+  folderPath: Array<{ id: number | null; name: string }>
   selectedDocId: number | null
   selectedProject: Project
-  onToggleFolder: (folderId: number) => void
+  onNavigateToFolder: (folderId: number, folderName: string) => void
+  onNavigateBack: (folderId: number | null) => void
   onDocumentSelect: (doc: Document) => void
   onFolderCreate: (parentId: number | null) => void
   onFolderRename: (folderId: number, newName: string) => void
@@ -617,124 +656,103 @@ function FolderTreeView({
   onProjectRename: (projectId: number, newTitle: string) => void
   onProjectDelete: (projectId: number) => void
 }) {
-  const renderFolder = (folder: TreeFolder, depth: number = 0) => {
-    const isExpanded = expandedFolders.has(folder.id)
-    const folderDocs = documents.filter(d => d.folder_id === folder.id)
-    const paddingLeft = depth * 12
-    
-    // Debug: Log folder rendering
-    if (depth <= 2) {
-      console.log(`[RENDER] Folder "${folder.name}" (id=${folder.id}, depth=${depth}): ${folderDocs.length} direct docs, ${folder.children.length} subfolders, backend count=${folder.document_count}`)
+  // Helper function to find all folders recursively
+  const findAllFolders = (folderList: TreeFolder[]): TreeFolder[] => {
+    const result: TreeFolder[] = []
+    for (const folder of folderList) {
+      result.push(folder)
+      if (folder.children && folder.children.length > 0) {
+        result.push(...findAllFolders(folder.children))
+      }
     }
-    
-    // Use document_count from backend (includes nested docs recursively)
-    const itemCount = folder.document_count
-
-    return (
-      <div key={`folder-${folder.id}`}>
-        <div
-          className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group"
-          style={{ paddingLeft: `${paddingLeft + 8}px` }}
-          onClick={() => onToggleFolder(folder.id)}
-        >
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4 flex-shrink-0 text-foreground" />
-          ) : (
-            <ChevronRight className="w-4 h-4 flex-shrink-0 text-foreground" />
-          )}
-          {isExpanded ? (
-            <FolderOpen className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
-          ) : (
-            <Folder className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
-          )}
-          <span className="flex-1 truncate text-xs font-mono font-medium">{folder.name}</span>
-          <span className="text-xs text-muted-foreground font-mono mr-1">{itemCount}</span>
-          
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onDocumentCreate(folder.id)
-            }}
-            className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
-            title="New document"
-          >
-            <Plus className="w-3 h-3" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              const newName = prompt('Rename folder:', folder.name)
-              if (newName && newName !== folder.name) {
-                onFolderRename(folder.id, newName)
-              }
-            }}
-            className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Rename folder"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onFolderDelete(folder.id)
-            }}
-            className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Delete folder"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-
-        {isExpanded && (
-          <div>
-            {/* Subfolders first */}
-            {folder.children.map(child => renderFolder(child, depth + 1))}
-            
-            {/* Then documents in this folder */}
-            {folderDocs.map(doc => (
-              <div
-                key={`doc-${doc.id}`}
-                className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
-                  selectedDocId === doc.id ? 'bg-accent' : ''
-                }`}
-                style={{ paddingLeft: `${paddingLeft + 28}px` }}
-                onClick={() => onDocumentSelect(doc)}
-              >
-                <FileText className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
-                <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDocumentDelete(doc.id)
-                  }}
-                  className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete document"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
+    return result
   }
 
-  // Get root-level documents (not in any folder)
-  const rootDocs = documents.filter(d => d.folder_id === null)
-
+  const allFolders = findAllFolders(folders)
+  
+  // Get folders and documents in current view
+  const currentFolders = currentFolderId === null
+    ? folders.filter(f => f.parent_id === null)
+    : allFolders.filter(f => f.parent_id === currentFolderId)
+  
+  const currentDocs = documents.filter(d => d.folder_id === currentFolderId)
+  
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Scrollable file tree */}
+      {/* Breadcrumb Navigation */}
+      <div className="border-b border-border bg-background px-2 py-2">
+        <div className="flex items-center gap-1 flex-wrap">
+          {folderPath.map((pathItem, index) => (
+            <div key={index} className="flex items-center gap-1">
+              {index > 0 && <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+              <button
+                onClick={() => onNavigateBack(pathItem.id)}
+                className="text-xs font-mono hover:text-primary transition-colors"
+                disabled={index === folderPath.length - 1}
+              >
+                {pathItem.name}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Scrollable file/folder list */}
       <div className="flex-1 overflow-y-auto">
-        {/* Root-level documents first */}
-        {rootDocs.map(doc => (
+        {/* Folders */}
+        {currentFolders.map(folder => (
+          <div
+            key={`folder-${folder.id}`}
+            className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group"
+            onDoubleClick={() => onNavigateToFolder(folder.id, folder.name)}
+          >
+            <Folder className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
+            <span className="flex-1 truncate text-xs font-mono font-medium">{folder.name}</span>
+            <span className="text-xs text-muted-foreground font-mono mr-1">{folder.document_count}</span>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDocumentCreate(folder.id)
+              }}
+              className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              title="New document"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                const newName = prompt('Rename folder:', folder.name)
+                if (newName && newName !== folder.name) {
+                  onFolderRename(folder.id, newName)
+                }
+              }}
+              className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Rename folder"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onFolderDelete(folder.id)
+              }}
+              className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Delete folder"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+
+        {/* Documents */}
+        {currentDocs.map(doc => (
           <div
             key={`doc-${doc.id}`}
             className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
               selectedDocId === doc.id ? 'bg-accent' : ''
             }`}
-            style={{ paddingLeft: '8px' }}
             onClick={() => onDocumentSelect(doc)}
           >
             <FileText className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
@@ -752,10 +770,7 @@ function FolderTreeView({
           </div>
         ))}
 
-        {/* Then folders */}
-        {folders.map(folder => renderFolder(folder, 0))}
-
-        {folders.length === 0 && documents.length === 0 && (
+        {currentFolders.length === 0 && currentDocs.length === 0 && (
           <div className="p-4 text-center text-xs text-muted-foreground font-mono">
             No folders or documents yet
           </div>
