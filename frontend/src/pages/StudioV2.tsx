@@ -653,7 +653,13 @@ function FolderTreeView({
     ? folders.filter(f => f.parent_id === null)
     : allFolders.filter(f => f.parent_id === currentFolderId)
   
-  const currentDocs = documents.filter(d => d.folder_id === currentFolderId)
+  // Handle both null and undefined for root documents
+  const currentDocs = documents.filter(d => {
+    if (currentFolderId === null) {
+      return d.folder_id === null || d.folder_id === undefined
+    }
+    return d.folder_id === currentFolderId
+  })
   
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
