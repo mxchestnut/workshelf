@@ -13,12 +13,12 @@ from app.services.group_customization_service import GroupCustomizationService
 from app.models.collaboration import GroupInvitation, GroupInvitationStatus, GroupMember
 from app.schemas.collaboration import (
     GroupCreate, GroupUpdate, GroupResponse,
-    GroupMemberAdd, GroupMemberRoleUpdate, GroupMemberResponse,
+    GroupMemberAdd, GroupMemberRoleUpdate,
     ScholarshipRequestCreate, ScholarshipRequestResponse,
     GroupRoleCreate, GroupRoleUpdate, GroupRoleResponse,
     GroupMemberRoleAssignment
 )
-from app.schemas.group import GroupVisibility
+from app.schemas.group import GroupVisibility, GroupMemberResponse
 from app.schemas.group_customization import (
     GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate,
     GroupCustomDomainCreate, GroupCustomDomainResponse,
@@ -1236,8 +1236,8 @@ async def get_group_followers(
             FollowerInfo(
                 id=follower.id,
                 email=follower.email,
-                full_name=follower.full_name,
-                avatar_url=follower.avatar_url,
+                full_name=follower.display_name or follower.username or follower.email,
+                avatar_url=follower.profile.avatar_url if follower.profile else None,
                 followed_at=follow.created_at if follow else None
             )
         )
