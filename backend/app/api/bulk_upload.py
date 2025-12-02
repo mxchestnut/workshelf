@@ -154,6 +154,7 @@ async def update_user_storage(db: AsyncSession, user_id: int, bytes_delta: int):
 async def bulk_upload_documents(
     files: List[UploadFile] = File(...),
     project_id: Optional[int] = Form(None),
+    folder_id: Optional[int] = Form(None),
     file_paths: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -309,7 +310,13 @@ async def bulk_upload_documents(
                         parts = folder_path.split('/')
                         folder_name = parts[-1]
                         parent_path = '/'.join(parts[:-1]) if len(parts) > 1 else None
-                        parent_id = folder_id_map.get(parent_path) if parent_path else None
+                        
+                        # Use provided folder_id as parent for root-level folders
+                        if parent_path:
+                            parent_id = folder_id_map.get(parent_path)
+                        else:
+                            # Root-level folder: use provided folder_id as parent
+                            parent_id = folder_id
                         
                         # Create folder record
                         folder_result = await db.execute(
@@ -581,7 +588,13 @@ async def bulk_upload_documents(
                 parts = folder_path.split('/')
                 folder_name = parts[-1]
                 parent_path = '/'.join(parts[:-1]) if len(parts) > 1 else None
-                parent_id = folder_id_map.get(parent_path) if parent_path else None
+                
+                # Use provided folder_id as parent for root-level folders
+                if parent_path:
+                    parent_id = folder_id_map.get(parent_path)
+                else:
+                    # Root-level folder: use provided folder_id as parent
+                    parent_id = folder_id
                 
                 folder_result = await db.execute(
                     text("""
@@ -639,7 +652,7 @@ async def bulk_upload_documents(
                     
                     # Determine folder_id from path
                     folder_path = os.path.dirname(relative_path)
-                    folder_id = folder_id_map.get(folder_path) if folder_path else None
+                    target_folder_id = folder_id_map.get(folder_path) if folder_path else folder_id
                     
                     # Insert document
                     result = await db.execute(
@@ -662,7 +675,7 @@ async def bulk_upload_documents(
                             "owner_id": user.id,
                             "tenant_id": user.tenant_id,
                             "project_id": project_id,
-                            "folder_id": folder_id,
+                            "folder_id": target_folder_id,
                             "title": title,
                             "content": json.dumps(tiptap_content),
                             "word_count": word_count,
