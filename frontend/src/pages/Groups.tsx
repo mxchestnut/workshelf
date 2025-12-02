@@ -99,6 +99,9 @@ export default function Groups() {
         setShowCreateModal(false)
         setNewGroupName('')
         setNewGroupDescription('')
+        // Refresh user data to update navigation
+        const updatedUser = await authService.fetchUserInfo()
+        setUser(updatedUser)
         // Refresh lists
         loadGroups()
         // Optionally navigate to the new group
