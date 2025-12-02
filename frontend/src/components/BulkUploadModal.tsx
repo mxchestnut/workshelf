@@ -375,7 +375,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
                     <div className="p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-lg">
                       <p className="text-sm font-mono font-bold mb-2">Some files skipped:</p>
                       <ul className="text-xs text-muted-foreground space-y-1">
-                        {result.errors.map((error, idx) => (
+                        {result.errors.map((error: any, idx: number) => (
                           <li key={idx}>
                             • {typeof error === 'string' ? error : `${error.file}: ${error.error}`}
                           </li>
