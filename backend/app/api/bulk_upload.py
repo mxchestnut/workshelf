@@ -455,8 +455,143 @@ async def bulk_upload_documents(
             })
             total_bytes += file_size_bytes
         
+        # Handle multiple files (folder upload)
+        elif len(files) > 1 and file_paths:
+            # Parse the file paths mapping
+            import json
+            path_map = json.loads(file_paths)
+            
+            print(f"[BULK UPLOAD] Processing {len(files)} files from folder upload")
+            
+            # First pass: Create all unique folders from file paths
+            unique_folders = set()
+            for idx, file_obj in enumerate(files):
+                relative_path = path_map.get(str(idx), file_obj.filename)
+                folder_path = os.path.dirname(relative_path)
+                if folder_path:
+                    # Add all parent folders
+                    parts = folder_path.split('/')
+                    for i in range(len(parts)):
+                        folder_path_segment = '/'.join(parts[:i+1])
+                        # Skip macOS metadata folders
+                        if '__MACOSX' not in folder_path_segment and not any(p.startswith('.') for p in folder_path_segment.split('/')):
+                            unique_folders.add(folder_path_segment)
+            
+            # Sort folders by depth (parents before children)
+            sorted_folders = sorted(unique_folders, key=lambda x: x.count('/'))
+            folder_id_map = {}
+            
+            print(f"[BULK UPLOAD] Found {len(sorted_folders)} unique folders to create")
+            
+            # Create folder records
+            for folder_path in sorted_folders:
+                parts = folder_path.split('/')
+                folder_name = parts[-1]
+                parent_path = '/'.join(parts[:-1]) if len(parts) > 1 else None
+                parent_id = folder_id_map.get(parent_path) if parent_path else None
+                
+                folder_result = await db.execute(
+                    text("""
+                        INSERT INTO folders (
+                            user_id, tenant_id, name, parent_id, created_at, updated_at
+                        )
+                        VALUES (:user_id, :tenant_id, :name, :parent_id, :now, :now)
+                        RETURNING id
+                    """),
+                    {
+                        "user_id": user.id,
+                        "tenant_id": user.tenant_id,
+                        "name": folder_name,
+                        "parent_id": parent_id,
+                        "now": datetime.utcnow()
+                    }
+                )
+                folder_id = folder_result.scalar_one()
+                folder_id_map[folder_path] = folder_id
+                print(f"[BULK UPLOAD] Created folder: {folder_path} (id={folder_id}, parent_id={parent_id})")
+            
+            # Second pass: Process each file
+            for idx, file_obj in enumerate(files):
+                try:
+                    relative_path = path_map.get(str(idx), file_obj.filename)
+                    
+                    # Skip non-markdown files
+                    if not relative_path.endswith(('.md', '.markdown')):
+                        continue
+                    
+                    # Skip hidden files
+                    if os.path.basename(relative_path).startswith('.'):
+                        continue
+                    
+                    file_content_bytes = await file_obj.read()
+                    file_size_bytes = len(file_content_bytes)
+                    
+                    # Decode content
+                    try:
+                        file_content = file_content_bytes.decode('utf-8')
+                    except UnicodeDecodeError:
+                        errors.append({"file": relative_path, "error": "Not a valid UTF-8 file"})
+                        continue
+                    
+                    # Parse frontmatter and get title
+                    title, clean_content = parse_frontmatter(file_content, os.path.basename(relative_path))
+                    
+                    # Convert to TipTap format
+                    tiptap_content = markdown_to_tiptap(clean_content)
+                    word_count = len(clean_content.split())
+                    
+                    # Determine folder_id from path
+                    folder_path = os.path.dirname(relative_path)
+                    folder_id = folder_id_map.get(folder_path) if folder_path else None
+                    
+                    # Insert document
+                    result = await db.execute(
+                        text("""
+                            INSERT INTO documents (
+                                owner_id, tenant_id, project_id, folder_id,
+                                title, content, word_count, file_size,
+                                status, visibility, current_version,
+                                created_at, updated_at
+                            )
+                            VALUES (
+                                :owner_id, :tenant_id, :project_id, :folder_id,
+                                :title, :content, :word_count, :file_size,
+                                'draft', 'private', 1,
+                                :now, :now
+                            )
+                            RETURNING id, title
+                        """),
+                        {
+                            "owner_id": user.id,
+                            "tenant_id": user.tenant_id,
+                            "project_id": project_id,
+                            "folder_id": folder_id,
+                            "title": title,
+                            "content": json.dumps(tiptap_content),
+                            "word_count": word_count,
+                            "file_size": file_size_bytes,
+                            "now": datetime.utcnow()
+                        }
+                    )
+                    doc = result.fetchone()
+                    
+                    imported_docs.append({
+                        "id": doc[0],
+                        "title": doc[1],
+                        "path": relative_path,
+                        "folder": folder_path or "root",
+                        "folder_id": folder_id,
+                        "size": file_size_bytes,
+                        "words": word_count
+                    })
+                    total_bytes += file_size_bytes
+                    
+                except Exception as e:
+                    print(f"[BULK UPLOAD] Error processing {relative_path}: {str(e)}")
+                    errors.append({"file": relative_path, "error": str(e)})
+        
         else:
-            raise HTTPException(status_code=400, detail="Only .zip, .md, or .markdown files are supported")
+            raise HTTPException(status_code=400, detail="Invalid upload: provide either a .zip file, a single .md/.markdown file, or multiple files with file_paths")
         
         # Update storage usage
         if total_bytes > 0:
