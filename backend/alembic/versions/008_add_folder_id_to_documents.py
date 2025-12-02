@@ -1,8 +1,8 @@
 """add folder_id to documents
 
-Revision ID: 008
-Revises: 007
-Create Date: 2025-12-01
+Revision ID: 008_folder_id
+Revises: 007_storage_quotas
+Create Date: 2025-12-02
 
 """
 from alembic import op
@@ -10,25 +10,28 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '008'
-down_revision = '007'
+revision = '008_folder_id'
+down_revision = '007_storage_quotas'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    # Add folder_id column to documents table
-    op.add_column('documents', sa.Column('folder_id', sa.Integer(), nullable=True))
-    op.create_index('ix_documents_folder_id', 'documents', ['folder_id'])
-    op.create_foreign_key(
-        'documents_folder_id_fkey',
-        'documents', 'folders',
-        ['folder_id'], ['id'],
-        ondelete='SET NULL'
-    )
+    # Add folder_id column to documents table (if it doesn't exist)
+    # Using batch mode to handle existing columns gracefully
+    with op.batch_alter_table('documents', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('folder_id', sa.Integer(), nullable=True))
+        batch_op.create_index('ix_documents_folder_id', ['folder_id'])
+        batch_op.create_foreign_key(
+            'fk_documents_folder_id',
+            'folders',
+            ['folder_id'], ['id'],
+            ondelete='SET NULL'
+        )
 
 
 def downgrade():
-    op.drop_constraint('documents_folder_id_fkey', 'documents', type_='foreignkey')
-    op.drop_index('ix_documents_folder_id', 'documents')
-    op.drop_column('documents', 'folder_id')
+    with op.batch_alter_table('documents', schema=None) as batch_op:
+        batch_op.drop_constraint('fk_documents_folder_id', type_='foreignkey')
+        batch_op.drop_index('ix_documents_folder_id')
+        batch_op.drop_column('folder_id')
