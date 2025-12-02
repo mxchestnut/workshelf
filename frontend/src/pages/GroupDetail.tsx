@@ -3,6 +3,7 @@ import { Users, MessageSquare, Crown, Shield, ArrowLeft, Settings } from 'lucide
 import { Navigation } from '../components/Navigation';
 import { GroupActionButtons } from '../components/GroupActionButtons';
 import { PostModerationActions } from '../components/PostModerationActions';
+import { authService, User } from '../services/auth';
 
 interface Group {
   id: number;
@@ -52,6 +53,7 @@ interface GroupPost {
 }
 
 export default function GroupDetail() {
+  const [user, setUser] = useState<User | null>(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [posts, setPosts] = useState<GroupPost[]>([]);
@@ -82,6 +84,7 @@ export default function GroupDetail() {
 
   useEffect(() => {
     if (groupId) {
+      loadUser();
       loadGroup();
       loadMembers();
       loadPosts();
@@ -90,6 +93,13 @@ export default function GroupDetail() {
       loadUserProfile();
     }
   }, [groupId]);
+
+  const loadUser = async () => {
+    const currentUser = await authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  };
 
   useEffect(() => {
     calculateUserPermissions();
@@ -452,7 +462,12 @@ export default function GroupDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      <Navigation 
+        user={user}
+        onLogin={() => authService.login()}
+        onLogout={() => authService.logout()}
+        currentPage="groups"
+      />
       
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
@@ -524,7 +539,7 @@ export default function GroupDetail() {
                   setFollowerCount(newCount);
                 }}
               />
-              {userPermissions.can_pin_posts && (
+              {(group?.member_role === 'owner' || group?.member_role === 'admin') && (
                 <button
                   onClick={() => window.location.href = `/group-settings?id=${groupId}`}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
