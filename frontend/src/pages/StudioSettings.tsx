@@ -70,7 +70,7 @@ export default function StudioSettings() {
     ? pathParts[studioIdIndex] 
     : null
   
-  const [user, _setUser] = useState<User | null>(null)
+  const [user] = useState<User | null>(null)
   const [studio, setStudio] = useState<Studio | null>(null)
   const [theme, setTheme] = useState<StudioTheme | null>(null)
   const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])

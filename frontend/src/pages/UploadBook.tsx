@@ -19,7 +19,7 @@ export default function UploadBook() {
     copyright_holder: false,
     original_work: false,
   })
-  const [_submissionId, setSubmissionId] = useState<number | null>(null)
+  const [, setSubmissionId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [verificationScore, setVerificationScore] = useState<number | null>(null)
 
