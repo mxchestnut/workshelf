@@ -1,4 +1,3 @@
-import React from 'react'
 import { ExternalLink, MessageCircle, Users, Shield, Download } from 'lucide-react'
 
 /**
