@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import Group, GroupMember, GroupMemberRole, GroupPrivacyType
+from app.models.user import User
 from app.services.matrix_service import MatrixService
 
 
@@ -354,8 +355,10 @@ class GroupService:
         active_only: bool = True
     ) -> List[GroupMember]:
         """Get all members of a group."""
+        from app.models.user import UserProfile
+        
         query = select(GroupMember).options(
-            selectinload(GroupMember.user)
+            selectinload(GroupMember.user).selectinload(User.profile)
         ).where(GroupMember.group_id == group_id)
         
         # Order by created_at (from TimestampMixin)

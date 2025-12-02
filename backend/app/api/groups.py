@@ -228,7 +228,7 @@ async def get_group_members(
         GroupMemberResponse(
             user_id=str(member.user.id),
             username=member.user.username or member.user.email,
-            avatar_url=member.user.avatar_url,
+            avatar_url=member.user.profile.avatar_url if member.user.profile else None,
             role=member.role,
             created_at=member.created_at
         )
