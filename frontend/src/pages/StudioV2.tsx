@@ -117,13 +117,13 @@ export default function StudioV2() {
     try {
       const token = localStorage.getItem('access_token')
       
-      // Load folder tree (folders are global per user, not per project)
-      const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree`, {
+      // Load folder tree filtered by project
+      const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree?project_id=${projectId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (foldersResponse.ok) {
         const foldersData = await foldersResponse.json()
-        console.log('[FOLDER TREE] Received folders:', JSON.stringify(foldersData, null, 2))
+        console.log('[FOLDER TREE] Received folders:', foldersData)
         setFolders(foldersData || [])
         
         // Auto-expand all folders recursively
