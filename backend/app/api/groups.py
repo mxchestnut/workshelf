@@ -1,7 +1,7 @@
 """Groups API - Writing group management"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from typing import Dict, Any, List
 from datetime import datetime
 
@@ -57,8 +57,37 @@ async def get_groups(
     db: AsyncSession = Depends(get_db)
 ):
     """Get all public groups."""
-    groups = await GroupService.get_public_groups(db, limit, offset)
-    return groups
+    from app.models.collaboration import Group, GroupMember
+    
+    # Get groups with member counts
+    query = (
+        select(Group, func.count(GroupMember.id).label('member_count'))
+        .outerjoin(GroupMember, Group.id == GroupMember.group_id)
+        .where(and_(Group.is_public == True, Group.is_active == True))
+        .group_by(Group.id)
+        .order_by(Group.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    result = await db.execute(query)
+    rows = result.all()
+    
+    # Transform to response format with member_count
+    return [
+        GroupResponse(
+            id=str(group.id),
+            name=group.name,
+            slug=group.slug,
+            description=group.description,
+            visibility='public' if group.is_public else 'private',
+            member_count=member_count,
+            document_count=0,  # TODO: calculate actual document count
+            created_at=group.created_at,
+            is_member=False,
+            member_role=None
+        )
+        for group, member_count in rows
+    ]
 
 
 @router.get("/my-groups", response_model=List[GroupResponse])
@@ -69,21 +98,103 @@ async def get_my_groups(
     db: AsyncSession = Depends(get_db)
 ):
     """Get groups current user is a member of."""
+    from app.models.collaboration import Group, GroupMember
+    from sqlalchemy.orm import aliased
+    
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
-    groups = await GroupService.get_user_groups(db, user.id, limit, offset)
-    return groups
+    
+    # Use aliased GroupMember for counting all members
+    AllMembers = aliased(GroupMember)
+    
+    # Get user's groups with member counts and their role
+    query = (
+        select(
+            Group, 
+            func.count(AllMembers.id).label('member_count'),
+            GroupMember.role
+        )
+        .join(GroupMember, and_(
+            Group.id == GroupMember.group_id,
+            GroupMember.user_id == user.id
+        ))
+        .outerjoin(AllMembers, Group.id == AllMembers.group_id)
+        .where(Group.is_active == True)
+        .group_by(Group.id, GroupMember.role)
+        .order_by(Group.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    result = await db.execute(query)
+    rows = result.all()
+    
+    # Transform to response format
+    return [
+        GroupResponse(
+            id=str(group.id),
+            name=group.name,
+            slug=group.slug,
+            description=group.description,
+            visibility='public' if group.is_public else 'private',
+            member_count=member_count,
+            document_count=0,  # TODO: calculate actual document count
+            created_at=group.created_at,
+            is_member=True,
+            member_role=role
+        )
+        for group, member_count, role in rows
+    ]
 
 
 @router.get("/{group_id}", response_model=GroupResponse)
 async def get_group(
     group_id: int,
+    current_user: Dict[str, Any] | None = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific group."""
-    group = await GroupService.get_group_by_id(db, group_id)
-    if not group:
+    from app.models.collaboration import Group, GroupMember
+    
+    # Get group with member count
+    query = (
+        select(Group, func.count(GroupMember.id).label('member_count'))
+        .outerjoin(GroupMember, Group.id == GroupMember.group_id)
+        .where(Group.id == group_id)
+        .group_by(Group.id)
+    )
+    result = await db.execute(query)
+    row = result.first()
+    
+    if not row:
         raise HTTPException(status_code=404, detail="Group not found")
-    return group
+    
+    group, member_count = row
+    
+    # Check if user is a member and get their role
+    is_member = False
+    member_role = None
+    if current_user:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        membership_query = select(GroupMember.role).where(
+            and_(GroupMember.group_id == group_id, GroupMember.user_id == user.id)
+        )
+        membership_result = await db.execute(membership_query)
+        role_row = membership_result.first()
+        if role_row:
+            is_member = True
+            member_role = role_row[0]
+    
+    return GroupResponse(
+        id=str(group.id),
+        name=group.name,
+        slug=group.slug,
+        description=group.description,
+        visibility='public' if group.is_public else 'private',
+        member_count=member_count,
+        document_count=0,  # TODO: calculate actual document count
+        created_at=group.created_at,
+        is_member=is_member,
+        member_role=member_role
+    )
 
 
 @router.get("/slug/{slug}", response_model=GroupResponse)
