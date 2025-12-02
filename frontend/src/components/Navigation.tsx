@@ -308,21 +308,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <span>Accessibility</span>
                 </button>
 
-                {/* Admin - For group owners */}
-                {user?.groups && user.groups.length > 0 && (
-                  <button 
-                    onClick={() => navigateTo('/admin')}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      isActive('/admin')
-                        ? 'bg-primary text-primary-foreground font-medium'
-                        : 'text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    <Settings className="w-5 h-5" />
-                    <span>Group Admin</span>
-                  </button>
-                )}
-
                 {/* Staff - Platform administration */}
                 {user?.is_staff && (
                   <button 
@@ -338,6 +323,44 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   </button>
                 )}
               </div>
+
+              {/* My Groups Section */}
+              {user?.groups && user.groups.length > 0 && (
+                <div className="mb-6">
+                  <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
+                    My Groups
+                  </p>
+                  
+                  {user.groups.map(group => (
+                    <button 
+                      key={group.id}
+                      onClick={() => navigateTo(`/group?id=${group.id}`)}
+                      className={`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-colors ${
+                        window.location.search.includes(`id=${group.id}`)
+                          ? 'bg-primary text-primary-foreground font-medium'
+                          : 'text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Users className="w-5 h-5" />
+                        <span className="truncate">{group.name}</span>
+                      </div>
+                      {group.is_owner && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigateTo(`/group-settings?id=${group.id}`)
+                          }}
+                          className="p-1 hover:bg-accent rounded transition-colors"
+                          title="Group Settings"
+                        >
+                          <Settings className="w-4 h-4" />
+                        </button>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </nav>
 
