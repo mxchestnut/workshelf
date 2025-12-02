@@ -1,7 +1,7 @@
 """
 Groups and communities schemas.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -50,6 +50,12 @@ class GroupResponse(BaseModel):
     created_at: datetime
     is_member: bool = False
     member_role: Optional[GroupMemberRole] = None
+
+    @field_validator('id', mode='before')
+    @classmethod
+    def convert_id_to_str(cls, v):
+        """Convert integer ID to string."""
+        return str(v) if v is not None else None
 
     class Config:
         from_attributes = True

@@ -18,6 +18,7 @@ from app.schemas.collaboration import (
     GroupRoleCreate, GroupRoleUpdate, GroupRoleResponse,
     GroupMemberRoleAssignment
 )
+from app.schemas.group import GroupVisibility
 from app.schemas.group_customization import (
     GroupThemeCreate, GroupThemeResponse, GroupThemeUpdate,
     GroupCustomDomainCreate, GroupCustomDomainResponse,
@@ -73,21 +74,16 @@ async def get_groups(
     rows = result.all()
     
     # Transform to response format with member_count
-    return [
-        GroupResponse(
-            id=str(group.id),
-            name=group.name,
-            slug=group.slug,
-            description=group.description,
-            visibility='public' if group.is_public else 'private',
-            member_count=member_count,
-            document_count=0,  # TODO: calculate actual document count
-            created_at=group.created_at,
-            is_member=False,
-            member_role=None
-        )
-        for group, member_count in rows
-    ]
+    responses = []
+    for group, member_count in rows:
+        # Add member_count as an attribute for Pydantic
+        group.member_count = member_count
+        group.document_count = 0  # TODO: calculate actual document count
+        group.is_member = False
+        group.member_role = None
+        group.visibility = GroupVisibility.PUBLIC if group.is_public else GroupVisibility.PRIVATE
+        responses.append(GroupResponse.model_validate(group))
+    return responses
 
 
 @router.get("/my-groups", response_model=List[GroupResponse])
@@ -128,21 +124,16 @@ async def get_my_groups(
     rows = result.all()
     
     # Transform to response format
-    return [
-        GroupResponse(
-            id=str(group.id),
-            name=group.name,
-            slug=group.slug,
-            description=group.description,
-            visibility='public' if group.is_public else 'private',
-            member_count=member_count,
-            document_count=0,  # TODO: calculate actual document count
-            created_at=group.created_at,
-            is_member=True,
-            member_role=role
-        )
-        for group, member_count, role in rows
-    ]
+    responses = []
+    for group, member_count, role in rows:
+        # Add calculated fields as attributes for Pydantic
+        group.member_count = member_count
+        group.document_count = 0  # TODO: calculate actual document count
+        group.is_member = True
+        group.member_role = role
+        group.visibility = GroupVisibility.PUBLIC if group.is_public else GroupVisibility.PRIVATE
+        responses.append(GroupResponse.model_validate(group))
+    return responses
 
 
 @router.get("/{group_id}", response_model=GroupResponse)
@@ -183,18 +174,13 @@ async def get_group(
             is_member = True
             member_role = role_row[0]
     
-    return GroupResponse(
-        id=str(group.id),
-        name=group.name,
-        slug=group.slug,
-        description=group.description,
-        visibility='public' if group.is_public else 'private',
-        member_count=member_count,
-        document_count=0,  # TODO: calculate actual document count
-        created_at=group.created_at,
-        is_member=is_member,
-        member_role=member_role
-    )
+    # Add calculated fields as attributes for Pydantic
+    group.member_count = member_count
+    group.document_count = 0  # TODO: calculate actual document count
+    group.is_member = is_member
+    group.member_role = member_role
+    group.visibility = GroupVisibility.PUBLIC if group.is_public else GroupVisibility.PRIVATE
+    return GroupResponse.model_validate(group)
 
 
 @router.get("/slug/{slug}", response_model=GroupResponse)
