@@ -140,6 +140,38 @@ async def bulk_upload_documents(
     # Check storage quota
     storage = await get_user_storage(db, user.id)
     
+    # If no project_id provided, create or get a default "Imported Documents" project
+    if not project_id:
+        result = await db.execute(
+            text("""
+                SELECT id FROM projects 
+                WHERE user_id = :user_id AND title = 'Imported Documents'
+                LIMIT 1
+            """),
+            {"user_id": user.id}
+        )
+        existing_project = result.fetchone()
+        
+        if existing_project:
+            project_id = existing_project[0]
+        else:
+            # Create default project for imports
+            result = await db.execute(
+                text("""
+                    INSERT INTO projects (user_id, tenant_id, title, project_type, description, created_at, updated_at)
+                    VALUES (:user_id, :tenant_id, 'Imported Documents', 'novel', 
+                            'Documents imported from bulk upload', :now, :now)
+                    RETURNING id
+                """),
+                {
+                    "user_id": user.id,
+                    "tenant_id": user.tenant_id,
+                    "now": datetime.utcnow()
+                }
+            )
+            project_id = result.fetchone()[0]
+            await db.commit()
+    
     # Parse file paths if provided (for folder uploads)
     path_map = {}
     if file_paths:
