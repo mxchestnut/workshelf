@@ -273,7 +273,7 @@ export default function StudioV2() {
       if (response.ok) {
         const newProject = await response.json()
         setProjects(prev => [...prev, newProject])
-        setExpandedProjects(prev => new Set([...prev, newProject.id]))
+        setSelectedProject(newProject)
         setNewProjectTitle('')
         setShowNewProjectModal(false)
       }
