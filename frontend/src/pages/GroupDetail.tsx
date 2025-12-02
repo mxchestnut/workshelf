@@ -15,6 +15,9 @@ interface Group {
   created_at: string;
   updated_at: string;
   matrix_space_id?: string | null;
+  member_count?: number;
+  is_member?: boolean;
+  member_role?: 'owner' | 'admin' | 'moderator' | 'member';
 }
 
 interface GroupMember {
@@ -104,6 +107,18 @@ export default function GroupDetail() {
       if (response.ok) {
         const data = await response.json();
         setGroup(data);
+        // Set member status from API response
+        setIsMember(data.is_member || false);
+        // Set permissions based on member role
+        if (data.member_role) {
+          const rolePermissions: Record<string, any> = {
+            owner: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+            admin: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+            moderator: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+            member: {}
+          };
+          setUserPermissions(rolePermissions[data.member_role] || {});
+        }
       }
     } catch (error) {
       console.error('Failed to load group:', error);
@@ -124,11 +139,6 @@ export default function GroupDetail() {
       if (response.ok) {
         const data = await response.json();
         setMembers(data);
-        
-        // Check if current user is a member
-        const currentUserEmail = localStorage.getItem('userEmail');
-        const isMember = data.some((m: GroupMember) => m.user?.email === currentUserEmail);
-        setIsMember(isMember);
       }
     } catch (error) {
       console.error('Failed to load members:', error);
