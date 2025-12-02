@@ -559,7 +559,7 @@ async def bulk_upload_documents(
                             VALUES (
                                 :owner_id, :tenant_id, :project_id, :folder_id,
                                 :title, :content, :word_count, :file_size,
-                                'draft', 'private', 1,
+                                'DRAFT', 'PRIVATE', 1,
                                 :now, :now
                             )
                             RETURNING id, title
