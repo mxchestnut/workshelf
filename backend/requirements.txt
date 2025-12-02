@@ -37,6 +37,12 @@ anthropic==0.72.0  # Claude API for creative writing assistance
 ebooklib==0.18
 html2text==2020.1.16
 
+# Document Format Support
+python-docx==1.1.2  # Microsoft Word (.docx)
+odfpy==1.4.1  # OpenDocument (.odt)
+PyPDF2==3.0.1  # PDF text extraction
+markdown2==2.5.1  # Enhanced markdown parsing
+
 # Azure SDK
 azure-storage-blob==12.19.0
 azure-identity==1.16.1

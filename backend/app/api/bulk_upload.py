@@ -1,6 +1,12 @@
 """
 Bulk Document Upload API
-Supports Obsidian vault imports, multiple markdown files, and folder structures
+Supports multiple document formats with folder structure preservation:
+- Markdown (.md, .markdown)
+- Plain text (.txt)
+- HTML (.html, .htm)
+- Microsoft Word (.docx)
+- OpenDocument Text (.odt)
+- PDF (.pdf) with text extraction
 """
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,13 +23,46 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services import user_service
 
+# Document format libraries
+try:
+    from docx import Document as DocxDocument
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+try:
+    from odf import text as odf_text, teletype
+    from odf.opendocument import load as odf_load
+    ODF_AVAILABLE = True
+except ImportError:
+    ODF_AVAILABLE = False
+
+try:
+    from PyPDF2 import PdfReader
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
+
+try:
+    from bs4 import BeautifulSoup
+    HTML_AVAILABLE = True
+except ImportError:
+    HTML_AVAILABLE = False
+
 router = APIRouter(prefix="/storage", tags=["bulk-upload", "storage"])
 
 # Security configurations
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per upload
 MAX_ZIP_ENTRIES = 1000  # Max files in a zip
 MAX_FILENAME_LENGTH = 255
-ALLOWED_EXTENSIONS = {'.md', '.markdown'}
+ALLOWED_EXTENSIONS = {
+    '.md', '.markdown',  # Markdown
+    '.txt',  # Plain text
+    '.html', '.htm',  # HTML
+    '.docx',  # Microsoft Word
+    '.odt',  # OpenDocument Text
+    '.pdf'  # PDF (text extraction)
+}
 BLOCKED_FILENAMES = {'__MACOSX', '.DS_Store', 'thumbs.db', 'desktop.ini'}
 
 def is_safe_path(path: str) -> bool:
@@ -120,12 +159,13 @@ async def bulk_upload_documents(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Bulk upload documents from zip file, multiple markdown files, or folder structures.
-    Supports Obsidian vault structure with folders and metadata.
+    Bulk upload documents from various formats: zip archives, individual files, or folder structures.
+    Supports: .md, .markdown, .txt, .html, .htm, .docx, .odt, .pdf
+    Preserves Obsidian vault structure with folders and metadata.
     
     Security measures:
     - File size limits (100 MB per upload)
-    - Extension whitelist (.md, .markdown only)
+    - Extension whitelist (see ALLOWED_EXTENSIONS)
     - Path traversal prevention
     - Filename sanitization
     - Content validation (text-only)
@@ -224,8 +264,8 @@ async def bulk_upload_documents(
                             detail=f"Zip file contains too many entries. Maximum is {MAX_ZIP_ENTRIES}"
                         )
                     
-                    # Get all markdown files from zip
-                    md_files = []
+                    # Get all supported document files from zip
+                    all_files = []
                     for f in zip_ref.namelist():
                         # Security: Validate path safety
                         if not is_safe_path(f):
@@ -233,21 +273,22 @@ async def bulk_upload_documents(
                             continue
                         
                         # Security: Check file extension
-                        if f.endswith(('.md', '.markdown')) and not os.path.basename(f).startswith('.'):
-                            md_files.append(f)
+                        ext = os.path.splitext(f.lower())[1]
+                        if ext in ALLOWED_EXTENSIONS and not os.path.basename(f).startswith('.'):
+                            all_files.append(f)
                     
                     # Sort files to process them in a predictable order
-                    md_files.sort()
+                    all_files.sort()
                     
                     # Track created folders/projects by path
                     folder_to_project = {}
                     folder_id_map = {}  # Maps folder path to folder ID
                     
-                    print(f"[BULK UPLOAD] Processing {len(md_files)} markdown files from zip")
+                    print(f"[BULK UPLOAD] Processing {len(all_files)} files from zip")
                     
                     # First pass: Create all unique folders from directory structure
                     unique_folders = set()
-                    for file_path in md_files:
+                    for file_path in all_files:
                         folder_path = os.path.dirname(file_path)
                         if folder_path:
                             # Add all parent folders too (for nested structure)
@@ -291,8 +332,8 @@ async def bulk_upload_documents(
                         folder_id_map[folder_path] = new_folder[0]
                         print(f"[BULK UPLOAD] Created folder '{folder_name}' (path: {folder_path}) with ID {new_folder[0]}")
                     
-                    # Process each markdown file
-                    for file_path in md_files:
+                    # Process each file
+                    for file_path in all_files:
                         try:
                             # Security: Sanitize filename
                             safe_filename = sanitize_filename(os.path.basename(file_path))
@@ -305,24 +346,27 @@ async def bulk_upload_documents(
                                 errors.append(f"Skipped {safe_filename}: File too large after decompression")
                                 continue
                             
-                            # Decode content
+                            # Convert document to markdown (handles all formats)
                             try:
-                                file_content = raw_content.decode('utf-8')
-                            except UnicodeDecodeError:
-                                errors.append(f"Skipped {safe_filename}: Not a valid text file")
+                                file_content = convert_document_to_markdown(raw_content, safe_filename)
+                            except HTTPException as he:
+                                errors.append(f"Skipped {safe_filename}: {he.detail}")
+                                continue
+                            except Exception as e:
+                                errors.append(f"Skipped {safe_filename}: {str(e)}")
                                 continue
                             
-                            # Security: Validate content is actually text/markdown
+                            # Security: Validate content
                             if not validate_markdown_content(file_content):
                                 errors.append(f"Skipped {safe_filename}: Content validation failed")
                                 continue
                             
                             file_size_bytes = len(file_content.encode('utf-8'))
                             
-                            # Extract metadata from Obsidian-style frontmatter
+                            # Extract metadata from Obsidian-style frontmatter (if it's markdown)
                             title, clean_content = parse_frontmatter(file_content, safe_filename)
                             
-                            # Convert markdown to TipTap JSON format
+                            # Convert to TipTap JSON format
                             tiptap_content = markdown_to_tiptap(clean_content)
                             
                             # Handle folder structure - create project from top-level folder
@@ -426,19 +470,29 @@ async def bulk_upload_documents(
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Error reading zip file: {str(e)}")
         
-        # Handle single markdown file
-        elif len(files) == 1 and files[0].filename.endswith(('.md', '.markdown')):
+        # Handle single file upload (any supported format)
+        elif len(files) == 1:
             file = files[0]
+            ext = os.path.splitext(file.filename.lower())[1]
+            
+            if ext not in ALLOWED_EXTENSIONS:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Unsupported file type. Supported: {', '.join(ALLOWED_EXTENSIONS)}"
+                )
+            
             content = await file.read()
             
             # Security: Sanitize filename
             safe_filename = sanitize_filename(file.filename)
             
-            # Decode content
+            # Convert document to markdown
             try:
-                file_content = content.decode('utf-8')
-            except UnicodeDecodeError:
-                raise HTTPException(status_code=400, detail="File is not a valid text file")
+                file_content = convert_document_to_markdown(content, safe_filename)
+            except HTTPException as he:
+                raise he
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Error processing file: {str(e)}")
             
             # Security: Validate content
             if not validate_markdown_content(file_content):
@@ -448,7 +502,7 @@ async def bulk_upload_documents(
             
             title, clean_content = parse_frontmatter(file_content, safe_filename)
             
-            # Convert markdown to TipTap JSON format
+            # Convert to TipTap JSON format
             tiptap_content = markdown_to_tiptap(clean_content)
             
             word_count = len(clean_content.split())
@@ -554,9 +608,10 @@ async def bulk_upload_documents(
                 try:
                     relative_path = path_map.get(str(idx), file_obj.filename)
                     
-                    # Skip non-markdown files
-                    if not relative_path.endswith(('.md', '.markdown')):
-                        continue
+                    # Check file extension
+                    ext = os.path.splitext(relative_path.lower())[1]
+                    if ext not in ALLOWED_EXTENSIONS:
+                        continue  # Skip unsupported files
                     
                     # Skip hidden files
                     if os.path.basename(relative_path).startswith('.'):
@@ -565,11 +620,14 @@ async def bulk_upload_documents(
                     file_content_bytes = await file_obj.read()
                     file_size_bytes = len(file_content_bytes)
                     
-                    # Decode content
+                    # Convert document to markdown
                     try:
-                        file_content = file_content_bytes.decode('utf-8')
-                    except UnicodeDecodeError:
-                        errors.append({"file": relative_path, "error": "Not a valid UTF-8 file"})
+                        file_content = convert_document_to_markdown(file_content_bytes, relative_path)
+                    except HTTPException as he:
+                        errors.append({"file": relative_path, "error": he.detail})
+                        continue
+                    except Exception as e:
+                        errors.append({"file": relative_path, "error": str(e)})
                         continue
                     
                     # Parse frontmatter and get title
@@ -653,6 +711,76 @@ async def bulk_upload_documents(
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+
+def convert_document_to_markdown(content: bytes, filename: str) -> str:
+    """
+    Convert various document formats to markdown.
+    Supports: .txt, .html, .docx, .odt, .pdf
+    """
+    ext = os.path.splitext(filename.lower())[1]
+    
+    try:
+        # Plain text
+        if ext == '.txt':
+            return content.decode('utf-8')
+        
+        # HTML
+        elif ext in ['.html', '.htm']:
+            if not HTML_AVAILABLE:
+                raise HTTPException(status_code=400, detail="HTML parsing not available")
+            soup = BeautifulSoup(content, 'html.parser')
+            # Remove script and style elements
+            for script in soup(["script", "style"]):
+                script.decompose()
+            return soup.get_text()
+        
+        # Microsoft Word (.docx)
+        elif ext == '.docx':
+            if not DOCX_AVAILABLE:
+                raise HTTPException(status_code=400, detail="DOCX parsing not available")
+            doc = DocxDocument(io.BytesIO(content))
+            paragraphs = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    paragraphs.append(para.text)
+            return '\n\n'.join(paragraphs)
+        
+        # OpenDocument Text (.odt)
+        elif ext == '.odt':
+            if not ODF_AVAILABLE:
+                raise HTTPException(status_code=400, detail="ODT parsing not available")
+            doc = odf_load(io.BytesIO(content))
+            paragraphs = []
+            for para in doc.getElementsByType(odf_text.P):
+                text = teletype.extractText(para)
+                if text.strip():
+                    paragraphs.append(text)
+            return '\n\n'.join(paragraphs)
+        
+        # PDF
+        elif ext == '.pdf':
+            if not PDF_AVAILABLE:
+                raise HTTPException(status_code=400, detail="PDF parsing not available")
+            reader = PdfReader(io.BytesIO(content))
+            text_parts = []
+            for page in reader.pages:
+                text = page.extract_text()
+                if text.strip():
+                    text_parts.append(text)
+            return '\n\n'.join(text_parts)
+        
+        # Markdown (no conversion needed)
+        elif ext in ['.md', '.markdown']:
+            return content.decode('utf-8')
+        
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported file format: {ext}")
+            
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File encoding not supported. Please use UTF-8.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing {ext} file: {str(e)}")
 
 
 def markdown_to_tiptap(markdown: str) -> dict:

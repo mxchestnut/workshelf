@@ -301,7 +301,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept=".zip,.md,.markdown"
+                      accept=".zip,.md,.markdown,.txt,.html,.htm,.docx,.odt,.pdf"
                       onChange={handleFileSelect}
                       className="hidden"
                     />
@@ -324,7 +324,12 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• <strong>.zip</strong> - Obsidian vault archives (preserves folder structure)</li>
                   <li>• <strong>Folders</strong> - Direct folder upload preserves full structure</li>
-                  <li>• <strong>.md, .markdown</strong> - Individual markdown files</li>
+                  <li>• <strong>.md, .markdown</strong> - Markdown files</li>
+                  <li>• <strong>.txt</strong> - Plain text files</li>
+                  <li>• <strong>.html, .htm</strong> - HTML documents</li>
+                  <li>• <strong>.docx</strong> - Microsoft Word documents</li>
+                  <li>• <strong>.odt</strong> - OpenDocument Text</li>
+                  <li>• <strong>.pdf</strong> - PDF documents (text extraction)</li>
                   <li>• Obsidian YAML frontmatter will be parsed and preserved</li>
                 </ul>
               </div>
