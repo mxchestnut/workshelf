@@ -313,7 +313,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
                     <input
                       ref={folderInputRef}
                       type="file"
-                      /* @ts-expect-error */
+                      /* @ts-expect-error - webkitdirectory and directory are non-standard HTML attributes for folder selection */
                       webkitdirectory=""
                       directory=""
                       multiple
