@@ -220,6 +220,11 @@ class GroupResponse(BaseModel):
     scholarship_plan: Optional[str]
     scholarship_discount_percent: Optional[int]
     scholarship_monthly_price: Optional[float]
+    member_count: int = 0
+    document_count: int = 0
+    is_member: bool = False
+    member_role: Optional[str] = None
+    visibility: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     
