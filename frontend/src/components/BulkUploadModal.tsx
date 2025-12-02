@@ -163,10 +163,10 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
 
       if (response.ok) {
         setResult({ success: true, ...data })
+        // Brief delay to show success message, then callback
         setTimeout(() => {
           onSuccess()
-          onClose()
-        }, 2000)
+        }, 1000)
       } else {
         setResult({
           success: false,
