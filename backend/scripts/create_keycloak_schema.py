@@ -20,7 +20,8 @@ async def create_keycloak_schema():
         try:
             # Create keycloak schema if it doesn't exist
             await conn.execute("CREATE SCHEMA IF NOT EXISTS keycloak")
-            await conn.execute("GRANT ALL ON SCHEMA keycloak TO workshelf_admin")
+            # Grant permissions to the actual database user (workshelf, not workshelf_admin)
+            await conn.execute("GRANT ALL ON SCHEMA keycloak TO workshelf")
             print("✅ Keycloak schema created/verified")
         finally:
             await conn.close()
