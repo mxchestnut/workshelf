@@ -586,6 +586,7 @@ export default function StudioV2() {
         <BulkUploadModal
           onClose={() => setShowBulkUploadModal(false)}
           projectId={selectedProject?.id}
+          folderId={currentFolderId}
           onSuccess={() => {
             // Reload projects and documents after successful upload
             if (selectedProject) {

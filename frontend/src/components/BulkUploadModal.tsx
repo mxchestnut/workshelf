@@ -37,9 +37,10 @@ interface BulkUploadModalProps {
   onClose: () => void
   onSuccess: () => void
   projectId?: number
+  folderId?: number | null
 }
 
-export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadModalProps) {
+export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: BulkUploadModalProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -144,6 +145,10 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
       
       if (projectId) {
         formData.append('project_id', projectId.toString())
+      }
+      
+      if (folderId !== null && folderId !== undefined) {
+        formData.append('folder_id', folderId.toString())
       }
 
       const response = await fetch(`${API_URL}/api/v1/storage/bulk-upload`, {
