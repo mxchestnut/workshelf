@@ -104,6 +104,8 @@ export default function StudioV2() {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('[DOCUMENTS] Loaded documents:', data.documents?.length || 0)
+        console.log('[DOCUMENTS] Sample:', data.documents?.slice(0, 3).map((d: any) => ({ id: d.id, title: d.title, folder_id: d.folder_id })))
         setDocuments(data.documents || [])
       }
     } catch (err) {
@@ -620,8 +622,13 @@ function FolderTreeView({
     const folderDocs = documents.filter(d => d.folder_id === folder.id)
     const paddingLeft = depth * 12
     
-    // Count total items (direct docs + subfolders)
-    const itemCount = folderDocs.length + folder.children.length
+    // Debug: Log folder rendering
+    if (depth <= 2) {
+      console.log(`[RENDER] Folder "${folder.name}" (id=${folder.id}, depth=${depth}): ${folderDocs.length} direct docs, ${folder.children.length} subfolders, backend count=${folder.document_count}`)
+    }
+    
+    // Use document_count from backend (includes nested docs recursively)
+    const itemCount = folder.document_count
 
     return (
       <div key={`folder-${folder.id}`}>
