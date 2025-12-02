@@ -162,22 +162,22 @@ async def bulk_upload_documents(
                 status_code=413,
                 detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
             )
-    
-    # Security: Validate file extension
-    file_ext = os.path.splitext(file.filename)[1].lower()
-    if file_ext not in ALLOWED_EXTENSIONS and file_ext != '.zip':
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type. Only .md, .markdown, and .zip files are allowed"
-        )
-    
-    if file_size > storage["available"]:
-        return {
-            "success": False,
-            "error": "storage_quota_exceeded",
-            "message": f"Upload size ({file_size:,} bytes) exceeds available storage ({storage['available']:,} bytes)",
-            "storage": storage
-        }
+        
+        # Security: Validate file extension
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if file_ext not in ALLOWED_EXTENSIONS and file_ext != '.zip':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type. Only .md, .markdown, and .zip files are allowed"
+            )
+        
+        if file_size > storage["available"]:
+            return {
+                "success": False,
+                "error": "storage_quota_exceeded",
+                "message": f"Upload size ({file_size:,} bytes) exceeds available storage ({storage['available']:,} bytes)",
+                "storage": storage
+            }
     
     imported_docs = []
     errors = []
