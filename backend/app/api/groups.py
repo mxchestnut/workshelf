@@ -61,6 +61,8 @@ async def get_groups(
     from app.models.collaboration import Group, GroupMember
     
     # Get groups with member counts
+    # Note: Using func.count(GroupMember.id) with outerjoin properly counts only actual members
+    # If no members exist, count will be 0 which is correct
     query = (
         select(Group, func.count(GroupMember.id).label('member_count'))
         .outerjoin(GroupMember, Group.id == GroupMember.group_id)
@@ -77,7 +79,7 @@ async def get_groups(
     responses = []
     for group, member_count in rows:
         # Add member_count as an attribute for Pydantic
-        group.member_count = member_count
+        group.member_count = int(member_count) if member_count else 0
         group.document_count = 0  # TODO: calculate actual document count
         group.is_member = False
         group.member_role = None
