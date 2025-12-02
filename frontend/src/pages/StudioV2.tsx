@@ -106,7 +106,12 @@ export default function StudioV2() {
       if (response.ok) {
         const data = await response.json()
         console.log('[DOCUMENTS] Loaded documents:', data.documents?.length || 0)
-        console.log('[DOCUMENTS] Sample:', data.documents?.slice(0, 3).map((d: any) => ({ id: d.id, title: d.title, folder_id: d.folder_id })))
+        console.log('[DOCUMENTS] Sample:', data.documents?.slice(0, 3))
+        console.log('[DOCUMENTS] Folder IDs distribution:', data.documents?.reduce((acc: any, d: any) => {
+          const fid = d.folder_id === null ? 'null' : d.folder_id
+          acc[fid] = (acc[fid] || 0) + 1
+          return acc
+        }, {}))
         setDocuments(data.documents || [])
       }
     } catch (err) {
