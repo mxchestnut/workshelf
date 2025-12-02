@@ -33,6 +33,7 @@ class DocumentBase(BaseModel):
     status: DocumentStatus = DocumentStatus.DRAFT
     visibility: DocumentVisibility = DocumentVisibility.PRIVATE
     project_id: Optional[int] = None
+    folder_id: Optional[int] = None
     studio_id: Optional[int] = None
     tags: Optional[List[str]] = Field(default_factory=list)  # Tag names - stored in Tag/DocumentTag models
 
