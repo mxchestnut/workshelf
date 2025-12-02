@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
+import { authService, User } from '../services/auth';
 import { Settings, Users, Lock, Shield, Globe, ArrowLeft, Save } from 'lucide-react';
 
 interface Group {
@@ -19,6 +20,7 @@ interface GroupMember {
 }
 
 export default function GroupSettings() {
+  const [user, setUser] = useState<User | null>(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +37,18 @@ export default function GroupSettings() {
 
   useEffect(() => {
     if (groupId) {
+      loadUser();
       loadGroup();
       loadMembers();
     }
   }, [groupId]);
+
+  const loadUser = async () => {
+    const currentUser = await authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  };
 
   const loadGroup = async () => {
     try {
@@ -140,7 +150,12 @@ export default function GroupSettings() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
+        <Navigation 
+          user={user}
+          onLogin={() => authService.login()}
+          onLogout={() => authService.logout()}
+          currentPage="groups"
+        />
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
@@ -151,7 +166,12 @@ export default function GroupSettings() {
   if (!group) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
+        <Navigation 
+          user={user}
+          onLogin={() => authService.login()}
+          onLogout={() => authService.logout()}
+          currentPage="groups"
+        />
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">Group not found</h2>
@@ -169,7 +189,12 @@ export default function GroupSettings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
+      <Navigation 
+        user={user}
+        onLogin={() => authService.login()}
+        onLogout={() => authService.logout()}
+        currentPage="groups"
+      />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
