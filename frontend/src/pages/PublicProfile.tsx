@@ -181,7 +181,7 @@ export default function PublicProfile() {
   }
 
   const handleMessage = async () => {
-    if (!profile) return
+    if (!profile || !openChat) return
     
     try {
       await openChat(profile.username, profile.display_name || profile.username, profile.avatar_url)
