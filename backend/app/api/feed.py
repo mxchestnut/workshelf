@@ -112,6 +112,142 @@ async def get_personal_feed(
     return await get_feed(current_user=current_user, db=db, limit=limit)
 
 
+@router.get("/updates", response_model=List[FeedPost])
+async def get_updates_feed(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 50
+):
+    """
+    Updates feed - pinned posts and recent activity from user's groups
+    """
+    user_id = current_user.get("user_id")
+    
+    # Get groups user is a member of
+    groups_query = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+    groups_result = await db.execute(groups_query)
+    group_ids = [row[0] for row in groups_result.all()]
+    
+    if not group_ids:
+        return []
+    
+    # Get pinned posts and recent updates
+    posts_query = (
+        select(GroupPost, User, Group)
+        .join(User, GroupPost.author_id == User.id)
+        .join(Group, GroupPost.group_id == Group.id)
+        .where(GroupPost.group_id.in_(group_ids))
+        .order_by(desc(GroupPost.is_pinned), desc(GroupPost.updated_at))
+        .limit(limit)
+    )
+    
+    result = await db.execute(posts_query)
+    posts_data = result.all()
+    
+    feed_posts = []
+    for post, author, group in posts_data:
+        feed_posts.append(FeedPost(
+            id=post.id,
+            title=post.title,
+            content=post.content,
+            created_at=post.created_at,
+            is_pinned=post.is_pinned,
+            is_locked=post.is_locked,
+            author=PostAuthor(
+                id=author.id,
+                username=author.username,
+                display_name=author.display_name,
+                avatar_url=author.avatar_url
+            ),
+            group=GroupInfo(
+                id=group.id,
+                name=group.name,
+                slug=group.slug,
+                avatar_url=group.avatar_url
+            )
+        ))
+    
+    return feed_posts
+
+
+@router.get("/beta", response_model=List[FeedPost])
+async def get_beta_feed(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 50
+):
+    """
+    Beta feed - posts from groups where user is a beta reader
+    Currently returns posts from all user's groups (can be filtered later)
+    """
+    return await get_feed(current_user=current_user, db=db, limit=limit)
+
+
+@router.get("/groups", response_model=List[FeedPost])
+async def get_groups_feed(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 50
+):
+    """
+    Groups feed - all posts from user's groups
+    """
+    return await get_feed(current_user=current_user, db=db, limit=limit)
+
+
+@router.get("/global", response_model=List[FeedPost])
+async def get_global_feed(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = 50
+):
+    """
+    Global feed - recent posts from all public groups
+    """
+    # Get recent posts from all PUBLIC groups
+    posts_query = (
+        select(GroupPost, User, Group)
+        .join(User, GroupPost.author_id == User.id)
+        .join(Group, GroupPost.group_id == Group.id)
+        .where(
+            and_(
+                Group.is_public == True,
+                Group.is_active == True
+            )
+        )
+        .order_by(desc(GroupPost.created_at))
+        .limit(limit)
+    )
+    
+    result = await db.execute(posts_query)
+    posts_data = result.all()
+    
+    feed_posts = []
+    for post, author, group in posts_data:
+        feed_posts.append(FeedPost(
+            id=post.id,
+            title=post.title,
+            content=post.content,
+            created_at=post.created_at,
+            is_pinned=post.is_pinned,
+            is_locked=post.is_locked,
+            author=PostAuthor(
+                id=author.id,
+                username=author.username,
+                display_name=author.display_name,
+                avatar_url=author.avatar_url
+            ),
+            group=GroupInfo(
+                id=group.id,
+                name=group.name,
+                slug=group.slug,
+                avatar_url=group.avatar_url
+            )
+        ))
+    
+    return feed_posts
+
+
 @router.get("/discover", response_model=List[FeedPost])
 async def get_discover_feed(
     current_user: dict = Depends(get_current_user),
