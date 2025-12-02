@@ -31,6 +31,7 @@ export default function GroupSettings() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const [initialIsPublic, setInitialIsPublic] = useState(true);
   const [isActive, setIsActive] = useState(true);
 
   const groupId = new URLSearchParams(window.location.search).get('id');
@@ -65,6 +66,7 @@ export default function GroupSettings() {
         setName(data.name);
         setDescription(data.description || '');
         setIsPublic(data.is_public);
+        setInitialIsPublic(data.is_public);
         setIsActive(data.is_active);
       }
     } catch (error) {
@@ -89,6 +91,24 @@ export default function GroupSettings() {
       }
     } catch (error) {
       console.error('Failed to load members:', error);
+    }
+  };
+
+  const handlePrivacyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+    
+    // If changing from public to private, show confirmation
+    if (initialIsPublic && !newValue) {
+      const confirmed = window.confirm(
+        '⚠️ Warning: Making this group private is permanent.\n\n' +
+        'Once a group is private, it cannot be made public again. This protects the privacy of members who join with the expectation that content will remain private.\n\n' +
+        'Do you want to continue?'
+      );
+      if (confirmed) {
+        setIsPublic(newValue);
+      }
+    } else {
+      setIsPublic(newValue);
     }
   };
 
@@ -370,10 +390,11 @@ export default function GroupSettings() {
                   <input
                     type="checkbox"
                     checked={isPublic}
-                    onChange={(e) => setIsPublic(e.target.checked)}
-                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    onChange={handlePrivacyChange}
+                    disabled={!isPublic}
+                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className={`ml-2 text-sm ${!isPublic ? 'text-gray-500' : 'text-gray-700'}`}>
                     <Globe className="h-4 w-4 inline mr-1" />
                     Public Group - Anyone can view and join
                   </span>
@@ -381,6 +402,13 @@ export default function GroupSettings() {
                 <p className="mt-2 ml-6 text-sm text-gray-500">
                   If unchecked, group will be private and require approval to join
                 </p>
+                {!isPublic && (
+                  <div className="mt-3 ml-6 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                      <span className="font-semibold">⚠️ Privacy Protection:</span> This group is private and cannot be made public again. This protects the privacy of members who joined thinking the content would remain private.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -124,6 +124,12 @@ class GroupService:
         if not group:
             return None
         
+        # Privacy protection: once private, cannot become public
+        if 'is_public' in updates and updates['is_public'] == True:
+            if not group.is_public:
+                # Group is currently private, cannot make it public
+                raise ValueError("Private groups cannot be made public. This protects member privacy.")
+        
         # Update fields
         for key, value in updates.items():
             if hasattr(group, key):
