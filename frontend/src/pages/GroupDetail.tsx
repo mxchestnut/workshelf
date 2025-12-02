@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Users, MessageSquare, Crown, Shield, ArrowLeft } from 'lucide-react';
+import { Users, MessageSquare, Crown, Shield, ArrowLeft, Settings } from 'lucide-react';
+import { Navigation } from '../components/Navigation';
 import { GroupActionButtons } from '../components/GroupActionButtons';
 import { PostModerationActions } from '../components/PostModerationActions';
 
@@ -441,6 +442,8 @@ export default function GroupDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -511,10 +514,19 @@ export default function GroupDetail() {
                   setFollowerCount(newCount);
                 }}
               />
+              {userPermissions.can_pin_posts && (
+                <button
+                  onClick={() => window.location.href = `/group-settings?id=${groupId}`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  title="Group Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+              )}
               {isMemb && (
                 <button
                   onClick={() => setShowNewPost(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800"
                 >
                   <MessageSquare className="h-5 w-5 mr-2" />
                   New Post
