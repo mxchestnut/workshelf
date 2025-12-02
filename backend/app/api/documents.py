@@ -45,7 +45,7 @@ async def create_document(
 @router.get("", response_model=DocumentListResponse)
 async def list_documents(
     page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    page_size: int = Query(20, ge=1, le=5000, description="Items per page"),
     status_filter: Optional[DocumentStatus] = Query(None, description="Filter by status"),
         folder_id: Optional[int] = Query(None, description="Filter by folder ID"),
     db: AsyncSession = Depends(get_db),
