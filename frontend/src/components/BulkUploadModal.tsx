@@ -367,7 +367,9 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                       <p className="text-sm font-mono font-bold mb-2">Some files skipped:</p>
                       <ul className="text-xs text-muted-foreground space-y-1">
                         {result.errors.map((error, idx) => (
-                          <li key={idx}>• {error}</li>
+                          <li key={idx}>
+                            • {typeof error === 'string' ? error : `${error.file}: ${error.error}`}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -384,7 +386,9 @@ export function BulkUploadModal({ onClose, onSuccess, projectId }: BulkUploadMod
                     {result.errors && result.errors.length > 0 && (
                       <ul className="text-xs text-muted-foreground mt-2 space-y-1">
                         {result.errors.map((error, idx) => (
-                          <li key={idx}>• {error}</li>
+                          <li key={idx}>
+                            • {typeof error === 'string' ? error : `${error.file}: ${error.error}`}
+                          </li>
                         ))}
                       </ul>
                     )}
