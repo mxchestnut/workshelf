@@ -149,43 +149,40 @@ async def bulk_upload_documents(
         except:
             pass
     
-    # Handle single file vs multiple files
-    if len(files) == 1 and files[0].filename.endswith('.zip'):
-        # Single zip file - use existing logic
-        file = files[0]
-        content = await file.read()
-        file_size = len(content)
-        
-        # Security: Check max file size
-        if file_size > MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=413,
-                detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
-            )
-        
-        # Security: Validate file extension
-        file_ext = os.path.splitext(file.filename)[1].lower()
-        if file_ext not in ALLOWED_EXTENSIONS and file_ext != '.zip':
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid file type. Only .md, .markdown, and .zip files are allowed"
-            )
-        
-        if file_size > storage["available"]:
-            return {
-                "success": False,
-                "error": "storage_quota_exceeded",
-                "message": f"Upload size ({file_size:,} bytes) exceeds available storage ({storage['available']:,} bytes)",
-                "storage": storage
-            }
-    
     imported_docs = []
     errors = []
     total_bytes = 0
     
     try:
-        # Handle zip file
-        if file.filename.endswith('.zip'):
+        # Handle zip file (single file mode)
+        if len(files) == 1 and files[0].filename.endswith('.zip'):
+            file = files[0]
+            content = await file.read()
+            file_size = len(content)
+            
+            # Security: Check max file size
+            if file_size > MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File too large. Maximum size is {MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
+                )
+            
+            # Security: Validate file extension
+            file_ext = os.path.splitext(file.filename)[1].lower()
+            if file_ext not in ALLOWED_EXTENSIONS and file_ext != '.zip':
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid file type. Only .md, .markdown, and .zip files are allowed"
+                )
+            
+            if file_size > storage["available"]:
+                return {
+                    "success": False,
+                    "error": "storage_quota_exceeded",
+                    "message": f"Upload size ({file_size:,} bytes) exceeds available storage ({storage['available']:,} bytes)",
+                    "storage": storage
+                }
+            
             try:
                 with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
                     # Security: Check for zip bombs (too many entries)
