@@ -6,7 +6,6 @@
  * - Export entire studios/projects
  * - GDPR data export
  * - Export job tracking with status monitoring
- * - Export to Matrix/Element messages (TipTap content)
  */
 
 import { useEffect, useState } from 'react'
@@ -14,15 +13,13 @@ import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
 import { 
   Download, FileText, Package, Shield, Clock, CheckCircle, 
-  XCircle, AlertCircle, RefreshCw, Trash2,
-  MessageSquare, Send
+  XCircle, AlertCircle, RefreshCw, Trash2
 } from 'lucide-react'
 import { toast } from '../services/toast'
-import { useMatrix } from '../hooks/useMatrixClient'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
-type ExportTab = 'documents' | 'gdpr' | 'history' | 'matrix'
+type ExportTab = 'documents' | 'gdpr' | 'history'
 
 interface Document {
   id: number
@@ -79,13 +76,6 @@ export function ExportCenter() {
   const [exportJobs, setExportJobs] = useState<ExportJob[]>([])
   const [jobsLoading, setJobsLoading] = useState(false)
 
-  // Matrix export
-  const { client: matrixClient } = useMatrix()
-  const [matrixRooms, setMatrixRooms] = useState<MatrixRoom[]>([])
-  const [selectedRoomId, setSelectedRoomId] = useState<string>('')
-  const [matrixExportDocId, setMatrixExportDocId] = useState<number | null>(null)
-  const [matrixExportLoading, setMatrixExportLoading] = useState(false)
-
   useEffect(() => {
     const fetchUser = async () => {
       const currentUser = await authService.getCurrentUser()
@@ -99,10 +89,8 @@ export function ExportCenter() {
   useEffect(() => {
     if (activeTab === 'history') {
       loadExportJobs()
-    } else if (activeTab === 'matrix' && matrixClient) {
-      loadMatrixRooms()
     }
-  }, [activeTab, matrixClient])
+  }, [activeTab])
 
   const loadDocuments = async () => {
     try {
@@ -152,26 +140,6 @@ export function ExportCenter() {
       console.error('Failed to load export jobs:', err)
     } finally {
       setJobsLoading(false)
-    }
-  }
-
-  const loadMatrixRooms = async () => {
-    if (!matrixClient) return
-    
-    try {
-      const rooms = matrixClient.getRooms()
-      const roomList: MatrixRoom[] = rooms
-        .filter((room: any) => room.getMyMembership() === 'join')
-        .map((room: any) => ({
-          room_id: room.roomId,
-          name: room.name || 'Unnamed Room',
-          avatar_url: room.getAvatarUrl(matrixClient.baseUrl, 48, 48, 'crop') || undefined,
-          membership: room.getMyMembership()
-        }))
-      
-      setMatrixRooms(roomList)
-    } catch (err) {
-      console.error('Failed to load Matrix rooms:', err)
     }
   }
 
@@ -294,79 +262,6 @@ export function ExportCenter() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const exportToMatrix = async () => {
-    if (!selectedRoomId || !matrixExportDocId) {
-      setError('Please select a room and document')
-      return
-    }
-
-    setMatrixExportLoading(true)
-    setError('')
-    setSuccess('')
-
-    try {
-      // Get document content
-      const token = localStorage.getItem('access_token')
-      const docResponse = await fetch(`${API_URL}/api/v1/documents/${matrixExportDocId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (!docResponse.ok) {
-        throw new Error('Failed to load document')
-      }
-
-      const docData = await docResponse.json()
-      
-      // Convert content to plain text (simple extraction from TipTap JSON/HTML)
-      let textContent = docData.content || ''
-      
-      // If content is JSON (TipTap format), extract text
-      try {
-        const contentObj = JSON.parse(textContent)
-        textContent = extractTextFromTipTap(contentObj)
-      } catch {
-        // If it's HTML or plain text, strip HTML tags
-        textContent = textContent.replace(/<[^>]*>/g, '').trim()
-      }
-
-      // Send to Matrix room
-      if (matrixClient) {
-        await matrixClient.sendTextMessage(selectedRoomId, `📄 ${docData.title}\n\n${textContent}`)
-        setSuccess('Document sent to Matrix room successfully!')
-        toast.success('Sent to Matrix room')
-      } else {
-        throw new Error('Matrix client not initialized')
-      }
-    } catch (err: any) {
-      setError(err.message)
-      toast.error(err.message || 'Failed to send to Matrix')
-    } finally {
-      setMatrixExportLoading(false)
-    }
-  }
-
-  const extractTextFromTipTap = (content: any): string => {
-    if (!content || typeof content !== 'object') return ''
-    
-    let text = ''
-    
-    if (content.type === 'text') {
-      text += content.text || ''
-    }
-    
-    if (content.content && Array.isArray(content.content)) {
-      for (const node of content.content) {
-        text += extractTextFromTipTap(node)
-        // Add newline after paragraphs
-        if (node.type === 'paragraph') {
-          text += '\n\n'
-        }
-      }
-    }
-    
-    return text
   }
 
   const downloadExport = async (jobId: number) => {
@@ -507,17 +402,6 @@ export function ExportCenter() {
               >
                 <Package className="h-4 w-4" />
                 Export History
-              </button>
-              <button
-                onClick={() => setActiveTab('matrix')}
-                className={`pb-4 px-2 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === 'matrix'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <MessageSquare className="h-4 w-4" />
-                Export to Matrix
               </button>
             </div>
           </div>
@@ -830,87 +714,6 @@ export function ExportCenter() {
                     )}
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Matrix Export Tab */}
-        {activeTab === 'matrix' && (
-          <div className="bg-card border border-border rounded-lg p-6 max-w-2xl mx-auto">
-            <div className="flex items-center gap-2 mb-4">
-              <MessageSquare className="h-6 w-6" />
-              <h2 className="text-2xl font-semibold">Export to Matrix/Element</h2>
-            </div>
-
-            {!matrixClient ? (
-              <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>Matrix not connected.</strong> Please ensure you're logged into Matrix to use this feature.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-muted-foreground text-sm">
-                  Send your document content as a text message to any Matrix/Element room. The TipTap editor content will be converted to plain text.
-                </p>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Select Document</label>
-                  <select
-                    value={matrixExportDocId?.toString() || ''}
-                    onChange={(e) => setMatrixExportDocId(e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md"
-                  >
-                    <option value="">Choose a document...</option>
-                    {documents.map((doc) => (
-                      <option key={doc.id} value={doc.id}>
-                        {doc.title} ({doc.word_count} words)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Select Matrix Room</label>
-                  <select
-                    value={selectedRoomId}
-                    onChange={(e) => setSelectedRoomId(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md"
-                  >
-                    <option value="">Choose a room...</option>
-                    {matrixRooms.map((room) => (
-                      <option key={room.room_id} value={room.room_id}>
-                        {room.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Note:</strong> The document will be sent as a formatted text message with the document title and content. 
-                    HTML formatting will be stripped to plain text.
-                  </p>
-                </div>
-
-                <button
-                  onClick={exportToMatrix}
-                  disabled={matrixExportLoading || !selectedRoomId || !matrixExportDocId}
-                  className="w-full px-6 py-4 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
-                >
-                  {matrixExportLoading ? (
-                    <>
-                      <RefreshCw className="h-5 w-5 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-5 w-5" />
-                      Send to Matrix Room
-                    </>
-                  )}
-                </button>
               </div>
             )}
           </div>
