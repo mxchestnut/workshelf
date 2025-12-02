@@ -61,7 +61,7 @@ class GroupMemberResponse(BaseModel):
     username: str
     avatar_url: Optional[str]
     role: GroupMemberRole
-    joined_at: datetime
+    created_at: datetime  # When the member joined the group
 
     class Config:
         from_attributes = True
