@@ -121,14 +121,23 @@ export default function StudioV2() {
       })
       if (foldersResponse.ok) {
         const foldersData = await foldersResponse.json()
+        console.log('[FOLDER TREE] Received folders:', JSON.stringify(foldersData, null, 2))
         setFolders(foldersData || [])
         
-        // Auto-expand root-level folders on first load
+        // Auto-expand all folders recursively
         if (foldersData && foldersData.length > 0) {
           const newExpanded = new Set(expandedFolders)
-          foldersData.forEach((folder: TreeFolder) => {
-            newExpanded.add(folder.id)
-          })
+          
+          const expandRecursive = (folders: TreeFolder[]) => {
+            folders.forEach((folder: TreeFolder) => {
+              newExpanded.add(folder.id)
+              if (folder.children && folder.children.length > 0) {
+                expandRecursive(folder.children)
+              }
+            })
+          }
+          
+          expandRecursive(foldersData)
           setExpandedFolders(newExpanded)
         }
       }
