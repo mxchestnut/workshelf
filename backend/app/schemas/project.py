@@ -81,7 +81,7 @@ class ProjectResponse(BaseModel):
     description: Optional[str]
     project_type: ProjectType
     target_word_count: Optional[int]
-    current_word_count: int
+    current_word_count: Optional[int] = None
     folder_id: Optional[int]
     template_id: Optional[int] = None
     ai_template_id: Optional[int] = None
