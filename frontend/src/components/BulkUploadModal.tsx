@@ -136,7 +136,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
         const pathMap: Record<string, string> = {}
         selectedFiles.forEach((file, idx) => {
           formData.append('files', file)
-          // @ts-ignore - webkitRelativePath exists on File
+          // @ts-expect-error - webkitRelativePath exists on File
           const relativePath = file.webkitRelativePath || file.name
           pathMap[idx.toString()] = relativePath
         })
@@ -313,7 +313,7 @@ export function BulkUploadModal({ onClose, onSuccess, projectId, folderId }: Bul
                     <input
                       ref={folderInputRef}
                       type="file"
-                      /* @ts-ignore */
+                      /* @ts-expect-error */
                       webkitdirectory=""
                       directory=""
                       multiple
