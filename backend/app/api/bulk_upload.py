@@ -497,11 +497,13 @@ async def bulk_upload_documents(
             path_map = json.loads(file_paths)
             
             print(f"[BULK UPLOAD] Processing {len(files)} files from folder upload")
+            print(f"[BULK UPLOAD] Path map: {path_map}")
             
             # First pass: Create all unique folders from file paths
             unique_folders = set()
             for idx, file_obj in enumerate(files):
                 relative_path = path_map.get(str(idx), file_obj.filename)
+                print(f"[BULK UPLOAD] File {idx}: {relative_path}")
                 folder_path = os.path.dirname(relative_path)
                 if folder_path:
                     # Add all parent folders
@@ -511,6 +513,8 @@ async def bulk_upload_documents(
                         # Skip macOS metadata folders
                         if '__MACOSX' not in folder_path_segment and not any(p.startswith('.') for p in folder_path_segment.split('/')):
                             unique_folders.add(folder_path_segment)
+            
+            print(f"[BULK UPLOAD] Unique folders found: {unique_folders}")
             
             # Sort folders by depth (parents before children)
             sorted_folders = sorted(unique_folders, key=lambda x: x.count('/'))
