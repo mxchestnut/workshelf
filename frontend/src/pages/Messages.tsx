@@ -42,14 +42,14 @@ export default function Messages() {
     const loadRooms = () => {
       const directRooms = client
         .getRooms()
-        .filter(room => {
+        .filter((room: any) => {
           // Only show DM rooms where user is joined
           return room.getMyMembership() === 'join' && room.guessDMUserId()
         })
-        .map(room => {
+        .map((room: any) => {
           const otherUser = getOtherUserInRoom(client, room)
           const timeline = room.getLiveTimeline().getEvents()
-          const messageEvents = timeline.filter(e => e.getType() === 'm.room.message')
+          const messageEvents = timeline.filter((e: any) => e.getType() === 'm.room.message')
           const lastMessage = messageEvents[messageEvents.length - 1]
 
           return {
@@ -69,7 +69,7 @@ export default function Messages() {
             unreadCount: room.getUnreadNotificationCount()
           } as RoomInfo
         })
-        .sort((a, b) => b.lastMessageTime - a.lastMessageTime)
+        .sort((a: any, b: any) => b.lastMessageTime - a.lastMessageTime)
       
       setRooms(directRooms)
       setLoading(false)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, FolderOpen, Folder, Plus, ChevronRight, ChevronDown, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
+import { FileText, Folder, Plus, ChevronRight, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
@@ -212,9 +212,9 @@ export default function StudioV2() {
 
       if (response.ok) {
         await loadFoldersAndDocuments(selectedProject.id)
-        if (parentId) {
-          setExpandedFolders(prev => new Set(prev).add(parentId))
-        }
+        // if (parentId) {
+        //   setExpandedFolders(prev => new Set(prev).add(parentId))
+        // }
       }
     } catch (err) {
       console.error('Error creating folder:', err)
@@ -618,7 +618,6 @@ function FolderTreeView({
   onNavigateToFolder,
   onNavigateBack,
   onDocumentSelect,
-  onFolderCreate,
   onFolderRename,
   onFolderDelete,
   onDocumentCreate,

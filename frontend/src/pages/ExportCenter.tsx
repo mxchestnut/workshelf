@@ -48,13 +48,6 @@ interface ExportJob {
   error_message: string | null
 }
 
-interface MatrixRoom {
-  room_id: string
-  name: string
-  avatar_url?: string
-  membership: string
-}
-
 export function ExportCenter() {
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<ExportTab>('documents')
