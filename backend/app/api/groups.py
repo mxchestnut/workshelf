@@ -210,10 +210,13 @@ async def update_group(
     # Create dict of updates, excluding None values
     updates = {k: v for k, v in group_data.dict(exclude_unset=True).items() if v is not None}
     
-    group = await GroupService.update_group(db, group_id, user.id, **updates)
-    if not group:
-        raise HTTPException(status_code=404, detail="Group not found or not authorized")
-    return group
+    try:
+        group = await GroupService.update_group(db, group_id, user.id, **updates)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found or not authorized")
+        return group
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{group_id}/members", response_model=List[GroupMemberResponse])
