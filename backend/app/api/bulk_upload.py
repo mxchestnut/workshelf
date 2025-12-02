@@ -395,7 +395,10 @@ async def bulk_upload_documents(
                 raise HTTPException(status_code=400, detail=f"Error reading zip file: {str(e)}")
         
         # Handle single markdown file
-        elif file.filename.endswith(('.md', '.markdown')):
+        elif len(files) == 1 and files[0].filename.endswith(('.md', '.markdown')):
+            file = files[0]
+            content = await file.read()
+            
             # Security: Sanitize filename
             safe_filename = sanitize_filename(file.filename)
             
