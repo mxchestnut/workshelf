@@ -156,6 +156,8 @@ export default function StudioV2() {
   const createDocument = async (folderId: number | null = null) => {
     if (!selectedProject) return
 
+    console.log('[CREATE DOC] Creating document in folder:', folderId, 'for project:', selectedProject.id)
+
     try {
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents`, {
@@ -176,8 +178,12 @@ export default function StudioV2() {
 
       if (response.ok) {
         const newDoc = await response.json()
+        console.log('[CREATE DOC] Created document:', newDoc.id, 'in folder:', newDoc.folder_id)
         setDocuments(prev => [...prev, newDoc])
         setSelectedDocument(newDoc)
+      } else {
+        const error = await response.json()
+        console.error('[CREATE DOC] Failed:', error)
       }
     } catch (err) {
       console.error('Error creating document:', err)
