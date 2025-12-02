@@ -1070,7 +1070,7 @@ async def follow_group(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Verify group exists
-    group = await GroupService.get_group(db, group_id)
+    group = await GroupService.get_group_by_id(db, group_id)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     
@@ -1103,7 +1103,7 @@ async def get_group_followers(
 ):
     """Get list of users following a group (public endpoint)."""
     # Verify group exists
-    group = await GroupService.get_group(db, group_id)
+    group = await GroupService.get_group_by_id(db, group_id)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     
