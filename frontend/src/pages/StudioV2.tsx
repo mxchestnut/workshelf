@@ -720,11 +720,39 @@ function FolderTreeView({
     )
   }
 
+  // Get root-level documents (not in any folder)
+  const rootDocs = documents.filter(d => d.folder_id === null)
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Scrollable file tree */}
       <div className="flex-1 overflow-y-auto">
-        {/* Root-level folders */}
+        {/* Root-level documents first */}
+        {rootDocs.map(doc => (
+          <div
+            key={`doc-${doc.id}`}
+            className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group ${
+              selectedDocId === doc.id ? 'bg-accent' : ''
+            }`}
+            style={{ paddingLeft: '8px' }}
+            onClick={() => onDocumentSelect(doc)}
+          >
+            <FileText className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
+            <span className="flex-1 truncate text-xs font-mono">{doc.title}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDocumentDelete(doc.id)
+              }}
+              className="p-1 hover:bg-destructive/10 hover:text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Delete document"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+
+        {/* Then folders */}
         {folders.map(folder => renderFolder(folder, 0))}
 
         {folders.length === 0 && documents.length === 0 && (
