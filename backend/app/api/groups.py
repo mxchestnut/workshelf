@@ -125,7 +125,18 @@ async def get_group_members(
 ):
     """Get all members of a group."""
     members = await GroupService.get_group_members(db, group_id, active_only)
-    return members
+    
+    # Transform to response format
+    return [
+        GroupMemberResponse(
+            user_id=str(member.user.id),
+            username=member.user.username or member.user.email,
+            avatar_url=member.user.avatar_url,
+            role=member.role,
+            created_at=member.created_at
+        )
+        for member in members
+    ]
 
 
 @router.post("/{group_id}/members", response_model=GroupMemberResponse, status_code=status.HTTP_201_CREATED)
