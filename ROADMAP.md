@@ -9,7 +9,7 @@
 ## 🎯 Immediate Priorities (Week 1-2)
 
 ### 1. Staff Admin Infrastructure 🛠️ **HIGH PRIORITY**
-**Status:** 30% Complete (Sentry, Matomo, PostHog)  
+**Status:** 50% Complete (Sentry, Matomo, PostHog, Prometheus, Grafana)  
 **Goal:** Complete observability & security tooling stack
 
 **Current State:**
@@ -17,9 +17,9 @@
 - ✅ Redis (running, ready for caching layer)
 - ✅ Matomo (privacy-focused analytics with cookie-less tracking)
 - ✅ PostHog (product analytics with session replay & feature flags)
+- ✅ Prometheus (metrics collection configured, /metrics endpoint)
+- ✅ Grafana (dashboards UI on :3000, auto-provisioned with Prometheus)
 - ❌ React-Admin dashboard (replace basic staff pages)
-- ❌ Prometheus metrics collection
-- ❌ Grafana dashboards
 - ❌ OpenTelemetry traces
 - ❌ OpenSearch logs
 - ❌ HashiCorp Vault secrets
@@ -28,24 +28,23 @@
 - ❌ Gitleaks secrets scanning
 
 **Phase 1: Docker Infrastructure (Days 1-2)**
-- [ ] Add to `docker-compose.yml`:
-  - [ ] Prometheus (metrics collection on :9090)
-  - [ ] Grafana (dashboards on :3000)
+- [x] Add to `docker-compose.yml`:
+  - [x] Prometheus (metrics collection on :9090)
+  - [x] Grafana (dashboards on :3000)
   - [ ] OpenTelemetry Collector (traces on :4318)
   - [ ] OpenSearch (logs on :9200)
   - [ ] HashiCorp Vault (secrets on :8200)
 
 **Phase 2: Backend Integration (Days 3-4)**
-**Phase 2: Backend Integration (Days 3-4)**
-- [ ] Add dependencies to `backend/requirements.txt`:
-  - [ ] `prometheus-fastapi-instrumentator` (metrics)
+- [x] Add dependencies to `backend/requirements.txt`:
+  - [x] `prometheus-fastapi-instrumentator` (metrics)
   - [ ] `opentelemetry-api` + `opentelemetry-sdk` (traces)
   - [ ] `opentelemetry-instrumentation-fastapi` (auto-instrument)
   - [ ] `opentelemetry-exporter-otlp` (send to collector)
   - [ ] `opensearch-py` (log shipping)
   - [ ] `hvac` (Vault client)
-- [ ] Instrument `backend/app/main.py`:
-  - [ ] Add Prometheus `/metrics` endpoint
+- [x] Instrument `backend/app/main.py`:
+  - [x] Add Prometheus `/metrics` endpoint
   - [ ] Configure OpenTelemetry tracing
   - [ ] Add structured logging to OpenSearch
   - [ ] Integrate Vault for secrets (DATABASE_URL, etc)
