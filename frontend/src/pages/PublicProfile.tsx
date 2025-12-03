@@ -8,7 +8,7 @@ import { authService } from '../services/auth'
 import { toast } from '../services/toast'
 import {
   User, MapPin, Calendar, ExternalLink, Globe, Twitter,
-  BookOpen, FileText, Book, Star, UserPlus, UserMinus,
+  BookOpen, FileText, Book, Star, UserPlus, UserMinus, MessageCircle,
   X
 } from 'lucide-react'
 
@@ -178,15 +178,8 @@ export default function PublicProfile() {
   }
 
   const handleMessage = async () => {
-    if (!profile || !openChat) return
-    
-    try {
-      await openChat(profile.username, profile.display_name || profile.username, profile.avatar_url)
-      toast.success('Opening chat...')
-    } catch (error) {
-      console.error('Error starting direct message:', error)
-      toast.error('Failed to start chat')
-    }
+    // Matrix messaging was removed
+    toast.info('Messaging feature coming soon')
   }
 
   const openFollowers = async () => {

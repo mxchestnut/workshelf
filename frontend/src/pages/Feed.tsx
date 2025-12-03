@@ -321,7 +321,7 @@ export function Feed() {
 
                 {/* Post Actions */}
                 <div className="flex items-center gap-4 pt-4 border-t border-border">
-                  <button className="transition-colors text-sm font-medium text-foreground hover:opacity-80 text-muted-foreground">
+                  <button className="transition-colors text-sm font-medium text-muted-foreground hover:opacity-80">
                     Reply
                   </button>
                   <button className="transition-colors text-sm font-medium hover:opacity-80 text-muted-foreground">

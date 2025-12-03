@@ -466,8 +466,8 @@ export default function GroupDetail() {
     <div className="min-h-screen bg-gray-50">
       <Navigation 
         user={user}
-        onLogin={() => authService.login()}
-        onLogout={() => authService.logout()}
+        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+       
         currentPage="groups"
       />
       

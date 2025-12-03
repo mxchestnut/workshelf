@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { BookOpen, Star, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, Send } from 'lucide-react'
-import { toast } from '../components/Toast'
+import { toast } from '../services/toast'
 
 interface PortfolioLink {
   title: string
@@ -154,7 +154,7 @@ export default function BetaProfileView() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={viewer} onLogin={() => {}} onLogout={() => authService.logout()} />
+        <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="max-w-5xl mx-auto px-6 py-12 text-center text-foreground">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
           <p className="mt-4">Loading profile...</p>
@@ -166,7 +166,7 @@ export default function BetaProfileView() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={viewer} onLogin={() => {}} onLogout={() => authService.logout()} />
+        <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="max-w-5xl mx-auto px-6 py-12 text-center">
           <p className="text-foreground">Profile not found.</p>
         </div>
@@ -176,7 +176,7 @@ export default function BetaProfileView() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={viewer} onLogin={() => {}} onLogout={() => authService.logout()} />
+      <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">

@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import { User, authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
-import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle, MessageSquare } from 'lucide-react'
+import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle } from 'lucide-react'
 import { toast } from '../services/toast'
 
 interface BetaProfile {
@@ -145,17 +145,12 @@ export default function BetaMarketplace() {
     window.location.href = `/profile/${userId}`
   }
 
-  const contactBetaReader = (e: React.MouseEvent, profile: BetaProfile) => {
-    e.stopPropagation()
-    window.history.pushState({}, '', '/messages')
-    window.dispatchEvent(new CustomEvent('openChatByUserId', { detail: { userId: profile.user_id, displayName: profile.display_name } }))
-    toast.success('Opening conversation...')
-  }
+  // Removed contactBetaReader function as Matrix messaging was removed
 
   if (loading && profiles.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => {}} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="max-w-7xl mx-auto px-6 py-8 text-center text-foreground">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
           <p className="mt-4">Loading marketplace...</p>
@@ -166,7 +161,7 @@ export default function BetaMarketplace() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => {}} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
@@ -431,21 +426,21 @@ export default function BetaMarketplace() {
                 
                 {profile.turnaround_days && (
                   <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">Typical turnaround: {profile.turnaround_days} days</span>
-                </div>
-              )}
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-muted-foreground">Typical turnaround: {profile.turnaround_days} days</span>
+                  </div>
+                )}
+              </div>
             </div>
-
-          </div>
+          ))}
         </div>
-        ))}
-      </div>        {/* Empty State */}
-        {profiles.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-xl text-foreground mb-2">No beta readers found</p>
-            <p className="text-muted-foreground">Try adjusting your filters</p>
+
+      {/* Empty State */}
+      {profiles.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-xl text-foreground mb-2">No beta readers found</p>
+          <p className="text-muted-foreground">Try adjusting your filters</p>
           </div>
         )}
 

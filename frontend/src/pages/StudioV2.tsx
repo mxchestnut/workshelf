@@ -415,8 +415,8 @@ export default function StudioV2() {
     <div className="flex flex-col h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()} 
+        onLogin={() => authService.login()} onLogout={() => authService.logout()} 
+        
         currentPage="studio" 
       />
       

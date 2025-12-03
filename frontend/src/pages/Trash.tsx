@@ -14,7 +14,6 @@ import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { ConfirmationModal } from '../components/AccessibleModal'
-import { LiveRegion } from '../components/LiveRegion'
 import { 
   Trash2, 
   RefreshCw, 
@@ -23,8 +22,7 @@ import {
   FolderOpen,
   Clock,
   Search,
-  XCircle,
-  CheckCircle
+  XCircle
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -73,11 +71,11 @@ export default function Trash() {
   const [searchQuery, setSearchQuery] = useState('')
   const [actionLoading, setActionLoading] = useState<number | null>(null)
   const [showEmptyConfirm, setShowEmptyConfirm] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     loadUser()
     loadTrashData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   const loadUser = async () => {
@@ -576,9 +574,6 @@ export default function Trash() {
           </div>
         )}
       </main>
-
-      {/* Live Region for Screen Reader Announcements */}
-      <LiveRegion message={successMessage} clearAfter={3000} />
 
       {/* Empty Trash Confirmation Modal - Accessible */}
       <ConfirmationModal

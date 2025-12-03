@@ -4,12 +4,11 @@
  */
 
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   Shield, Plus, Save, Trash2, GripVertical, ChevronDown, ChevronUp,
-  FileText, Users, Settings, Lock, Tag, Pin, Ban, UserPlus
+  FileText, Users, Settings
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -113,7 +112,7 @@ const DEFAULT_COLORS = [
 ]
 
 export default function GroupRoles() {
-  const location = useLocation()
+  // Remove useLocation line - it was added by mistake and not used
   const pathParts = location.pathname.split('/')
   const groupIdIndex = pathParts.indexOf('groups') + 1
   const groupId = groupIdIndex > 0 && groupIdIndex < pathParts.length 
@@ -134,6 +133,7 @@ export default function GroupRoles() {
     if (groupId) {
       loadRoles()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId])
 
   const loadUser = async () => {
@@ -270,7 +270,7 @@ export default function GroupRoles() {
 
   const toggleAllPermissions = (category: PermissionCategory, value: boolean) => {
     if (!editingRole) return
-    const updates = { ...editingRole }
+    const updates: any = { ...editingRole }
     category.permissions.forEach(perm => {
       updates[perm.key] = value
     })

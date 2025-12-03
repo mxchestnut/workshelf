@@ -250,6 +250,8 @@ class AuthService {
     this.refreshToken = data.refresh_token
 
     localStorage.setItem('access_token', this.accessToken!)
+  }
+
   /**
    * Logout user and clear tokens
    */
@@ -268,11 +270,6 @@ class AuthService {
     
     // Redirect to Keycloak logout, then back to home page
     const redirectUri = window.location.origin + '/'
-    const logoutUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout?` +
-      `post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `client_id=${KEYCLOAK_CLIENT_ID}`
-    window.location.href = logoutUrl
-  } const redirectUri = window.location.origin + '/'
     const logoutUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout?` +
       `post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `client_id=${KEYCLOAK_CLIENT_ID}`

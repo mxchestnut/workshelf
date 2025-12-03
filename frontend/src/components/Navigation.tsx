@@ -55,6 +55,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
       {/* Top Header */}
       <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card" role="banner">
         <div className="py-4">
+          <div className="flex items-center justify-between px-6">
+            {/* Left: Logo & Menu */}
+            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="p-2 hover:bg-accent transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -63,9 +66,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 aria-controls="main-navigation"
               >
                 {menuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
-              </button>bel="Toggle menu"
-              >
-                {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
               
               <button 

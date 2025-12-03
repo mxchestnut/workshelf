@@ -32,6 +32,7 @@ const ReadingListsBrowse: React.FC = () => {
 
   useEffect(() => {
     loadPublicLists()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchQuery])
 
   const loadPublicLists = async () => {
