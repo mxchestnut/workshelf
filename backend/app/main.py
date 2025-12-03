@@ -41,6 +41,9 @@ if sentry_dsn:
 else:
     print("[SENTRY] Not configured (SENTRY_DSN not set)")
 
+# Initialize Prometheus metrics
+from prometheus_fastapi_instrumentator import Instrumentator
+
 app = FastAPI(
     title="Work Shelf API",
     description="Social infrastructure platform for creators",
@@ -48,6 +51,24 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
+
+# Instrument app with Prometheus metrics
+# This will expose /metrics endpoint and automatically track:
+# - Request count, latency, response codes
+# - Request size, response size
+# - In-progress requests
+instrumentator = Instrumentator(
+    should_group_status_codes=True,
+    should_ignore_untemplated=False,
+    should_respect_env_var=True,
+    should_instrument_requests_inprogress=True,
+    excluded_handlers=["/metrics", "/health", "/health/live", "/health/ready"],
+    env_var_name="ENABLE_METRICS",
+    inprogress_name="http_requests_inprogress",
+    inprogress_labels=True,
+)
+instrumentator.instrument(app).expose(app, endpoint="/metrics")
+print("[PROMETHEUS] Metrics exposed at /metrics")
 
 # Standard CORS middleware
 app.add_middleware(
