@@ -1,3 +1,0 @@
-# People Index
-
-[expand later]

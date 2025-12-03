@@ -1,3 +1,0 @@
-# Timeline
-
-[auto-created placeholder]

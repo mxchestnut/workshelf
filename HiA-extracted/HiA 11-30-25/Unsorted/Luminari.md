@@ -1,3 +1,0 @@
-# Luminari
-
-[auto-created placeholder]

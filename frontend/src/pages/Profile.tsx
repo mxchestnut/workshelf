@@ -1148,7 +1148,7 @@ export function Profile() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name || user.email} className="w-full h-full rounded-full object-cover" />
+                              <img src={user.avatar_url} alt={`${user.full_name || user.email}'s profile picture`} className="w-full h-full rounded-full object-cover" />
                             ) : (
                               <User className="w-5 h-5 text-muted-foreground" />
                             )}

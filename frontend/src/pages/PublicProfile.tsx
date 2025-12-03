@@ -274,7 +274,7 @@ export default function PublicProfile() {
               <div key={user.user_id} className="flex items-center justify-between p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
                 <div className="flex items-center gap-3">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.username} className="w-12 h-12 rounded-full" />
+                    <img src={user.avatar_url} alt={`${user.username}'s profile picture`} className="w-12 h-12 rounded-full" />
                   ) : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#6C6A68' }}>
                       <User className="w-6 h-6" style={{ color: '#B3B2B0' }} />
@@ -338,7 +338,7 @@ export default function PublicProfile() {
         <div className="rounded-lg p-8 mb-8" style={{ backgroundColor: '#524944' }}>
           <div className="flex items-start gap-6">
             {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt={profile.username} className="w-32 h-32 rounded-full" />
+              <img src={profile.avatar_url} alt={`${profile.username}'s profile picture`} className="w-32 h-32 rounded-full" />
             ) : (
               <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ backgroundColor: '#6C6A68' }}>
                 <User className="w-16 h-16" style={{ color: '#B3B2B0' }} />
@@ -550,7 +550,7 @@ export default function PublicProfile() {
               bookshelf.map((book) => (
                 <div key={book.id} className="rounded-lg overflow-hidden hover:scale-105 transition-transform">
                   {book.cover_url ? (
-                    <img src={book.cover_url} alt={book.title} className="w-full aspect-[2/3] object-cover" />
+                    <img src={book.cover_url} alt={`Book cover for ${book.title}`} className="w-full aspect-[2/3] object-cover" />
                   ) : (
                     <div className="w-full aspect-[2/3] flex items-center justify-center" style={{ backgroundColor: '#524944' }}>
                       <Book className="w-12 h-12" style={{ color: '#B3B2B0' }} />

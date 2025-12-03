@@ -1,3 +1,0 @@
-# Pyronari
-
-[auto-created placeholder]

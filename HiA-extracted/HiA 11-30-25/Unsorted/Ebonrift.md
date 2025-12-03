@@ -1,3 +1,0 @@
-# Ebonrift
-
-[auto-created placeholder]

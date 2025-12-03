@@ -1,3 +1,0 @@
-# Present Day
-
-[expand later]

@@ -1,3 +1,0 @@
-# Geonari
-
-[auto-created placeholder]

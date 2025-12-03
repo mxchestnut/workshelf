@@ -26,6 +26,7 @@ import { useState } from 'react'
 import { User } from '../services/auth'
 import NotificationBell from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
+import { SkipLink } from './SkipLink'
 
 interface NavigationProps {
   user: User | null
@@ -48,16 +49,21 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
 
   return (
     <>
+      {/* Skip Link for Keyboard Navigation - WCAG 2.1 */}
+      <SkipLink />
+      
       {/* Top Header */}
-      <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card">
+      <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card" role="banner">
         <div className="py-4">
-          <div className="flex items-center justify-between px-6">
-            {/* Left: Logo & Menu */}
-            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="p-2 hover:bg-accent transition-colors"
-                aria-label="Toggle menu"
+                className="p-2 hover:bg-accent transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={menuOpen}
+                aria-controls="main-navigation"
+              >
+                {menuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
+              </button>bel="Toggle menu"
               >
                 {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -155,12 +161,16 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
       />
       
-      <aside 
+      <nav 
+        id="main-navigation"
         className={`fixed top-0 left-0 h-full w-80 bg-card border-r border-border shadow-2xl z-50 transform transition-transform ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        aria-label="Main navigation"
+        aria-hidden={!menuOpen}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
@@ -391,7 +401,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
             )}
           </div>
         </div>
-      </aside>
+      </nav>
     </>
   )
 }

@@ -1,3 +1,0 @@
-# Aeralis
-
-[auto-created placeholder]
