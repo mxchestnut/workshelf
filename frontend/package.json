@@ -53,6 +53,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^0.294.0",
     "matrix-js-sdk": "^39.2.0-rc.0",
+    "posthog-js": "^1.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-reader": "^2.0.15",
