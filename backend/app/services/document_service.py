@@ -225,9 +225,13 @@ async def list_user_documents(
         Tuple of (documents list, total count)
     """
     # Base query - join with Project to filter by folder, eager load owner for display
+    # EXCLUDE soft-deleted documents by default
     query = select(Document).options(
         joinedload(Document.owner)
-    ).where(Document.owner_id == user_id)
+    ).where(
+        Document.owner_id == user_id,
+        Document.is_deleted == False
+    )
     
     # Apply folder filter (via project relationship)
     if folder_id is not None:
@@ -242,7 +246,10 @@ async def list_user_documents(
     query = query.order_by(Document.updated_at.desc())
     
     # Get total count
-    count_query = select(func.count()).select_from(Document).where(Document.owner_id == user_id)
+    count_query = select(func.count()).select_from(Document).where(
+        Document.owner_id == user_id,
+        Document.is_deleted == False
+    )
     if folder_id is not None:
         from app.models.project import Project
         count_query = count_query.join(Project, Document.project_id == Project.id).where(Project.folder_id == folder_id)
@@ -351,7 +358,7 @@ async def delete_document(
     user_id: int
 ) -> None:
     """
-    Delete a document
+    Soft delete a document (move to trash)
     
     Args:
         session: Database session
@@ -360,32 +367,30 @@ async def delete_document(
         
     Raises:
         HTTPException: If document not found or user doesn't have permission
+    
+    Note: This performs a SOFT DELETE (moves to trash).
+    Use TrashService.permanently_delete_document() for hard delete.
     """
     try:
-        # Get the document
-        result = await session.execute(
-            select(Document).where(Document.id == document_id)
-        )
-        document = result.scalar_one_or_none()
+        from app.services.trash_service import TrashService
+        await TrashService.move_document_to_trash(session, document_id, user_id)
         
-        if not document:
+    except ValueError as e:
+        if "not found" in str(e).lower():
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Document not found"
+                detail=str(e)
             )
-        
-        # Check ownership
-        if document.owner_id != user_id:
+        elif "access denied" in str(e).lower():
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to delete this document"
             )
-        
-        # Delete the document (CASCADE should handle related records)
-        await session.delete(document)
-        await session.flush()  # Flush before commit to catch constraint errors
-        await session.commit()
-        
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
     except HTTPException:
         raise
     except Exception as e:

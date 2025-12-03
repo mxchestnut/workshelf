@@ -31,6 +31,10 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
+    # Soft delete (trash bin)
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
+    deleted_at = Column(DateTime, nullable=True)
+    
     # Relationships
     tenant = relationship("Tenant", back_populates="projects")
     user = relationship("User", back_populates="projects")
