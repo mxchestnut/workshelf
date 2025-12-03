@@ -22,20 +22,7 @@
 
 ## 🚀 Missing Frontend Features
 
-### 1. Bulk Upload 📦 **MEDIUM PRIORITY**
-**Backend:** ✅ Complete (`/api/v1/bulk-upload`)  
-**Frontend:** ❌ Not Implemented  
-**Use Case:** Import Obsidian vaults, Notion exports
-
-**Tasks:**
-- [ ] Create `/pages/BulkUpload.tsx`
-- [ ] File upload interface (drag & drop)
-- [ ] Support formats: `.zip`, `.md` folders
-- [ ] Progress bar for upload
-- [ ] Preview imported documents
-- [ ] Map to projects/folders
-
-### 2. Custom Group Roles 👥 **MEDIUM PRIORITY**
+### 1. Custom Group Roles 👥 **MEDIUM PRIORITY**
 **Backend:** ✅ Complete (`/api/v1/groups/{id}/roles`)  
 **Frontend:** ⚠️ Partial (basic roles only)  
 **Use Case:** Group owners create custom roles
@@ -47,7 +34,7 @@
 - [ ] Assign roles to members
 - [ ] Role inheritance system
 
-### 3. Group Scholarships 🎓 **LOW PRIORITY**
+### 2. Group Scholarships 🎓 **LOW PRIORITY**
 **Backend:** ✅ Complete (`/api/v1/groups/{id}/scholarships`)  
 **Frontend:** ❌ Not Implemented  
 **Use Case:** Groups offer free/discounted memberships
@@ -58,7 +45,7 @@
 - [ ] Approval workflow for owners
 - [ ] Display scholarship offers in group detail
 
-### 4. Wiki Editing ✏️ **LOW PRIORITY**
+### 3. Wiki Editing ✏️ **LOW PRIORITY**
 **Backend:** ✅ Complete (admin moderation endpoints)  
 **Frontend:** ⚠️ Admin moderation exists, wiki editing missing  
 **Use Case:** Community knowledge base
@@ -148,6 +135,12 @@
 - ✅ "My Groups" navigation section with settings icons
 - ✅ Group member count display
 - ✅ Group settings page
+
+### Import/Export
+- ✅ Bulk document import (files and folders)
+- ✅ Support for .md, .txt, .html, .docx, .odt, .pdf, .zip
+- ✅ Folder structure preservation
+- ✅ Import modal in Documents page
 
 ### Backend Deployment
 - ✅ All Phase 5 features deployed (Studio customization, analytics)
