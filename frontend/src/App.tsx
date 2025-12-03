@@ -51,6 +51,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const HouseRules = lazy(() => import('./pages/HouseRules'))
 const DeleteAccount = lazy(() => import('./pages/DeleteAccount'))
+const Trash = lazy(() => import('./pages/Trash'))
 const Sitemap = lazy(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })))
 const AdminModeration = lazy(() => import('./pages/AdminModeration'))
 const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
@@ -76,7 +77,7 @@ const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const MatrixSetup = lazy(() => import('./pages/MatrixSetup'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'matrix-setup' | 'delete-account'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'matrix-setup' | 'delete-account' | 'trash'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -262,6 +263,9 @@ function App() {
     } else if (path === '/delete-account') {
       // Account deletion
       setCurrentPage('delete-account')
+    } else if (path === '/trash') {
+      // Trash bin
+      setCurrentPage('trash')
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
@@ -509,6 +513,9 @@ function App() {
     }
     if (currentPage === 'delete-account') {
       return <DeleteAccount />
+    }
+    if (currentPage === 'trash') {
+      return <Trash />
     }
 
     // Home page - new dedicated landing page

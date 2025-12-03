@@ -19,7 +19,8 @@ import {
   X,
   LogIn,
   LogOut,
-  BookOpen
+  BookOpen,
+  Trash2
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -280,6 +281,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <Download className="w-5 h-5" />
                   <span>Export Center</span>
+                </button>
+
+                {/* Trash - Deleted items with 30-day retention */}
+                <button 
+                  onClick={() => navigateTo('/trash')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/trash')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <Trash2 className="w-5 h-5" />
+                  <span>Trash</span>
                 </button>
 
                 {/* Advanced Search */}
