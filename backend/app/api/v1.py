@@ -49,7 +49,8 @@ from app.api import (
     group_admin,  # Group admin endpoints for subdomain owners
     feed,  # Personalized feed
     interests,  # Dynamic interests from group tags
-    invitations  # Email invitations for onboarding
+    invitations,  # Email invitations for onboarding
+    account_deletion  # Account deletion with username freezing
 )
 
 api_router = APIRouter()
@@ -157,3 +158,6 @@ api_router.include_router(group_admin.router)
 
 # Email invitations for onboarding
 api_router.include_router(invitations.router)
+
+# Account deletion with username freezing (GDPR compliance)
+api_router.include_router(account_deletion.router)
