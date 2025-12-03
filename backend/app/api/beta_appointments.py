@@ -5,6 +5,7 @@ Allows writers to appoint beta readers and release documents to them
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
+from sqlalchemy.orm import joinedload
 from typing import Dict, Any, List
 from datetime import datetime, timezone
 
@@ -35,7 +36,10 @@ async def get_my_beta_readers(
     """Get all beta readers appointed by the current user (writer)."""
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    query = select(BetaReaderAppointment).where(
+    # Use joinedload to prevent N+1 queries when accessing beta_reader relationship
+    query = select(BetaReaderAppointment).options(
+        joinedload(BetaReaderAppointment.beta_reader)
+    ).where(
         BetaReaderAppointment.writer_id == user.id
     )
     
@@ -47,13 +51,10 @@ async def get_my_beta_readers(
     result = await db.execute(query)
     appointments = result.scalars().all()
     
-    # Enrich with beta reader details
+    # Enrich with beta reader details (now loaded via joinedload)
     response = []
     for appointment in appointments:
-        reader_result = await db.execute(
-            select(User).where(User.id == appointment.beta_reader_id)
-        )
-        reader = reader_result.scalar_one_or_none()
+        reader = appointment.beta_reader
         
         app_dict = {
             **appointment.__dict__,
@@ -282,8 +283,10 @@ async def get_my_beta_feed(
     if not appointment_ids:
         return []
     
-    # Get releases for these appointments
-    query = select(BetaRelease).where(
+    # Get releases for these appointments with eager loading to prevent N+1 queries
+    query = select(BetaRelease).options(
+        joinedload(BetaRelease.document).joinedload(Document.owner)
+    ).where(
         BetaRelease.appointment_id.in_(appointment_ids)
     )
     
@@ -295,18 +298,11 @@ async def get_my_beta_feed(
     result = await db.execute(query)
     releases = result.scalars().all()
     
-    # Enrich with document and writer details
+    # Enrich with document and writer details (now loaded via joinedload)
     response = []
     for release in releases:
-        doc_result = await db.execute(
-            select(Document).where(Document.id == release.document_id)
-        )
-        document = doc_result.scalar_one_or_none()
-        
-        writer_result = await db.execute(
-            select(User).where(User.id == document.owner_id if document else None)
-        )
-        writer = writer_result.scalar_one_or_none()
+        document = release.document
+        writer = document.owner if document else None
         
         release_dict = {
             **release.__dict__,

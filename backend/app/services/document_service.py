@@ -4,6 +4,7 @@ Business logic for document operations
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
+from sqlalchemy.orm import joinedload
 from typing import Optional, List, Tuple, Union
 from datetime import datetime, timezone
 import json
@@ -223,8 +224,10 @@ async def list_user_documents(
     Returns:
         Tuple of (documents list, total count)
     """
-    # Base query - join with Project to filter by folder
-    query = select(Document).where(Document.owner_id == user_id)
+    # Base query - join with Project to filter by folder, eager load owner for display
+    query = select(Document).options(
+        joinedload(Document.owner)
+    ).where(Document.owner_id == user_id)
     
     # Apply folder filter (via project relationship)
     if folder_id is not None:
@@ -410,8 +413,10 @@ async def list_public_documents(
     Returns:
         Tuple of (documents list, total count)
     """
-    # Query for public, published documents
-    query = select(Document).where(
+    # Query for public, published documents with owner eager loaded
+    query = select(Document).options(
+        joinedload(Document.owner)
+    ).where(
         Document.visibility == DocumentVisibility.PUBLIC,
         Document.status == DocumentStatus.PUBLISHED
     ).order_by(Document.published_at.desc())
