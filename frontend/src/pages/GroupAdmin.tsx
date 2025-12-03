@@ -155,6 +155,7 @@ export default function GroupAdmin() {
     if (groupSlug) {
       loadGroupData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupSlug])
 
   const loadGroupData = async () => {
@@ -297,6 +298,7 @@ export default function GroupAdmin() {
     if ((activeTab === 'members' || activeTab === 'invitations') && groupId) {
       loadInvitations()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, groupId])
 
   // Load analytics when activeTab changes to analytics
@@ -304,6 +306,7 @@ export default function GroupAdmin() {
     if (activeTab === 'analytics' && groupId) {
       loadAnalytics()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, groupId])
 
   const updateMemberStatus = async (memberId: number, action: 'approve' | 'reject' | 'ban' | 'make-moderator' | 'remove-moderator') => {

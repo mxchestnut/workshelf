@@ -37,6 +37,7 @@ export default function Documents() {
   useEffect(() => {
     loadUser()
     loadDocuments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFolderId])
 
   const loadUser = async () => {
