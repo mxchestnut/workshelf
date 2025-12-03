@@ -76,10 +76,9 @@ const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 const Relationships = lazy(() => import('./pages/Relationships'))
 const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
-const MatrixSetup = lazy(() => import('./pages/MatrixSetup'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'matrix-setup' | 'delete-account' | 'trash'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -239,7 +238,7 @@ function App() {
       // AI writing prompts and brainstorming tools
       setCurrentPage('ai-assistance')
     } else if (path === '/export-center') {
-      // Export center for documents, data, and Matrix
+      // Export center for documents and data
       setCurrentPage('export-center')
     } else if (path === '/accessibility') {
       // Accessibility settings and WCAG checker
@@ -261,9 +260,6 @@ function App() {
       setCurrentPage('creator-earnings')
     } else if (path === '/reading-lists/browse') {
       setCurrentPage('reading-lists-browse')
-    } else if (path === '/matrix-setup') {
-      // Matrix onboarding and setup guide
-      setCurrentPage('matrix-setup')
     } else if (path === '/delete-account') {
       // Account deletion
       setCurrentPage('delete-account')
@@ -520,9 +516,6 @@ function App() {
     }
     if (currentPage === 'reading-lists-browse') {
       return <ReadingListsBrowse />
-    }
-    if (currentPage === 'matrix-setup') {
-      return <MatrixSetup />
     }
     if (currentPage === 'delete-account') {
       return <DeleteAccount />
