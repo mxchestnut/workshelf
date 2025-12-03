@@ -61,6 +61,7 @@ export function MatrixProvider({ children }: { children: ReactNode }) {
         client.stopClient()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -74,13 +75,5 @@ export function useMatrix() {
   return useContext(MatrixContext)
 }
 
-export function getOtherUserInRoom(client: matrix.MatrixClient, room: any) {
-  try {
-    const members = room.getMembers()
-    const otherMember = members.find((m: any) => m.userId !== client.getUserId())
-    return otherMember || null
-  } catch (error) {
-    console.error('Error getting other user in room:', error)
-    return null
-  }
-}
+// Re-export helper functions from utils
+export { getOtherUserInRoom } from '../utils/matrixHelpers'
