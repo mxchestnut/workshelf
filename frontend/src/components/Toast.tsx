@@ -12,10 +12,6 @@ import {
   type ToastType
 } from '../utils/toastHelpers'
 
-// Re-export toast from utils for convenience
-export { toast } from '../utils/toastHelpers'
-export type { ToastType }
-
 // Toast Container Component
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastMessage[]>([])

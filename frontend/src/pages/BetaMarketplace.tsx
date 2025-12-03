@@ -62,6 +62,7 @@ export default function BetaMarketplace() {
   useEffect(() => {
     loadUser()
     loadProfiles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, selectedGenres, selectedSpecialties, availability, minBetaScore, onlyFree, searchQuery, sortBy])
 
   const loadUser = async () => {

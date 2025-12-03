@@ -83,13 +83,6 @@ export default function Bookshelf() {
 
   // Reading Lists state
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])
-  const [_selectedList, _setSelectedList] = useState<ReadingList | null>(null)
-  const [_listDocuments, _setListDocuments] = useState<ListDocument[]>([])
-  const [_showCreateList, _setShowCreateList] = useState(false)
-  const [_newListName, _setNewListName] = useState('')
-  const [_newListDescription, _setNewListDescription] = useState('')
-  const [_newListPublic, _setNewListPublic] = useState(false)
-  const [_editingList, _setEditingList] = useState<ReadingList | null>(null)
   const [loadingLists, setLoadingLists] = useState(false)
   const [_savingList, _setSavingList] = useState(false)
   const [_deletingListId, _setDeletingListId] = useState<number | null>(null)

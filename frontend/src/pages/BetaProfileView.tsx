@@ -56,6 +56,7 @@ export default function BetaProfileView() {
 
   useEffect(() => {
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
   const load = async () => {

@@ -113,6 +113,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
   useEffect(() => {
     loadBook()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookId])
 
   const loadBook = async () => {
