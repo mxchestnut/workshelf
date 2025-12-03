@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from app.core.database import get_db
@@ -141,7 +141,7 @@ async def get_my_groups(
 @router.get("/{group_id}", response_model=GroupResponse)
 async def get_group(
     group_id: int,
-    current_user: Dict[str, Any] | None = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific group."""
