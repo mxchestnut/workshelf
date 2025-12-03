@@ -35,8 +35,8 @@ async def get_or_create_user_from_keycloak(
     
     if user:
         # Update last login
-        from datetime import datetime
-        user.last_login = datetime.utcnow()
+        from datetime import datetime, timezone
+        user.last_login = datetime.now(timezone.utc)
         
         # If user doesn't have a tenant, create one for them
         if user.tenant_id is None:

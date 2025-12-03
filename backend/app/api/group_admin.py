@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, EmailStr
 import secrets
 
@@ -1007,7 +1007,7 @@ async def create_group_invitation(
                 GroupInvitation.group_id == group_id,
                 GroupInvitation.email == invitation.email,
                 GroupInvitation.status == GroupInvitationStatus.PENDING,
-                GroupInvitation.expires_at > datetime.utcnow()
+                GroupInvitation.expires_at > datetime.now(timezone.utc)
             )
         )
     )
@@ -1023,7 +1023,7 @@ async def create_group_invitation(
         role=invitation.role,
         message=invitation.message,
         status=GroupInvitationStatus.PENDING,
-        expires_at=datetime.utcnow() + timedelta(days=7)  # 7 day expiration
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)  # 7 day expiration
     )
     
     db.add(new_invitation)

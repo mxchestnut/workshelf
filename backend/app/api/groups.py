@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -301,7 +301,7 @@ async def request_scholarship(
 ):
     """Request scholarship/sliding scale pricing for a group."""
     from app.models.collaboration import ScholarshipRequest
-    from datetime import datetime
+    from datetime import datetime, timezone
     
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
@@ -338,7 +338,7 @@ async def request_scholarship(
         how_will_use=scholarship_data.how_will_use,
         additional_info=scholarship_data.additional_info,
         monthly_budget=scholarship_data.monthly_budget,
-        requested_at=datetime.utcnow()
+        requested_at=datetime.now(timezone.utc)
     )
     
     db.add(request)
@@ -1288,7 +1288,7 @@ async def get_group_analytics(
     if not is_admin:
         raise HTTPException(status_code=403, detail="Only group owners/admins can view analytics")
     
-    from datetime import datetime
+    from datetime import datetime, timezone
     from app.services.group_analytics_service import GroupAnalyticsService
     
     start = datetime.fromisoformat(start_date) if start_date else None
@@ -1350,7 +1350,7 @@ async def verify_group_invitation(
             "message": f"This invitation has been {invitation.status.value}"
         }
     
-    if invitation.expires_at < datetime.utcnow():
+    if invitation.expires_at < datetime.now(timezone.utc):
         invitation.status = GroupInvitationStatus.EXPIRED
         await db.commit()
         return {
@@ -1397,7 +1397,7 @@ async def accept_group_invitation(
         raise HTTPException(status_code=400, detail=f"Invitation has been {invitation.status.value}")
     
     # Verify not expired
-    if invitation.expires_at < datetime.utcnow():
+    if invitation.expires_at < datetime.now(timezone.utc):
         invitation.status = GroupInvitationStatus.EXPIRED
         await db.commit()
         raise HTTPException(status_code=400, detail="Invitation has expired")
@@ -1424,7 +1424,7 @@ async def accept_group_invitation(
     # Mark invitation as accepted
     invitation.status = GroupInvitationStatus.ACCEPTED
     invitation.accepted_by = user.id
-    invitation.accepted_at = datetime.utcnow()
+    invitation.accepted_at = datetime.now(timezone.utc)
     await db.commit()
     
     # Get group details

@@ -292,10 +292,10 @@ Be creative and think about what would genuinely help this user succeed with the
         #     db.add(mapping)
         
         # Update the AI template record
-        from datetime import datetime
+        from datetime import datetime, timezone
         ai_template.status = "approved"
         ai_template.reviewed_by = reviewer_id
-        ai_template.reviewed_at = datetime.utcnow()
+        ai_template.reviewed_at = datetime.now(timezone.utc)
         ai_template.review_notes = review_notes
         ai_template.approved_template_id = project_template.id
         

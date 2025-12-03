@@ -2,7 +2,7 @@
 Admin Moderation API - Approve/reject author wiki edits and other content.
 """
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -127,7 +127,7 @@ async def moderate_edit(
     # Update edit status
     edit.status = action.action + "d"  # "approved" or "rejected"
     edit.reviewed_by = current_user.id
-    edit.reviewed_at = datetime.utcnow()
+    edit.reviewed_at = datetime.now(timezone.utc)
     
     if action.action == 'approve':
         # Apply the change to the author
@@ -153,7 +153,7 @@ async def moderate_edit(
             import json
             author.awards = json.loads(edit.new_value)
         
-        author.updated_at = datetime.utcnow()
+        author.updated_at = datetime.now(timezone.utc)
     else:
         # Rejected - store reason
         edit.rejection_reason = action.rejection_reason
@@ -181,7 +181,7 @@ async def get_moderation_stats(
     ).scalar() or 0
     
     # Approved today
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     approved_today = db.query(func.count(AuthorEdit.id)).filter(
         AuthorEdit.status == "approved",
         AuthorEdit.reviewed_at >= today_start

@@ -5,7 +5,7 @@ Users can suggest books to be added to the library
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -148,7 +148,7 @@ async def update_suggestion(
     
     # Update status
     suggestion.status = SuggestionStatus(update.status.upper())
-    suggestion.reviewed_at = datetime.utcnow()
+    suggestion.reviewed_at = datetime.now(timezone.utc)
     suggestion.reviewed_by_admin_id = current_user.id
     
     if update.admin_notes:

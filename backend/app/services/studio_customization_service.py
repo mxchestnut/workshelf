@@ -3,7 +3,7 @@ Studio Customization Service - Phase 5
 Manages studio themes, branding, and custom domains
 """
 from typing import Optional, List, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 import secrets
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -180,7 +180,7 @@ class StudioCustomizationService:
         # For now, we'll just mark as verified
         
         custom_domain.is_verified = True
-        custom_domain.verified_at = datetime.utcnow()
+        custom_domain.verified_at = datetime.now(timezone.utc)
         custom_domain.status = "active"
         custom_domain.is_active = True
         

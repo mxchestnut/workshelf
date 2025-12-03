@@ -2,7 +2,7 @@
 Messaging service for managing conversations and direct messages.
 """
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -104,7 +104,7 @@ class MessagingService:
         # Update conversation's last_message_at
         conversation = await MessagingService.get_conversation_by_id(db, conversation_id)
         if conversation:
-            conversation.last_message_at = datetime.utcnow()
+            conversation.last_message_at = datetime.now(timezone.utc)
         
         await db.commit()
         await db.refresh(message)
@@ -154,7 +154,7 @@ class MessagingService:
         if message.read_by is None:
             message.read_by = {}
         
-        message.read_by[str(user_id)] = datetime.utcnow().isoformat()
+        message.read_by[str(user_id)] = datetime.now(timezone.utc).isoformat()
         
         await db.commit()
         await db.refresh(message)
@@ -185,7 +185,7 @@ class MessagingService:
             
             # Only mark if not already read
             if str(user_id) not in message.read_by:
-                message.read_by[str(user_id)] = datetime.utcnow().isoformat()
+                message.read_by[str(user_id)] = datetime.now(timezone.utc).isoformat()
                 count += 1
         
         await db.commit()

@@ -6,7 +6,7 @@ import os
 import hashlib
 import re
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import anthropic
 import httpx
 from ebooklib import epub
@@ -43,7 +43,7 @@ class ContentVerificationService:
         """
         result = {
             "verified": False,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "checks": {},
             "overall_score": 0.0,
             "warnings": [],

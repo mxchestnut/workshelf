@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from typing import Optional, List
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import os
 import tempfile
@@ -453,7 +453,7 @@ async def moderate_submission(
         submission.status = SubmissionStatus.APPROVED
         submission.moderator_id = user.id
         submission.moderator_notes = action.notes
-        submission.reviewed_at = datetime.utcnow()
+        submission.reviewed_at = datetime.now(timezone.utc)
         
         # TODO: Create bookshelf item and publish
         
@@ -461,7 +461,7 @@ async def moderate_submission(
         submission.status = SubmissionStatus.REJECTED
         submission.moderator_id = user.id
         submission.moderator_notes = action.notes
-        submission.reviewed_at = datetime.utcnow()
+        submission.reviewed_at = datetime.now(timezone.utc)
     
     await db.commit()
     
@@ -557,7 +557,7 @@ async def _run_verification(
                 # Update submission
                 submission.verification_results = verification_results
                 submission.verification_score = verification_results.get("overall_score", 0.0)
-                submission.verification_date = datetime.utcnow()
+                submission.verification_date = datetime.now(timezone.utc)
                 
                 if verification_results.get("verified"):
                     submission.status = SubmissionStatus.VERIFIED

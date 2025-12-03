@@ -5,7 +5,7 @@ Adds sample groups with pending subdomain requests
 import asyncio
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 # Add parent directory to path
@@ -41,7 +41,7 @@ def create_test_data():
         test_user = db.query(User).filter(User.email == "admin@workshelf.dev").first()
         if not test_user:
             test_user = User(
-                keycloak_id=f"test-admin-{datetime.utcnow().timestamp()}",
+                keycloak_id=f"test-admin-{datetime.now(timezone.utc).timestamp()}",
                 email="admin@workshelf.dev",
                 username="admin",
                 display_name="Admin User",

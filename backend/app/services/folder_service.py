@@ -4,7 +4,7 @@ Folders Service Layer - Document organization.
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.folder import Folder
 from app.models.document import Document
 from app.schemas.project import FolderCreate, FolderUpdate, FolderResponse
@@ -131,7 +131,7 @@ class FolderService:
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(folder, field, value)
         
-        folder.updated_at = datetime.utcnow()
+        folder.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(folder)
         

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from typing import Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -360,14 +360,14 @@ async def update_release_status(
     
     # Set timestamps based on status changes
     if release_data.status == 'reading' and not release.started_reading_at:
-        release.started_reading_at = datetime.utcnow()
+        release.started_reading_at = datetime.now(timezone.utc)
     elif release_data.status == 'completed' and not release.completed_reading_at:
-        release.completed_reading_at = datetime.utcnow()
+        release.completed_reading_at = datetime.now(timezone.utc)
         # Update appointment stats
         appointment.completed_reads += 1
     
     if release_data.feedback_submitted and not release.feedback_submitted_at:
-        release.feedback_submitted_at = datetime.utcnow()
+        release.feedback_submitted_at = datetime.now(timezone.utc)
     
     await db.commit()
     await db.refresh(release)

@@ -2,7 +2,7 @@
 Content Integrity Service
 Plagiarism detection and AI content detection
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
@@ -200,7 +200,7 @@ class ContentIntegrityService:
             
             # Update status
             check.status = IntegrityCheckStatus.PROCESSING
-            check.processing_started_at = datetime.utcnow()
+            check.processing_started_at = datetime.now(timezone.utc)
             await db.commit()
             
             # Check if Copyscape credentials are configured
@@ -283,7 +283,7 @@ class ContentIntegrityService:
             check.total_matches = match_count
             check.external_service = "copyscape"
             check.status = IntegrityCheckStatus.COMPLETED
-            check.processing_completed_at = datetime.utcnow()
+            check.processing_completed_at = datetime.now(timezone.utc)
             check.cost_cents = cost_cents
             
             await db.commit()
@@ -329,7 +329,7 @@ class ContentIntegrityService:
             
             # Update status
             check.status = IntegrityCheckStatus.PROCESSING
-            check.processing_started_at = datetime.utcnow()
+            check.processing_started_at = datetime.now(timezone.utc)
             await db.commit()
             
             # Check if GPTZero API key is configured
@@ -423,7 +423,7 @@ class ContentIntegrityService:
             check.ai_details = ai_details
             check.external_service = "gptzero"
             check.status = IntegrityCheckStatus.COMPLETED
-            check.processing_completed_at = datetime.utcnow()
+            check.processing_completed_at = datetime.now(timezone.utc)
             check.cost_cents = cost_cents
             
             await db.commit()

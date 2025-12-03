@@ -1,7 +1,7 @@
 """
 Invitation model for email invitations
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 import enum
@@ -25,7 +25,7 @@ class Invitation(Base):
     token = Column(String, unique=True, nullable=False, index=True)
     status = Column(SQLEnum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     accepted_at = Column(DateTime, nullable=True)
     accepted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -42,19 +42,19 @@ class Invitation(Base):
     @staticmethod
     def default_expiration() -> datetime:
         """Default expiration is 7 days from now"""
-        return datetime.utcnow() + timedelta(days=7)
+        return datetime.now(timezone.utc) + timedelta(days=7)
 
     def is_valid(self) -> bool:
         """Check if invitation is still valid"""
         return (
             self.status == InvitationStatus.PENDING
-            and self.expires_at > datetime.utcnow()
+            and self.expires_at > datetime.now(timezone.utc)
         )
 
     def mark_accepted(self, user_id: int):
         """Mark invitation as accepted"""
         self.status = InvitationStatus.ACCEPTED
-        self.accepted_at = datetime.utcnow()
+        self.accepted_at = datetime.now(timezone.utc)
         self.accepted_by = user_id
 
     def mark_expired(self):

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select, func
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from ..models.social import Notification, NotificationType
@@ -94,8 +94,8 @@ class NotificationService:
             return None
         
         notification.is_read = True
-        notification.read_at = datetime.utcnow()
-        notification.updated_at = datetime.utcnow()
+        notification.read_at = datetime.now(timezone.utc)
+        notification.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(notification)
         return notification
@@ -115,8 +115,8 @@ class NotificationService:
         count = 0
         for notification in notifications:
             notification.is_read = True
-            notification.read_at = datetime.utcnow()
-            notification.updated_at = datetime.utcnow()
+            notification.read_at = datetime.now(timezone.utc)
+            notification.updated_at = datetime.now(timezone.utc)
             count += 1
         await db.commit()
         return count

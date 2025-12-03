@@ -2,7 +2,7 @@
 Beta reading service for managing beta requests and feedback.
 """
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -133,9 +133,9 @@ class BetaReadingService:
         
         # Set timestamps based on status
         if status == BetaRequestStatus.ACCEPTED:
-            request.accepted_at = datetime.utcnow()
+            request.accepted_at = datetime.now(timezone.utc)
         elif status == BetaRequestStatus.COMPLETED:
-            request.completed_at = datetime.utcnow()
+            request.completed_at = datetime.now(timezone.utc)
         
         await db.commit()
         await db.refresh(request)

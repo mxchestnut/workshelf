@@ -18,7 +18,7 @@ import io
 import os
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.services import user_service
@@ -207,7 +207,7 @@ async def bulk_upload_documents(
                 {
                     "user_id": user.id,
                     "tenant_id": user.tenant_id,
-                    "now": datetime.utcnow()
+                    "now": datetime.now(timezone.utc)
                 }
             )
             project_id = result.fetchone()[0]
@@ -332,7 +332,7 @@ async def bulk_upload_documents(
                                 "tenant_id": user.tenant_id,
                                 "name": folder_name,
                                 "parent_id": parent_id,
-                                "now": datetime.utcnow()
+                                "now": datetime.now(timezone.utc)
                             }
                         )
                         new_folder = folder_result.first()
@@ -411,7 +411,7 @@ async def bulk_upload_documents(
                                                 "tenant_id": user.tenant_id,
                                                 "title": top_folder,
                                                 "description": f"Imported from {file.filename}",
-                                                "now": datetime.utcnow()
+                                                "now": datetime.now(timezone.utc)
                                             }
                                         )
                                         new_project = project_result.first()
@@ -448,7 +448,7 @@ async def bulk_upload_documents(
                                     "content": json.dumps(tiptap_content),
                                     "word_count": word_count,
                                     "file_size": file_size_bytes,
-                                    "now": datetime.utcnow()
+                                    "now": datetime.now(timezone.utc)
                                 }
                             )
                             
@@ -539,7 +539,7 @@ async def bulk_upload_documents(
                     "content": json.dumps(tiptap_content),
                     "word_count": word_count,
                     "file_size": file_size_bytes,
-                    "now": datetime.utcnow()
+                    "now": datetime.now(timezone.utc)
                 }
             )
             
@@ -610,7 +610,7 @@ async def bulk_upload_documents(
                         "tenant_id": user.tenant_id,
                         "name": folder_name,
                         "parent_id": parent_id,
-                        "now": datetime.utcnow()
+                        "now": datetime.now(timezone.utc)
                     }
                 )
                 folder_id = folder_result.scalar_one()
@@ -681,7 +681,7 @@ async def bulk_upload_documents(
                             "content": json.dumps(tiptap_content),
                             "word_count": word_count,
                             "file_size": file_size_bytes,
-                            "now": datetime.utcnow()
+                            "now": datetime.now(timezone.utc)
                         }
                     )
                     doc = result.fetchone()

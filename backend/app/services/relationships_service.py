@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from ..models.social import UserFollow
@@ -28,7 +28,7 @@ class RelationshipsService:
             if not existing.is_active:
                 # Reactivate if was previously unfollowed
                 existing.is_active = True
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = datetime.now(timezone.utc)
                 await db.commit()
                 await db.refresh(existing)
             return existing
@@ -62,7 +62,7 @@ class RelationshipsService:
             return False
         
         follow.is_active = False
-        follow.updated_at = datetime.utcnow()
+        follow.updated_at = datetime.now(timezone.utc)
         await db.commit()
         return True
     
