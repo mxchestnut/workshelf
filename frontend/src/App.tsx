@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import './App.css'
 import { authService } from './services/auth'
+import { trackPageView } from './matomo'
 
 // Cache bust: 2025-11-09 14:00
 // Loading component
@@ -22,6 +23,7 @@ const Discover = lazy(() => import('./pages/Discover').then(module => ({ default
 const Groups = lazy(() => import('./pages/Groups'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
 const GroupSettings = lazy(() => import('./pages/GroupSettings'))
+const GroupRoles = lazy(() => import('./pages/GroupRoles'))
 const Studio = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
 const StudioSettings = lazy(() => import('./pages/StudioSettings').then(module => ({ default: module.default })))
 const Projects = lazy(() => import('./pages/Projects').then(module => ({ default: module.Projects })))
@@ -77,7 +79,7 @@ const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const MatrixSetup = lazy(() => import('./pages/MatrixSetup'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'matrix-setup' | 'delete-account' | 'trash'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'messages' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'matrix-setup' | 'delete-account' | 'trash'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -153,6 +155,8 @@ function App() {
       setCurrentPage('group-detail')
     } else if (path === '/group-settings') {
       setCurrentPage('group-settings')
+    } else if (path.startsWith('/groups/') && path.includes('/roles')) {
+      setCurrentPage('group-roles')
     } else if (path === '/me') {
       setCurrentPage('profile')
     } else if (path === '/studio') {
@@ -288,6 +292,11 @@ function App() {
     }
   }, [])
 
+  // Track page views when currentPage changes
+  useEffect(() => {
+    trackPageView(currentPage)
+  }, [currentPage])
+
   const renderContent = () => {
     // Handle special pages
     if (currentPage === 'auth-callback') {
@@ -340,6 +349,10 @@ function App() {
     
     if (currentPage === 'group-settings') {
       return <GroupSettings />
+    }
+    
+    if (currentPage === 'group-roles') {
+      return <GroupRoles />
     }
     
     if (currentPage === 'profile') {

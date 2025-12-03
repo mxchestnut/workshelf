@@ -4,6 +4,7 @@
  */
 
 import { toast } from './toast'
+import { setUserId, resetUserId } from '../matomo'
 
 export interface User {
   id: string
@@ -151,6 +152,12 @@ class AuthService {
 
     // Fetch user info from our backend
     const user = await this.fetchUserInfo()
+    
+    // Track user in Matomo analytics
+    if (user?.id) {
+      setUserId(user.id)
+    }
+    
     toast.success('Successfully logged in')
     return user
   }
@@ -251,6 +258,9 @@ class AuthService {
     this.user = null
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    
+    // Reset Matomo user tracking
+    resetUserId()
     
     toast.success('Successfully logged out')
     

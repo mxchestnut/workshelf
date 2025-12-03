@@ -25,7 +25,7 @@ export default function GroupSettings() {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'members' | 'privacy'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'members' | 'privacy' | 'roles'>('general');
   
   // Form state
   const [name, setName] = useState('');
@@ -277,6 +277,13 @@ export default function GroupSettings() {
             >
               <Lock className="h-5 w-5 inline mr-2" />
               Privacy & Visibility
+            </button>
+            <button
+              onClick={() => window.location.href = `/groups/${groupId}/roles`}
+              className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm"
+            >
+              <Shield className="h-5 w-5 inline mr-2" />
+              Roles & Permissions
             </button>
           </nav>
         </div>
