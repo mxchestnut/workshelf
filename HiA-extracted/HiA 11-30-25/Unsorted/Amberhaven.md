@@ -1,3 +1,0 @@
-# Amberhaven
-
-[auto-created placeholder]

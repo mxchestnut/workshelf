@@ -1,3 +1,0 @@
-# Timberfire
-
-[auto-created placeholder]

@@ -262,7 +262,7 @@ const Relationships: React.FC = () => {
             {suggestions.map(u => (
               <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors">
                 {u.avatar_url ? (
-                  <img src={u.avatar_url} alt={u.full_name || u.email} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={u.avatar_url} alt={`${u.full_name || u.email}'s profile picture`} className="w-10 h-10 rounded-full object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
                     <User className="w-5 h-5 text-gray-400" />

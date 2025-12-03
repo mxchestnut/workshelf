@@ -1,3 +1,0 @@
-# Atlas Index
-
-[expand later]

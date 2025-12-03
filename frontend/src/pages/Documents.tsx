@@ -117,7 +117,7 @@ export default function Documents() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <main id="main-content" className="flex-1 overflow-y-auto" role="main">
           {/* Header */}
           <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
             <div className="max-w-7xl mx-auto px-6 py-8">
@@ -212,7 +212,7 @@ export default function Documents() {
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   )

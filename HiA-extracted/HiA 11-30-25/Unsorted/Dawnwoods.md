@@ -1,3 +1,0 @@
-# Dawnwoods
-
-[auto-created placeholder]

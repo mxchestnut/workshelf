@@ -1,3 +1,0 @@
-# Chakarova
-
-[auto-created placeholder]

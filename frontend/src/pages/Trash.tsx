@@ -13,6 +13,8 @@
 import { useEffect, useState } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+import { ConfirmationModal } from '../components/AccessibleModal'
+import { LiveRegion } from '../components/LiveRegion'
 import { 
   Trash2, 
   RefreshCw, 
@@ -71,6 +73,7 @@ export default function Trash() {
   const [searchQuery, setSearchQuery] = useState('')
   const [actionLoading, setActionLoading] = useState<number | null>(null)
   const [showEmptyConfirm, setShowEmptyConfirm] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     loadUser()
@@ -325,7 +328,7 @@ export default function Trash() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
 
-      <div className="max-w-7xl mx-auto px-6 py-24">
+      <main id="main-content" className="max-w-7xl mx-auto px-6 py-24" role="main">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -572,42 +575,23 @@ export default function Trash() {
             })}
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Empty Trash Confirmation Modal */}
-      {showEmptyConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="rounded-lg p-6 max-w-md w-full" style={{ backgroundColor: '#524944' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-bold" style={{ color: '#F1EEEB' }}>Empty Trash?</h2>
-            </div>
-            
-            <p className="mb-6" style={{ color: '#B3B2B0' }}>
-              This will permanently delete all {totalItems} items in your trash. This action cannot be undone.
-            </p>
+      {/* Live Region for Screen Reader Announcements */}
+      <LiveRegion message={successMessage} clearAfter={3000} />
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowEmptyConfirm(false)}
-                className="flex-1 px-4 py-2 rounded-lg border transition-colors"
-                style={{
-                  borderColor: '#6C6A68',
-                  color: '#F1EEEB'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={emptyTrash}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-              >
-                Empty Trash
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Empty Trash Confirmation Modal - Accessible */}
+      <ConfirmationModal
+        isOpen={showEmptyConfirm}
+        onClose={() => setShowEmptyConfirm(false)}
+        onConfirm={emptyTrash}
+        title="Empty Trash?"
+        message={`This will permanently delete all ${totalItems} items in your trash. This action cannot be undone.`}
+        confirmText="Empty Trash"
+        cancelText="Cancel"
+        variant="danger"
+        loading={loading}
+      />
     </div>
   )
 }

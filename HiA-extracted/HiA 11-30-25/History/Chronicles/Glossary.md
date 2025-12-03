@@ -1,3 +1,0 @@
-# Historical Glossary
-
-[expand later]

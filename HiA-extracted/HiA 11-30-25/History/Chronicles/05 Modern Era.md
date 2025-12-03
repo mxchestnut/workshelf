@@ -1,3 +1,0 @@
-# Modern Era
-
-[expand later]

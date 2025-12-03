@@ -1,3 +1,0 @@
-# Society Index
-
-[expand later]
