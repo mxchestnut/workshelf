@@ -2,12 +2,12 @@
  * Documents List Page - View and manage all user documents
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { WritingStreakWidget } from '../components/WritingStreakWidget'
 import { FolderTree } from '../components/FolderTree'
-import { FileText, Plus, Search, Clock } from 'lucide-react'
+import { FileText, Plus, Search, Clock, Upload, X } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -28,6 +28,11 @@ export default function Documents() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
   const [user, setUser] = useState<any>(null)
+  const [importing, setImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState<string>('')
+  const [showImportModal, setShowImportModal] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const folderInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadUser()
@@ -82,6 +87,96 @@ export default function Documents() {
     window.location.href = '/document'
   }
 
+  const handleImportClick = () => {
+    setShowImportModal(true)
+  }
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFolderSelect = () => {
+    folderInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+    
+    await uploadFiles(Array.from(files))
+  }
+
+  const handleFolderChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+    
+    // Build file paths map for folder structure
+    const filePaths: { [key: string]: string } = {}
+    Array.from(files).forEach((file, index) => {
+      filePaths[index.toString()] = (file as any).webkitRelativePath || file.name
+    })
+    
+    await uploadFiles(Array.from(files), filePaths)
+  }
+
+  const uploadFiles = async (files: File[], filePaths?: { [key: string]: string }) => {
+    setImporting(true)
+    setImportProgress('Uploading files...')
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        alert('Please login to import documents')
+        return
+      }
+
+      const formData = new FormData()
+      files.forEach(file => {
+        formData.append('files', file)
+      })
+      
+      if (selectedFolderId) {
+        formData.append('folder_id', selectedFolderId.toString())
+      }
+      
+      if (filePaths) {
+        formData.append('file_paths', JSON.stringify(filePaths))
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/storage/bulk-upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Upload failed')
+      }
+
+      const result = await response.json()
+      setImportProgress(`✓ Imported ${result.imported} document(s)`)
+      
+      // Reload documents after successful import
+      setTimeout(() => {
+        loadDocuments()
+        setShowImportModal(false)
+        setImporting(false)
+        setImportProgress('')
+      }, 2000)
+
+    } catch (error: any) {
+      console.error('Import failed:', error)
+      setImportProgress(`✗ Import failed: ${error.message}`)
+      setTimeout(() => {
+        setImporting(false)
+        setImportProgress('')
+      }, 3000)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'text-yellow-400 bg-yellow-900/20'
@@ -123,14 +218,24 @@ export default function Documents() {
             <div className="max-w-7xl mx-auto px-6 py-8">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold" style={{ color: '#F1EEEB' }}>My Documents</h1>
-                <button
-                  onClick={handleNewDocument}
-                  className="px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#EDAC53', color: '#2E2A27' }}
-                >
-                  <Plus className="w-5 h-5" />
-                  New Document
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleImportClick}
+                    className="px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#524944', color: '#F1EEEB', border: '1px solid #6C6A68' }}
+                  >
+                    <Upload className="w-5 h-5" />
+                    Import
+                  </button>
+                  <button
+                    onClick={handleNewDocument}
+                    className="px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#EDAC53', color: '#2E2A27' }}
+                  >
+                    <Plus className="w-5 h-5" />
+                    New Document
+                  </button>
+                </div>
               </div>
 
               {/* Search */}
@@ -214,6 +319,86 @@ export default function Documents() {
           </div>
         </main>
       </div>
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => !importing && setShowImportModal(false)}>
+          <div className="rounded-lg p-6 max-w-md w-full mx-4" style={{ backgroundColor: '#524944' }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold" style={{ color: '#F1EEEB' }}>Import Documents</h2>
+              {!importing && (
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="text-neutral-light hover:text-neutral-lighter"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            {importing ? (
+              <div className="text-center py-8">
+                <div className="animate-pulse mb-4" style={{ color: '#EDAC53' }}>
+                  <Upload className="w-12 h-12 mx-auto" />
+                </div>
+                <p style={{ color: '#F1EEEB' }}>{importProgress}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>
+                  Import markdown files (.md), text files (.txt), Word documents (.docx), or zip archives.
+                  Folder structure will be preserved.
+                </p>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={handleFileSelect}
+                    className="w-full py-3 px-4 rounded-lg border-2 border-dashed hover:opacity-80 transition-opacity"
+                    style={{ borderColor: '#6C6A68', color: '#F1EEEB' }}
+                  >
+                    <FileText className="w-6 h-6 mx-auto mb-2" />
+                    <div className="font-medium">Select Files</div>
+                    <div className="text-xs" style={{ color: '#B3B2B0' }}>Choose one or more files</div>
+                  </button>
+
+                  <button
+                    onClick={handleFolderSelect}
+                    className="w-full py-3 px-4 rounded-lg border-2 border-dashed hover:opacity-80 transition-opacity"
+                    style={{ borderColor: '#6C6A68', color: '#F1EEEB' }}
+                  >
+                    <Upload className="w-6 h-6 mx-auto mb-2" />
+                    <div className="font-medium">Select Folder</div>
+                    <div className="text-xs" style={{ color: '#B3B2B0' }}>Import entire folder structure</div>
+                  </button>
+                </div>
+
+                <div className="text-xs" style={{ color: '#B3B2B0' }}>
+                  <strong>Supported formats:</strong> .md, .markdown, .txt, .html, .docx, .odt, .pdf, .zip
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Hidden file inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".md,.markdown,.txt,.html,.htm,.docx,.odt,.pdf,.zip"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      <input
+        ref={folderInputRef}
+        type="file"
+        multiple
+        // @ts-ignore - webkitdirectory is not in TypeScript types but works in browsers
+        webkitdirectory="true"
+        onChange={handleFolderChange}
+        className="hidden"
+      />
     </div>
   )
 }
