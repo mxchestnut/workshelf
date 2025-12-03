@@ -79,6 +79,10 @@ class Document(Base, TimestampMixin, TenantMixin):
     is_locked = Column(Boolean, default=False)  # Prevent editing
     allow_comments = Column(Boolean, default=True)
     
+    # Soft delete (trash bin)
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
+    deleted_at = Column(DateTime, nullable=True)
+    
     # Storage
     file_path = Column(String(1000))  # Path in blob storage
     file_size = Column(BigInteger)  # Size in bytes

@@ -50,7 +50,8 @@ from app.api import (
     feed,  # Personalized feed
     interests,  # Dynamic interests from group tags
     invitations,  # Email invitations for onboarding
-    account_deletion  # Account deletion with username freezing
+    account_deletion,  # Account deletion with username freezing
+    trash  # Trash bin for soft-deleted documents/projects
 )
 
 api_router = APIRouter()
@@ -161,3 +162,6 @@ api_router.include_router(invitations.router)
 
 # Account deletion with username freezing (GDPR compliance)
 api_router.include_router(account_deletion.router)
+
+# Trash bin for soft-deleted documents and projects
+api_router.include_router(trash.router)
