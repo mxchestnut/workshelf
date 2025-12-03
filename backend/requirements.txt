@@ -1,9 +1,9 @@
 # Core Framework
-fastapi==0.121.0
+fastapi==0.123.5
 uvicorn[standard]==0.38.0
-pydantic==2.10.6
-pydantic-settings==2.1.0
-email-validator==2.2.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
+email-validator==2.3.0
 
 # Database
 sqlalchemy[asyncio]==2.0.36
@@ -26,7 +26,7 @@ ecdsa>=0.19.0
 stripe==11.3.0
 
 # Price Scraping & Web Requests
-aiohttp==3.12.14
+aiohttp==3.13.2
 beautifulsoup4==4.12.2
 lxml>=5.0.0  # Python 3.13 compatible
 

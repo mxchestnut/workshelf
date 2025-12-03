@@ -4,7 +4,7 @@ Projects Service Layer - Manage writing projects and organization.
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.project import Project
 from app.models.templates import ProjectTemplate
 from app.models.ai_templates import AIGeneratedTemplate
@@ -137,7 +137,7 @@ class ProjectService:
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(project, field, value)
         
-        project.updated_at = datetime.utcnow()
+        project.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(project)
         

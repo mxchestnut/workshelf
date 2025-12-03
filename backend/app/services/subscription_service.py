@@ -2,7 +2,7 @@
 Subscription Service
 Handles subscription creation, updates, cancellations, and Stripe integration
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
@@ -137,7 +137,7 @@ class SubscriptionService:
             stripe_subscription = stripe.Subscription.create(**stripe_sub_params)
             
             # Create local subscription record
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             subscription = Subscription(
                 user_id=user_id,
                 tier_id=tier_id,
@@ -203,14 +203,14 @@ class SubscriptionService:
                     cancel_at_period_end=True
                 )
                 subscription.cancel_at_period_end = True
-                subscription.canceled_at = datetime.utcnow()
+                subscription.canceled_at = datetime.now(timezone.utc)
             else:
                 stripe_subscription = stripe.Subscription.delete(
                     subscription.stripe_subscription_id
                 )
                 subscription.status = SubscriptionStatus.CANCELED
-                subscription.canceled_at = datetime.utcnow()
-                subscription.ended_at = datetime.utcnow()
+                subscription.canceled_at = datetime.now(timezone.utc)
+                subscription.ended_at = datetime.now(timezone.utc)
             
             await db.commit()
             await db.refresh(subscription)
@@ -384,7 +384,7 @@ class SubscriptionService:
             return {"error": "Subscription not found"}
         
         subscription.status = SubscriptionStatus.CANCELED
-        subscription.ended_at = datetime.utcnow()
+        subscription.ended_at = datetime.now(timezone.utc)
         
         await db.commit()
         return {"status": "success"}
@@ -419,7 +419,7 @@ class SubscriptionService:
             stripe_payment_intent_id=invoice.get("payment_intent"),
             stripe_charge_id=invoice.get("charge"),
             stripe_invoice_id=invoice["id"],
-            paid_at=datetime.fromtimestamp(invoice["status_transitions"]["paid_at"]) if invoice.get("status_transitions", {}).get("paid_at") else datetime.utcnow()
+            paid_at=datetime.fromtimestamp(invoice["status_transitions"]["paid_at"]) if invoice.get("status_transitions", {}).get("paid_at") else datetime.now(timezone.utc)
         )
         
         db.add(payment)

@@ -127,7 +127,7 @@ def verify_invitation(
             message=f"This invitation has been {invitation.status.value}"
         )
     
-    if invitation.expires_at < datetime.utcnow():
+    if invitation.expires_at < datetime.now(timezone.utc):
         invitation.mark_expired()
         db.commit()
         return InvitationVerifyResponse(

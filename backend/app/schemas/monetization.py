@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from pydantic import BaseModel, Field, validator
 from decimal import Decimal
@@ -124,7 +124,7 @@ class SubscriptionResponse(BaseModel):
         if "current_period_end" in values:
             period_end = values["current_period_end"]
             if isinstance(period_end, datetime):
-                delta = period_end - datetime.utcnow()
+                delta = period_end - datetime.now(timezone.utc)
                 return max(0, delta.days)
         return None
     

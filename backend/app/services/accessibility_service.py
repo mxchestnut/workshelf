@@ -5,7 +5,7 @@ WCAG compliance checking and accessibility settings management
 from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 
 from app.models import User, Document
@@ -411,5 +411,5 @@ class AccessibilityService:
             "average_score": round(total_score / len(documents), 1) if documents else 0,
             "total_issues": total_issues,
             "documents": document_reports,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.now(timezone.utc).isoformat()
         }

@@ -3,7 +3,7 @@ Discovery Service - Content discovery, trending, categories
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select, func, or_, desc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from ..models.reading import Category
@@ -38,7 +38,7 @@ class DiscoveryService:
                 TimeRange.YEAR: 365
             }.get(time_range, 30)
             
-            cutoff = datetime.utcnow() - timedelta(days=days)
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
             stmt = stmt.filter(Document.created_at >= cutoff)
         
         # Order by created_at (simplified - in production would use trending score)
@@ -88,7 +88,7 @@ class DiscoveryService:
                 TimeRange.YEAR: 365
             }.get(time_range, 30)
             
-            cutoff = datetime.utcnow() - timedelta(days=days)
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
             stmt = stmt.filter(Document.created_at >= cutoff)
         
         # Sort

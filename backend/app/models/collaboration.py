@@ -4,7 +4,7 @@ Models for comments, beta reading, groups, and messaging
 """
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index, Numeric, ARRAY
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 
 from app.models.base import Base, TimestampMixin
@@ -638,7 +638,7 @@ class GroupCustomDomain(Base, TimestampMixin):
     ssl_status = Column(String(50), nullable=True)  # pending, active, failed
     
     # Approval tracking
-    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.utcnow())
+    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     approved_at = Column(DateTime(timezone=True), nullable=True)
     approved_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     rejection_reason = Column(Text, nullable=True)
@@ -686,7 +686,7 @@ class ScholarshipRequest(Base, TimestampMixin):
     rejection_reason = Column(Text, nullable=True)
     
     # Timestamps
-    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.utcnow())
+    requested_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
     reviewed_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True)  # When scholarship expires (e.g., 1 year)

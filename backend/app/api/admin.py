@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import joinedload
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -292,7 +292,7 @@ async def get_admin_stats(
     total_users = total_users_result.scalar() or 0
     
     # Approved today
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     approved_today_result = await db.execute(
         select(func.count()).select_from(Group).filter(
             and_(
@@ -459,7 +459,7 @@ async def approve_group_subdomain(
             )
         
         group.subdomain_approved = True
-        group.subdomain_approved_at = datetime.utcnow()
+        group.subdomain_approved_at = datetime.now(timezone.utc)
         group.subdomain_approved_by = admin_user_id  # Will be None if not provided
         group.subdomain_rejection_reason = None
         
@@ -663,9 +663,9 @@ async def review_scholarship(
         scholarship.approved_discount_percent = decision.approved_discount_percent or 100
         scholarship.approved_monthly_price = decision.approved_monthly_price or 0.0
         scholarship.staff_notes = decision.staff_notes
-        scholarship.reviewed_at = datetime.utcnow()
+        scholarship.reviewed_at = datetime.now(timezone.utc)
         scholarship.reviewed_by = staff_user.id if staff_user else None
-        scholarship.expires_at = datetime.utcnow() + relativedelta(months=decision.duration_months or 12)
+        scholarship.expires_at = datetime.now(timezone.utc) + relativedelta(months=decision.duration_months or 12)
         
         # Update group
         group_result = await db.execute(
@@ -691,7 +691,7 @@ async def review_scholarship(
         scholarship.status = 'rejected'
         scholarship.rejection_reason = decision.rejection_reason
         scholarship.staff_notes = decision.staff_notes
-        scholarship.reviewed_at = datetime.utcnow()
+        scholarship.reviewed_at = datetime.now(timezone.utc)
         scholarship.reviewed_by = staff_user.id if staff_user else None
         
         message = "Scholarship request rejected"
@@ -1145,7 +1145,7 @@ async def update_store_item_status(
     # Update status
     item.status = status
     if status == StoreItemStatus.ACTIVE and not item.published_at:
-        item.published_at = datetime.utcnow()
+        item.published_at = datetime.now(timezone.utc)
     
     await db.commit()
     await db.refresh(item)

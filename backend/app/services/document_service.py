@@ -5,7 +5,7 @@ Business logic for document operations
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 from typing import Optional, List, Tuple, Union
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 from app.models.document import Document, DocumentStatus, DocumentVisibility
@@ -331,7 +331,7 @@ async def update_document(
     
     # Update published_at if status changes to published
     if document_data.status == DocumentStatus.PUBLISHED and document.published_at is None:
-        document.published_at = datetime.utcnow()
+        document.published_at = datetime.now(timezone.utc)
     
     # Increment version
     document.current_version += 1

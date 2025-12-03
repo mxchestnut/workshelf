@@ -2,7 +2,7 @@
 Creator Earnings Service
 Handles creator earnings tracking and payouts
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -238,7 +238,7 @@ class CreatorEarningsService:
                 net_amount_cents=net_amount_cents,
                 payout_method=payout_method,
                 status=PayoutStatus.PENDING,
-                requested_at=datetime.utcnow(),
+                requested_at=datetime.now(timezone.utc),
                 notes=notes
             )
             
@@ -288,7 +288,7 @@ class CreatorEarningsService:
             
             # Mark as processing
             payout.status = PayoutStatus.PROCESSING
-            payout.processed_at = datetime.utcnow()
+            payout.processed_at = datetime.now(timezone.utc)
             await db.commit()
             
             # Process based on method
@@ -301,7 +301,7 @@ class CreatorEarningsService:
                 )
                 payout.stripe_payout_id = stripe_payout.id
                 payout.status = PayoutStatus.PAID
-                payout.paid_at = datetime.utcnow()
+                payout.paid_at = datetime.now(timezone.utc)
             
             elif payout.payout_method == "paypal":
                 # PayPal Payout Implementation
@@ -321,7 +321,7 @@ class CreatorEarningsService:
                     f"Username: {user.username if user else 'N/A'}",
                     f"Email: {user.email if user else 'N/A'}",
                     f"Amount: ${payout.net_amount_cents / 100:.2f} USD",
-                    f"Request Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}",
+                    f"Request Date: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
                     "",
                     "Action Required: Process PayPal payout manually",
                     "PayPal API integration pending - requires PayPal Business account setup"
@@ -352,7 +352,7 @@ class CreatorEarningsService:
                     f"Username: {user.username if user else 'N/A'}",
                     f"Email: {user.email if user else 'N/A'}",
                     f"Amount: ${payout.net_amount_cents / 100:.2f} USD",
-                    f"Request Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}",
+                    f"Request Date: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
                     "",
                     "Action Required: Process bank transfer manually",
                     "Note: User must provide bank account details separately",

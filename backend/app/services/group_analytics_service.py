@@ -3,7 +3,7 @@ Group Analytics Service
 Provides analytics and metrics for groups
 """
 from typing import Optional, List, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,9 +25,9 @@ class GroupAnalyticsService:
     ) -> Dict:
         """Get comprehensive group metrics."""
         if not start_date:
-            start_date = datetime.utcnow() - timedelta(days=30)
+            start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if not end_date:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
         
         # Get all posts for this group
         post_result = await db.execute(
@@ -207,7 +207,7 @@ class GroupAnalyticsService:
         days: int = 30
     ) -> List[Dict]:
         """Get time series data for a metric."""
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=days)
         
         if metric == "followers":

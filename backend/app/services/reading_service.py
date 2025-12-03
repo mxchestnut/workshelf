@@ -3,7 +3,7 @@ Reading Service - Reading progress and public document viewing
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select, func, or_
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 
 from ..models.reading import ReadingProgress
@@ -35,8 +35,8 @@ class ReadingService:
                 user_id=user_id,
                 document_id=document_id,
                 progress_percentage=0,
-                started_at=datetime.utcnow(),
-                last_read=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                last_read=datetime.now(timezone.utc),
                 completed=False
             )
             db.add(progress)
@@ -58,12 +58,12 @@ class ReadingService:
         
         progress.progress_percentage = min(100, max(0, progress_percentage))
         progress.last_position = last_position
-        progress.last_read = datetime.utcnow()
+        progress.last_read = datetime.now(timezone.utc)
         
         # Mark as completed if 100%
         if progress.progress_percentage >= 100 and not progress.completed:
             progress.completed = True
-            progress.completed_at = datetime.utcnow()
+            progress.completed_at = datetime.now(timezone.utc)
         
         await db.commit()
         await db.refresh(progress)

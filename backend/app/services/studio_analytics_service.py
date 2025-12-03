@@ -3,7 +3,7 @@ Studio Analytics Service - Phase 5
 Provides analytics and metrics for studios and documents
 """
 from typing import Optional, List, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,9 +25,9 @@ class StudioAnalyticsService:
     ) -> Dict:
         """Get comprehensive studio metrics."""
         if not start_date:
-            start_date = datetime.utcnow() - timedelta(days=30)
+            start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if not end_date:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
         
         # Get all documents for this studio
         doc_result = await db.execute(
@@ -215,9 +215,9 @@ class StudioAnalyticsService:
     ) -> Dict:
         """Get metrics for a specific document."""
         if not start_date:
-            start_date = datetime.utcnow() - timedelta(days=30)
+            start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if not end_date:
-            end_date = datetime.utcnow()
+            end_date = datetime.now(timezone.utc)
         
         # View metrics
         total_views_result = await db.execute(
@@ -290,7 +290,7 @@ class StudioAnalyticsService:
         days: int = 30
     ) -> List[Dict]:
         """Get time series data for a metric."""
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=days)
         
         # Get all documents for this studio

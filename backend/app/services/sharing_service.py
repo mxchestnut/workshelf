@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import secrets
 import hashlib
@@ -76,7 +76,7 @@ class SharingService:
         if not share_link.is_active:
             return None, "Share link is no longer active"
         
-        if share_link.expires_at and share_link.expires_at < datetime.utcnow():
+        if share_link.expires_at and share_link.expires_at < datetime.now(timezone.utc):
             return None, "Share link has expired"
         
         # Check password if required
@@ -105,8 +105,8 @@ class SharingService:
         
         # Increment view count and update last accessed
         share_link.view_count += 1
-        share_link.last_accessed_at = datetime.utcnow()
-        share_link.updated_at = datetime.utcnow()
+        share_link.last_accessed_at = datetime.now(timezone.utc)
+        share_link.updated_at = datetime.now(timezone.utc)
         await db.commit()
         
         # Get the document
@@ -151,7 +151,7 @@ class SharingService:
         if allow_comments is not None:
             share_link.allow_comments = allow_comments
         
-        share_link.updated_at = datetime.utcnow()
+        share_link.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(share_link)
         return share_link

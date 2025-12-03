@@ -4,7 +4,7 @@ Manages group themes, branding, and custom styling
 """
 from typing import Optional, List
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -146,7 +146,7 @@ class GroupCustomizationService:
             status="pending",
             dns_verified=False,
             dns_verification_token=verification_token,
-            requested_at=datetime.utcnow()
+            requested_at=datetime.now(timezone.utc)
         )
         
         db.add(custom_domain)
@@ -236,7 +236,7 @@ class GroupCustomizationService:
             if not existing.is_active:
                 # Reactivate if previously unfollowed
                 existing.is_active = True
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = datetime.now(timezone.utc)
                 await db.commit()
                 await db.refresh(existing)
             return existing
@@ -274,7 +274,7 @@ class GroupCustomizationService:
             return False
         
         follow.is_active = False
-        follow.updated_at = datetime.utcnow()
+        follow.updated_at = datetime.now(timezone.utc)
         await db.commit()
         return True
     

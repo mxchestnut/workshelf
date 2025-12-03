@@ -6,7 +6,7 @@ import os
 import stripe
 from typing import Optional, Dict, Any
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -174,7 +174,7 @@ class StripeService:
             # Update purchase with payment details
             purchase.stripe_payment_intent_id = session['payment_intent']
             purchase.status = PurchaseStatus.COMPLETED
-            purchase.completed_at = datetime.utcnow()
+            purchase.completed_at = datetime.now(timezone.utc)
             purchase.payment_method = session.get('payment_method_types', ['card'])[0]
             
             # Get store item
@@ -194,7 +194,7 @@ class StripeService:
                 cover_url=store_item.cover_blob_url,
                 epub_url=store_item.epub_blob_url,  # Grant access to EPUB
                 is_owned=True,
-                purchase_date=datetime.utcnow()
+                purchase_date=datetime.now(timezone.utc)
             )
             db.add(bookshelf_item)
             await db.flush()
@@ -202,7 +202,7 @@ class StripeService:
             # Link bookshelf item to purchase
             purchase.bookshelf_item_id = bookshelf_item.id
             purchase.access_granted = True
-            purchase.access_granted_at = datetime.utcnow()
+            purchase.access_granted_at = datetime.now(timezone.utc)
             
             # Update store item sales stats
             store_item.total_sales += 1
@@ -288,7 +288,7 @@ class StripeService:
             
             if purchase:
                 purchase.status = PurchaseStatus.REFUNDED
-                purchase.refunded_at = datetime.utcnow()
+                purchase.refunded_at = datetime.now(timezone.utc)
                 
                 # Optionally remove from bookshelf or mark as no longer accessible
                 if purchase.bookshelf_item_id:

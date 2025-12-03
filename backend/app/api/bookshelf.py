@@ -8,7 +8,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from typing import Optional, List
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import os
 from anthropic import Anthropic
@@ -243,7 +243,7 @@ async def add_to_bookshelf(
         review_public=item_data.review_public,
         started_reading=item_data.started_reading,
         finished_reading=item_data.finished_reading,
-        added_at=datetime.utcnow()
+        added_at=datetime.now(timezone.utc)
     )
     
     db.add(bookshelf_item)
@@ -286,8 +286,8 @@ async def add_to_bookshelf(
             author = Author(
                 name=item_data.author,
                 genres=item_data.genres,  # Store as JSONB
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
             )
             db.add(author)
             await db.flush()  # Get the author ID
@@ -483,7 +483,7 @@ async def get_bookshelf_stats(
     favorites = favorites_result.scalar() or 0
     
     # Books read this year
-    current_year = datetime.utcnow().year
+    current_year = datetime.now(timezone.utc).year
     year_result = await db.execute(
         select(func.count(BookshelfItem.id)).where(
             BookshelfItem.user_id == user.id,
@@ -812,7 +812,7 @@ async def update_reading_progress(
     if item.status == "want-to-read" and progress_data.reading_progress > 0:
         item.status = "reading"
         if not item.started_reading:
-            item.started_reading = datetime.utcnow()
+            item.started_reading = datetime.now(timezone.utc)
     
     await db.commit()
     await db.refresh(item)

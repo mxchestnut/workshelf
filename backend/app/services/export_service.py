@@ -2,7 +2,7 @@
 Export Service
 Document export to various formats and GDPR data export
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
@@ -59,7 +59,7 @@ class ExportService:
                 include_metadata=include_metadata,
                 include_comments=include_comments,
                 include_version_history=include_version_history,
-                expires_at=datetime.utcnow() + timedelta(days=ExportService.EXPORT_EXPIRATION_DAYS)
+                expires_at=datetime.now(timezone.utc) + timedelta(days=ExportService.EXPORT_EXPIRATION_DAYS)
             )
             
             db.add(job)
@@ -100,7 +100,7 @@ class ExportService:
             
             # Update status
             job.status = ExportStatus.PROCESSING
-            job.processing_started_at = datetime.utcnow()
+            job.processing_started_at = datetime.now(timezone.utc)
             await db.commit()
             
             # Process based on export type
@@ -123,7 +123,7 @@ class ExportService:
                 job.file_url = result.get("file_url")
                 job.file_size_bytes = result.get("file_size_bytes")
                 job.file_name = result.get("file_name")
-                job.processing_completed_at = datetime.utcnow()
+                job.processing_completed_at = datetime.now(timezone.utc)
             
             await db.commit()
             await db.refresh(job)
@@ -278,7 +278,7 @@ class ExportService:
             "activity": [
                 # Add activity logs
             ],
-            "export_date": datetime.utcnow().isoformat(),
+            "export_date": datetime.now(timezone.utc).isoformat(),
             "data_retention_policy": "As per GDPR, you have the right to request deletion of this data."
         }
         
@@ -432,7 +432,7 @@ class ExportService:
             update(ExportJob)
             .where(
                 and_(
-                    ExportJob.expires_at < datetime.utcnow(),
+                    ExportJob.expires_at < datetime.now(timezone.utc),
                     ExportJob.status == ExportStatus.COMPLETED
                 )
             )
