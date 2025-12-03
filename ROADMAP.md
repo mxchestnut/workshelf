@@ -9,20 +9,20 @@
 ## 🎯 Immediate Priorities (Week 1-2)
 
 ### 1. Staff Admin Infrastructure 🛠️ **HIGH PRIORITY**
-**Status:** 15% Complete (Sentry only)  
+**Status:** 30% Complete (Sentry, Matomo, PostHog)  
 **Goal:** Complete observability & security tooling stack
 
 **Current State:**
 - ✅ Sentry (frontend + backend error tracking configured)
 - ✅ Redis (running, ready for caching layer)
 - ✅ Matomo (privacy-focused analytics with cookie-less tracking)
+- ✅ PostHog (product analytics with session replay & feature flags)
 - ❌ React-Admin dashboard (replace basic staff pages)
 - ❌ Prometheus metrics collection
 - ❌ Grafana dashboards
 - ❌ OpenTelemetry traces
 - ❌ OpenSearch logs
-- ❌ PostHog user behavior (optional - we have Matomo)
-- ❌ Unleash feature flags
+- ❌ Unleash feature flags (PostHog has this built-in)
 - ❌ HashiCorp Vault secrets
 - ❌ OWASP ZAP security scanning
 - ❌ Trivy container scanning
@@ -34,9 +34,9 @@
   - [ ] Grafana (dashboards on :3000)
   - [ ] OpenTelemetry Collector (traces on :4318)
   - [ ] OpenSearch (logs on :9200)
-  - [ ] Unleash (feature flags on :4242)
   - [ ] HashiCorp Vault (secrets on :8200)
 
+**Phase 2: Backend Integration (Days 3-4)**
 **Phase 2: Backend Integration (Days 3-4)**
 - [ ] Add dependencies to `backend/requirements.txt`:
   - [ ] `prometheus-fastapi-instrumentator` (metrics)
@@ -45,14 +45,14 @@
   - [ ] `opentelemetry-exporter-otlp` (send to collector)
   - [ ] `opensearch-py` (log shipping)
   - [ ] `hvac` (Vault client)
-  - [ ] `unleash-client-python` (feature flags)
 - [ ] Instrument `backend/app/main.py`:
   - [ ] Add Prometheus `/metrics` endpoint
   - [ ] Configure OpenTelemetry tracing
   - [ ] Add structured logging to OpenSearch
   - [ ] Integrate Vault for secrets (DATABASE_URL, etc)
-  - [ ] Add Unleash feature flag checks
-
+**Phase 3: Frontend Integration (Days 5-6)**
+- [ ] Replace `AdminDashboard.tsx` with React-Admin:
+  - [ ] Install: `react-admin`, `ra-data-json-server`
 **Phase 3: Frontend Integration (Days 5-6)**
 - [ ] Replace `AdminDashboard.tsx` with React-Admin:
   - [ ] Install: `react-admin`, `ra-data-json-server`
@@ -60,10 +60,8 @@
   - [ ] Add resources: users, groups, documents, moderation queue
   - [ ] Embed Grafana dashboards (iframe)
   - [ ] Embed Matomo dashboard (iframe to workshelfdev.matomo.cloud)
-  - [ ] Add Unleash feature flag toggles
-
-**Phase 4: Security Scanning (Day 7)**
-- [ ] Add to CI/CD (`.github/workflows/ci.yml`):
+  - [ ] Embed PostHog dashboard (iframe to app.posthog.com)
+  - [ ] Add PostHog feature flag toggles UIi.yml`):
   - [ ] Trivy container scanning (scan Docker images)
   - [ ] Gitleaks secrets scanning (pre-commit + CI)
   - [ ] OWASP ZAP API scanning (nightly scheduled run)
@@ -81,22 +79,20 @@
 - [ ] Update `README.md` with:
   - [ ] Links to all admin tools (ports + URLs)
   - [ ] Instructions for Vault secret management
-  - [ ] Unleash feature flag usage guide
+  - [ ] PostHog feature flag usage guide
   - [ ] Security scanning workflow
 
 **What I Need From You:**
-1. **API Keys** (store in Vault after setup):
-   - Matomo API token (if self-hosted) or site ID
-   - PostHog API key (or use self-hosted?)
-**What I Need From You:**
-1. **API Keys** (store in Vault after setup):
-   - Unleash API token (or use self-hosted OSS?)
-2. **Preferences**:
-   - Self-hosted vs Cloud for: Unleash?
+1. **Preferences**:
    - OWASP ZAP: run in CI or separate scan server?
-3. **Secrets Strategy**:
+   - Self-host Vault or use AWS Secrets Manager/SSM?
+2. **Secrets Strategy**:
    - Migrate all secrets to Vault? (DATABASE_URL, KEYCLOAK_CLIENT_SECRET, etc)
-   - Or keep in env vars for now?ep ⚠️ **HIGH PRIORITY**
+   - Or keep in env vars for now?
+
+---
+
+### 2. GDPR Compliance - Final Step ⚠️ **HIGH PRIORITY**
 **Status:** 90% Complete (only Export UI remains)  
 **Deadline:** 1 week
 

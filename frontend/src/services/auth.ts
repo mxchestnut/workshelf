@@ -5,6 +5,7 @@
 
 import { toast } from './toast'
 import { setUserId, resetUserId } from '../matomo'
+import { identifyUser, resetUser } from '../posthog'
 
 export interface User {
   id: string
@@ -153,9 +154,14 @@ class AuthService {
     // Fetch user info from our backend
     const user = await this.fetchUserInfo()
     
-    // Track user in Matomo analytics
+    // Track user in analytics
     if (user?.id) {
-      setUserId(user.id)
+      setUserId(user.id) // Matomo
+      identifyUser(user.id, { // PostHog with additional properties
+        email: user.email,
+        username: user.username,
+        is_staff: user.is_staff || false,
+      })
     }
     
     toast.success('Successfully logged in')
@@ -244,11 +250,6 @@ class AuthService {
     this.refreshToken = data.refresh_token
 
     localStorage.setItem('access_token', this.accessToken!)
-    if (this.refreshToken) {
-      localStorage.setItem('refresh_token', this.refreshToken)
-    }
-  }
-
   /**
    * Logout user and clear tokens
    */
@@ -259,13 +260,19 @@ class AuthService {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     
-    // Reset Matomo user tracking
-    resetUserId()
+    // Reset analytics user tracking
+    resetUserId() // Matomo
+    resetUser() // PostHog
     
     toast.success('Successfully logged out')
     
     // Redirect to Keycloak logout, then back to home page
     const redirectUri = window.location.origin + '/'
+    const logoutUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout?` +
+      `post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `client_id=${KEYCLOAK_CLIENT_ID}`
+    window.location.href = logoutUrl
+  } const redirectUri = window.location.origin + '/'
     const logoutUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout?` +
       `post_logout_redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `client_id=${KEYCLOAK_CLIENT_ID}`
