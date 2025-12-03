@@ -4,7 +4,7 @@ import {
   User, Building2, Hash, FileText, Tag, ShoppingCart, Clock, Trash2
 } from 'lucide-react'
 import { calculateBookReadingTime } from '../utils/reading-time'
-import { toast } from '../components/Toast'
+import { toast } from '../services/toast'
 
 // Lazy load the EPUB reader (large dependency)
 const EpubReader = lazy(() => import('../components/EpubReader'))

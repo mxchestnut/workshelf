@@ -42,6 +42,7 @@ export default function GroupSettings() {
       loadGroup();
       loadMembers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
   const loadUser = async () => {
@@ -172,8 +173,8 @@ export default function GroupSettings() {
       <div className="min-h-screen bg-gray-50">
         <Navigation 
           user={user}
-          onLogin={() => authService.login()}
-          onLogout={() => authService.logout()}
+          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+         
           currentPage="groups"
         />
         <div className="flex items-center justify-center py-12">
@@ -188,8 +189,8 @@ export default function GroupSettings() {
       <div className="min-h-screen bg-gray-50">
         <Navigation 
           user={user}
-          onLogin={() => authService.login()}
-          onLogout={() => authService.logout()}
+          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+         
           currentPage="groups"
         />
         <div className="flex items-center justify-center py-12">
@@ -211,8 +212,8 @@ export default function GroupSettings() {
     <div className="min-h-screen bg-gray-50">
       <Navigation 
         user={user}
-        onLogin={() => authService.login()}
-        onLogout={() => authService.logout()}
+        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+       
         currentPage="groups"
       />
       

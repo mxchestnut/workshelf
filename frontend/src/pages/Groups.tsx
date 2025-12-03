@@ -122,8 +122,8 @@ export default function Groups() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()}
-        onLogout={() => authService.logout()}
+        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+       
         currentPage="groups"
       />
 

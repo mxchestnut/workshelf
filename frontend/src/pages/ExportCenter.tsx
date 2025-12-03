@@ -323,7 +323,7 @@ export function ExportCenter() {
       <Navigation 
         user={user} 
         onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()} 
+        onLogout={() => authService.logout()}
         currentPage="export-center" 
       />
       

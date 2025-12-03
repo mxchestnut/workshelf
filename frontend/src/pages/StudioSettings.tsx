@@ -318,8 +318,8 @@ export default function StudioSettings() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Navigation 
           user={user} 
-          onLogin={() => authService.login()} 
-          onLogout={() => authService.logout()} 
+          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          
         />
         <div className="flex items-center justify-center h-screen">
           <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
@@ -333,8 +333,8 @@ export default function StudioSettings() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Navigation 
           user={user} 
-          onLogin={() => authService.login()} 
-          onLogout={() => authService.logout()} 
+          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          
         />
         <div className="max-w-2xl mx-auto px-4 py-16">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -356,8 +356,8 @@ export default function StudioSettings() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()} 
+        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+        
       />
       
       <div className="max-w-6xl mx-auto px-4 py-8">

@@ -1,6 +1,3 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-
 /**
  * Privacy Policy Page
  * 
@@ -163,8 +160,8 @@ export default function PrivacyPolicy() {
                 To Exercise Your Rights:
               </h4>
               <ul className="space-y-2 text-blue-800 dark:text-blue-300">
-                <li>• <strong>Export Your Data:</strong> Visit <Link to="/export" className="underline hover:text-blue-600">Export Center</Link> (coming soon)</li>
-                <li>• <strong>Delete Account:</strong> Visit <Link to="/profile" className="underline hover:text-blue-600">Profile Settings</Link> (coming soon)</li>
+                <li>• <strong>Export Your Data:</strong> Visit <a href="/export" className="underline hover:text-blue-600">Export Center</a> (coming soon)</li>
+                <li>• <strong>Delete Account:</strong> Visit <a href="/profile" className="underline hover:text-blue-600">Profile Settings</a> (coming soon)</li>
                 <li>• <strong>Other Requests:</strong> Email privacy@workshelf.dev [PLACEHOLDER]</li>
               </ul>
             </div>
@@ -252,12 +249,12 @@ export default function PrivacyPolicy() {
 
         {/* Back to Home */}
         <div className="mt-6 text-center">
-          <Link 
-            to="/" 
+          <a 
+            href="/" 
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← Back to Home
-          </Link>
+          </a>
         </div>
       </div>
     </div>

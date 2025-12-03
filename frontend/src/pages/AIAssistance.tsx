@@ -153,7 +153,7 @@ export function AIAssistance() {
       <Navigation 
         user={user} 
         onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()} 
+        onLogout={() => authService.logout()}
         currentPage="ai-assistance" 
       />
       

@@ -92,6 +92,7 @@ export function Profile() {
     loadProfile()
     loadAvailableInterests()
     checkMatrixConnection()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

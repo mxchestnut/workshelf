@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
 import { CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
-import { toast } from '../components/Toast'
+import { toast } from '../services/toast'
 
 interface BetaRequestItem {
   id: number
@@ -122,7 +122,7 @@ export default function MyBetaRequests() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => {}} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-foreground">Loading requests...</div>
       </div>
     )
@@ -130,7 +130,7 @@ export default function MyBetaRequests() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => {}} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold text-foreground mb-6">My Beta Requests</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

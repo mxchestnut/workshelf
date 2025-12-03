@@ -71,7 +71,7 @@ const ExportCenter = lazy(() => import('./pages/ExportCenter').then(module => ({
 const AccessibilitySettings = lazy(() => import('./pages/AccessibilitySettings').then(module => ({ default: module.AccessibilitySettings })))
 const AdvancedSearch = lazy(() => import('./pages/AdvancedSearch').then(module => ({ default: module.AdvancedSearch })))
 const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module => ({ default: module.BookSuggestions })))
-const Messages = lazy(() => import('./pages/Messages'))
+// Matrix Messages page removed
 const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 const Relationships = lazy(() => import('./pages/Relationships'))
 const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
@@ -249,8 +249,6 @@ function App() {
     } else if (path === '/book-suggestions') {
       // Book suggestions page
       setCurrentPage('book-suggestions')
-    } else if (path === '/messages') {
-      setCurrentPage('messages')
     } else if (path === '/ai-policy') {
       // AI Policy and ethical use guidelines
       setCurrentPage('ai-policy')
@@ -502,9 +500,7 @@ function App() {
     if (currentPage === 'book-suggestions') {
       return <BookSuggestions />
     }
-    if (currentPage === 'messages') {
-      return <Messages />
-    }
+    // Matrix Messages removed
     if (currentPage === 'relationships') {
       return <Relationships />
     }
