@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, func
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -101,15 +101,15 @@ class RelationshipsService:
             )
         )
         
-        # Get total count
-        count_stmt = select(UserFollow).filter(
+        # Get total count using func.count() for efficiency
+        count_stmt = select(func.count()).select_from(UserFollow).filter(
             and_(
                 UserFollow.following_id == user_id,
                 UserFollow.is_active == True
             )
         )
         count_result = await db.execute(count_stmt)
-        total = len(count_result.scalars().all())
+        total = count_result.scalar()
         
         # Get paginated results
         result = await db.execute(stmt.offset(skip).limit(limit))
@@ -137,15 +137,15 @@ class RelationshipsService:
             )
         )
         
-        # Get total count
-        count_stmt = select(UserFollow).filter(
+        # Get total count using func.count() for efficiency
+        count_stmt = select(func.count()).select_from(UserFollow).filter(
             and_(
                 UserFollow.follower_id == user_id,
                 UserFollow.is_active == True
             )
         )
         count_result = await db.execute(count_stmt)
-        total = len(count_result.scalars().all())
+        total = count_result.scalar()
         
         # Get paginated results
         result = await db.execute(stmt.offset(skip).limit(limit))
@@ -157,24 +157,24 @@ class RelationshipsService:
     async def get_follower_count(db: AsyncSession, user_id: int) -> int:
         """Get count of followers."""
         result = await db.execute(
-            select(UserFollow).filter(
+            select(func.count()).select_from(UserFollow).filter(
                 and_(
                     UserFollow.following_id == user_id,
                     UserFollow.is_active == True
                 )
             )
         )
-        return len(result.scalars().all())
+        return result.scalar()
     
     @staticmethod
     async def get_following_count(db: AsyncSession, user_id: int) -> int:
         """Get count of users being followed."""
         result = await db.execute(
-            select(UserFollow).filter(
+            select(func.count()).select_from(UserFollow).filter(
                 and_(
                     UserFollow.follower_id == user_id,
                     UserFollow.is_active == True
                 )
             )
         )
-        return len(result.scalars().all())
+        return result.scalar()

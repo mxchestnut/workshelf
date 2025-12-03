@@ -317,14 +317,15 @@ class GroupCustomizationService:
         )
         
         # Get total count
-        count_stmt = select(GroupFollower).filter(
+        # Get total count using func.count() for efficiency
+        count_stmt = select(func.count()).select_from(GroupFollower).filter(
             and_(
                 GroupFollower.group_id == group_id,
                 GroupFollower.is_active == True
             )
         )
         count_result = await db.execute(count_stmt)
-        total = len(count_result.scalars().all())
+        total = count_result.scalar()
         
         # Get paginated results
         result = await db.execute(stmt.offset(skip).limit(limit))
@@ -339,13 +340,13 @@ class GroupCustomizationService:
     ) -> int:
         """Get follower count for a group."""
         result = await db.execute(
-            select(GroupFollower).filter(
+            select(func.count()).select_from(GroupFollower).filter(
                 and_(
                     GroupFollower.group_id == group_id,
                     GroupFollower.is_active == True
                 )
             )
         )
-        return len(result.scalars().all())
+        return result.scalar()
 
 
