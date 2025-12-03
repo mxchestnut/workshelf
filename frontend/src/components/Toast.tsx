@@ -6,15 +6,14 @@
 import { useEffect, useState } from 'react'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 import {
-  toast,
   removeToast,
   listeners,
   type ToastMessage,
   type ToastType
 } from '../utils/toastHelpers'
 
-// Re-export for convenience
-export { toast }
+// Re-export toast from utils for convenience
+export { toast } from '../utils/toastHelpers'
 export type { ToastType }
 
 // Toast Container Component

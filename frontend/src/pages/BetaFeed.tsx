@@ -45,6 +45,7 @@ export default function BetaFeed() {
       }
     }
     loadUser()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadReleases = async () => {
@@ -77,6 +78,7 @@ export default function BetaFeed() {
     if (user) {
       loadReleases()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
 
   const handleLogin = () => {

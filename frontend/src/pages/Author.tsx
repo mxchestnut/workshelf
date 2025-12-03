@@ -122,6 +122,7 @@ export default function Author() {
       loadBooks()
       loadRevisions()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorId])
 
   useEffect(() => {
