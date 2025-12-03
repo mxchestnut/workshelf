@@ -5,7 +5,8 @@
  */
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { useMatrix, getOtherUserInRoom } from '../hooks/useMatrixClient.tsx'
+import { useMatrix } from '../hooks/useMatrixClient.tsx'
+import { getOtherUserInRoom } from '../utils/matrixHelpers'
 import { authService, User } from '../services/auth'
 import { MessageSquare, Search, Loader2 } from 'lucide-react'
 import * as matrix from 'matrix-js-sdk'

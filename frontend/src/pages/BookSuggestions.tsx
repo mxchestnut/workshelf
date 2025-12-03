@@ -33,6 +33,7 @@ export function BookSuggestions() {
 
   useEffect(() => {
     loadSuggestions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadSuggestions = async () => {
