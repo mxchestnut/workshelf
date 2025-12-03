@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { useMatrix } from '../hooks/useMatrixClient.tsx'
+import { useMatrix } from '../contexts/MatrixContext'
 import { toast } from '../services/toast'
 import {
   User, MapPin, Calendar, ExternalLink, Globe, Twitter,

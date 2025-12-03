@@ -63,12 +63,6 @@ interface ReadingList {
   updated_at: string
 }
 
-interface ListDocument {
-  id: number
-  title: string
-  added_at: string
-}
-
 export default function Bookshelf() {
   const [books, setBooks] = useState<BookshelfItem[]>([])
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
@@ -84,8 +78,6 @@ export default function Bookshelf() {
   // Reading Lists state
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])
   const [loadingLists, setLoadingLists] = useState(false)
-  const [_savingList, _setSavingList] = useState(false)
-  const [_deletingListId, _setDeletingListId] = useState<number | null>(null)
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -99,6 +91,7 @@ export default function Bookshelf() {
     if (activeTab === 'reading-lists') {
       loadReadingLists()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   const loadUser = async () => {

@@ -8,8 +8,7 @@ import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 import {
   removeToast,
   listeners,
-  type ToastMessage,
-  type ToastType
+  type ToastMessage
 } from '../utils/toastHelpers'
 
 // Toast Container Component
