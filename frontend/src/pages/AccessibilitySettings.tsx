@@ -2,7 +2,7 @@
  * Accessibility Settings Page
  * WCAG compliance settings and document accessibility checker
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Eye, 
   Type, 
@@ -207,7 +207,7 @@ export function AccessibilitySettings() {
     }
   }
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     try {
       setLoadingReport(true)
       const token = localStorage.getItem('auth_token')
@@ -227,7 +227,7 @@ export function AccessibilitySettings() {
     } finally {
       setLoadingReport(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (activeTab === 'report' && !report) {

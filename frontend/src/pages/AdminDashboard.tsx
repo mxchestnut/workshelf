@@ -122,6 +122,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
   useEffect(() => {
     loadUser()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadUser = async () => {
@@ -477,6 +478,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       }
       loadPendingUsers()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, isStaff])
 
   // Load earnings dashboard when Creator Earnings tab becomes active
@@ -485,6 +487,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       loadEarningsDashboard()
       loadStripeConnectStatus()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   const navigateToGroup = (slug: string) => {

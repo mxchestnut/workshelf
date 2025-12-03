@@ -74,6 +74,3 @@ export function MatrixProvider({ children }: { children: ReactNode }) {
 export function useMatrix() {
   return useContext(MatrixContext)
 }
-
-// Re-export helper functions from utils
-export { getOtherUserInRoom } from '../utils/matrixHelpers'
