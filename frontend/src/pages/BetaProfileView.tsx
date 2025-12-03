@@ -89,14 +89,6 @@ export default function BetaProfileView() {
     }
   }
 
-  const contactBetaReader = () => {
-    if (!profile) return
-    // Navigate to messages and dispatch event to open chat popup for this user
-    window.history.pushState({}, '', '/messages')
-    window.dispatchEvent(new CustomEvent('openChatByUserId', { detail: { userId: profile.user_id, displayName: profile.display_name } }))
-    toast.success('Opening conversation...')
-  }
-
   const requestBetaRead = () => {
     if (!profile) return
     window.location.href = `/beta-request?user_id=${profile.user_id}`
@@ -240,12 +232,9 @@ export default function BetaProfileView() {
               <span className="text-green-400 font-medium">Free</span>
             )}
           </div>
-          {/* Contact / Request Actions */}
+          {/* Request Actions */}
           <div className="flex flex-col gap-2 ml-6">
-            <button onClick={contactBetaReader} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" /> Contact
-            </button>
-            <button onClick={requestBetaRead} className="px-4 py-2 rounded-lg bg-muted text-foreground border border-border flex items-center gap-2">
+            <button onClick={requestBetaRead} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground flex items-center gap-2">
               <Send className="w-4 h-4" /> Request Beta Read
             </button>
           </div>

@@ -437,17 +437,8 @@ export default function BetaMarketplace() {
               )}
             </div>
 
-            {/* Contact Button */}
-            <div className="mt-4 pt-4 border-t border-border">
-              <button
-                onClick={(e) => contactBetaReader(e, profile)}
-                className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Contact
-              </button>
-            </div>
           </div>
+        </div>
         ))}
       </div>        {/* Empty State */}
         {profiles.length === 0 && !loading && (

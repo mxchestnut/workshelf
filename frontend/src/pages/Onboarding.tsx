@@ -195,13 +195,7 @@ export default function Onboarding() {
       return;
     }
     
-    // After step 2, go to Matrix explanation (step 3)
-    if (step === 2) {
-      setStep(3);
-      return;
-    }
-
-    // Step 3 completes the onboarding
+    // Step 2 completes the onboarding
     setLoading(true);
     setErrors([]);
 
@@ -514,77 +508,6 @@ export default function Onboarding() {
                   className="flex-1 bg-[#B34B0C] text-white py-3 rounded-lg font-medium hover:bg-[#7C3306] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Saving...' : 'Complete Setup'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Matrix/Element Explanation */}
-          {step === 3 && (
-            <div className="bg-white rounded-lg p-8 max-w-2xl mx-auto shadow-lg">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome to Work Shelf Chat!</h2>
-              
-              <div className="space-y-4 text-gray-700">
-                <p className="text-lg">
-                  🎉 Great news! We've automatically created a secure Matrix account for you.
-                </p>
-                
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                  <h3 className="font-semibold text-gray-900 mb-2">What is Matrix?</h3>
-                  <p>
-                    Matrix is an open-source, decentralized messaging protocol that powers Work Shelf's real-time chat. 
-                    Your messages sync seamlessly across all your devices and stay private.
-                  </p>
-                </div>
-
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                  <h3 className="font-semibold text-gray-900 mb-2">Using Element for Chat</h3>
-                  <p className="mb-3">
-                    To access your group chats, we recommend downloading <strong>Element</strong> — 
-                    the best Matrix client available. You can use it on your phone, desktop, or web browser.
-                  </p>
-                  <a
-                    href="https://element.io/download"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Download Element →
-                  </a>
-                </div>
-
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                  <h3 className="font-semibold text-gray-900 mb-2">Connect Your Matrix Account</h3>
-                  <p>
-                    To use messaging features, you'll need to connect your Matrix account. 
-                    You can do this anytime from your <strong>Profile → Messaging</strong> section.
-                  </p>
-                  <p className="mt-2 text-sm">
-                    Don't have a Matrix account? Create one at <a href="https://app.element.io/#/register" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Element</a> first.
-                  </p>
-                </div>
-
-                <p className="text-sm text-gray-600 mt-4">
-                  💡 <strong>Tip:</strong> When you join groups with active chat spaces, you'll see an "Open in Element" link 
-                  to jump right into the conversation!
-                </p>
-              </div>
-
-              <div className="flex justify-between mt-8">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="px-6 py-2 text-gray-600 hover:text-gray-800"
-                  disabled={loading}
-                >
-                  ← Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-8 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Saving...' : 'Get Started!'}
                 </button>
               </div>
             </div>

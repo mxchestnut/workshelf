@@ -5,12 +5,11 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
-import { useMatrix } from '../contexts/MatrixContext'
 import { toast } from '../services/toast'
 import {
   User, MapPin, Calendar, ExternalLink, Globe, Twitter,
   BookOpen, FileText, Book, Star, UserPlus, UserMinus,
-  MessageCircle, X
+  X
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -69,8 +68,6 @@ export default function PublicProfile() {
   const [followers, setFollowers] = useState<FollowUser[]>([])
   const [following, setFollowing] = useState<FollowUser[]>([])
   const [loadingFollowers, setLoadingFollowers] = useState(false)
-  
-  const { openChat } = useMatrix()
 
   useEffect(() => {
     loadCurrentUser()
