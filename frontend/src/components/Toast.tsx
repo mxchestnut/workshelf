@@ -5,58 +5,17 @@
 
 import { useEffect, useState } from 'react'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
+import {
+  toast,
+  removeToast,
+  listeners,
+  type ToastMessage,
+  type ToastType
+} from '../utils/toastHelpers'
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning'
-
-interface ToastMessage {
-  id: string
-  type: ToastType
-  message: string
-  duration?: number
-}
-
-let toastCounter = 0
-const listeners = new Set<(messages: ToastMessage[]) => void>()
-let messages: ToastMessage[] = []
-
-// Toast API
-export const toast = {
-  success: (message: string, duration = 3000) => {
-    addToast({ type: 'success', message, duration })
-  },
-  error: (message: string, duration = 5000) => {
-    addToast({ type: 'error', message, duration })
-  },
-  info: (message: string, duration = 3000) => {
-    addToast({ type: 'info', message, duration })
-  },
-  warning: (message: string, duration = 4000) => {
-    addToast({ type: 'warning', message, duration })
-  }
-}
-
-function addToast(toast: Omit<ToastMessage, 'id'>) {
-  const id = `toast-${++toastCounter}`
-  const newToast: ToastMessage = { id, ...toast }
-  messages = [...messages, newToast]
-  notifyListeners()
-
-  // Auto-remove after duration
-  if (toast.duration) {
-    setTimeout(() => {
-      removeToast(id)
-    }, toast.duration)
-  }
-}
-
-function removeToast(id: string) {
-  messages = messages.filter(m => m.id !== id)
-  notifyListeners()
-}
-
-function notifyListeners() {
-  listeners.forEach(listener => listener([...messages]))
-}
+// Re-export for convenience
+export { toast }
+export type { ToastType }
 
 // Toast Container Component
 export function ToastContainer() {

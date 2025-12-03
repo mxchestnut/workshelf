@@ -233,7 +233,7 @@ export function AccessibilitySettings() {
     if (activeTab === 'report' && !report) {
       loadReport()
     }
-  }, [activeTab])
+  }, [activeTab, report, loadReport])
 
   const getWCAGColor = (level: string) => {
     switch (level) {

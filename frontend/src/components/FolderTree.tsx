@@ -45,6 +45,7 @@ export function FolderTree({ onSelectFolder, selectedFolderId }: Props) {
 
   useEffect(() => {
     loadFolders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getToken = () => localStorage.getItem('access_token')

@@ -49,6 +49,7 @@ export function CommentsThread({ documentId }: Props) {
   useEffect(() => {
     loadComments()
     loadCurrentUser()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId])
 
   const loadCurrentUser = async () => {

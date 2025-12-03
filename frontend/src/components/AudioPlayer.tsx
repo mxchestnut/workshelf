@@ -54,6 +54,7 @@ export default function AudioPlayer({
       audioRef.current.volume = volume
       audioRef.current.playbackRate = playbackRate
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Update current time

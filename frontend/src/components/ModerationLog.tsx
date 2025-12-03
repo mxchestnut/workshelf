@@ -26,6 +26,7 @@ export default function ModerationLog({ groupId }: ModerationLogProps) {
 
   useEffect(() => {
     loadLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId, filter]);
 
   const loadLogs = async () => {

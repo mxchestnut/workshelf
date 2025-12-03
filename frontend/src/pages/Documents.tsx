@@ -394,7 +394,7 @@ export default function Documents() {
         ref={folderInputRef}
         type="file"
         multiple
-        // @ts-ignore - webkitdirectory is not in TypeScript types but works in browsers
+        // @ts-expect-error - webkitdirectory is not in TypeScript types but works in browsers
         webkitdirectory="true"
         onChange={handleFolderChange}
         className="hidden"
