@@ -3,10 +3,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { initSentry } from './sentry'
+import { initMatomo } from './matomo'
 import './index.css'
 
-// Initialize error tracking before app renders
+// Initialize error tracking and analytics before app renders
 initSentry()
+initMatomo()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
