@@ -92,6 +92,7 @@ export default function GroupDetail() {
       loadFollowerCount();
       loadUserProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
   const loadUser = async () => {
@@ -103,6 +104,7 @@ export default function GroupDetail() {
 
   useEffect(() => {
     calculateUserPermissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [members, currentUserId]);
 
   const loadGroup = async () => {

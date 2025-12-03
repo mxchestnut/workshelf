@@ -9,7 +9,7 @@ import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { 
   Shield, Plus, Save, Trash2, GripVertical, ChevronDown, ChevronUp,
-  FileText, MessageSquare, Users, Settings, Eye, Lock, Tag, Pin, Ban, UserPlus
+  FileText, Users, Settings, Lock, Tag, Pin, Ban, UserPlus
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'

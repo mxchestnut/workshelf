@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import { User, authService } from '../services/auth'
-import { BookOpen, Star, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, MessageSquare, Send } from 'lucide-react'
+import { BookOpen, Star, DollarSign, Users, Link as LinkIcon, Award, CheckCircle, Send } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 interface PortfolioLink {
