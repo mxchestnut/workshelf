@@ -3,7 +3,7 @@ fastapi==0.121.0
 uvicorn[standard]==0.38.0
 pydantic==2.10.6
 pydantic-settings==2.1.0
-email-validator==2.1.0
+email-validator==2.2.0
 
 # Database
 sqlalchemy[asyncio]==2.0.36
@@ -28,7 +28,7 @@ stripe==11.3.0
 # Price Scraping & Web Requests
 aiohttp==3.12.14
 beautifulsoup4==4.12.2
-lxml==4.9.3
+lxml>=5.0.0  # Python 3.13 compatible
 
 # AI Services
 anthropic==0.72.0  # Claude API for creative writing assistance
