@@ -22,7 +22,6 @@
 - ❌ Grafana dashboards
 - ❌ OpenTelemetry traces
 - ❌ OpenSearch logs
-- ❌ Unleash feature flags (PostHog has this built-in)
 - ❌ HashiCorp Vault secrets
 - ❌ OWASP ZAP security scanning
 - ❌ Trivy container scanning
