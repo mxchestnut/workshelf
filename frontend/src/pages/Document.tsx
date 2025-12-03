@@ -87,6 +87,7 @@ export function Document() {
       // Create new document
       createNewDocument()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId])
 
   const loadDocument = async (id: string) => {
