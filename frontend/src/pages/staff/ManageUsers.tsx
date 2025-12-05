@@ -29,6 +29,7 @@ export function ManageUsers() {
 
   useEffect(() => {
     checkAccess()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAccess = async () => {

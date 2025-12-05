@@ -487,7 +487,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       loadEarningsDashboard()
       loadStripeConnectStatus()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [activeTab])
 
   const navigateToGroup = (slug: string) => {

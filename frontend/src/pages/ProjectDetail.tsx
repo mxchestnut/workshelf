@@ -158,6 +158,7 @@ export function ProjectDetail() {
       loadProject()
       loadDocuments()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const loadUser = async () => {

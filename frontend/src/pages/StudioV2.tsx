@@ -59,6 +59,7 @@ export default function StudioV2() {
     if (selectedProject) {
       loadFoldersAndDocuments(selectedProject.id)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProject])
 
   const loadUser = async () => {
