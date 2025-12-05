@@ -22,7 +22,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          matrix: ['matrix-js-sdk'],
           editor: ['@tiptap/react', '@tiptap/starter-kit'],
           epub: ['react-reader', 'epubjs'],
           lucide: ['lucide-react']
