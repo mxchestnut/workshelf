@@ -99,6 +99,7 @@ export function Profile() {
     if (activeTab === 'connections') {
       loadConnections()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   const checkMatrixConnection = async () => {

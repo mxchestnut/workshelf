@@ -90,6 +90,7 @@ export default function Store() {
   useEffect(() => {
     fetchBooks()
     fetchFreeBooks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, selectedGenre, sortBy, priceRange])
 
   const fetchBooks = async () => {
