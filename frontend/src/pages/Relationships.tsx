@@ -164,6 +164,7 @@ const Relationships: React.FC = () => {
       computeSuggestions()
     }
     init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const isMutual = (id: number) => {

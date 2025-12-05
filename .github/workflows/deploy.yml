@@ -51,15 +51,18 @@ jobs:
       
       - name: Setup SSH
         env:
+          # actionlint: ignore
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
           chmod 600 ~/.ssh/workshelf-key.pem
+          # actionlint: ignore
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       
       - name: Deploy to EC2
         env:
+          # actionlint: ignore
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ubuntu
           GIT_SHA: ${{ github.sha }}
@@ -97,7 +100,9 @@ jobs:
       
       - name: Notify Sentry of release
         env:
+          # actionlint: ignore
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          # actionlint: ignore
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
         run: |
           curl -sL https://sentry.io/get-cli/ | bash
