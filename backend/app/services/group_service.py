@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 
 from app.models import Group, GroupMember, GroupMemberRole, GroupPrivacyType
 from app.models.user import User
-from app.services.matrix_service import MatrixService
 
 
 class GroupService:
@@ -54,16 +53,7 @@ class GroupService:
         await db.commit()
         await db.refresh(group)
         
-        # Create Matrix Space for the group
-        space_id = await MatrixService.create_space_for_group(
-            db=db,
-            group_id=group.id,
-            group_name=name,
-            group_description=description,
-            creator_user_id=owner_id
-        )
-        if space_id:
-            print(f"[GroupService] Created Matrix Space {space_id} for group {group.id}")
+        # Matrix integration removed - space creation disabled
         
         # Load members
         result = await db.execute(
@@ -241,15 +231,7 @@ class GroupService:
             )
             admin_member = admin_result.scalar_one_or_none()
             
-            if admin_member:
-                invited = await MatrixService.invite_user_to_space(
-                    db=db,
-                    space_id=group.matrix_space_id,
-                    user_id=user_id,
-                    inviter_user_id=admin_member.user_id
-                )
-                if invited:
-                    print(f"[GroupService] Invited user {user_id} to Matrix Space {group.matrix_space_id}")
+            # Matrix integration removed - space invites disabled
         
         # Load user relationship
         result = await db.execute(
