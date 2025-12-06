@@ -60,6 +60,9 @@ services:
     restart: unless-stopped
 
   backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
     image: workshelf-backend:latest
     pull_policy: never
     platform: linux/amd64
