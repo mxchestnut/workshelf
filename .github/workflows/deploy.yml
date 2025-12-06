@@ -87,6 +87,11 @@ jobs:
             
             echo "♻️  Restarting all services..."
             sudo docker-compose -f docker-compose.prod.yml down
+            
+            # Kill any processes holding ports
+            sudo fuser -k 8000/tcp 5173/tcp 9000/tcp 9001/tcp || true
+            sleep 3
+            
             sudo docker-compose -f docker-compose.prod.yml up -d
             
             echo "⏳ Waiting for services to stabilize..."
