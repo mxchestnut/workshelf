@@ -227,7 +227,7 @@ async def list_document_versions(
     return versions
 
 
-@router.get("/{document_id}/versions/{version_number}", response_model=Dict[str, Any]])
+@router.get("/{document_id}/versions/{version_number}", response_model=Dict[str, Any])
 async def get_document_version(
     document_id: int,
     version_number: int,
@@ -262,7 +262,7 @@ async def restore_document_version(
     return document
 
 
-@router.post("/{document_id}/versions", response_model=Dict[str, Any]])
+@router.post("/{document_id}/versions", response_model=Dict[str, Any])
 async def create_manual_version(
     document_id: int,
     change_summary: str = Query(..., description="Commit message for this version"),
