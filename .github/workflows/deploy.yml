@@ -86,8 +86,10 @@ jobs:
             sudo docker-compose -f docker-compose.prod.yml build --no-cache backend frontend
             
             echo "♻️  Restarting services..."
-            sudo docker-compose -f docker-compose.prod.yml rm -sf backend frontend
-            sudo docker-compose -f docker-compose.prod.yml up -d --no-deps backend frontend
+            sudo docker-compose -f docker-compose.prod.yml stop backend frontend
+            sudo docker-compose -f docker-compose.prod.yml rm -f backend frontend
+            sleep 5
+            sudo docker-compose -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
             
             echo "⏳ Waiting for services to stabilize..."
             sleep 10
