@@ -1,39 +1,61 @@
 # Deployment Issues & Fixes
 
-## CORS Headers Conflict (URGENT)
+## CORS Preflight Failing (URGENT - MANUAL FIX REQUIRED)
 
-**Issue**: The API returns duplicate CORS headers causing fetch requests to fail:
-```
-Access-Control-Allow-Origin: https://workshelf.dev, *
-```
+**Issue**: OPTIONS requests return 204 but no `Access-Control-Allow-Origin` header
 
-**Root Cause**: Both nginx reverse proxy AND FastAPI are adding CORS headers.
+**Root Cause**: Either:
+1. Nginx is responding to OPTIONS without forwarding to FastAPI
+2. FastAPI CORS middleware not receiving OPTIONS requests
 
-**Fix Required**: SSH to EC2 server and update nginx configuration
+**Manual Fix Steps**:
 
-1. SSH to server:
 ```bash
-ssh ubuntu@34.207.74.33
+# 1. SSH to server
+ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
+
+# 2. Navigate to deployment directory
+cd /opt/workshelf/deploy
+
+# 3. Pull latest code (includes fix script)
+git pull
+
+# 4. Run the CORS fix script
+sudo bash fix-cors.sh
+
+# 5. Restart backend to ensure new code is loaded
+sudo docker-compose -f docker-compose.prod.yml restart backend
+
+# 6. Wait 10 seconds for backend to start
+sleep 10
+
+# 7. Test CORS
+curl -X OPTIONS https://api.workshelf.dev/api/v1/store/browse \
+  -H "Origin: https://workshelf.dev" \
+  -H "Access-Control-Request-Method: GET" \
+  -i | grep -i "access-control"
+
+# Should see:
+# access-control-allow-origin: https://workshelf.dev
+# access-control-allow-methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
 ```
 
-2. Find and edit the nginx config for api.workshelf.dev:
+**If still not working after restart**, check nginx logs:
 ```bash
-sudo nano /etc/nginx/sites-available/api.workshelf.dev
+sudo tail -f /var/log/nginx/error.log
+sudo docker-compose -f docker-compose.prod.yml logs backend | tail -50
 ```
 
-3. Remove or comment out any `add_header Access-Control-Allow-Origin` lines:
-```nginx
-# REMOVE THIS:
-# add_header Access-Control-Allow-Origin "*" always;
+**Expected behavior**:
+- OPTIONS request should return headers like:
+  ```
+  access-control-allow-origin: https://workshelf.dev
+  access-control-allow-methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+  access-control-allow-headers: *
+  access-control-max-age: 3600
+  ```
 
-# FastAPI handles CORS via CORSMiddleware in backend/app/main.py
-```
-
-4. Test and reload nginx:
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
+---
 
 ## Sentry 403 Error
 
