@@ -24,7 +24,7 @@ export interface User {
   }[]
 }
 
-const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'https://auth.workshelf.dev'
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'https://keycloak.workshelf.dev'
 const KEYCLOAK_REALM = 'workshelf'
 const KEYCLOAK_CLIENT_ID = 'workshelf-frontend'
 // Use production API domain as safer fallback (avoid main site domain)
