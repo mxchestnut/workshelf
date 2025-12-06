@@ -91,7 +91,14 @@ jobs:
             # Clean up any orphaned containers and networks
             sudo docker container prune -f
             sudo docker network prune -f
-            sleep 3
+            
+            # Check what's using the ports
+            echo "🔍 Checking ports..."
+            sudo netstat -tlnp | grep -E ':(8000|5173|9000|9001)' || echo "No processes found on target ports"
+            
+            # Kill any docker-proxy processes that might be stuck
+            sudo pkill -9 docker-proxy || true
+            sleep 5
             
             sudo docker-compose -f docker-compose.prod.yml up -d
             
