@@ -70,7 +70,8 @@ instrumentator = Instrumentator(
 instrumentator.instrument(app).expose(app, endpoint="/metrics")
 print("[PROMETHEUS] Metrics exposed at /metrics")
 
-# Standard CORS middleware
+# CORS middleware - MUST be added before other middleware
+# Allows cross-origin requests from frontend domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -82,9 +83,13 @@ app.add_middleware(
         "https://admin.workshelf.dev",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
+
+print("[CORS] Configured for origins: workshelf.dev, www.workshelf.dev, app.workshelf.dev, admin.workshelf.dev")
 
 # Health check endpoints
 @app.get("/health")

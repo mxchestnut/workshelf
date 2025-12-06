@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fix CORS duplicate headers issue
+# Fix CORS configuration - Let FastAPI handle CORS completely
 # Run this on the EC2 server
 
 set -e
@@ -10,31 +10,38 @@ echo "🔧 Fixing CORS configuration..."
 sudo cp /etc/nginx/sites-available/api.workshelf.dev /etc/nginx/sites-available/api.workshelf.dev.backup 2>/dev/null || true
 sudo cp /etc/nginx/sites-available/workshelf.dev /etc/nginx/sites-available/workshelf.dev.backup 2>/dev/null || true
 
-# Check which config file exists and contains CORS headers
+# Function to fix CORS in a config file
+fix_cors_in_file() {
+    local config_file=$1
+    echo "Processing $config_file..."
+    
+    # Remove any existing CORS headers
+    sudo sed -i '/add_header Access-Control-Allow-Origin/d' "$config_file"
+    sudo sed -i '/add_header Access-Control-Allow-Methods/d' "$config_file"
+    sudo sed -i '/add_header Access-Control-Allow-Headers/d' "$config_file"
+    sudo sed -i '/add_header Access-Control-Allow-Credentials/d' "$config_file"
+    
+    # Ensure proxy headers are set (if proxy_pass exists)
+    if grep -q "proxy_pass" "$config_file"; then
+        # Check if proxy headers section exists
+        if ! grep -q "proxy_set_header Host" "$config_file"; then
+            # Add proxy headers before first proxy_pass
+            sudo sed -i '0,/proxy_pass/s/proxy_pass/proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        \n        proxy_pass/' "$config_file"
+        fi
+    fi
+    
+    echo "✅ Fixed $config_file"
+}
+
+# Fix api.workshelf.dev if it exists
 if [ -f /etc/nginx/sites-available/api.workshelf.dev ]; then
-    echo "Found api.workshelf.dev config"
-    
-    # Remove CORS headers from api config
-    sudo sed -i '/add_header Access-Control-Allow-Origin/d' /etc/nginx/sites-available/api.workshelf.dev
-    sudo sed -i '/add_header Access-Control-Allow-Methods/d' /etc/nginx/sites-available/api.workshelf.dev
-    sudo sed -i '/add_header Access-Control-Allow-Headers/d' /etc/nginx/sites-available/api.workshelf.dev
-    sudo sed -i '/add_header Access-Control-Allow-Credentials/d' /etc/nginx/sites-available/api.workshelf.dev
-    
-    echo "✅ Removed CORS headers from api.workshelf.dev"
+    fix_cors_in_file /etc/nginx/sites-available/api.workshelf.dev
 fi
 
+# Fix workshelf.dev if it proxies to backend
 if [ -f /etc/nginx/sites-available/workshelf.dev ]; then
-    echo "Found workshelf.dev config"
-    
-    # Check if it proxies to backend
     if grep -q "proxy_pass.*:8000" /etc/nginx/sites-available/workshelf.dev; then
-        # Remove CORS headers from main config
-        sudo sed -i '/add_header Access-Control-Allow-Origin/d' /etc/nginx/sites-available/workshelf.dev
-        sudo sed -i '/add_header Access-Control-Allow-Methods/d' /etc/nginx/sites-available/workshelf.dev
-        sudo sed -i '/add_header Access-Control-Allow-Headers/d' /etc/nginx/sites-available/workshelf.dev
-        sudo sed -i '/add_header Access-Control-Allow-Credentials/d' /etc/nginx/sites-available/workshelf.dev
-        
-        echo "✅ Removed CORS headers from workshelf.dev"
+        fix_cors_in_file /etc/nginx/sites-available/workshelf.dev
     fi
 fi
 
