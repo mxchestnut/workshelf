@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user, get_optional_user
 from app.services import document_service, user_service
 from app.services.content_integrity_service import ContentIntegrityService
-from app.models.document import DocumentStatus
+from app.models.document import DocumentStatus, DocumentMode
 from app.schemas.document import (
     DocumentCreate,
     DocumentUpdate,
@@ -199,3 +199,108 @@ async def delete_document(
     await document_service.delete_document(db, document_id, user.id)
     
     return None
+
+
+# ============================================================================
+# Document Versioning & Mode Management (Git-style workflow for writers)
+# ============================================================================
+
+@router.get("/{document_id}/versions", response_model=List[Dict[str, Any]])
+async def list_document_versions(
+    document_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    List all versions of a document (Git-style history)
+    
+    Returns version history like `git log`:
+    - Version number
+    - Created timestamp
+    - Author
+    - Change summary (commit message)
+    - Mode at time of version
+    - Whether this was a mode transition
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    versions = await document_service.list_document_versions(db, document_id, user.id)
+    return versions
+
+
+@router.get("/{document_id}/versions/{version_number}", response_model=Dict[str, Any]])
+async def get_document_version(
+    document_id: int,
+    version_number: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Get a specific version of a document
+    
+    Like `git show <commit>` - view the full content of a specific version
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    version = await document_service.get_document_version(db, document_id, version_number, user.id)
+    return version
+
+
+@router.post("/{document_id}/versions/{version_number}/restore", response_model=DocumentResponse)
+async def restore_document_version(
+    document_id: int,
+    version_number: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Restore a document to a previous version
+    
+    Like `git checkout <commit>` - restore the document to a previous state.
+    Creates a new version with the restored content.
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    document = await document_service.restore_document_version(db, document_id, version_number, user.id)
+    return document
+
+
+@router.post("/{document_id}/versions", response_model=Dict[str, Any]])
+async def create_manual_version(
+    document_id: int,
+    change_summary: str = Query(..., description="Commit message for this version"),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Create a manual version snapshot
+    
+    Like `git commit` - create a snapshot of the current document state
+    with a descriptive message.
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    version = await document_service.create_manual_version(db, document_id, user.id, change_summary)
+    return version
+
+
+@router.post("/{document_id}/mode", response_model=DocumentResponse)
+async def change_document_mode(
+    document_id: int,
+    new_mode: DocumentMode,
+    change_summary: Optional[str] = Query(None, description="Optional message for mode transition"),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Change document mode (Alpha → Beta → Publish → Read)
+    
+    Automatically creates a version snapshot when changing modes.
+    
+    Modes:
+    - alpha: Draft Room - collaborative drafting
+    - beta: Workshop - structured feedback
+    - publish: Print Queue - finalization and quality checks
+    - read: Bookshelf - consumer reading view
+    
+    Mode changes can go forward or backward (e.g., Publish → Beta for revisions)
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    document = await document_service.change_document_mode(db, document_id, user.id, new_mode, change_summary)
+    return document
