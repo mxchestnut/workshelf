@@ -88,7 +88,9 @@ jobs:
             echo "♻️  Restarting all services..."
             sudo docker-compose -f docker-compose.prod.yml down
             
-            # Clean up any orphaned containers and networks  
+            # Clean up ALL docker resources
+            echo "🧹 Cleaning up Docker..."
+            sudo docker ps -a --format '{{.Names}}' | grep -E '(deploy-|workshelf-)' | xargs -r sudo docker rm -f || true
             sudo docker container prune -f
             sudo docker network prune -f
             
