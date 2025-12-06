@@ -13,6 +13,10 @@
 - ✅ 5 new API endpoints (list/view/restore versions, manual commits, mode changes)
 - ✅ Database migration completed (documentmode enum, mode columns)
 - ✅ Backend service layer with 450+ lines of versioning logic
+- ✅ ModeSwitcher component with 4-button UI
+- ✅ VersionHistory component with Git-log style viewer
+- ✅ Mode change and version restore functionality
+- ✅ TypeScript and ESLint passing
 
 ## ✅ Recently Completed (December 5, 2025)
 
@@ -30,31 +34,7 @@
 
 ## 🎯 Next Priorities
 
-### 1. Document Modes Frontend 🎨 **HIGH PRIORITY**
-**Status:** Backend Complete, Frontend Needed  
-**Goal:** Build UI for 4-mode document workflow
-
-**Tasks:**
-- [ ] **Mode Switcher** - Add mode selector buttons in Document.tsx
-  - 4 buttons: Alpha (Draft Room), Beta (Workshop), Publish (Print Queue), Read (Bookshelf)
-  - Visual indication of current mode
-  - Call API: `POST /api/v1/documents/{id}/mode`
-  - Browser back button support
-
-- [ ] **Version History UI** - Git-log style version viewer
-  - Display: version number, timestamp, author, mode, change summary
-  - Restore capability
-  - Call API: `GET /api/v1/documents/{id}/versions`
-
-- [ ] **Mode-Specific Permissions** (Optional)
-  - Alpha: collaborators can edit
-  - Beta: only author can edit, others comment
-  - Publish: locked, no edits
-  - Read: view only
-
----
-
-### 2. GDPR Compliance - Final Step ⚠️ **HIGH PRIORITY**
+### 1. GDPR Compliance - Final Step ⚠️ **HIGH PRIORITY**
 **Status:** 90% Complete (only Export UI remains)  
 **What's Missing:** Frontend UI for GDPR data export
 
@@ -66,7 +46,7 @@
 
 ---
 
-### 3. Staff Admin Infrastructure 🛠️ **MEDIUM PRIORITY**
+### 2. Staff Admin Infrastructure 🛠️ **MEDIUM PRIORITY**
 **Status:** 60% Complete  
 **Goal:** Complete observability & monitoring stack
 
@@ -99,7 +79,7 @@
 
 ---
 
-### 4. Missing Frontend Features 🎨 **LOW PRIORITY**
+### 3. Missing Frontend Features 🎨 **LOW PRIORITY**
 
 **A. Group Scholarships** 🎓
 - Backend: ✅ Complete (`/api/v1/groups/{id}/scholarships`)
@@ -121,7 +101,7 @@
 
 ---
 
-### 5. Technical Improvements 🔧 **LOW PRIORITY**
+### 4. Technical Improvements 🔧 **LOW PRIORITY**
 
 **A. Performance Optimization** 🚀
 - Current: Good (897 KB total, 441KB main + 509KB editor)
