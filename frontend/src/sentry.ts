@@ -4,13 +4,14 @@
  */
 import * as Sentry from '@sentry/react';
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || 'https://b8c5190474974430cdd1396231416148@o4510280685977605.ingest.us.sentry.io/4510448574726144';
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'production';
 const RELEASE = import.meta.env.VITE_RELEASE || 'unknown';
 
 export function initSentry() {
   if (!SENTRY_DSN) {
     // Sentry is optional - silently skip if not configured
+    console.log('[Sentry] Skipped - no DSN configured');
     return;
   }
 
