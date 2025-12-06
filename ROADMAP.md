@@ -1,42 +1,8 @@
 # Workshelf Roadmap
 
 **Last Updated:** December 6, 2025  
-**Current Status:** Production-ready with CI/CD pipeline operational  
+**Current Status:** Deployed to production - Document modes & GDPR export live  
 **Overall Grade:** A+ (Security: A+, Performance: A, Accessibility: WCAG 2.1 AA ✅, GDPR: 100% ✅)
-
-## ✅ Recently Completed (December 6, 2025)
-
-### GDPR Data Export UI
-- ✅ Privacy & Data section added to Profile page
-- ✅ Export My Data button with loading states
-- ✅ Integration with /api/export/gdpr endpoint
-- ✅ Success/error messaging for export requests
-- ✅ Help text and privacy policy links
-- ✅ **GDPR Compliance: 100% Complete** ✅
-
-### Document Modes & Versioning System
-- ✅ 4-mode document workflow (Alpha/Beta/Publish/Read)
-- ✅ Git-style versioning with full content snapshots
-- ✅ Mode transition tracking and version history
-- ✅ 5 new API endpoints (list/view/restore versions, manual commits, mode changes)
-- ✅ Database migration completed (documentmode enum, mode columns)
-- ✅ Backend service layer with 450+ lines of versioning logic
-- ✅ ModeSwitcher component with 4-button UI
-- ✅ VersionHistory component with Git-log style viewer
-- ✅ Mode change and version restore functionality
-- ✅ TypeScript and ESLint passing
-
-## ✅ Recently Completed (December 5, 2025)
-
-### CI/CD & Deployment Infrastructure
-- ✅ GitHub Actions CI pipeline configured and passing
-- ✅ GitHub Actions deployment workflow with production environment
-- ✅ All 6 GitHub secrets configured (Sentry, EC2, PostHog)
-- ✅ Sentry integration (frontend + backend error tracking)
-- ✅ Matrix chat integration fully removed from codebase
-- ✅ All ESLint warnings fixed (0 errors, 0 warnings)
-- ✅ TypeScript compilation passing
-- ✅ Frontend build optimization (441KB main bundle, 509KB editor bundle)
 
 ---
 
@@ -124,30 +90,6 @@
   - [ ] Unskip Phase 5 tests (8 tests)
   - [ ] Unskip Phase 7 tests (19 tests)
   - [ ] Unskip Group tests (52 tests)
-
----
-
-## ✅ Recently Completed
-
-### December 5, 2025 - CI/CD & Deployment
-- ✅ GitHub Actions CI pipeline operational (all checks passing)
-- ✅ GitHub Actions deployment workflow with production environment
-- ✅ All 6 GitHub secrets configured (Sentry, EC2, PostHog)
-- ✅ Sentry integration tested and working
-- ✅ Matrix chat fully removed from codebase
-- ✅ ESLint passing (0 errors, 0 warnings)
-- ✅ TypeScript compilation passing
-- ✅ Frontend build optimized
-
-### December 2025 - Features & Compliance
-- ✅ Custom Group Roles (Discord-style UI with 17 permissions)
-- ✅ GDPR: Privacy Policy, Account Deletion, Trash Bin, Data Retention
-- ✅ Accessibility: WCAG 2.1 AA compliant (8 new accessible components)
-- ✅ Security audit passed (no critical vulnerabilities)
-- ✅ Python 3.9/3.13 compatibility
-- ✅ Import/Export: Bulk document import with folder preservation
-- ✅ Group Features: Privacy protection, member counts, settings page
-- ✅ All Phase 5 & Phase 7 features deployed
 
 ---
 
