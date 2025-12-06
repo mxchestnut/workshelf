@@ -88,19 +88,25 @@ jobs:
             echo "♻️  Restarting all services..."
             sudo docker-compose -f docker-compose.prod.yml down
             
-            # Clean up any orphaned containers and networks
+            # Clean up any orphaned containers and networks  
             sudo docker container prune -f
             sudo docker network prune -f
             
             # Check what's using the ports
             echo "🔍 Checking ports..."
-            sudo netstat -tlnp | grep -E ':(8000|5173|9000|9001)' || echo "No processes found on target ports"
+            sudo ss -tlnp | grep -E ':(8000|5173|9000|9001)' || echo "No processes found on target ports"
             
             # Kill any docker-proxy processes that might be stuck
             sudo pkill -9 docker-proxy || true
-            sleep 5
+            sleep 10
             
-            sudo docker-compose -f docker-compose.prod.yml up -d
+            # Start services one at a time to avoid race conditions
+            echo "🚀 Starting infrastructure services..."
+            sudo docker-compose -f docker-compose.prod.yml up -d postgres redis minio keycloak
+            sleep 15
+            
+            echo "🚀 Starting application services..."
+            sudo docker-compose -f docker-compose.prod.yml up -d backend frontend
             
             echo "⏳ Waiting for services to stabilize..."
             sleep 10
