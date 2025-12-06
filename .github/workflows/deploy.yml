@@ -88,8 +88,9 @@ jobs:
             echo "♻️  Restarting all services..."
             sudo docker-compose -f docker-compose.prod.yml down
             
-            # Kill any processes holding ports
-            sudo fuser -k 8000/tcp 5173/tcp 9000/tcp 9001/tcp || true
+            # Clean up any orphaned containers and networks
+            sudo docker container prune -f
+            sudo docker network prune -f
             sleep 3
             
             sudo docker-compose -f docker-compose.prod.yml up -d
