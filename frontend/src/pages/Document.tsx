@@ -5,7 +5,9 @@
 import { useEffect, useState } from 'react'
 import { Editor } from '../components/Editor'
 import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
-import { ArrowLeft, Trash2, ExternalLink, Sparkles } from 'lucide-react'
+import { ModeSwitcher, DocumentMode } from '../components/ModeSwitcher'
+import { VersionHistory } from '../components/VersionHistory'
+import { ArrowLeft, Trash2, ExternalLink, Sparkles, History } from 'lucide-react'
 import '../components/Editor.css'
 import { CommentsThread } from '../components/CommentsThread'
 import { toast } from '../services/toast'
@@ -18,6 +20,7 @@ interface DocumentData {
   content: any // TipTap JSON
   status: 'draft' | 'published' | 'archived'
   visibility: 'private' | 'public' | 'studio'
+  mode: DocumentMode
   word_count: number
   created_at: string
   updated_at: string
@@ -30,6 +33,8 @@ export function Document() {
   const [title, setTitle] = useState('')
   const [promptsOpen, setPromptsOpen] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false)
+  const [modeChanging, setModeChanging] = useState(false)
 
   // Get document ID from URL path (/document/123) or query (?id=123)
   const pathParts = window.location.pathname.split('/')
@@ -229,6 +234,38 @@ export function Document() {
     }
   }
 
+  const changeDocumentMode = async (newMode: DocumentMode) => {
+    if (!document || modeChanging) return
+
+    setModeChanging(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/documents/${document.id}/mode`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          new_mode: newMode
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to change document mode')
+      }
+
+      const data = await response.json()
+      setDocument(data)
+      toast.success(`Mode changed to ${newMode}`)
+    } catch (err) {
+      console.error('Error changing mode:', err)
+      toast.error('Failed to change mode')
+    } finally {
+      setModeChanging(false)
+    }
+  }
+
   const deleteDocument = async () => {
     if (!document) return
     if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
@@ -375,6 +412,12 @@ export function Document() {
           </div>
           
           <div className="flex items-center gap-2">
+            <ModeSwitcher
+              currentMode={document.mode || 'alpha'}
+              onChange={changeDocumentMode}
+              disabled={modeChanging}
+            />
+            <div className="w-px h-6 bg-neutral-light" />
             {document.status === 'published' && document.visibility === 'public' && (
               <button
                 onClick={() => window.open(`/view/${document.id}`, '_blank')}
@@ -385,6 +428,14 @@ export function Document() {
                 View
               </button>
             )}
+            <button
+              onClick={() => setVersionHistoryOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral hover:bg-neutral-lightest rounded-lg transition-colors"
+              title="Version history"
+            >
+              <History className="w-4 h-4" />
+              History
+            </button>
             <button
               onClick={() => setPromptsOpen(!promptsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-neutral-lightest rounded-lg transition-colors"
@@ -493,6 +544,17 @@ export function Document() {
           </div>
         </div>
       )}
+
+      {/* Version History Modal */}
+      <VersionHistory
+        documentId={document.id}
+        isOpen={versionHistoryOpen}
+        onClose={() => setVersionHistoryOpen(false)}
+        onRestore={() => {
+          // Reload document after restore
+          loadDocument(document.id.toString())
+        }}
+      />
     </div>
   )
 }

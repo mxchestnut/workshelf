@@ -11,31 +11,25 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '005_add_document_modes'
-down_revision = '004_add_feedback_document_to_beta_requests'
+down_revision = 'merge_all_heads_final'
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    # Create DocumentMode enum type
-    document_mode_enum = postgresql.ENUM(
-        'alpha', 'beta', 'publish', 'read',
-        name='documentmode',
-        create_type=True
-    )
-    document_mode_enum.create(op.get_bind(), checkfirst=True)
+    # Drop existing enum if it has wrong case
+    op.execute("DROP TYPE IF EXISTS documentmode CASCADE")
+    
+    # Create DocumentMode enum type with lowercase values using raw SQL
+    op.execute("CREATE TYPE documentmode AS ENUM ('alpha', 'beta', 'publish', 'read')")
     
     # Add mode column to documents table
-    op.add_column('documents', sa.Column('mode', sa.Enum('alpha', 'beta', 'publish', 'read', name='documentmode'), 
-                                         nullable=False, server_default='alpha'))
+    op.execute("ALTER TABLE documents ADD COLUMN mode documentmode NOT NULL DEFAULT 'alpha'")
     
     # Add mode tracking columns to document_versions table
-    op.add_column('document_versions', sa.Column('mode', sa.Enum('alpha', 'beta', 'publish', 'read', name='documentmode'), 
-                                                  nullable=False, server_default='alpha'))
-    op.add_column('document_versions', sa.Column('previous_mode', sa.Enum('alpha', 'beta', 'publish', 'read', name='documentmode'), 
-                                                  nullable=True))
-    op.add_column('document_versions', sa.Column('is_mode_transition', sa.Boolean(), 
-                                                  nullable=False, server_default='false'))
+    op.execute("ALTER TABLE document_versions ADD COLUMN mode documentmode NOT NULL DEFAULT 'alpha'")
+    op.execute("ALTER TABLE document_versions ADD COLUMN previous_mode documentmode")
+    op.execute("ALTER TABLE document_versions ADD COLUMN is_mode_transition BOOLEAN NOT NULL DEFAULT false")
     
     # Create index on mode for better query performance
     op.create_index('ix_documents_mode', 'documents', ['mode'])
