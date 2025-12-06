@@ -5,11 +5,11 @@ Business logic for document operations
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import joinedload
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, Dict, Any
 from datetime import datetime, timezone
 import json
 
-from app.models.document import Document, DocumentStatus, DocumentVisibility
+from app.models.document import Document, DocumentStatus, DocumentVisibility, DocumentVersion
 from app.models.user import User
 from app.schemas.document import DocumentCreate, DocumentUpdate
 from fastapi import HTTPException, status
@@ -444,3 +444,266 @@ async def list_public_documents(
     documents = result.scalars().all()
     
     return list(documents), total
+
+
+# ============================================================================
+# Document Versioning & Mode Management (Git-style workflow for writers)
+# ============================================================================
+
+async def list_document_versions(
+    session: AsyncSession,
+    document_id: int,
+    user_id: int
+) -> List[Dict[str, Any]]:
+    """
+    List all versions of a document (Git-style history)
+    
+    Returns:
+        List of version dictionaries with metadata
+    """
+    # Get document and verify ownership
+    document = await get_document_by_id(session, document_id, user_id)
+    
+    # Query versions with creator eager loaded
+    query = select(DocumentVersion).options(
+        joinedload(DocumentVersion.created_by)
+    ).where(
+        DocumentVersion.document_id == document_id
+    ).order_by(DocumentVersion.version.desc())
+    
+    result = await session.execute(query)
+    versions = result.scalars().all()
+    
+    # Format response (Git-log style)
+    version_list = []
+    for v in versions:
+        version_list.append({
+            "version": v.version,
+            "created_at": v.created_at.isoformat() if v.created_at else None,
+            "created_by": {
+                "id": v.created_by.id if v.created_by else None,
+                "username": v.created_by.username if v.created_by else "Unknown"
+            },
+            "change_summary": v.change_summary,
+            "mode": v.mode,
+            "previous_mode": v.previous_mode,
+            "is_mode_transition": v.is_mode_transition,
+            "is_major_version": v.is_major_version,
+            "word_count": v.word_count,
+            "title": v.title
+        })
+    
+    return version_list
+
+
+async def get_document_version(
+    session: AsyncSession,
+    document_id: int,
+    version_number: int,
+    user_id: int
+) -> Dict[str, Any]:
+    """
+    Get a specific version of a document
+    
+    Returns:
+        Full version data including content
+    """
+    # Verify ownership
+    document = await get_document_by_id(session, document_id, user_id)
+    
+    # Get version
+    query = select(DocumentVersion).options(
+        joinedload(DocumentVersion.created_by)
+    ).where(
+        DocumentVersion.document_id == document_id,
+        DocumentVersion.version == version_number
+    )
+    
+    result = await session.execute(query)
+    version = result.scalar_one_or_none()
+    
+    if not version:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Version {version_number} not found for document {document_id}"
+        )
+    
+    return {
+        "version": version.version,
+        "created_at": version.created_at.isoformat() if version.created_at else None,
+        "created_by": {
+            "id": version.created_by.id if version.created_by else None,
+            "username": version.created_by.username if version.created_by else "Unknown"
+        },
+        "title": version.title,
+        "content": version.content,
+        "content_html": version.content_html,
+        "word_count": version.word_count,
+        "change_summary": version.change_summary,
+        "mode": version.mode,
+        "previous_mode": version.previous_mode,
+        "is_mode_transition": version.is_mode_transition,
+        "is_major_version": version.is_major_version
+    }
+
+
+async def restore_document_version(
+    session: AsyncSession,
+    document_id: int,
+    version_number: int,
+    user_id: int
+) -> Document:
+    """
+    Restore a document to a previous version (Git checkout)
+    
+    Creates a new version with the restored content
+    """
+    from datetime import datetime
+    
+    # Get document and verify ownership
+    document = await get_document_by_id(session, document_id, user_id)
+    
+    # Get the version to restore
+    version_data = await get_document_version(session, document_id, version_number, user_id)
+    
+    # Create a new version before restoration
+    current_mode = document.mode
+    new_version = DocumentVersion(
+        document_id=document.id,
+        version=document.current_version + 1,
+        title=version_data["title"],
+        content=version_data["content"],
+        content_html=version_data["content_html"],
+        word_count=version_data["word_count"],
+        mode=current_mode,
+        previous_mode=current_mode,
+        created_by_id=user_id,
+        change_summary=f"Restored from version {version_number}",
+        is_mode_transition=False,
+        is_major_version=True  # Restoration is a major change
+    )
+    session.add(new_version)
+    
+    # Update document with restored content
+    document.title = version_data["title"]
+    document.content = version_data["content"]
+    document.content_html = version_data["content_html"]
+    document.word_count = version_data["word_count"]
+    document.current_version += 1
+    document.updated_at = datetime.utcnow()
+    
+    await session.commit()
+    await session.refresh(document)
+    
+    return document
+
+
+async def create_manual_version(
+    session: AsyncSession,
+    document_id: int,
+    user_id: int,
+    change_summary: str
+) -> Dict[str, Any]:
+    """
+    Create a manual version snapshot (Git commit)
+    """
+    from datetime import datetime
+    
+    # Get document and verify ownership
+    document = await get_document_by_id(session, document_id, user_id)
+    
+    # Create new version
+    new_version = DocumentVersion(
+        document_id=document.id,
+        version=document.current_version + 1,
+        title=document.title,
+        content=document.content or "",
+        content_html=document.content_html,
+        word_count=document.word_count or 0,
+        mode=document.mode,
+        previous_mode=document.mode,
+        created_by_id=user_id,
+        change_summary=change_summary,
+        is_mode_transition=False,
+        is_major_version=False
+    )
+    session.add(new_version)
+    
+    # Update document version counter
+    document.current_version += 1
+    document.updated_at = datetime.utcnow()
+    
+    await session.commit()
+    await session.refresh(new_version)
+    
+    return {
+        "version": new_version.version,
+        "created_at": new_version.created_at.isoformat() if new_version.created_at else None,
+        "change_summary": new_version.change_summary,
+        "mode": new_version.mode
+    }
+
+
+async def change_document_mode(
+    session: AsyncSession,
+    document_id: int,
+    user_id: int,
+    new_mode: 'DocumentMode',
+    change_summary: Optional[str] = None
+) -> Document:
+    """
+    Change document mode with automatic versioning
+    
+    Modes: alpha (Draft Room) → beta (Workshop) → publish (Print Queue) → read (Bookshelf)
+    """
+    from datetime import datetime
+    from app.models.document import DocumentMode
+    
+    # Get document and verify ownership
+    document = await get_document_by_id(session, document_id, user_id)
+    
+    previous_mode = document.mode
+    
+    # Validate mode transition (can go forward or backward)
+    if previous_mode == new_mode:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Document is already in {new_mode} mode"
+        )
+    
+    # Create version snapshot for mode transition
+    transition_message = change_summary or f"Mode changed: {previous_mode} → {new_mode}"
+    
+    new_version = DocumentVersion(
+        document_id=document.id,
+        version=document.current_version + 1,
+        title=document.title,
+        content=document.content or "",
+        content_html=document.content_html,
+        word_count=document.word_count or 0,
+        mode=new_mode,
+        previous_mode=previous_mode,
+        created_by_id=user_id,
+        change_summary=transition_message,
+        is_mode_transition=True,
+        is_major_version=True  # Mode transitions are major versions
+    )
+    session.add(new_version)
+    
+    # Update document mode
+    document.mode = new_mode
+    document.current_version += 1
+    document.updated_at = datetime.utcnow()
+    
+    # Apply mode-specific logic
+    if new_mode == DocumentMode.PUBLISH:
+        # Lock document in publish mode
+        document.is_locked = True
+    elif previous_mode == DocumentMode.PUBLISH and new_mode in [DocumentMode.ALPHA, DocumentMode.BETA]:
+        # Unlock when moving back from publish
+        document.is_locked = False
+    
+    await session.commit()
+    await session.refresh(document)
+    
+    return document

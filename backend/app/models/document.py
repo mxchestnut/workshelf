@@ -16,6 +16,17 @@ class DocumentStatus(str, enum.Enum):
     ARCHIVED = "archived"
 
 
+class DocumentMode(str, enum.Enum):
+    """
+    Document mode - Git-style workflow for writers
+    Controls UI, permissions, and collaboration features
+    """
+    ALPHA = "alpha"      # Draft Room - collaborative drafting
+    BETA = "beta"        # Workshop - structured feedback
+    PUBLISH = "publish"  # Print Queue - finalization
+    READ = "read"        # Bookshelf - consumer reading
+
+
 class DocumentVisibility(str, enum.Enum):
     """Document visibility settings"""
     PRIVATE = "private"
@@ -66,6 +77,7 @@ class Document(Base, TimestampMixin, TenantMixin):
     
     # Status and workflow
     status = Column(SQLEnum(DocumentStatus), default=DocumentStatus.DRAFT, nullable=False, index=True)
+    mode = Column(SQLEnum(DocumentMode), default=DocumentMode.ALPHA, nullable=False, index=True)
     visibility = Column(SQLEnum(DocumentVisibility), default=DocumentVisibility.PRIVATE, nullable=False)
     
     # Publishing
@@ -140,12 +152,17 @@ class DocumentVersion(Base, TimestampMixin):
     content_html = Column(Text)
     word_count = Column(Integer, default=0)
     
+    # Mode tracking (Git-style workflow)
+    mode = Column(SQLEnum(DocumentMode), nullable=False)  # Mode at time of version
+    previous_mode = Column(SQLEnum(DocumentMode))  # Previous mode (for transitions)
+    
     # Who made this version
     created_by_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     
     # Change metadata
-    change_summary = Column(Text)  # What changed in this version
+    change_summary = Column(Text)  # What changed in this version (Git commit message)
     is_major_version = Column(Boolean, default=False)  # Major vs minor version
+    is_mode_transition = Column(Boolean, default=False)  # Created during mode change
     
     # Storage
     file_path = Column(String(1000))  # Snapshot in blob storage

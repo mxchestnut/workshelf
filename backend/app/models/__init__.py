@@ -6,7 +6,7 @@ from app.models.base import Base
 from app.models.tenant import Tenant, TenantSettings
 from app.models.user import User, UserProfile, UserBadge, BetaReaderReview, BetaReaderProfile
 from app.models.role import Role, Permission, RolePermission, UserRole
-from app.models.document import Document, DocumentVersion, DocumentCollaborator, Tag, DocumentTag
+from app.models.document import Document, DocumentVersion, DocumentCollaborator, Tag, DocumentTag, DocumentMode, DocumentStatus, DocumentVisibility
 from app.models.studio import Studio, StudioMember
 from app.models.project import Project
 from app.models.folder import Folder
