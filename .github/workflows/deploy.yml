@@ -88,7 +88,12 @@ jobs:
             echo "♻️  Restarting services..."
             sudo docker-compose -f docker-compose.prod.yml stop backend frontend
             sudo docker-compose -f docker-compose.prod.yml rm -f backend frontend
+            
+            # Kill any orphaned processes on ports 8000 and 5173
+            sudo lsof -ti:8000 | xargs -r sudo kill -9 || true
+            sudo lsof -ti:5173 | xargs -r sudo kill -9 || true
             sleep 5
+            
             sudo docker-compose -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
             
             echo "⏳ Waiting for services to stabilize..."
