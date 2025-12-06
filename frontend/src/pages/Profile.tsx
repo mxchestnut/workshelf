@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2 } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2, Download, Shield } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
@@ -73,6 +73,10 @@ export function Profile() {
   const [followingTotal, setFollowingTotal] = useState(0)
   const [connectionsLoading, setConnectionsLoading] = useState(false)
   const [unfollowingId, setUnfollowingId] = useState<number | null>(null)
+
+  // GDPR Export state
+  const [exportLoading, setExportLoading] = useState(false)
+  const [exportMessage, setExportMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -368,6 +372,57 @@ export function Profile() {
       console.error('Failed to unfollow user:', error)
     } finally {
       setUnfollowingId(null)
+    }
+  }
+
+  const exportGDPRData = async () => {
+    setExportLoading(true)
+    setExportMessage(null)
+    
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        setExportMessage({ type: 'error', text: 'Not authenticated' })
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/export/gdpr`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Failed to request data export')
+      }
+
+      const result = await response.json()
+      
+      if (result.status === 'completed' && result.file_url) {
+        // Download immediately if available
+        window.open(result.file_url, '_blank')
+        setExportMessage({ 
+          type: 'success', 
+          text: 'Your data export is ready! Download started automatically.'
+        })
+      } else {
+        // Export job created, will be processed
+        setExportMessage({ 
+          type: 'success', 
+          text: 'Your data export has been requested. You will receive an email when it\'s ready (usually within a few minutes).'
+        })
+      }
+    } catch (error: any) {
+      console.error('Failed to export GDPR data:', error)
+      setExportMessage({ 
+        type: 'error', 
+        text: error.message || 'Failed to request data export. Please try again.'
+      })
+    } finally {
+      setExportLoading(false)
     }
   }
 
@@ -950,6 +1005,85 @@ export function Profile() {
                 <span className="text-sm capitalize">{interest.replace('-', ' ')}</span>
               </label>
             ))}
+          </div>
+        </div>
+
+        {/* Privacy & Data */}
+        <div className="rounded-lg p-6 border bg-card border-border">
+          <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-foreground">
+            <Shield className="w-5 h-5" /> Privacy & Data
+          </h2>
+          <p className="text-sm mb-4 text-muted-foreground">
+            Manage your personal data and privacy settings. In compliance with GDPR, you have the right to access and export all your data.
+          </p>
+
+          <div className="space-y-4">
+            {exportMessage && (
+              <div className={`p-4 rounded-lg border ${
+                exportMessage.type === 'success' 
+                  ? 'bg-green-900/40 border-green-700 text-green-300' 
+                  : 'bg-red-900/40 border-red-700 text-red-300'
+              }`}>
+                {exportMessage.text}
+              </div>
+            )}
+
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1 text-foreground">Export My Data</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Download a complete copy of your data including:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                    <li>• Profile information and account details</li>
+                    <li>• All documents and their content</li>
+                    <li>• Comments and activity history</li>
+                    <li>• Group memberships and settings</li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground">
+                    Your data will be prepared as a ZIP file containing JSON files. The download link will be available for 7 days.
+                  </p>
+                </div>
+                <button
+                  onClick={exportGDPRData}
+                  disabled={exportLoading}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 hover:opacity-90 transition-opacity whitespace-nowrap"
+                  style={{ backgroundColor: 'hsl(var(--primary))' }}
+                >
+                  {exportLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Preparing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Export Data
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Need help or have privacy concerns?</strong> Visit our{' '}
+                <a
+                  href="/privacy"
+                  className="text-primary hover:underline"
+                >
+                  Privacy Policy
+                </a>
+                {' '}or contact support at{' '}
+                <a
+                  href="mailto:privacy@workshelf.dev"
+                  className="text-primary hover:underline"
+                >
+                  privacy@workshelf.dev
+                </a>
+              </p>
+            </div>
           </div>
         </div>
 
