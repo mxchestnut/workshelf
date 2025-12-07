@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_optional_user
-from app.models.tags import Tag, PostTag
+from app.models.tags import ContentTag, PostTag
 from app.services import user_service
 from pydantic import BaseModel
 
@@ -51,7 +51,7 @@ async def search_tags(
     - alphabetical: A-Z
     - recent: Recently created
     """
-    query = select(Tag)
+    query = select(ContentTag)
     
     # Full-text search using tsvector
     if q:
@@ -60,18 +60,18 @@ async def search_tags(
             # Use PostgreSQL full-text search
             query = query.where(
                 or_(
-                    Tag.search_vector.op('@@')(func.plainto_tsquery('english', search_term)),
-                    func.lower(Tag.name).like(f'%{search_term.lower()}%')
+                    ContentTag.search_vector.op('@@')(func.plainto_tsquery('english', search_term)),
+                    func.lower(ContentTag.name).like(f'%{search_term.lower()}%')
                 )
             )
     
     # Apply sorting
     if sort == "popular":
-        query = query.order_by(Tag.usage_count.desc(), Tag.name)
+        query = query.order_by(ContentTag.usage_count.desc(), ContentTag.name)
     elif sort == "alphabetical":
-        query = query.order_by(Tag.name)
+        query = query.order_by(ContentTag.name)
     elif sort == "recent":
-        query = query.order_by(Tag.created_at.desc())
+        query = query.order_by(ContentTag.created_at.desc())
     
     query = query.limit(limit)
     
@@ -86,7 +86,7 @@ async def get_tag(
 ):
     """Get a specific tag by ID"""
     result = await db.execute(
-        select(Tag).where(Tag.id == tag_id)
+        select(ContentTag).where(ContentTag.id == tag_id)
     )
     tag = result.scalar_one_or_none()
     
@@ -113,7 +113,7 @@ async def create_tag(
     
     # Check if tag already exists
     existing = await db.execute(
-        select(Tag).where(or_(Tag.slug == slug, Tag.name == tag_data.name))
+        select(ContentTag).where(or_(ContentTag.slug == slug, ContentTag.name == tag_data.name))
     )
     existing_tag = existing.scalar_one_or_none()
     if existing_tag:
@@ -121,7 +121,7 @@ async def create_tag(
         return existing_tag
     
     # Create tag
-    tag = Tag(
+    tag = ContentTag(
         name=tag_data.name,
         slug=slug,
         description=tag_data.description,
@@ -147,7 +147,7 @@ async def add_tag_to_post(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Verify tag exists
-    tag_result = await db.execute(select(Tag).where(Tag.id == tag_id))
+    tag_result = await db.execute(select(ContentTag).where(ContentTag.id == tag_id))
     tag = tag_result.scalar_one_or_none()
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -208,7 +208,7 @@ async def remove_tag_from_post(
     await db.delete(post_tag)
     
     # Decrement usage count
-    tag_result = await db.execute(select(Tag).where(Tag.id == tag_id))
+    tag_result = await db.execute(select(ContentTag).where(ContentTag.id == tag_id))
     tag = tag_result.scalar_one_or_none()
     if tag and tag.usage_count > 0:
         tag.usage_count -= 1
@@ -225,10 +225,10 @@ async def get_post_tags(
 ):
     """Get all tags for a specific post"""
     result = await db.execute(
-        select(Tag)
-        .join(PostTag, Tag.id == PostTag.tag_id)
+        select(ContentTag)
+        .join(PostTag, ContentTag.id == PostTag.tag_id)
         .where(PostTag.post_id == post_id)
-        .order_by(Tag.name)
+        .order_by(ContentTag.name)
     )
     
     return result.scalars().all()

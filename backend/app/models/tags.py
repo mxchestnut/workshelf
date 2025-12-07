@@ -8,10 +8,11 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from app.models.base import Base, TimestampMixin
 
 
-class Tag(Base, TimestampMixin):
+class ContentTag(Base, TimestampMixin):
     """
     Universal tags for content (posts, ebooks, articles, etc.)
     Simple design: just name, slug, usage count, full-text search
+    Note: Renamed from Tag to avoid conflict with document.Tag
     """
     __tablename__ = "content_tags"  # Renamed to avoid conflict with document tags table
     
@@ -49,7 +50,7 @@ class PostTag(Base):
     
     # Relationships
     post = relationship("GroupPost", back_populates="post_tags")
-    tag = relationship("Tag", back_populates="post_tags")
+    tag = relationship("ContentTag", back_populates="post_tags")
     
     __table_args__ = (
         UniqueConstraint('post_id', 'tag_id', name='uq_post_tag'),
