@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Accept build args for API and Keycloak URLs with secure defaults
 ARG VITE_API_URL=https://api.workshelf.dev
-ARG VITE_KEYCLOAK_URL=https://workshelf-keycloak.wonderfulstone-7c41e05e.centralus.azurecontainerapps.io
+ARG VITE_KEYCLOAK_URL=https://keycloak.workshelf.dev
 ARG VITE_SENTRY_DSN
 ARG VITE_ENVIRONMENT=production
 ARG VITE_RELEASE=unknown

@@ -112,7 +112,8 @@ function App() {
         '/legal/rules',
         '/sitemap',
         '/overview',
-        '/pending-approval'
+        '/pending-approval',
+        '/updates'  // Work Shelf group redirect
       ])
       
       // Always allowed (even when not authenticated)
@@ -120,7 +121,8 @@ function App() {
 
       // Check if current path or any parent path is public
       const isPublicPath = publicPaths.has(path) || 
-                          path.startsWith('/invite/') || 
+                          path.startsWith('/invite/') ||
+                          path.startsWith('/groups/') ||  // Allow public group access
                           alwaysAllowed.has(path)
 
       if (!isAuthenticated && !isPublicPath) {
