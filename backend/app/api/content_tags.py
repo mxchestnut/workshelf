@@ -14,7 +14,7 @@ from app.models.tags import Tag, PostTag
 from app.services import user_service
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/tags", tags=["tags"])
+router = APIRouter(prefix="/content-tags", tags=["content-tags"])
 
 
 # Schemas
