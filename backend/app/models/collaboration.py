@@ -448,6 +448,7 @@ class GroupPost(Base, TimestampMixin):
     group = relationship("Group", back_populates="posts")
     author = relationship("User", back_populates="group_posts")
     reactions = relationship("GroupPostReaction", back_populates="post", cascade="all, delete-orphan")
+    post_tags = relationship("PostTag", back_populates="post", cascade="all, delete-orphan")
     
     __table_args__ = (
         Index('idx_group_posts', 'group_id', 'created_at'),

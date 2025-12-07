@@ -1,104 +1,77 @@
 """
-Content Tags API - AO3-style tagging for posts, ebooks, articles
+Tags API - Simple, fast tagging for posts (and future content types)
 """
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_optional_user
-from app.models.tags import ContentTag, ContentTagCategory, ContentTaggable
+from app.models.tags import Tag, PostTag
 from app.services import user_service
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/content-tags", tags=["content-tags"])
+router = APIRouter(prefix="/tags", tags=["tags"])
 
 
 # Schemas
-class ContentTagCategoryResponse(BaseModel):
+class TagResponse(BaseModel):
     id: int
     name: str
     slug: str
     description: Optional[str]
-    color: Optional[str]
-    icon: Optional[str]
-    
-    class Config:
-        from_attributes = True
-
-
-class ContentTagResponse(BaseModel):
-    id: int
-    name: str
-    slug: str
-    description: Optional[str]
-    category: Optional[ContentTagCategoryResponse]
     usage_count: int
-    is_canonical: bool
     
     class Config:
         from_attributes = True
 
 
-class ContentTagCreate(BaseModel):
+class TagCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    category_id: Optional[int] = None
 
 
-# Tag Categories
-@router.get("/categories", response_model=List[ContentTagCategoryResponse])
-async def get_tag_categories(
-    db: AsyncSession = Depends(get_db)
-):
-    """Get all tag categories"""
-    result = await db.execute(
-        select(ContentTagCategory).order_by(ContentTagCategory.name)
-    )
-    return result.scalars().all()
-
-
-# Tag Search & CRUD
-@router.get("/search", response_model=List[ContentTagResponse])
+# Tag CRUD & Search
+@router.get("/search", response_model=List[TagResponse])
 async def search_tags(
     q: Optional[str] = None,
-    category_id: Optional[int] = None,
     limit: int = 50,
     sort: str = "popular",  # popular, alphabetical, recent
     db: AsyncSession = Depends(get_db)
 ):
     """
     Search tags with autocomplete support
+    Uses PostgreSQL full-text search for fast results
     
     Sort options:
     - popular: Most used tags first (default)
     - alphabetical: A-Z
     - recent: Recently created
     """
-    query = select(ContentTag).options(joinedload(ContentTag.category))
+    query = select(Tag)
     
-    # Text search
+    # Full-text search using tsvector
     if q:
-        search_term = f"%{q.lower()}%"
-        query = query.where(func.lower(ContentTag.name).like(search_term))
-    
-    # Filter by category
-    if category_id:
-        query = query.where(ContentTag.category_id == category_id)
-    
-    # Only show canonical tags
-    query = query.where(ContentTag.is_canonical == True)
+        search_term = q.strip()
+        if search_term:
+            # Use PostgreSQL full-text search
+            query = query.where(
+                or_(
+                    Tag.search_vector.op('@@')(func.plainto_tsquery('english', search_term)),
+                    func.lower(Tag.name).like(f'%{search_term.lower()}%')
+                )
+            )
     
     # Apply sorting
     if sort == "popular":
-        query = query.order_by(ContentTag.usage_count.desc(), ContentTag.name)
+        query = query.order_by(Tag.usage_count.desc(), Tag.name)
     elif sort == "alphabetical":
-        query = query.order_by(ContentTag.name)
+        query = query.order_by(Tag.name)
     elif sort == "recent":
-        query = query.order_by(ContentTag.created_at.desc())
+        query = query.order_by(Tag.created_at.desc())
     
     query = query.limit(limit)
     
@@ -106,16 +79,14 @@ async def search_tags(
     return result.scalars().all()
 
 
-@router.get("/{tag_id}", response_model=ContentTagResponse)
+@router.get("/{tag_id}", response_model=TagResponse)
 async def get_tag(
     tag_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific tag by ID"""
     result = await db.execute(
-        select(ContentTag)
-        .options(joinedload(ContentTag.category))
-        .where(ContentTag.id == tag_id)
+        select(Tag).where(Tag.id == tag_id)
     )
     tag = result.scalar_one_or_none()
     
@@ -125,35 +96,35 @@ async def get_tag(
     return tag
 
 
-@router.post("", response_model=ContentTagResponse)
+@router.post("", response_model=TagResponse)
 async def create_tag(
-    tag_data: ContentTagCreate,
+    tag_data: TagCreate,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Create a new tag (user-created tags start as non-canonical, staff can make canonical)
+    Create a new tag
+    Anyone can create tags (folksonomy style, like AO3)
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Generate slug
-    slug = tag_data.name.lower().replace(' ', '-').replace('/', '-')
+    slug = tag_data.name.lower().replace(' ', '-').replace('/', '-').replace("'", '')
     
     # Check if tag already exists
     existing = await db.execute(
-        select(ContentTag).where(ContentTag.slug == slug)
+        select(Tag).where(or_(Tag.slug == slug, Tag.name == tag_data.name))
     )
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Tag already exists")
+    existing_tag = existing.scalar_one_or_none()
+    if existing_tag:
+        # Return existing tag instead of error (user-friendly)
+        return existing_tag
     
     # Create tag
-    tag = ContentTag(
+    tag = Tag(
         name=tag_data.name,
         slug=slug,
         description=tag_data.description,
-        category_id=tag_data.category_id,
-        is_canonical=user.is_staff,
-        created_by=user.id,
         usage_count=0
     )
     
@@ -161,94 +132,83 @@ async def create_tag(
     await db.commit()
     await db.refresh(tag)
     
-    # Load relationships
-    result = await db.execute(
-        select(ContentTag)
-        .options(joinedload(ContentTag.category))
-        .where(ContentTag.id == tag.id)
-    )
-    return result.scalar_one()
+    return tag
 
 
-# Content Tagging
-@router.post("/apply")
-async def apply_tag_to_content(
+# Post Tagging
+@router.post("/posts/{post_id}/tags/{tag_id}")
+async def add_tag_to_post(
+    post_id: int,
     tag_id: int,
-    taggable_type: str,  # 'post', 'ebook', 'article'
-    taggable_id: int,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Apply a tag to content"""
+    """Add a tag to a post"""
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Verify tag exists
-    tag_result = await db.execute(select(ContentTag).where(ContentTag.id == tag_id))
+    tag_result = await db.execute(select(Tag).where(Tag.id == tag_id))
     tag = tag_result.scalar_one_or_none()
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
     
     # Check if already tagged
     existing = await db.execute(
-        select(ContentTaggable).where(
+        select(PostTag).where(
             and_(
-                ContentTaggable.tag_id == tag_id,
-                ContentTaggable.taggable_type == taggable_type,
-                ContentTaggable.taggable_id == taggable_id
+                PostTag.post_id == post_id,
+                PostTag.tag_id == tag_id
             )
         )
     )
     if existing.scalar_one_or_none():
         return {"message": "Already tagged"}
     
-    # Create taggable
-    taggable = ContentTaggable(
+    # Create post_tag
+    post_tag = PostTag(
+        post_id=post_id,
         tag_id=tag_id,
-        taggable_type=taggable_type,
-        taggable_id=taggable_id,
         created_at=datetime.now(timezone.utc)
     )
-    db.add(taggable)
+    db.add(post_tag)
     
     # Increment usage count
     tag.usage_count += 1
     
     await db.commit()
     
-    return {"message": "Tag applied successfully"}
+    return {"message": "Tag added successfully"}
 
 
-@router.delete("/remove")
-async def remove_tag_from_content(
+@router.delete("/posts/{post_id}/tags/{tag_id}")
+async def remove_tag_from_post(
+    post_id: int,
     tag_id: int,
-    taggable_type: str,
-    taggable_id: int,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Remove a tag from content"""
+    """Remove a tag from a post"""
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    # Find taggable
+    # Find post_tag
     result = await db.execute(
-        select(ContentTaggable).where(
+        select(PostTag).where(
             and_(
-                ContentTaggable.tag_id == tag_id,
-                ContentTaggable.taggable_type == taggable_type,
-                ContentTaggable.taggable_id == taggable_id
+                PostTag.post_id == post_id,
+                PostTag.tag_id == tag_id
             )
         )
     )
-    taggable = result.scalar_one_or_none()
+    post_tag = result.scalar_one_or_none()
     
-    if not taggable:
-        raise HTTPException(status_code=404, detail="Tag not applied to this content")
+    if not post_tag:
+        raise HTTPException(status_code=404, detail="Tag not applied to this post")
     
-    # Delete taggable
-    await db.delete(taggable)
+    # Delete post_tag
+    await db.delete(post_tag)
     
     # Decrement usage count
-    tag_result = await db.execute(select(ContentTag).where(ContentTag.id == tag_id))
+    tag_result = await db.execute(select(Tag).where(Tag.id == tag_id))
     tag = tag_result.scalar_one_or_none()
     if tag and tag.usage_count > 0:
         tag.usage_count -= 1
@@ -258,82 +218,62 @@ async def remove_tag_from_content(
     return {"message": "Tag removed successfully"}
 
 
-@router.get("/content/{taggable_type}/{taggable_id}", response_model=List[ContentTagResponse])
-async def get_content_tags(
-    taggable_type: str,
-    taggable_id: int,
+@router.get("/posts/{post_id}", response_model=List[TagResponse])
+async def get_post_tags(
+    post_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all tags for a specific piece of content"""
+    """Get all tags for a specific post"""
     result = await db.execute(
-        select(ContentTag)
-        .join(ContentTaggable, ContentTag.id == ContentTaggable.tag_id)
-        .options(joinedload(ContentTag.category))
-        .where(
-            and_(
-                ContentTaggable.taggable_type == taggable_type,
-                ContentTaggable.taggable_id == taggable_id
-            )
-        )
-        .order_by(ContentTag.name)
+        select(Tag)
+        .join(PostTag, Tag.id == PostTag.tag_id)
+        .where(PostTag.post_id == post_id)
+        .order_by(Tag.name)
     )
     
     return result.scalars().all()
 
 
 # Advanced Search (AO3-style include/exclude)
-@router.get("/filter/content")
-async def filter_content_by_tags(
+@router.get("/filter/posts")
+async def filter_posts_by_tags(
     include_tags: List[int] = Query(default=[], description="Tags that must be present"),
     exclude_tags: List[int] = Query(default=[], description="Tags that must NOT be present"),
-    taggable_type: str = Query(..., description="Content type: post, ebook, article"),
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Filter content by tags with include/exclude (AO3-style)
+    Filter posts by tags with include/exclude (AO3-style)
     
-    Returns IDs of content matching the filter criteria
+    Returns IDs of posts matching the filter criteria
+    Much faster than polymorphic version!
     """
-    # Start with all content of this type
-    base_ids_query = select(ContentTaggable.taggable_id).where(
-        ContentTaggable.taggable_type == taggable_type
-    ).distinct()
+    # Start with all posts
+    base_query = select(PostTag.post_id).distinct()
     
-    # If we have include tags, content must have ALL of them
+    # If we have include tags, post must have ALL of them
     if include_tags:
         for tag_id in include_tags:
-            # Get IDs that have this specific tag
-            has_tag_query = select(ContentTaggable.taggable_id).where(
-                and_(
-                    ContentTaggable.taggable_type == taggable_type,
-                    ContentTaggable.tag_id == tag_id
-                )
-            )
-            # Intersect with base query
-            base_ids_query = base_ids_query.intersect(has_tag_query)
+            # Intersect: post must have this tag
+            has_tag = select(PostTag.post_id).where(PostTag.tag_id == tag_id)
+            base_query = base_query.intersect(has_tag)
     
-    # If we have exclude tags, remove content that has ANY of them
+    # If we have exclude tags, remove posts that have ANY of them
     if exclude_tags:
-        exclude_ids_query = select(ContentTaggable.taggable_id).where(
-            and_(
-                ContentTaggable.taggable_type == taggable_type,
-                ContentTaggable.tag_id.in_(exclude_tags)
-            )
+        exclude_query = select(PostTag.post_id).where(
+            PostTag.tag_id.in_(exclude_tags)
         ).distinct()
         
-        # Subtract excluded IDs
-        base_ids_query = base_ids_query.except_(exclude_ids_query)
+        base_query = base_query.except_(exclude_query)
     
     # Execute with pagination
-    result = await db.execute(base_ids_query.limit(limit).offset(offset))
-    content_ids = [row[0] for row in result.all()]
+    result = await db.execute(base_query.limit(limit).offset(offset))
+    post_ids = [row[0] for row in result.all()]
     
     return {
-        "taggable_type": taggable_type,
-        "content_ids": content_ids,
-        "count": len(content_ids),
+        "post_ids": post_ids,
+        "count": len(post_ids),
         "filters": {
             "include_tags": include_tags,
             "exclude_tags": exclude_tags
