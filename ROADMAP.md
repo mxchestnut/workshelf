@@ -9,7 +9,7 @@
 ## 🎯 Next Priorities
 
 ### 1. Content Tagging System 🏷️ **HIGH PRIORITY**
-**Status:** ✅ 95% Complete - Backend + frontend deployed, ready for production  
+**Status:** ✅ 98% Complete - Full tagging system deployed, ready for production  
 **Goal:** AO3-style folksonomy tagging for posts, ebooks, and articles
 
 **Completed:**
@@ -36,15 +36,19 @@
   - ✅ Visual tag display on posts (clickable chips)
   - ✅ Active filter display with clear button
   - ✅ Tag usage counts in dropdowns
+- ✅ **Post Creation & Editing Integration**
+  - ✅ TagInput in post creation form (`GroupDetail.tsx`)
+  - ✅ Up to 10 tags per post
+  - ✅ Automatic tag application via API
+  - ✅ Edit mode in `PostDetail.tsx`
+  - ✅ Add/remove tags from existing posts
+  - ✅ Tag display on post detail page
 
 **Remaining:**
-- [ ] **Integration with Post Forms**
-  - Add TagInput to post creation form
-  - Add TagInput to post editing form
-  - Connect to backend apply/remove tag endpoints
 - [ ] **Extend to Ebooks & Articles** (migration 008)
   - Create `ebook_tags` and `article_tags` tables
   - Same pattern as `post_tags` (dedicated join tables)
+  - Add TagInput to ebook/article upload forms
 
 **Technical Notes:**
 - Uses `content_tags` table (distinct from `tags` for documents)
