@@ -55,7 +55,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
     }
   }
 
-  const checkSavedStatus = async () => {
+  const checkSavedStatus = useCallback(async () => {
     try {
       const token = await authService.getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections/check/${itemType}/${itemId}`, {

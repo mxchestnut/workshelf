@@ -3,7 +3,7 @@
  * User's personalized feed after login with multiple tabs
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { SaveToCollectionModal } from '../components/SaveToCollectionModal'
@@ -105,7 +105,7 @@ export function Feed() {
     loadTags()
   }, [])
 
-  const loadFeed = async (tab: FeedTab, sort: string = sortBy) => {
+  const loadFeed = useCallback(async (tab: FeedTab, sort: string = sortBy) => {
     try {
       const token = authService.getToken()
       
@@ -203,7 +203,7 @@ export function Feed() {
     } catch (error) {
       console.error('Error loading feed:', error)
     }
-  }
+  }, [sortBy, includeTags, excludeTags])
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)

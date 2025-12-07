@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import api from '../services/api';
+import { authService } from '../services/auth';
 
 interface Tag {
   id: number;
@@ -39,12 +39,21 @@ const TagInput: React.FC<TagInputProps> = ({
 
     const timer = setTimeout(async () => {
       try {
-        const response = await api.get('/content-tags/search', {
-          params: { q: inputValue, limit: 10, sort: 'popular' }
-        });
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/v1/content-tags/search?q=${encodeURIComponent(inputValue)}&limit=10&sort=popular`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        if (!response.ok) throw new Error('Failed to search tags');
+        const data = await response.json();
         
         // Filter out already selected tags
-        const filtered = response.data.filter(
+        const filtered = data.filter(
           (tag: Tag) => !selectedTags.some(selected => selected.id === tag.id)
         );
         
@@ -95,25 +104,42 @@ const TagInput: React.FC<TagInputProps> = ({
 
     setIsCreating(true);
     try {
-      const response = await api.post('/content-tags', {
-        name: trimmedValue,
-        description: null
-      });
-      
-      handleAddTag(response.data);
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response?.data?.detail?.includes('already exists')) {
-        // Tag already exists, try to find it in suggestions
-        const existingTag = suggestions.find(
-          tag => tag.name.toLowerCase() === trimmedValue.toLowerCase()
-        );
-        if (existingTag) {
-          handleAddTag(existingTag);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/content-tags/`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: trimmedValue,
+            description: null
+          })
         }
-      } else {
-        console.error('Failed to create tag:', error);
-        alert('Failed to create tag. Please try again.');
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 400 && errorData.detail?.includes('already exists')) {
+          // Tag already exists, try to find it in suggestions
+          const existingTag = suggestions.find(
+            tag => tag.name.toLowerCase() === trimmedValue.toLowerCase()
+          );
+          if (existingTag) {
+            handleAddTag(existingTag);
+          }
+          return;
+        }
+        throw new Error('Failed to create tag');
       }
+      
+      const newTag = await response.json();
+      handleAddTag(newTag);
+    } catch (error: any) {
+      console.error('Failed to create tag:', error);
+      alert('Failed to create tag. Please try again.');
     } finally {
       setIsCreating(false);
     }
