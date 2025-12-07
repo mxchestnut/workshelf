@@ -29,8 +29,15 @@ async def update_workshelf_group():
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
     
-    # Create async engine
-    engine = create_async_engine(database_url, echo=False)
+    # Remove sslmode parameter if present (asyncpg uses ssl=True instead)
+    if '?sslmode=require' in database_url:
+        database_url = database_url.replace('?sslmode=require', '')
+    if '&sslmode=require' in database_url:
+        database_url = database_url.replace('&sslmode=require', '')
+    
+    # Create async engine with SSL
+    connect_args = {"ssl": "require"} if "neon" in database_url else {}
+    engine = create_async_engine(database_url, echo=False, connect_args=connect_args)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with async_session() as session:
