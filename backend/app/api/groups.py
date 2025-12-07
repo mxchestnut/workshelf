@@ -37,16 +37,21 @@ async def create_group(
 ):
     """Create a new writing group."""
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Use privacy_level if provided, otherwise fall back to is_public for backward compatibility
+    privacy_level = group_data.privacy_level if group_data.privacy_level else ("public" if group_data.is_public else "private")
+    
     group = await GroupService.create_group(
         db,
         user.id,
         group_data.name,
         group_data.description,
         group_data.slug,
-        group_data.is_public,
-        group_data.avatar_url,
-        group_data.tags,
-        group_data.rules
+        privacy_level=privacy_level,
+        is_public=group_data.is_public,
+        avatar_url=group_data.avatar_url,
+        tags=group_data.tags,
+        rules=group_data.rules
     )
     return group
 
@@ -55,36 +60,51 @@ async def create_group(
 async def get_groups(
     limit: int = 50,
     offset: int = 0,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all public groups."""
+    """Get discoverable groups based on privacy level and user status."""
     from app.models.collaboration import Group, GroupMember
     
-    # Get groups with member counts
-    # Note: Using func.count(GroupMember.id) with outerjoin properly counts only actual members
-    # If no members exist, count will be 0 which is correct
-    query = (
-        select(Group, func.count(GroupMember.id).label('member_count'))
-        .outerjoin(GroupMember, Group.id == GroupMember.group_id)
-        .where(and_(Group.is_public == True, Group.is_active == True))
-        .group_by(Group.id)
-        .order_by(Group.created_at.desc())
-        .limit(limit)
-        .offset(offset)
-    )
-    result = await db.execute(query)
-    rows = result.all()
+    # Get user ID if logged in
+    user_id = None
+    if current_user:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        user_id = user.id
     
-    # Transform to response format with member_count
+    # Get discoverable groups (respects privacy levels)
+    groups = await GroupService.get_discoverable_groups(db, user_id=user_id, limit=limit, offset=offset)
+    
+    # Get member counts for each group
     responses = []
-    for group, member_count in rows:
-        # Add member_count as an attribute for Pydantic
-        group.member_count = int(member_count) if member_count else 0
+    for group in groups:
+        # Count members
+        member_count_result = await db.execute(
+            select(func.count(GroupMember.id))
+            .where(GroupMember.group_id == group.id)
+        )
+        member_count = member_count_result.scalar() or 0
+        
+        # Check if current user is a member
+        is_member = False
+        member_role = None
+        if user_id:
+            is_member = await GroupService.is_group_member(db, group.id, user_id)
+            if is_member:
+                member_result = await db.execute(
+                    select(GroupMember.role)
+                    .where(and_(GroupMember.group_id == group.id, GroupMember.user_id == user_id))
+                )
+                member_role = member_result.scalar()
+        
+        # Add attributes for Pydantic
+        group.member_count = int(member_count)
         group.document_count = 0  # TODO: calculate actual document count
-        group.is_member = False
-        group.member_role = None
+        group.is_member = is_member
+        group.member_role = member_role
         group.visibility = GroupVisibility.PUBLIC if group.is_public else GroupVisibility.PRIVATE
         responses.append(GroupResponse.model_validate(group))
+    
     return responses
 
 
@@ -188,10 +208,18 @@ async def get_group(
 @router.get("/slug/{slug}", response_model=GroupResponse)
 async def get_group_by_slug(
     slug: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a group by slug."""
-    group = await GroupService.get_group_by_slug(db, slug)
+    """Get a group by slug with privacy level checking."""
+    # Get user ID if logged in
+    user_id = None
+    if current_user:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        user_id = user.id
+    
+    # Get group with access check
+    group = await GroupService.get_group_by_slug(db, slug, user_id=user_id, check_access=True)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     return group
@@ -807,14 +835,14 @@ async def get_group_posts(
     group_id: int,
     limit: int = 50,
     offset: int = 0,
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all posts in a group (public groups: anyone, private groups: members only)."""
+    """Get all posts in a group based on privacy level."""
     from app.models.collaboration import GroupPost, Group, GroupMember
     from sqlalchemy import select, desc
     
-    # Get group to check if it's public
+    # Get group to check privacy level
     group_result = await db.execute(
         select(Group).where(Group.id == group_id)
     )
@@ -822,18 +850,25 @@ async def get_group_posts(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     
-    # If group is private, check membership
-    if not group.is_public:
+    # Get user ID if logged in
+    user_id = None
+    if current_user:
         user = await user_service.get_or_create_user_from_keycloak(db, current_user)
-        member_result = await db.execute(
-            select(GroupMember).where(
-                GroupMember.group_id == group_id,
-                GroupMember.user_id == user.id
-            )
-        )
-        member = member_result.scalar_one_or_none()
-        if not member:
-            raise HTTPException(status_code=403, detail="Must be a group member to view posts in private groups")
+        user_id = user.id
+    
+    # Check access to view posts (require_member=True for post content)
+    has_access = await GroupService.check_group_access(db, group, user_id, require_member=True)
+    if not has_access:
+        # Provide specific error messages based on privacy level
+        from app.models.collaboration import PrivacyLevel
+        if group.privacy_level == PrivacyLevel.GUARDED:
+            raise HTTPException(status_code=401, detail="Please log in to view this group's posts")
+        elif group.privacy_level == PrivacyLevel.PRIVATE:
+            raise HTTPException(status_code=403, detail="Must be a group member to view posts")
+        elif group.privacy_level == PrivacyLevel.SECRET:
+            raise HTTPException(status_code=404, detail="Group not found")
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
     
     result = await db.execute(
         select(GroupPost)

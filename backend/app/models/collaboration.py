@@ -4,6 +4,7 @@ Models for comments, beta reading, groups, and messaging
 """
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Enum as SQLEnum, JSON, Index, Numeric, ARRAY
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import ENUM as PGEnum
 from datetime import datetime, timezone
 import enum
 
@@ -296,12 +297,20 @@ class GroupPrivacyType(enum.Enum):
     UNLISTED = "unlisted"
 
 
-class GroupMemberRole(enum.Enum):
+class GroupMemberRole(str, enum.Enum):
     """Group member roles."""
     OWNER = "owner"
     ADMIN = "admin"
     MODERATOR = "moderator"
     MEMBER = "member"
+
+
+class PrivacyLevel(str, enum.Enum):
+    """Group privacy levels."""
+    PUBLIC = "public"      # Anyone can see (even not logged in)
+    GUARDED = "guarded"    # Only logged-in users can see
+    PRIVATE = "private"    # Only members can see posts/members, but name is searchable
+    SECRET = "secret"      # Not searchable, only accessible by direct invitation
 
 
 class Group(Base, TimestampMixin):
@@ -328,7 +337,12 @@ class Group(Base, TimestampMixin):
     featured_posts = Column(JSON, nullable=True)  # Array of featured post IDs or objects
     
     # Settings
-    is_public = Column(Boolean, default=True, nullable=False)
+    privacy_level = Column(
+        PGEnum('public', 'guarded', 'private', 'secret', name='privacylevel', create_type=False),
+        nullable=False,
+        default='public'
+    )
+    is_public = Column(Boolean, default=True, nullable=False)  # Kept for backward compatibility
     is_active = Column(Boolean, default=True, nullable=False)
     
     # Admin approval for custom subdomains

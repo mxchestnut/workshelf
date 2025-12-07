@@ -151,7 +151,8 @@ class GroupCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     slug: Optional[str] = Field(None, max_length=255)
-    is_public: bool = False
+    privacy_level: Optional[str] = "public"  # public, guarded, private, secret
+    is_public: bool = False  # Deprecated, kept for backward compatibility
     avatar_url: Optional[str] = Field(None, max_length=500)
     tags: Optional[List[str]] = None
     rules: Optional[str] = None
@@ -161,7 +162,8 @@ class GroupUpdate(BaseModel):
     """Schema for updating a group."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
-    is_public: Optional[bool] = None
+    privacy_level: Optional[str] = None  # public, guarded, private, secret
+    is_public: Optional[bool] = None  # Deprecated, kept for backward compatibility
     avatar_url: Optional[str] = Field(None, max_length=500)
     tags: Optional[List[str]] = None
     interests: Optional[List[str]] = None
@@ -203,7 +205,8 @@ class GroupResponse(BaseModel):
     name: str
     description: Optional[str]
     slug: str
-    is_public: bool
+    privacy_level: str = "public"  # public, guarded, private, secret
+    is_public: bool  # Kept for backward compatibility
     is_active: bool
     avatar_url: Optional[str]
     tags: Optional[List[str]]

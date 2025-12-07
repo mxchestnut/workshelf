@@ -5,13 +5,75 @@ from typing import Optional, List
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from fastapi import HTTPException
 
 from app.models import Group, GroupMember, GroupMemberRole, GroupPrivacyType
+from app.models.collaboration import PrivacyLevel
 from app.models.user import User
 
 
 class GroupService:
     """Service for managing writing groups and members."""
+    
+    @staticmethod
+    async def check_group_access(
+        db: AsyncSession,
+        group: Group,
+        user_id: Optional[int] = None,
+        require_member: bool = False
+    ) -> bool:
+        """
+        Check if a user has access to a group based on privacy level.
+        
+        Args:
+            db: Database session
+            group: The group to check access for
+            user_id: The user ID (None for not logged in)
+            require_member: If True, only allow members (for posts/members lists)
+        
+        Returns:
+            True if access is allowed, False otherwise
+        
+        Privacy Levels:
+            - PUBLIC: Anyone can see (no login required)
+            - GUARDED: Only logged-in users can see
+            - PRIVATE: Only members can see posts/members, but name is searchable
+            - SECRET: Not searchable, only accessible by members
+        """
+        # Check privacy level
+        if group.privacy_level == PrivacyLevel.PUBLIC:
+            # Public groups are accessible to everyone
+            if require_member and user_id:
+                # For member-only content, check membership
+                return await GroupService.is_group_member(db, group.id, user_id)
+            return True
+        
+        elif group.privacy_level == PrivacyLevel.GUARDED:
+            # Guarded groups require login
+            if not user_id:
+                return False
+            if require_member:
+                # For member-only content, check membership
+                return await GroupService.is_group_member(db, group.id, user_id)
+            return True
+        
+        elif group.privacy_level == PrivacyLevel.PRIVATE:
+            # Private groups require membership for posts/members
+            # But basic info (name, description) is searchable
+            if not user_id:
+                return not require_member  # Allow search, but not content
+            if require_member:
+                return await GroupService.is_group_member(db, group.id, user_id)
+            return True  # Logged-in users can see basic info
+        
+        elif group.privacy_level == PrivacyLevel.SECRET:
+            # Secret groups require membership for everything
+            if not user_id:
+                return False
+            return await GroupService.is_group_member(db, group.id, user_id)
+        
+        # Default: deny access
+        return False
     
     @staticmethod
     async def create_group(
@@ -20,20 +82,26 @@ class GroupService:
         name: str,
         description: Optional[str] = None,
         slug: Optional[str] = None,
+        privacy_level: str = "public",
         is_public: bool = False,
         avatar_url: Optional[str] = None,
         tags: Optional[List[str]] = None,
         rules: Optional[str] = None
     ) -> Group:
-        """Create a new group."""
+        """Create a new group with privacy level support."""
         # Generate slug if not provided
         if not slug:
             slug = name.lower().replace(' ', '-')
+        
+        # Map privacy_level to is_public for backward compatibility
+        if privacy_level == "public":
+            is_public = True
         
         group = Group(
             name=name,
             description=description,
             slug=slug,
+            privacy_level=privacy_level,
             is_public=is_public,
             avatar_url=avatar_url,
             tags=tags,
@@ -74,14 +142,41 @@ class GroupService:
         return result.scalar_one_or_none()
     
     @staticmethod
-    async def get_group_by_slug(db: AsyncSession, slug: str) -> Optional[Group]:
-        """Get a group by slug."""
+    async def get_group_by_slug(
+        db: AsyncSession, 
+        slug: str,
+        user_id: Optional[int] = None,
+        check_access: bool = True
+    ) -> Optional[Group]:
+        """
+        Get a group by slug with optional access control.
+        
+        Args:
+            db: Database session
+            slug: Group slug
+            user_id: Current user ID (None if not logged in)
+            check_access: If True, check privacy level access
+        
+        Returns:
+            Group if found and accessible, None otherwise
+        """
         result = await db.execute(
             select(Group)
             .options(selectinload(Group.members))
             .where(Group.slug == slug)
         )
-        return result.scalar_one_or_none()
+        group = result.scalar_one_or_none()
+        
+        if not group:
+            return None
+        
+        # Check access if requested
+        if check_access:
+            has_access = await GroupService.check_group_access(db, group, user_id, require_member=False)
+            if not has_access:
+                return None
+        
+        return group
     
     @staticmethod
     async def update_group(
@@ -137,19 +232,49 @@ class GroupService:
         return result.scalar_one()
     
     @staticmethod
-    async def get_public_groups(
+    async def get_discoverable_groups(
         db: AsyncSession,
+        user_id: Optional[int] = None,
         limit: int = 50,
         offset: int = 0
     ) -> List[Group]:
-        """Get all public active groups."""
-        result = await db.execute(
-            select(Group)
-            .where(and_(Group.is_public == True, Group.is_active == True))
-            .order_by(Group.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-        )
+        """
+        Get groups that are discoverable based on privacy level and user status.
+        
+        Privacy visibility:
+        - PUBLIC: Always visible in search
+        - GUARDED: Visible to logged-in users
+        - PRIVATE: Visible in search (name only)
+        - SECRET: Never visible in search (invitation only)
+        """
+        # Build query based on user status
+        if user_id:
+            # Logged-in users can see PUBLIC, GUARDED, and PRIVATE groups
+            query = select(Group).where(
+                and_(
+                    Group.is_active == True,
+                    Group.privacy_level.in_([
+                        PrivacyLevel.PUBLIC,
+                        PrivacyLevel.GUARDED,
+                        PrivacyLevel.PRIVATE
+                    ])
+                )
+            )
+        else:
+            # Not logged in: only see PUBLIC and PRIVATE (searchable) groups
+            query = select(Group).where(
+                and_(
+                    Group.is_active == True,
+                    Group.privacy_level.in_([
+                        PrivacyLevel.PUBLIC,
+                        PrivacyLevel.PRIVATE
+                    ])
+                )
+            )
+        
+        query = query.order_by(Group.created_at.desc()).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
         return result.scalars().all()
     
     @staticmethod
