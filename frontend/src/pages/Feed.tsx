@@ -6,7 +6,6 @@
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
-import { MatrixOnboardingModal } from '../components/MatrixOnboardingModal'
 import { BookOpen, Pin, Clock, Users, Bell, Sparkles, Globe } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
@@ -42,7 +41,6 @@ export function Feed() {
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<FeedTab>('personal')
-  const [showMatrixOnboarding, setShowMatrixOnboarding] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,11 +49,6 @@ export function Feed() {
         const currentUser = await authService.getCurrentUser()
         console.log('[Feed] User loaded:', currentUser)
         setUser(currentUser)
-        
-        // Check if user needs to see Matrix onboarding
-        if (currentUser && currentUser.username && !currentUser.matrix_onboarding_seen) {
-          setShowMatrixOnboarding(true)
-        }
         
         // Only load feed if we have a user
         if (currentUser) {
@@ -345,11 +338,6 @@ export function Feed() {
           </div>
         )}
       </div>
-
-      {/* Matrix Onboarding Modal for Existing Users */}
-      {showMatrixOnboarding && (
-        <MatrixOnboardingModal onClose={() => setShowMatrixOnboarding(false)} />
-      )}
     </div>
   )
 }

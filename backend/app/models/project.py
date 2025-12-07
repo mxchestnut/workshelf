@@ -1,11 +1,11 @@
 """
-Project database model.
+"""Project database model.
 """
 from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from app.models.base import Base
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Project(Base):
@@ -29,7 +29,7 @@ class Project(Base):
     prompt_responses = Column(JSONB, nullable=True)  # User's answers to template prompts
     
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Soft delete (trash bin)
     is_deleted = Column(Boolean, default=False, nullable=False, index=True)

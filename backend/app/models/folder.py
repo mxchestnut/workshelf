@@ -1,10 +1,10 @@
 """
-Folder database model.
+"""Folder database model.
 """
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.base import Base
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Folder(Base):
@@ -21,7 +21,7 @@ class Folder(Base):
     icon = Column(String(50), nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
     tenant = relationship("Tenant", back_populates="folders")

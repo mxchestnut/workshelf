@@ -1,7 +1,7 @@
 """
-Base model with common fields for all tables
+"""Base model with common fields for all tables
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import declared_attr
@@ -9,11 +9,16 @@ from sqlalchemy.orm import declared_attr
 Base = declarative_base()
 
 
+def utc_now():
+    """Get current UTC time with timezone info"""
+    return datetime.now(timezone.utc)
+
+
 class TimestampMixin:
     """Mixin for created_at and updated_at timestamps"""
     
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
 
 
 class TenantMixin:

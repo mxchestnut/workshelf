@@ -590,7 +590,7 @@ async def restore_document_version(
     document.content_html = version_data["content_html"]
     document.word_count = version_data["word_count"]
     document.current_version += 1
-    document.updated_at = datetime.utcnow()
+    document.updated_at = datetime.now(timezone.utc)
     
     await session.commit()
     await session.refresh(document)
@@ -631,7 +631,7 @@ async def create_manual_version(
     
     # Update document version counter
     document.current_version += 1
-    document.updated_at = datetime.utcnow()
+    document.updated_at = datetime.now(timezone.utc)
     
     await session.commit()
     await session.refresh(new_version)
@@ -693,7 +693,7 @@ async def change_document_mode(
     # Update document mode
     document.mode = new_mode
     document.current_version += 1
-    document.updated_at = datetime.utcnow()
+    document.updated_at = datetime.now(timezone.utc)
     
     # Apply mode-specific logic
     if new_mode == DocumentMode.PUBLISH:
