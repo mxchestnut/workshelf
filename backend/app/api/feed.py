@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.collaboration import GroupPost, GroupMember, Group
-from app.models.user import User
+from app.models.user import User, UserProfile
 from app.services import user_service
 from pydantic import BaseModel
 from datetime import datetime
@@ -70,6 +70,7 @@ async def get_feed(
         select(GroupPost, User, Group)
         .join(User, GroupPost.author_id == User.id)
         .join(Group, GroupPost.group_id == Group.id)
+        .options(joinedload(User.profile))
         .where(GroupPost.group_id.in_(group_ids))
         .order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
         .limit(limit)
@@ -92,7 +93,7 @@ async def get_feed(
                 id=author.id,
                 username=author.username,
                 display_name=author.display_name,
-                avatar_url=author.avatar_url
+                avatar_url=author.profile.avatar_url if author.profile else None
             ),
             group=GroupInfo(
                 id=group.id,
@@ -139,6 +140,7 @@ async def get_updates_feed(
         select(GroupPost, User, Group)
         .join(User, GroupPost.author_id == User.id)
         .join(Group, GroupPost.group_id == Group.id)
+        .options(joinedload(User.profile))
         .where(GroupPost.group_id.in_(group_ids))
         .order_by(desc(GroupPost.is_pinned), desc(GroupPost.updated_at))
         .limit(limit)
@@ -160,7 +162,7 @@ async def get_updates_feed(
                 id=author.id,
                 username=author.username,
                 display_name=author.display_name,
-                avatar_url=author.avatar_url
+                avatar_url=author.profile.avatar_url if author.profile else None
             ),
             group=GroupInfo(
                 id=group.id,
@@ -212,6 +214,7 @@ async def get_global_feed(
         select(GroupPost, User, Group)
         .join(User, GroupPost.author_id == User.id)
         .join(Group, GroupPost.group_id == Group.id)
+        .options(joinedload(User.profile))
         .where(
             and_(
                 Group.is_public == True,
@@ -238,7 +241,7 @@ async def get_global_feed(
                 id=author.id,
                 username=author.username,
                 display_name=author.display_name,
-                avatar_url=author.avatar_url
+                avatar_url=author.profile.avatar_url if author.profile else None
             ),
             group=GroupInfo(
                 id=group.id,
@@ -273,6 +276,7 @@ async def get_discover_feed(
         select(GroupPost, User, Group)
         .join(User, GroupPost.author_id == User.id)
         .join(Group, GroupPost.group_id == Group.id)
+        .options(joinedload(User.profile))
         .where(
             and_(
                 Group.is_public == True,
@@ -301,7 +305,7 @@ async def get_discover_feed(
                 id=author.id,
                 username=author.username,
                 display_name=author.display_name,
-                avatar_url=author.avatar_url
+                avatar_url=author.profile.avatar_url if author.profile else None
             ),
             group=GroupInfo(
                 id=group.id,
