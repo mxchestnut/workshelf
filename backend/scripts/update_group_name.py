@@ -15,9 +15,9 @@ async def main():
     async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with async_session_maker() as db:
-        # Update the Work Shelf group
+        # Update the Broomsticks Collective group to Updates
         result = await db.execute(
-            text("UPDATE groups SET name = 'Updates', slug = 'updates' WHERE slug = 'work-shelf' RETURNING id, name, slug")
+            text("UPDATE groups SET name = 'Updates', slug = 'updates', description = 'Official announcements and updates for Work Shelf platform.' WHERE slug = 'broomsticks-collective' RETURNING id, name, slug")
         )
         row = result.fetchone()
         if row:
