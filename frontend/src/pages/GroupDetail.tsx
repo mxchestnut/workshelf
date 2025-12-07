@@ -11,6 +11,7 @@ interface Group {
   slug: string;
   description: string;
   avatar_url?: string;
+  privacy_level?: string; // 'public', 'guarded', 'private', 'secret'
   is_public: boolean;
   is_active: boolean;
   created_at: string;
@@ -490,7 +491,23 @@ export default function GroupDetail() {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
+                {/* Privacy Level Badge */}
+                {group.privacy_level && (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    group.privacy_level === 'public' ? 'bg-green-100 text-green-800' :
+                    group.privacy_level === 'guarded' ? 'bg-blue-100 text-blue-800' :
+                    group.privacy_level === 'private' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {group.privacy_level === 'public' ? '🌍 Public' :
+                     group.privacy_level === 'guarded' ? '🔐 Guarded' :
+                     group.privacy_level === 'private' ? '🔒 Private' :
+                     '🔑 Secret'}
+                  </span>
+                )}
+              </div>
               <p className="mt-1 text-sm text-gray-500">{group.description || 'No description'}</p>
               
               {/* Matrix Space Badge */}
@@ -569,6 +586,38 @@ export default function GroupDetail() {
           </div>
         </div>
       </div>
+
+      {/* Privacy Info Banner */}
+      {group.privacy_level && group.privacy_level !== 'public' && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className={`rounded-lg p-4 ${
+            group.privacy_level === 'guarded' ? 'bg-blue-50 border border-blue-200' :
+            group.privacy_level === 'private' ? 'bg-yellow-50 border border-yellow-200' :
+            'bg-gray-50 border border-gray-200'
+          }`}>
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                {group.privacy_level === 'guarded' ? '🔐' :
+                 group.privacy_level === 'private' ? '🔒' : '🔑'}
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-800">
+                  {group.privacy_level === 'guarded' ? 'Login Required' :
+                   group.privacy_level === 'private' ? 'Private Group' :
+                   'Secret Group'}
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  {group.privacy_level === 'guarded' ? 
+                    'This group is visible to logged-in users only.' :
+                   group.privacy_level === 'private' ? 
+                    'Only members can view posts and member lists. The group name is searchable.' :
+                    'This group is not searchable. Access is by invitation only.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
