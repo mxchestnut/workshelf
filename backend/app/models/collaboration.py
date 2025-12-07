@@ -443,6 +443,7 @@ class GroupPost(Base, TimestampMixin):
     
     is_pinned = Column(Boolean, default=False, nullable=False)
     is_locked = Column(Boolean, default=False, nullable=False)
+    pinned_feeds = Column(ARRAY(String(50)), nullable=False, server_default='{}')  # Feeds where post is pinned
     
     # Relationships
     group = relationship("Group", back_populates="posts")

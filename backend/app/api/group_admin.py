@@ -672,6 +672,86 @@ async def toggle_post_pin(
     }
 
 
+class FeedPinRequest(BaseModel):
+    """Request to pin/unpin a post to specific feeds"""
+    feeds: List[str]  # e.g., ['global', 'discover', 'personal']
+
+
+@router.put("/groups/{group_id}/posts/{post_id}/pin-to-feeds")
+async def pin_post_to_feeds(
+    group_id: int,
+    post_id: int,
+    request: FeedPinRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_db)
+):
+    """
+    Pin/unpin a post to specific feeds (global, personal, discover, etc.)
+    
+    **Requires**: Keycloak authentication + group moderator/admin/owner role
+    
+    Valid feeds: 'group', 'personal', 'global', 'discover', 'updates', 'beta-feed'
+    """
+    valid_feeds = {'group', 'personal', 'global', 'discover', 'updates', 'beta-feed'}
+    
+    # Validate feed names
+    invalid_feeds = set(request.feeds) - valid_feeds
+    if invalid_feeds:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid feed names: {', '.join(invalid_feeds)}. Valid feeds: {', '.join(valid_feeds)}"
+        )
+    
+    group, _ = await get_group_moderator_or_above(group_id, db, current_user)
+    
+    # Get the post
+    post_result = await db.execute(
+        select(GroupPost).filter(
+            and_(
+                GroupPost.id == post_id,
+                GroupPost.group_id == group_id
+            )
+        )
+    )
+    post = post_result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Update pinned_feeds
+    post.pinned_feeds = request.feeds
+    
+    # Update is_pinned for backwards compatibility
+    post.is_pinned = 'group' in request.feeds
+    
+    # Log moderation action
+    audit_log = ModerationAction(
+        group_id=group_id,
+        moderator_id=current_user.id,
+        action_type=ModerationActionType.PIN_POST,
+        target_type='post',
+        target_id=post_id,
+        target_user_id=post.author_id,
+        action_metadata={
+            "post_title": post.title if hasattr(post, 'title') else None,
+            "pinned_feeds": request.feeds
+        }
+    )
+    db.add(audit_log)
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "message": f"Post pinned to feeds: {', '.join(request.feeds) if request.feeds else 'none'}",
+        "post": {
+            "id": post.id,
+            "is_pinned": post.is_pinned,
+            "pinned_feeds": post.pinned_feeds
+        }
+    }
+
+
 @router.delete("/groups/{group_id}/posts/{post_id}")
 async def delete_post(
     group_id: int,

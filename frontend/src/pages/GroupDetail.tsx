@@ -45,6 +45,7 @@ interface GroupPost {
   content: string;
   is_pinned: boolean;
   is_locked: boolean;
+  pinned_feeds?: string[];
   created_at: string;
   updated_at: string;
   author?: {
@@ -375,6 +376,33 @@ export default function GroupDetail() {
     } catch (error) {
       console.error('Failed to toggle lock:', error);
       alert('Failed to toggle lock');
+    }
+  };
+
+  const pinToFeeds = async (postId: number, feeds: string[]) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${group?.id}/posts/${postId}/pin-to-feeds`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ feeds })
+        }
+      );
+      
+      if (response.ok) {
+        loadPosts(); // Reload to show updated pin status
+      } else {
+        const error = await response.json();
+        alert(`Failed to pin post to feeds: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to pin to feeds:', error);
+      alert('Failed to pin to feeds');
     }
   };
 
@@ -725,11 +753,13 @@ export default function GroupDetail() {
                   <PostModerationActions
                     isPinned={post.is_pinned}
                     isLocked={post.is_locked}
+                    pinnedFeeds={post.pinned_feeds || []}
                     isAuthor={currentUserId === post.author_id}
                     permissions={userPermissions}
                     onPin={() => togglePostPin(post.id)}
                     onLock={() => togglePostLock(post.id)}
                     onDelete={() => deletePost(post.id)}
+                    onPinToFeeds={(feeds) => pinToFeeds(post.id, feeds)}
                   />
                 </div>
               ))

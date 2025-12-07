@@ -37,6 +37,7 @@ class FeedPost(BaseModel):
     created_at: datetime
     is_pinned: bool
     is_locked: bool
+    pinned_feeds: List[str] = []
     author: PostAuthor
     group: GroupInfo
     upvotes: int = 0
@@ -115,7 +116,12 @@ async def get_feed(
     
     # Apply sorting
     if sort == "newest":
-        posts_query = posts_query.order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
+        # Sort: pinned to 'personal' first, then pinned to 'group', then by date
+        posts_query = posts_query.order_by(
+            desc(GroupPost.pinned_feeds.contains(['personal'])),
+            desc(GroupPost.is_pinned), 
+            desc(GroupPost.created_at)
+        )
     # For vote-based sorting, we'll fetch all and sort in Python after getting vote counts
     else:
         posts_query = posts_query.order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
@@ -140,6 +146,7 @@ async def get_feed(
             created_at=post.created_at,
             is_pinned=post.is_pinned,
             is_locked=post.is_locked,
+            pinned_feeds=post.pinned_feeds or [],
             upvotes=votes["upvotes"],
             downvotes=votes["downvotes"],
             score=votes["upvotes"] - votes["downvotes"],
@@ -285,7 +292,10 @@ async def get_global_feed(
                 Group.is_active == True
             )
         )
-        .order_by(desc(GroupPost.created_at))
+        .order_by(
+            desc(GroupPost.pinned_feeds.contains(['global'])),
+            desc(GroupPost.created_at)
+        )
         .limit(limit)
     )
     
@@ -301,10 +311,11 @@ async def get_global_feed(
             created_at=post.created_at,
             is_pinned=post.is_pinned,
             is_locked=post.is_locked,
+            pinned_feeds=post.pinned_feeds or [],
             author=PostAuthor(
                 id=author.id,
                 username=author.username,
-                display_name=author.display_name,
+                display_name=author.profile.display_name if author.profile else (author.username or author.email),
                 avatar_url=author.profile.avatar_url if author.profile else None
             ),
             group=GroupInfo(
@@ -348,7 +359,10 @@ async def get_discover_feed(
                 GroupPost.group_id.notin_(member_group_ids) if member_group_ids else True
             )
         )
-        .order_by(desc(GroupPost.created_at))
+        .order_by(
+            desc(GroupPost.pinned_feeds.contains(['discover'])),
+            desc(GroupPost.created_at)
+        )
         .limit(limit)
     )
     
@@ -365,6 +379,7 @@ async def get_discover_feed(
             created_at=post.created_at,
             is_pinned=post.is_pinned,
             is_locked=post.is_locked,
+            pinned_feeds=post.pinned_feeds or [],
             author=PostAuthor(
                 id=author.id,
                 username=author.username,
