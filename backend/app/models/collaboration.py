@@ -261,7 +261,7 @@ class BetaRelease(Base, TimestampMixin):
     
     # Release details
     release_message = Column(Text, nullable=True)  # Message from writer to beta reader
-    release_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    release_date = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     
     # Optional deadline
     deadline = Column(DateTime, nullable=True)

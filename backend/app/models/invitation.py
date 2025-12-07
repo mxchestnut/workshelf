@@ -25,9 +25,9 @@ class Invitation(Base):
     token = Column(String, unique=True, nullable=False, index=True)
     status = Column(SQLEnum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    expires_at = Column(DateTime, nullable=False)
-    accepted_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    accepted_at = Column(DateTime(timezone=True), nullable=True)
     accepted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Relationships

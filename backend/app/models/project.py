@@ -26,12 +26,12 @@ class Project(Base):
     ai_template_id = Column(Integer, ForeignKey("ai_generated_templates.id", ondelete="SET NULL"), nullable=True, index=True)
     prompt_responses = Column(JSONB, nullable=True)  # User's answers to template prompts
     
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Soft delete (trash bin)
     is_deleted = Column(Boolean, default=False, nullable=False, index=True)
-    deleted_at = Column(DateTime, nullable=True)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
     tenant = relationship("Tenant", back_populates="projects")

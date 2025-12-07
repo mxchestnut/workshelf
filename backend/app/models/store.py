@@ -92,9 +92,9 @@ class StoreItem(Base):
     is_new_release = Column(Boolean, default=False)
     
     # Metadata
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
-    published_at = Column(DateTime, nullable=True)  # When it went live in store
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    published_at = Column(DateTime(timezone=True), nullable=True)  # When it went live in store
     
     # Relationships
     seller = relationship("User", foreign_keys=[seller_id], back_populates="store_items")
@@ -142,8 +142,8 @@ class Purchase(Base):
     access_granted_at = Column(DateTime, nullable=True)
     
     # Metadata
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id], back_populates="purchases")
@@ -183,8 +183,8 @@ class AuthorEarnings(Base):
     stripe_payout_id = Column(String(255), nullable=True)  # Stripe Connect payout ID
     
     # Metadata
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     
     # Relationships
     author = relationship("Author", foreign_keys=[author_id], back_populates="earnings")
@@ -259,9 +259,9 @@ class AudiobookSubmission(Base):
     price_usd = Column(Numeric(10, 2), nullable=True)
     
     # Metadata
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
-    published_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    published_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])

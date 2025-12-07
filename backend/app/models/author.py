@@ -23,8 +23,8 @@ class Author(Base):
     awards = Column(JSONB, nullable=True)  # List of awards
     total_books = Column(Integer, default=0)
     total_followers = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     books = relationship("StoreItem", back_populates="author")
@@ -48,7 +48,7 @@ class AuthorEdit(Base):
     reviewed_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     rejection_reason = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     author = relationship("Author", back_populates="edits")
@@ -76,7 +76,7 @@ class UserFollowsAuthor(Base):
     notes = Column(Text, nullable=True)  # Private notes about this author
     discovery_source = Column(String(100), nullable=True)  # e.g., "bookshelf", "ai-recommendation"
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     user = relationship("User")

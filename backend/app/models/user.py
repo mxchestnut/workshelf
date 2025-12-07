@@ -44,7 +44,7 @@ class User(Base, TimestampMixin, TenantMixin):
     writer_score = Column(Integer, default=0, nullable=False)  # Based on beta writer reviews, feedback received
     
     # Account dates
-    last_login = Column(DateTime)
+    last_login = Column(DateTime(timezone=True))
     
     # Relationships
     tenant = relationship("Tenant", back_populates="users")
