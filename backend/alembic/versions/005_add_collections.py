@@ -1,7 +1,7 @@
 """Add collections tables
 
 Revision ID: 005_add_collections
-Revises: 2025_12_06_1257-4c3672f2d9e6
+Revises: 4c3672f2d9e6
 Create Date: 2025-12-07 15:30:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '005_add_collections'
-down_revision = '2025_12_06_1257-4c3672f2d9e6'
+down_revision = '4c3672f2d9e6'
 branch_labels = None
 depends_on = None
 
