@@ -4,7 +4,8 @@ Feed API - Personalized user feed
 from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc, func
+from sqlalchemy import select, and_, desc, func, cast
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
@@ -118,7 +119,7 @@ async def get_feed(
     if sort == "newest":
         # Sort: pinned to 'personal' first, then pinned to 'group', then by date
         posts_query = posts_query.order_by(
-            desc(GroupPost.pinned_feeds.contains(['personal'])),
+            desc(GroupPost.pinned_feeds.op('&&')(cast(['personal'], ARRAY(func.text('VARCHAR(50)'))))),
             desc(GroupPost.is_pinned), 
             desc(GroupPost.created_at)
         )
@@ -293,7 +294,7 @@ async def get_global_feed(
             )
         )
         .order_by(
-            desc(GroupPost.pinned_feeds.contains(['global'])),
+            desc(GroupPost.pinned_feeds.op('&&')(cast(['global'], ARRAY(func.text('VARCHAR(50)'))))),
             desc(GroupPost.created_at)
         )
         .limit(limit)
@@ -360,7 +361,7 @@ async def get_discover_feed(
             )
         )
         .order_by(
-            desc(GroupPost.pinned_feeds.contains(['discover'])),
+            desc(GroupPost.pinned_feeds.op('&&')(cast(['discover'], ARRAY(func.text('VARCHAR(50)'))))),
             desc(GroupPost.created_at)
         )
         .limit(limit)
