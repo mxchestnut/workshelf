@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.models.group import Group
+from app.models.groups import Group
 
 load_dotenv()
 
