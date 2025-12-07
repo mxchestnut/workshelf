@@ -76,7 +76,7 @@ export default function GroupDetail() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
-  const [newPostTags, setNewPostTags] = useState<Array<{id: number, name: string, slug: string}>>([]);
+  const [newPostTags, setNewPostTags] = useState<Array<{id: number, name: string, slug: string, usage_count: number}>>([]);
   
   // Create room modal
   const [showCreateRoom, setShowCreateRoom] = useState(false);

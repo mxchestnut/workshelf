@@ -32,12 +32,21 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
   const [newCollectionName, setNewCollectionName] = useState('')
   const [newCollectionDescription, setNewCollectionDescription] = useState('')
 
-  useEffect(() => {
-    if (isOpen) {
-      loadCollections()
-      checkSavedStatus()
+  const checkSavedStatus = useCallback(async () => {
+    try {
+      const token = await authService.getAccessToken()
+      const response = await fetch(`${API_URL}/api/v1/collections/check/${itemType}/${itemId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setSavedCollections(data.collections.map((c: any) => c.id))
+      }
+    } catch (error) {
+      console.error('Failed to check saved status:', error)
     }
-  }, [isOpen, itemType, itemId, checkSavedStatus])
+  }, [itemType, itemId])
 
   const loadCollections = async () => {
     try {
@@ -55,21 +64,12 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
     }
   }
 
-  const checkSavedStatus = useCallback(async () => {
-    try {
-      const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/collections/check/${itemType}/${itemId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setSavedCollections(data.collections.map((c: any) => c.id))
-      }
-    } catch (error) {
-      console.error('Failed to check saved status:', error)
+  useEffect(() => {
+    if (isOpen) {
+      loadCollections()
+      checkSavedStatus()
     }
-  }, [itemType, itemId])
+  }, [isOpen, itemType, itemId])
 
   const createCollection = async () => {
     if (!newCollectionName.trim()) return
