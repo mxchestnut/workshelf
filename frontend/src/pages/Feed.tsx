@@ -75,10 +75,10 @@ export function Feed() {
       
       // Map tabs to API endpoints
       const endpointMap: Record<FeedTab, string> = {
-        'personal': '/api/v1/feed/personal',
+        'personal': '/api/v1/feed',
         'updates': '/api/v1/feed/updates',
         'beta-feed': '/api/v1/feed/beta',
-        'groups': '/api/v1/feed/groups',
+        'groups': '/api/v1/feed',
         'global': '/api/v1/feed/global',
         'discover': '/api/v1/feed/discover'
       }

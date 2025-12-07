@@ -691,7 +691,7 @@ export default function GroupDetail() {
                       )}
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h3>
+                  <a href={`/groups/${group.slug}/posts/${post.id}`} className="text-lg font-semibold text-gray-900 mb-2 hover:text-indigo-600 transition-colors cursor-pointer block">{post.title}</a>
                   <p className="text-gray-700 whitespace-pre-wrap mb-4">{post.content}</p>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>

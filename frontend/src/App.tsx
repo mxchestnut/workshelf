@@ -23,6 +23,7 @@ const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module
 const Discover = lazy(() => import('./pages/Discover').then(module => ({ default: module.Discover })))
 const Groups = lazy(() => import('./pages/Groups'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
+const PostDetail = lazy(() => import('./pages/PostDetail'))
 const GroupSettings = lazy(() => import('./pages/GroupSettings'))
 const GroupRoles = lazy(() => import('./pages/GroupRoles'))
 const Studio = lazy(() => import('./pages/StudioV2').then(module => ({ default: module.default })))
@@ -153,6 +154,9 @@ function App() {
       setCurrentPage('discover')
     } else if (path === '/groups') {
       setCurrentPage('groups')
+    } else if (path.startsWith('/groups/') && path.includes('/posts/')) {
+      // Individual post page: /groups/:slug/posts/:id
+      setCurrentPage('post-detail')
     } else if (path.startsWith('/groups/') && !path.includes('/roles') && !path.includes('/settings')) {
       // Individual group page: /groups/:slug
       setCurrentPage('group-detail')
@@ -349,6 +353,10 @@ function App() {
     
     if (currentPage === 'group-detail') {
       return <GroupDetail />
+    }
+    
+    if (currentPage === 'post-detail') {
+      return <PostDetail />
     }
     
     if (currentPage === 'group-settings') {
