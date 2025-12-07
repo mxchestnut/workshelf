@@ -898,6 +898,84 @@ async def get_group_posts(
     return post_dicts
 
 
+@router.get("/{group_id}/posts/{post_id}", response_model=Dict[str, Any])
+async def get_group_post(
+    group_id: int,
+    post_id: int,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a single post from a group based on privacy level."""
+    from app.models.collaboration import GroupPost, Group
+    from sqlalchemy import select
+    
+    # Get group to check privacy level
+    group_result = await db.execute(
+        select(Group).where(Group.id == group_id)
+    )
+    group = group_result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Get user ID if logged in
+    user_id = None
+    if current_user:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        user_id = user.id
+    
+    # Check access to view posts (require_member=True for post content)
+    has_access = await GroupService.check_group_access(db, group, user_id, require_member=True)
+    if not has_access:
+        # Provide specific error messages based on privacy level
+        from app.models.collaboration import PrivacyLevel
+        if group.privacy_level == PrivacyLevel.GUARDED:
+            raise HTTPException(status_code=401, detail="Please log in to view this group's posts")
+        elif group.privacy_level == PrivacyLevel.PRIVATE:
+            raise HTTPException(status_code=403, detail="Must be a group member to view posts")
+        elif group.privacy_level == PrivacyLevel.SECRET:
+            raise HTTPException(status_code=404, detail="Group not found")
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get the post
+    result = await db.execute(
+        select(GroupPost)
+        .where(
+            GroupPost.group_id == group_id,
+            GroupPost.id == post_id
+        )
+    )
+    post = result.scalar_one_or_none()
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Get author info
+    from app.models.user import User
+    author_result = await db.execute(
+        select(User).where(User.id == post.author_id)
+    )
+    author = author_result.scalar_one_or_none()
+    
+    # Return post with author info
+    return {
+        "id": post.id,
+        "group_id": post.group_id,
+        "author_id": post.author_id,
+        "title": post.title,
+        "content": post.content,
+        "is_pinned": post.is_pinned,
+        "is_locked": post.is_locked,
+        "created_at": post.created_at.isoformat(),
+        "updated_at": post.updated_at.isoformat(),
+        "author": {
+            "id": author.id,
+            "username": author.username,
+            "email": author.email
+        } if author else None
+    }
+
+
 @router.post("/{group_id}/posts", status_code=status.HTTP_201_CREATED)
 async def create_group_post(
     group_id: int,
