@@ -1,7 +1,7 @@
 """Add feed pinning support
 
 Revision ID: 009
-Revises: 008
+Revises: 008_folder_id
 Create Date: 2025-12-07
 
 Adds pinned_feeds array to group_posts table to support pinning posts to specific feeds
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '009'
-down_revision = '008'
+down_revision = '008_folder_id'
 branch_labels = None
 depends_on = None
 
