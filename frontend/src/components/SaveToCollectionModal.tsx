@@ -3,7 +3,7 @@
  * Supports creating new collections and adding items to existing ones
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { authService } from '../services/auth'
 import { X, Plus, Folder, Check } from 'lucide-react'
 
@@ -37,7 +37,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
       loadCollections()
       checkSavedStatus()
     }
-  }, [isOpen, itemType, itemId])
+  }, [isOpen, itemType, itemId, checkSavedStatus])
 
   const loadCollections = async () => {
     try {
@@ -69,7 +69,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
     } catch (error) {
       console.error('Failed to check saved status:', error)
     }
-  }
+  }, [itemType, itemId])
 
   const createCollection = async () => {
     if (!newCollectionName.trim()) return
