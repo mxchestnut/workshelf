@@ -62,49 +62,7 @@ export function Feed() {
   const [showTagFilter, setShowTagFilter] = useState(false)
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        console.log('[Feed] Loading user...')
-        const currentUser = await authService.getCurrentUser()
-        console.log('[Feed] User loaded:', currentUser)
-        setUser(currentUser)
-        
-        // Only load feed if we have a user
-        if (currentUser) {
-          await loadFeed(activeTab)
-        } else {
-          console.warn('[Feed] No user found, redirecting to login')
-          authService.login()
-        }
-      } catch (error) {
-        console.error('[Feed] Failed to load user:', error)
-        // Redirect to login if user fetch fails
-        authService.login()
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [activeTab, sortBy, includeTags, excludeTags, loadFeed])
-
-  // Load available tags
-  useEffect(() => {
-    const loadTags = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/v1/content-tags/search?limit=50&sort=popular`)
-        if (response.ok) {
-          const tags = await response.json()
-          setAvailableTags(tags)
-        }
-      } catch (error) {
-        console.error('Failed to load tags:', error)
-      }
-    }
-    loadTags()
-  }, [])
-
+  // Define loadFeed before it's used in useEffect
   const loadFeed = useCallback(async (tab: FeedTab, sort: string = sortBy) => {
     try {
       const token = authService.getToken()
@@ -204,6 +162,49 @@ export function Feed() {
       console.error('Error loading feed:', error)
     }
   }, [sortBy, includeTags, excludeTags])
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        console.log('[Feed] Loading user...')
+        const currentUser = await authService.getCurrentUser()
+        console.log('[Feed] User loaded:', currentUser)
+        setUser(currentUser)
+        
+        // Only load feed if we have a user
+        if (currentUser) {
+          await loadFeed(activeTab)
+        } else {
+          console.warn('[Feed] No user found, redirecting to login')
+          authService.login()
+        }
+      } catch (error) {
+        console.error('[Feed] Failed to load user:', error)
+        // Redirect to login if user fetch fails
+        authService.login()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [activeTab, sortBy, includeTags, excludeTags, loadFeed])
+
+  // Load available tags
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/content-tags/search?limit=50&sort=popular`)
+        if (response.ok) {
+          const tags = await response.json()
+          setAvailableTags(tags)
+        }
+      } catch (error) {
+        console.error('Failed to load tags:', error)
+      }
+    }
+    loadTags()
+  }, [])
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)

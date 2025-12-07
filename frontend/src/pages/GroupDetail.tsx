@@ -3,7 +3,7 @@ import { Users, MessageSquare, Crown, Shield, ArrowLeft, Settings } from 'lucide
 import { Navigation } from '../components/Navigation';
 import { GroupActionButtons } from '../components/GroupActionButtons';
 import { PostModerationActions } from '../components/PostModerationActions';
-import { TagInput } from '../components/TagInput';
+import TagInput from '../components/TagInput';
 import { authService, User } from '../services/auth';
 
 interface Group {
