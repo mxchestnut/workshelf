@@ -12,6 +12,7 @@ from app.api import (
     users,  # User management endpoints
     user_profiles,
     tags,
+    content_tags,  # AO3-style tags for posts, ebooks, articles
     search,
     projects,
     folders,
@@ -98,6 +99,7 @@ api_router.include_router(bulk_upload.router)  # Bulk document upload
 api_router.include_router(studios.router)
 api_router.include_router(user_profiles.router)
 api_router.include_router(tags.router)
+api_router.include_router(content_tags.router)  # AO3-style tags for posts/ebooks/articles
 api_router.include_router(search.router)
 api_router.include_router(projects.router)
 api_router.include_router(folders.router)
