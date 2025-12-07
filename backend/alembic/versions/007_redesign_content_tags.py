@@ -22,14 +22,14 @@ depends_on = None
 
 
 def upgrade():
-    # Drop old tables if they exist
+    # Drop old tables if they exist (from migration 006)
     op.execute("DROP TABLE IF EXISTS content_taggables CASCADE")
-    op.execute("DROP TABLE IF EXISTS content_tags CASCADE")
+    op.execute("DROP TABLE IF EXISTS content_tags CASCADE")  # Old 006 version
     op.execute("DROP TABLE IF EXISTS content_tag_categories CASCADE")
     
-    # Create simple tags table
+    # Create simple content_tags table (renamed to avoid conflict with document tags)
     op.create_table(
-        'tags',
+        'content_tags',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(100), nullable=False, unique=True),
         sa.Column('slug', sa.String(100), nullable=False, unique=True),
@@ -49,15 +49,15 @@ def upgrade():
     )
     
     # Indexes for performance
-    op.create_index('ix_tags_name', 'tags', ['name'])
-    op.create_index('ix_tags_slug', 'tags', ['slug'])
-    op.create_index('ix_tags_usage_count', 'tags', ['usage_count'])
-    op.create_index('ix_tags_search_vector', 'tags', ['search_vector'], postgresql_using='gin')
+    op.create_index('ix_content_tags_name', 'content_tags', ['name'])
+    op.create_index('ix_content_tags_slug', 'content_tags', ['slug'])
+    op.create_index('ix_content_tags_usage_count', 'content_tags', ['usage_count'])
+    op.create_index('ix_content_tags_search_vector', 'content_tags', ['search_vector'], postgresql_using='gin')
     
     # Trigger to auto-update search_vector
     op.execute("""
-        CREATE TRIGGER tags_search_vector_update 
-        BEFORE INSERT OR UPDATE ON tags
+        CREATE TRIGGER content_tags_search_vector_update 
+        BEFORE INSERT OR UPDATE ON content_tags
         FOR EACH ROW EXECUTE FUNCTION
         tsvector_update_trigger(search_vector, 'pg_catalog.english', name, description);
     """)
@@ -72,7 +72,7 @@ def upgrade():
         
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['post_id'], ['group_posts.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['tag_id'], ['content_tags.id'], ondelete='CASCADE'),
         sa.UniqueConstraint('post_id', 'tag_id', name='uq_post_tag')
     )
     op.create_index('ix_post_tags_post_id', 'post_tags', ['post_id'])
@@ -80,7 +80,7 @@ def upgrade():
     
     # Seed some common tags (optional, users can create any tag)
     op.execute("""
-        INSERT INTO tags (name, slug, description, usage_count) VALUES
+        INSERT INTO content_tags (name, slug, description, usage_count) VALUES
         ('Original Work', 'original-work', 'Original creative content', 0),
         ('Fan Fiction', 'fan-fiction', 'Fanfiction and derivative works', 0),
         ('Poetry', 'poetry', 'Poetic works', 0),
@@ -110,5 +110,5 @@ def upgrade():
 
 def downgrade():
     op.drop_table('post_tags')
-    op.execute("DROP TRIGGER IF EXISTS tags_search_vector_update ON tags")
-    op.drop_table('tags')
+    op.execute("DROP TRIGGER IF EXISTS content_tags_search_vector_update ON content_tags")
+    op.drop_table('content_tags')

@@ -13,7 +13,7 @@ class Tag(Base, TimestampMixin):
     Universal tags for content (posts, ebooks, articles, etc.)
     Simple design: just name, slug, usage count, full-text search
     """
-    __tablename__ = "tags"
+    __tablename__ = "content_tags"  # Renamed to avoid conflict with document tags table
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True, index=True)
@@ -30,7 +30,7 @@ class Tag(Base, TimestampMixin):
     post_tags = relationship("PostTag", back_populates="tag", cascade="all, delete-orphan")
     
     __table_args__ = (
-        Index('ix_tags_search_vector', 'search_vector', postgresql_using='gin'),
+        Index('ix_content_tags_search_vector', 'search_vector', postgresql_using='gin'),
     )
 
 
@@ -43,7 +43,7 @@ class PostTag(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     post_id = Column(Integer, ForeignKey('group_posts.id', ondelete='CASCADE'), nullable=False, index=True)
-    tag_id = Column(Integer, ForeignKey('tags.id', ondelete='CASCADE'), nullable=False, index=True)
+    tag_id = Column(Integer, ForeignKey('content_tags.id', ondelete='CASCADE'), nullable=False, index=True)
     
     created_at = Column(DateTime(timezone=True), nullable=False)
     
