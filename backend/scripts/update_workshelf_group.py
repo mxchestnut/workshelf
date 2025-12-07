@@ -29,11 +29,12 @@ async def update_workshelf_group():
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
     
-    # Remove sslmode parameter if present (asyncpg uses ssl=True instead)
-    if '?sslmode=require' in database_url:
-        database_url = database_url.replace('?sslmode=require', '')
-    if '&sslmode=require' in database_url:
-        database_url = database_url.replace('&sslmode=require', '')
+    # Remove sslmode and channel_binding parameters (asyncpg uses different SSL config)
+    import re
+    database_url = re.sub(r'[?&]sslmode=[^&]*', '', database_url)
+    database_url = re.sub(r'[?&]channel_binding=[^&]*', '', database_url)
+    # Clean up any remaining ? or & at the end
+    database_url = database_url.rstrip('?&')
     
     # Create async engine with SSL
     connect_args = {"ssl": "require"} if "neon" in database_url else {}
