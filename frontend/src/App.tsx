@@ -265,6 +265,10 @@ function App() {
     } else if (path === '/trash') {
       // Trash bin
       setCurrentPage('trash')
+    } else if (path === '/updates') {
+      // Redirect to Work Shelf group (slug: updates)
+      window.location.href = '/groups/updates'
+      return
     } else if (path.startsWith('/users/')) {
       // Public profile: /users/:username
       setCurrentPage('public-profile')
