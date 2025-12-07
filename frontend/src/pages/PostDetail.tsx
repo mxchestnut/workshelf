@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Pin, Lock } from 'lucide-react';
 import { Navigation } from '../components/Navigation';
-import { authService } from '../services/auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
 
@@ -95,7 +94,6 @@ export default function PostDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
@@ -106,7 +104,6 @@ export default function PostDetail() {
   if (!post || !group) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navigation />
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Post not found</h2>
@@ -121,7 +118,6 @@ export default function PostDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
       
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back button */}
