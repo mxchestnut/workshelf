@@ -3,6 +3,7 @@ import { Users, MessageSquare, Crown, Shield, ArrowLeft, Settings } from 'lucide
 import { Navigation } from '../components/Navigation';
 import { GroupActionButtons } from '../components/GroupActionButtons';
 import { PostModerationActions } from '../components/PostModerationActions';
+import { TagInput } from '../components/TagInput';
 import { authService, User } from '../services/auth';
 
 interface Group {
@@ -74,6 +75,7 @@ export default function GroupDetail() {
   const [showNewPost, setShowNewPost] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
+  const [newPostTags, setNewPostTags] = useState<Array<{id: number, name: string, slug: string}>>([]);
   
   // Create room modal
   const [showCreateRoom, setShowCreateRoom] = useState(false);
@@ -253,9 +255,29 @@ export default function GroupDetail() {
       });
       
       if (response.ok) {
+        const newPost = await response.json();
+        
+        // Add tags to the post if any were selected
+        if (newPostTags.length > 0) {
+          for (const tag of newPostTags) {
+            try {
+              await fetch(`${import.meta.env.VITE_API_URL}/api/v1/content-tags/posts/${newPost.id}/tags/${tag.id}`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+            } catch (tagError) {
+              console.error('Failed to add tag:', tagError);
+            }
+          }
+        }
+        
         setShowNewPost(false);
         setNewPostTitle('');
         setNewPostContent('');
+        setNewPostTags([]);
         loadPosts();
       } else {
         const error = await response.json();
@@ -778,6 +800,21 @@ export default function GroupDetail() {
                   placeholder="Share your thoughts, ask a question, or start a discussion..."
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags
+                </label>
+                <TagInput
+                  selectedTags={newPostTags}
+                  onTagsChange={setNewPostTags}
+                  placeholder="Add tags (e.g., Romance, Fantasy, WIP)..."
+                  maxTags={10}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Add up to 10 tags to help others discover your post
+                </p>
+              </div>
             </div>
 
             <div className="flex space-x-3 mt-6">
@@ -786,6 +823,7 @@ export default function GroupDetail() {
                   setShowNewPost(false);
                   setNewPostTitle('');
                   setNewPostContent('');
+                  setNewPostTags([]);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
