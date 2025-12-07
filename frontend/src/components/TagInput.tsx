@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { authService } from '../services/auth';
 
 interface Tag {
   id: number;

@@ -87,7 +87,7 @@ export function Feed() {
     }
 
     loadData()
-  }, [activeTab, sortBy, includeTags, excludeTags])
+  }, [activeTab, sortBy, includeTags, excludeTags, loadFeed])
 
   // Load available tags
   useEffect(() => {
