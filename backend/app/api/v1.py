@@ -50,7 +50,8 @@ from app.api import (
     interests,  # Dynamic interests from group tags
     invitations,  # Email invitations for onboarding
     account_deletion,  # Account deletion with username freezing
-    trash  # Trash bin for soft-deleted documents/projects
+    trash,  # Trash bin for soft-deleted documents/projects
+    collections  # Universal bookmarking system
 )
 
 api_router = APIRouter()
@@ -119,6 +120,7 @@ api_router.include_router(store.router)  # WorkShelf Store for purchasing ebooks
 api_router.include_router(discovery.router)
 api_router.include_router(feed.router)  # Personalized feed
 api_router.include_router(interests.router)  # Dynamic interests from groups
+api_router.include_router(collections.router)  # Universal bookmarking
 
 # Phase 4: Feedback & Collaboration
 api_router.include_router(comments.router)

@@ -85,6 +85,9 @@ class User(Base, TimestampMixin, TenantMixin):
     group_follows = relationship("GroupFollower", back_populates="user", cascade="all, delete-orphan")
     messages_sent = relationship("Message", back_populates="sender", cascade="all, delete-orphan")
     
+    # Collections
+    collections = relationship("Collection", back_populates="user", cascade="all, delete-orphan")
+    
     # Phase 6: Monetization
     subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")

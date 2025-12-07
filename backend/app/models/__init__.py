@@ -48,6 +48,9 @@ from app.models.templates import (
 from app.models.ai_templates import (
     AIGeneratedTemplate, TemplateInterestMapping, AIGenerationLog
 )
+from app.models.collection import (
+    Collection, CollectionItem, CollectionItemType
+)
 
 __all__ = [
     "Base",
