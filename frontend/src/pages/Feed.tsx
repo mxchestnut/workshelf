@@ -304,7 +304,12 @@ export function Feed() {
 
                 {/* Post Content */}
                 <h3 className="text-xl font-bold text-foreground mb-2">
-                  {post.title}
+                  <a 
+                    href={`/groups/${post.group.slug}/posts/${post.id}`}
+                    className="hover:underline"
+                  >
+                    {post.title}
+                  </a>
                 </h3>
                 <p className="whitespace-pre-wrap mb-4 text-muted-foreground">
                   {post.content.length > 300 
