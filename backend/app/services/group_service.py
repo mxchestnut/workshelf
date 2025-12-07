@@ -349,8 +349,7 @@ class GroupService:
                 select(GroupMember).where(
                     and_(
                         GroupMember.group_id == group_id,
-                        GroupMember.role.in_([GroupMemberRole.OWNER, GroupMemberRole.ADMIN]),
-                        GroupMember.is_active == True
+                        GroupMember.role.in_([GroupMemberRole.OWNER, GroupMemberRole.ADMIN])
                     )
                 ).limit(1)
             )
@@ -510,8 +509,7 @@ class GroupService:
             select(GroupMember).where(
                 and_(
                     GroupMember.group_id == group_id,
-                    GroupMember.user_id == user_id,
-                    GroupMember.is_active == True
+                    GroupMember.user_id == user_id
                 )
             )
         )
@@ -547,8 +545,7 @@ class GroupService:
             select(GroupMember).where(
                 and_(
                     GroupMember.group_id == group_id,
-                    GroupMember.user_id == user_id,
-                    GroupMember.is_active == True
+                    GroupMember.user_id == user_id
                 )
             )
         )
