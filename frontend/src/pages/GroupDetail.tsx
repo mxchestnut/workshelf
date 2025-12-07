@@ -175,9 +175,10 @@ export default function GroupDetail() {
   };
 
   const loadPosts = async () => {
+    if (!group?.id) return;
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/posts`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/posts`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -193,6 +194,7 @@ export default function GroupDetail() {
   };
 
   const loadFollowStatus = async () => {
+    if (!group?.id) return;
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
@@ -213,6 +215,7 @@ export default function GroupDetail() {
   };
 
   const loadFollowerCount = async () => {
+    if (!group?.id) return;
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
