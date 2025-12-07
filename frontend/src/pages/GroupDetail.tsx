@@ -81,20 +81,18 @@ export default function GroupDetail() {
   const [newRoomTopic, setNewRoomTopic] = useState('');
   const [creatingRoom, setCreatingRoom] = useState(false);
 
-  const groupId = new URLSearchParams(window.location.search).get('id');
+  // Extract slug from URL path: /groups/:slug
+  const pathParts = window.location.pathname.split('/');
+  const groupSlug = pathParts[pathParts.indexOf('groups') + 1];
 
   useEffect(() => {
-    if (groupId) {
+    if (groupSlug) {
       loadUser();
       loadGroup();
-      loadMembers();
-      loadPosts();
-      loadFollowStatus();
-      loadFollowerCount();
       loadUserProfile();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId]);
+  }, [groupSlug]);
 
   const loadUser = async () => {
     const currentUser = await authService.getCurrentUser();
@@ -102,6 +100,17 @@ export default function GroupDetail() {
       setUser(currentUser);
     }
   };
+
+  // Load dependent data once group is loaded
+  useEffect(() => {
+    if (group?.id) {
+      loadMembers();
+      loadPosts();
+      loadFollowStatus();
+      loadFollowerCount();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group?.id]);
 
   useEffect(() => {
     calculateUserPermissions();
@@ -120,7 +129,7 @@ export default function GroupDetail() {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/slug/${groupSlug}`, {
         headers
       });
       if (response.ok) {
@@ -147,9 +156,10 @@ export default function GroupDetail() {
   };
 
   const loadMembers = async () => {
+    if (!group?.id) return;
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/members`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/members`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -227,7 +237,7 @@ export default function GroupDetail() {
 
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/posts`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group?.id}/posts`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -295,7 +305,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}/pin`,
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${group?.id}/posts/${postId}/pin`,
         {
           method: 'PUT',
           headers: {
@@ -321,7 +331,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}/lock`,
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${group?.id}/posts/${postId}/lock`,
         {
           method: 'PUT',
           headers: {
@@ -361,7 +371,7 @@ export default function GroupDetail() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            group_id: Number(groupId),
+            group_id: group?.id,
             room_name: newRoomName.trim(),
             room_topic: newRoomTopic.trim()
           })
@@ -394,7 +404,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${groupId}/posts/${postId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/group-admin/groups/${group?.id}/posts/${postId}`,
         {
           method: 'DELETE',
           headers: {
@@ -551,7 +561,7 @@ export default function GroupDetail() {
 
             <div className="flex space-x-3">
               <GroupActionButtons
-                groupId={Number(groupId)}
+                groupId={group?.id || 0}
                 isMember={isMemb}
                 isFollowing={isFollowing}
                 followerCount={followerCount}
@@ -566,7 +576,7 @@ export default function GroupDetail() {
               />
               {(group?.member_role === 'owner' || group?.member_role === 'admin') && (
                 <button
-                  onClick={() => window.location.href = `/group-settings?id=${groupId}`}
+                  onClick={() => window.location.href = `/group-settings?id=${group?.id}`}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   title="Group Settings"
                 >
