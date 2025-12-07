@@ -9,7 +9,7 @@
 ## 🎯 Next Priorities
 
 ### 1. Content Tagging System 🏷️ **HIGH PRIORITY**
-**Status:** ✅ 80% Complete - Backend deployed, frontend UI needed  
+**Status:** ✅ 95% Complete - Backend + frontend deployed, ready for production  
 **Goal:** AO3-style folksonomy tagging for posts, ebooks, and articles
 
 **Completed:**
@@ -24,17 +24,24 @@
   - ✅ AO3-style include/exclude filtering
 - ✅ 10 common tags seeded (Romance, Fantasy, Horror, etc.)
 - ✅ Model conflict resolved (ContentTag vs document.Tag)
+- ✅ **Frontend Tag Input Component** (`TagInput.tsx`)
+  - ✅ Autocomplete search with 300ms debounce
+  - ✅ Visual tag chips with remove button
+  - ✅ Create new tags inline (folksonomy)
+  - ✅ Keyboard navigation (Enter to select, Backspace to remove)
+  - ✅ Max tags limit (default 20)
+- ✅ **Feed Tag Filtering UI** (`Feed.tsx`)
+  - ✅ Include/exclude tag selectors (green/red chips)
+  - ✅ Integration with `/api/v1/content-tags/filter/posts`
+  - ✅ Visual tag display on posts (clickable chips)
+  - ✅ Active filter display with clear button
+  - ✅ Tag usage counts in dropdowns
 
 **Remaining:**
-- [ ] **Frontend Tag Input Component** (TagInput.tsx)
-  - Autocomplete search with debounce
-  - Visual tag chips with remove button
-  - Create new tags inline (folksonomy)
-  - Integration with create/edit post forms
-- [ ] **Feed Tag Filtering UI**
-  - Include/exclude tag selectors
-  - Integration with `/api/v1/content-tags/filter/posts`
-  - Visual tag display on posts
+- [ ] **Integration with Post Forms**
+  - Add TagInput to post creation form
+  - Add TagInput to post editing form
+  - Connect to backend apply/remove tag endpoints
 - [ ] **Extend to Ebooks & Articles** (migration 008)
   - Create `ebook_tags` and `article_tags` tables
   - Same pattern as `post_tags` (dedicated join tables)

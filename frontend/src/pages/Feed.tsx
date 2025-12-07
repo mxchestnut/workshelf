@@ -27,6 +27,14 @@ interface GroupInfo {
   avatar_url: string | null
 }
 
+interface Tag {
+  id: number
+  name: string
+  slug: string
+  description?: string
+  usage_count?: number
+}
+
 interface FeedPost {
   id: number
   title: string
@@ -38,6 +46,7 @@ interface FeedPost {
   upvotes: number
   downvotes: number
   score: number
+  tags?: Tag[]
 }
 
 export function Feed() {
@@ -48,6 +57,10 @@ export function Feed() {
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState<{ id: number; title: string } | null>(null)
   const [sortBy, setSortBy] = useState<'newest' | 'top' | 'controversial'>('newest')
+  const [includeTags, setIncludeTags] = useState<number[]>([])
+  const [excludeTags, setExcludeTags] = useState<number[]>([])
+  const [showTagFilter, setShowTagFilter] = useState(false)
+  const [availableTags, setAvailableTags] = useState<Tag[]>([])
 
   useEffect(() => {
     const loadData = async () => {
@@ -74,39 +87,118 @@ export function Feed() {
     }
 
     loadData()
-  }, [activeTab, sortBy])
+  }, [activeTab, sortBy, includeTags, excludeTags])
+
+  // Load available tags
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/content-tags/search?limit=50&sort=popular`)
+        if (response.ok) {
+          const tags = await response.json()
+          setAvailableTags(tags)
+        }
+      } catch (error) {
+        console.error('Failed to load tags:', error)
+      }
+    }
+    loadTags()
+  }, [])
 
   const loadFeed = async (tab: FeedTab, sort: string = sortBy) => {
     try {
       const token = authService.getToken()
       
-      // Map tabs to API endpoints
-      const endpointMap: Record<FeedTab, string> = {
-        'personal': '/api/v1/feed',
-        'updates': '/api/v1/feed/updates',
-        'beta-feed': '/api/v1/feed/beta',
-        'groups': '/api/v1/feed',
-        'global': '/api/v1/feed/global',
-        'discover': '/api/v1/feed/discover'
-      }
-      
-      const endpoint = endpointMap[tab] || '/api/v1/feed'
-      const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
-      
-      const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        mode: 'cors'
-      })
-
-      if (response.ok) {
-        const feedPosts = await response.json()
-        setPosts(feedPosts)
+      // If tag filters are active, use the filter API
+      if (includeTags.length > 0 || excludeTags.length > 0) {
+        // First, get filtered post IDs
+        const filterParams = new URLSearchParams()
+        includeTags.forEach(tagId => filterParams.append('include', tagId.toString()))
+        excludeTags.forEach(tagId => filterParams.append('exclude', tagId.toString()))
+        
+        const filterResponse = await fetch(`${API_URL}/api/v1/content-tags/filter/posts?${filterParams}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          mode: 'cors'
+        })
+        
+        if (!filterResponse.ok) {
+          console.error('Failed to filter posts:', filterResponse.status)
+          setPosts([])
+          return
+        }
+        
+        const filteredPostIds: number[] = await filterResponse.json()
+        
+        if (filteredPostIds.length === 0) {
+          setPosts([])
+          return
+        }
+        
+        // Then fetch the full post data
+        const endpointMap: Record<FeedTab, string> = {
+          'personal': '/api/v1/feed',
+          'updates': '/api/v1/feed/updates',
+          'beta-feed': '/api/v1/feed/beta',
+          'groups': '/api/v1/feed',
+          'global': '/api/v1/feed/global',
+          'discover': '/api/v1/feed/discover'
+        }
+        
+        const endpoint = endpointMap[tab] || '/api/v1/feed'
+        const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
+        
+        const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          mode: 'cors'
+        })
+        
+        if (response.ok) {
+          const allPosts = await response.json()
+          // Filter to only include posts in the filtered list
+          const filteredPosts = allPosts.filter((post: FeedPost) => 
+            filteredPostIds.includes(post.id)
+          )
+          setPosts(filteredPosts)
+        } else {
+          console.error('Failed to load feed:', response.status)
+        }
       } else {
-        console.error('Failed to load feed:', response.status)
+        // No filters - normal feed loading
+        const endpointMap: Record<FeedTab, string> = {
+          'personal': '/api/v1/feed',
+          'updates': '/api/v1/feed/updates',
+          'beta-feed': '/api/v1/feed/beta',
+          'groups': '/api/v1/feed',
+          'global': '/api/v1/feed/global',
+          'discover': '/api/v1/feed/discover'
+        }
+        
+        const endpoint = endpointMap[tab] || '/api/v1/feed'
+        const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
+        
+        const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          mode: 'cors'
+        })
+
+        if (response.ok) {
+          const feedPosts = await response.json()
+          setPosts(feedPosts)
+        } else {
+          console.error('Failed to load feed:', response.status)
+        }
       }
     } catch (error) {
       console.error('Error loading feed:', error)
@@ -236,19 +328,142 @@ export function Feed() {
       </div>
 
       {/* Sort Controls */}
-      <div className="max-w-4xl mx-auto mb-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-foreground">Sort by:</label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'newest' | 'top' | 'controversial')}
-            className="px-3 py-1.5 border border-border rounded bg-background text-foreground text-sm"
-          >
-            <option value="newest">Newest</option>
-            <option value="top">Top Voted</option>
-            <option value="controversial">Controversial</option>
-          </select>
+      <div className="max-w-4xl mx-auto mb-4 px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-foreground">Sort by:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'newest' | 'top' | 'controversial')}
+                className="px-3 py-1.5 border border-border rounded bg-background text-foreground text-sm"
+              >
+                <option value="newest">Newest</option>
+                <option value="top">Top Voted</option>
+                <option value="controversial">Controversial</option>
+              </select>
+            </div>
+            
+            <button
+              onClick={() => setShowTagFilter(!showTagFilter)}
+              className="text-sm font-medium text-foreground hover:text-blue-600 flex items-center gap-1"
+            >
+              🏷️ Filter by tags
+              <span className="text-xs">
+                {includeTags.length > 0 || excludeTags.length > 0 ? 
+                  `(${includeTags.length} include, ${excludeTags.length} exclude)` : 
+                  ''}
+              </span>
+            </button>
+          </div>
+          
+          {(includeTags.length > 0 || excludeTags.length > 0) && (
+            <button
+              onClick={() => {
+                setIncludeTags([])
+                setExcludeTags([])
+              }}
+              className="text-sm text-red-600 hover:text-red-800"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
+
+        {/* Tag Filter Panel */}
+        {showTagFilter && (
+          <div className="mt-4 p-4 border border-border rounded-lg bg-muted">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Include tags (posts must have ALL):
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {includeTags.map(tagId => {
+                    const tag = availableTags.find(t => t.id === tagId)
+                    return tag ? (
+                      <span
+                        key={tagId}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                      >
+                        {tag.name}
+                        <button
+                          onClick={() => setIncludeTags(includeTags.filter(id => id !== tagId))}
+                          className="hover:text-green-600"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null
+                  })}
+                </div>
+                <select
+                  onChange={(e) => {
+                    const tagId = parseInt(e.target.value)
+                    if (tagId && !includeTags.includes(tagId)) {
+                      setIncludeTags([...includeTags, tagId])
+                    }
+                    e.target.value = ''
+                  }}
+                  className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
+                >
+                  <option value="">Select a tag to include...</option>
+                  {availableTags
+                    .filter(tag => !includeTags.includes(tag.id) && !excludeTags.includes(tag.id))
+                    .map(tag => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name} ({tag.usage_count} uses)
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Exclude tags (posts must NOT have ANY):
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {excludeTags.map(tagId => {
+                    const tag = availableTags.find(t => t.id === tagId)
+                    return tag ? (
+                      <span
+                        key={tagId}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm"
+                      >
+                        {tag.name}
+                        <button
+                          onClick={() => setExcludeTags(excludeTags.filter(id => id !== tagId))}
+                          className="hover:text-red-600"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null
+                  })}
+                </div>
+                <select
+                  onChange={(e) => {
+                    const tagId = parseInt(e.target.value)
+                    if (tagId && !excludeTags.includes(tagId)) {
+                      setExcludeTags([...excludeTags, tagId])
+                    }
+                    e.target.value = ''
+                  }}
+                  className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
+                >
+                  <option value="">Select a tag to exclude...</option>
+                  {availableTags
+                    .filter(tag => !includeTags.includes(tag.id) && !excludeTags.includes(tag.id))
+                    .map(tag => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name} ({tag.usage_count} uses)
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Feed Content */}
@@ -343,6 +558,24 @@ export function Feed() {
                     ? post.content.substring(0, 300) + '...' 
                     : post.content}
                 </p>
+
+                {/* Tags */}
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {post.tags.map(tag => (
+                      <span
+                        key={tag.id}
+                        className="inline-block px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 cursor-pointer"
+                        onClick={() => {
+                          // TODO: Filter feed by this tag
+                          console.log('Filter by tag:', tag.name)
+                        }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Post Actions */}
                 <div className="flex items-center gap-6 pt-4 border-t border-border">
