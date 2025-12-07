@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Pin, Lock } from 'lucide-react';
-import { Navigation } from '../components/Navigation';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
 
