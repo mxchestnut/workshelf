@@ -638,6 +638,33 @@ export function Feed() {
                   >
                     Save
                   </button>
+                  
+                  {/* Pin button (staff only) */}
+                  {user?.is_staff && (
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const token = await authService.getAccessToken()
+                          const feedName = activeTab === 'global' ? 'global' : activeTab === 'discover' ? 'discover' : 'personal'
+                          await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/pin`, {
+                            method: 'POST',
+                            headers: { 
+                              'Authorization': `Bearer ${token}`,
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ feed_name: feedName })
+                          })
+                          loadFeed(activeTab)
+                        } catch (error) {
+                          console.error('Pin error:', error)
+                        }
+                      }}
+                      className={`transition-colors text-sm font-medium ${post.is_pinned ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} cursor-pointer flex items-center gap-1`}
+                    >
+                      <Pin className="w-4 h-4" />
+                      {post.is_pinned ? 'Unpin' : 'Pin'}
+                    </button>
+                  )}
                 </div>
               </article>
             ))}
