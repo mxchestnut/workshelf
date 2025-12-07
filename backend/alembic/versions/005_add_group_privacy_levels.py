@@ -1,7 +1,7 @@
 """Add group privacy levels
 
 Revision ID: 005_add_group_privacy_levels
-Revises: 004_add_feedback_document_to_beta_requests
+Revises: 4c3672f2d9e6
 Create Date: 2025-12-07 10:30:00
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '005_add_group_privacy_levels'
-down_revision = '004_add_feedback_document_to_beta_requests'
+down_revision = '4c3672f2d9e6'
 branch_labels = None
 depends_on = None
 
