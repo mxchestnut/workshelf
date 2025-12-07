@@ -20,11 +20,11 @@ export default function BetaBanner() {
               Do NOT reuse passwords! Back up your data elsewhere.
             </span>
             <a 
-              href="/updates" 
+              href="/groups/work-shelf" 
               className="underline hover:text-red-200 transition-colors font-medium"
               onClick={(e) => {
                 e.preventDefault()
-                window.location.href = '/updates'
+                window.location.href = '/groups/work-shelf'
               }}
             >
               View site updates →
