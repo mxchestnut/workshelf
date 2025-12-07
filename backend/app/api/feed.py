@@ -1,10 +1,10 @@
 """
 Feed API - Personalized user feed
 """
-from typing import List, Optional
+from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, desc
+from sqlalchemy import select, and_, desc, func
 from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
