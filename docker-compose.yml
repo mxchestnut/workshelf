@@ -117,8 +117,8 @@ services:
     # Use startup script to ensure tables exist & migrations run before app launches
     command: bash -c "pip install -q -r requirements.txt && bash start.sh"
     environment:
-      DATABASE_URL: postgresql+asyncpg://neondb_owner:npg_D9Jiv7WeQChu@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?ssl=require
-      STORAGE_DATABASE_URL: postgresql+asyncpg://neondb_owner:npg_D9Jiv7WeQChu@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/workshelf_storage?ssl=require
+      DATABASE_URL: ${DATABASE_URL}
+      STORAGE_DATABASE_URL: ${STORAGE_DATABASE_URL}
       KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev
       KEYCLOAK_INTERNAL_URL: http://keycloak:8080
       KEYCLOAK_REALM: workshelf
