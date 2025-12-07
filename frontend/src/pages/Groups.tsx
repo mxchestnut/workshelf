@@ -105,7 +105,7 @@ export default function Groups() {
         // Refresh lists
         loadGroups()
         // Optionally navigate to the new group
-        window.location.href = `/group?id=${created.id}`
+        window.location.href = `/groups/${created.slug}`
       } else {
         const errText = await response.text()
         alert(`Failed to create group: ${errText || response.status}`)
@@ -175,7 +175,7 @@ export default function Groups() {
                   {myGroups.map(group => (
                     <a
                       key={group.id}
-                      href={`/group?id=${group.id}`}
+                      href={`/groups/${group.slug}`}
                       className="rounded-lg p-6 transition-all hover:shadow-lg border border-border"
                       style={{ backgroundColor: 'hsl(var(--muted))' }}
                     >
@@ -213,7 +213,7 @@ export default function Groups() {
                   {discoveredGroups.map(group => (
                     <a
                       key={group.id}
-                      href={`/group?id=${group.id}`}
+                      href={`/groups/${group.slug}`}
                       className="rounded-lg p-6 transition-all hover:shadow-lg border border-border"
                       style={{ backgroundColor: 'hsl(var(--muted))' }}
                     >

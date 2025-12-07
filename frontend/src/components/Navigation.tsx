@@ -358,9 +358,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   {user.groups.map(group => (
                     <button 
                       key={group.id}
-                      onClick={() => navigateTo(`/group?id=${group.id}`)}
+                      onClick={() => navigateTo(`/groups/${group.slug}`)}
                       className={`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-colors ${
-                        window.location.search.includes(`id=${group.id}`)
+                        window.location.pathname.includes(`/groups/${group.slug}`)
                           ? 'bg-primary text-primary-foreground font-medium'
                           : 'text-foreground hover:bg-accent'
                       }`}

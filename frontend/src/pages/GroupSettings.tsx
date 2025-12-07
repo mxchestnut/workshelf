@@ -221,7 +221,7 @@ export default function GroupSettings() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => window.location.href = `/group?id=${groupId}`}
+            onClick={() => window.location.href = `/groups/${group?.slug}`}
             className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
