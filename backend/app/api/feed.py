@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
-from app.models.collaboration import GroupPost, GroupMember, Group
+from app.models.collaboration import GroupPost, GroupMember, Group, GroupPostReaction
 from app.models.user import User, UserProfile
 from app.services import user_service
 from pydantic import BaseModel
@@ -39,9 +39,42 @@ class FeedPost(BaseModel):
     is_locked: bool
     author: PostAuthor
     group: GroupInfo
+    upvotes: int = 0
+    downvotes: int = 0
+    score: int = 0
 
     class Config:
         from_attributes = True
+
+
+async def get_votes_for_posts(db: AsyncSession, post_ids: List[int]) -> Dict[int, Dict[str, int]]:
+    """Helper function to get vote counts for multiple posts"""
+    if not post_ids:
+        return {}
+    
+    votes_query = (
+        select(
+            GroupPostReaction.post_id,
+            GroupPostReaction.reaction_type,
+            func.count().label('count')
+        )
+        .where(
+            GroupPostReaction.post_id.in_(post_ids),
+            GroupPostReaction.reaction_type.in_(["upvote", "downvote"])
+        )
+        .group_by(GroupPostReaction.post_id, GroupPostReaction.reaction_type)
+    )
+    votes_result = await db.execute(votes_query)
+    votes_data = votes_result.all()
+    
+    # Organize votes by post_id
+    votes_by_post = {}
+    for post_id, reaction_type, count in votes_data:
+        if post_id not in votes_by_post:
+            votes_by_post[post_id] = {"upvotes": 0, "downvotes": 0}
+        votes_by_post[post_id][f"{reaction_type}s"] = count
+    
+    return votes_by_post
 
 
 @router.get("", response_model=List[FeedPost])
@@ -79,9 +112,14 @@ async def get_feed(
     result = await db.execute(posts_query)
     posts_data = result.all()
     
+    # Get vote counts
+    post_ids = [post.id for post, _, _ in posts_data]
+    votes_by_post = await get_votes_for_posts(db, post_ids)
+    
     # Transform to response format
     feed_posts = []
     for post, author, group in posts_data:
+        votes = votes_by_post.get(post.id, {"upvotes": 0, "downvotes": 0})
         feed_posts.append(FeedPost(
             id=post.id,
             title=post.title,
@@ -89,6 +127,9 @@ async def get_feed(
             created_at=post.created_at,
             is_pinned=post.is_pinned,
             is_locked=post.is_locked,
+            upvotes=votes["upvotes"],
+            downvotes=votes["downvotes"],
+            score=votes["upvotes"] - votes["downvotes"],
             author=PostAuthor(
                 id=author.id,
                 username=author.username,

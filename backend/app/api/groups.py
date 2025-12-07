@@ -1026,6 +1026,121 @@ async def create_group_post(
     }
 
 
+@router.post("/{group_id}/posts/{post_id}/vote")
+async def vote_on_post(
+    group_id: int,
+    post_id: int,
+    vote_type: str,  # "upvote" or "downvote"
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Vote on a post (upvote or downvote)."""
+    from app.models.collaboration import GroupPost, GroupPostReaction
+    
+    if vote_type not in ["upvote", "downvote"]:
+        raise HTTPException(status_code=400, detail="vote_type must be 'upvote' or 'downvote'")
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if post exists
+    post_result = await db.execute(
+        select(GroupPost).where(GroupPost.id == post_id, GroupPost.group_id == group_id)
+    )
+    post = post_result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Check for existing vote
+    existing_vote = await db.execute(
+        select(GroupPostReaction).where(
+            GroupPostReaction.post_id == post_id,
+            GroupPostReaction.user_id == user.id,
+            GroupPostReaction.reaction_type.in_(["upvote", "downvote"])
+        )
+    )
+    existing = existing_vote.scalar_one_or_none()
+    
+    if existing:
+        if existing.reaction_type == vote_type:
+            # Remove vote if clicking same button
+            await db.delete(existing)
+            await db.commit()
+            return {"message": "Vote removed", "vote_type": None}
+        else:
+            # Change vote
+            existing.reaction_type = vote_type
+            await db.commit()
+            return {"message": "Vote changed", "vote_type": vote_type}
+    else:
+        # New vote
+        reaction = GroupPostReaction(
+            post_id=post_id,
+            user_id=user.id,
+            reaction_type=vote_type
+        )
+        db.add(reaction)
+        await db.commit()
+        return {"message": "Vote added", "vote_type": vote_type}
+
+
+@router.get("/{group_id}/posts/{post_id}/votes")
+async def get_post_votes(
+    group_id: int,
+    post_id: int,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get vote counts for a post."""
+    from app.models.collaboration import GroupPost, GroupPostReaction
+    
+    # Check if post exists
+    post_result = await db.execute(
+        select(GroupPost).where(GroupPost.id == post_id, GroupPost.group_id == group_id)
+    )
+    post = post_result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Count votes
+    upvotes_result = await db.execute(
+        select(func.count()).select_from(GroupPostReaction).where(
+            GroupPostReaction.post_id == post_id,
+            GroupPostReaction.reaction_type == "upvote"
+        )
+    )
+    upvotes = upvotes_result.scalar() or 0
+    
+    downvotes_result = await db.execute(
+        select(func.count()).select_from(GroupPostReaction).where(
+            GroupPostReaction.post_id == post_id,
+            GroupPostReaction.reaction_type == "downvote"
+        )
+    )
+    downvotes = downvotes_result.scalar() or 0
+    
+    # Get user's vote if authenticated
+    user_vote = None
+    if current_user:
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        user_vote_result = await db.execute(
+            select(GroupPostReaction.reaction_type).where(
+                GroupPostReaction.post_id == post_id,
+                GroupPostReaction.user_id == user.id,
+                GroupPostReaction.reaction_type.in_(["upvote", "downvote"])
+            )
+        )
+        user_vote_row = user_vote_result.scalar_one_or_none()
+        if user_vote_row:
+            user_vote = user_vote_row
+    
+    return {
+        "upvotes": upvotes,
+        "downvotes": downvotes,
+        "score": upvotes - downvotes,
+        "user_vote": user_vote
+    }
+
+
 @router.post("/{group_id}/join", status_code=status.HTTP_201_CREATED)
 async def join_group(
     group_id: int,

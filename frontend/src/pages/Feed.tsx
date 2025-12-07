@@ -34,6 +34,9 @@ interface FeedPost {
   is_pinned: boolean
   author: PostAuthor
   group: GroupInfo
+  upvotes: number
+  downvotes: number
+  score: number
 }
 
 export function Feed() {
@@ -324,13 +327,41 @@ export function Feed() {
                 <div className="flex items-center gap-6 pt-4 border-t border-border">
                   {/* Upvote/Downvote */}
                   <div className="flex items-center gap-2">
-                    <button className="transition-colors text-muted-foreground hover:text-foreground">
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const token = await authService.getAccessToken()
+                          await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/vote?vote_type=upvote`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                          })
+                          loadFeed(activeTab)
+                        } catch (error) {
+                          console.error('Vote error:', error)
+                        }
+                      }}
+                      className="transition-colors text-muted-foreground hover:text-foreground"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     </button>
-                    <span className="text-sm font-medium text-foreground">0</span>
-                    <button className="transition-colors text-muted-foreground hover:text-foreground">
+                    <span className="text-sm font-medium text-foreground">{post.score}</span>
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const token = await authService.getAccessToken()
+                          await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/vote?vote_type=downvote`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                          })
+                          loadFeed(activeTab)
+                        } catch (error) {
+                          console.error('Vote error:', error)
+                        }
+                      }}
+                      className="transition-colors text-muted-foreground hover:text-foreground"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
