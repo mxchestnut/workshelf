@@ -34,10 +34,11 @@
 ### Database
 ```bash
 # Production Database (Neon)
-DATABASE_URL=postgresql://neondb_owner:npg_D9Jiv7WeQChu@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://neondb_owner:***@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
 
 # Backup Branch Created: December 7, 2025
-# Branch URL: postgresql://neondb_owner:npg_D9Jiv7WeQChu@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+# Branch URL: postgresql://neondb_owner:***@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+# (Full connection strings stored in .CREDENTIALS_SECURE.md locally)
 ```
 
 **Database State**:
@@ -121,8 +122,8 @@ deploy-postgres-1   Running (postgres:15-alpine)   Port: 5432:5432
 SECRET_KEY=your-secret-key-here
 ALLOWED_ORIGINS=https://workshelf.dev,https://api.workshelf.dev
 
-# Database (Neon)
-DATABASE_URL=postgresql://neondb_owner:npg_D9Jiv7WeQChu@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+# Database (Neon) - Full connection string in .CREDENTIALS_SECURE.md
+DATABASE_URL=postgresql://neondb_owner:***@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
 
 # AWS (S3 + SES)
 AWS_REGION=us-east-1
@@ -297,11 +298,11 @@ ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
 
 ### Database Access
 ```bash
-# Production
-psql 'postgresql://neondb_owner:npg_D9Jiv7WeQChu@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require'
+# Production (connection string in .CREDENTIALS_SECURE.md)
+psql 'postgresql://neondb_owner:***@ep-square-lake-adcr8mqv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require'
 
-# Backup Branch
-psql 'postgresql://neondb_owner:npg_D9Jiv7WeQChu@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require'
+# Backup Branch (connection string in .CREDENTIALS_SECURE.md)
+psql 'postgresql://neondb_owner:***@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require'
 ```
 
 ### AWS Console
