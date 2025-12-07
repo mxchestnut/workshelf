@@ -12,6 +12,7 @@ import json
 from app.models.document import Document, DocumentStatus, DocumentVisibility, DocumentVersion
 from app.models.user import User
 from app.schemas.document import DocumentCreate, DocumentUpdate
+from app.services.storage_service import storage_service
 from fastapi import HTTPException, status
 
 
@@ -87,16 +88,29 @@ async def create_document(
     # Calculate word count
     word_count = count_words(document_data.content)
     
-    # Convert content to string if it's a dict (for database storage)
+    # Convert content to string if it's a dict (for storage)
     content_str = document_data.content
     if isinstance(document_data.content, dict):
         content_str = json.dumps(document_data.content)
     
+    # Upload content to S3 and get file path
+    file_path = None
+    file_size = None
+    if storage_service.s3_client:
+        file_path = storage_service.upload_document(
+            document_id=0,  # Temporary, will update after document creation
+            content=content_str,
+            tenant_id=tenant_id
+        )
+        if file_path:
+            file_size = len(content_str.encode('utf-8'))
+    
+    # Create document - store in S3 if available, else in database
     document = Document(
         owner_id=owner_id,
         tenant_id=tenant_id,
         title=document_data.title,
-        content=content_str,
+        content=None if file_path else content_str,  # Store in DB only if S3 upload failed
         description=document_data.description,
         status=document_data.status,
         visibility=document_data.visibility,
@@ -104,12 +118,28 @@ async def create_document(
         folder_id=document_data.folder_id,
         studio_id=document_data.studio_id,
         word_count=word_count,
-        current_version=1
+        current_version=1,
+        file_path=file_path,
+        file_size=file_size
     )
     
     session.add(document)
     await session.commit()
     await session.refresh(document)
+    
+    # Update S3 path with actual document ID
+    if file_path and storage_service.s3_client:
+        # Delete temporary upload
+        storage_service.delete_document(file_path)
+        # Upload with correct document ID
+        new_file_path = storage_service.upload_document(
+            document_id=document.id,
+            content=content_str,
+            tenant_id=tenant_id
+        )
+        if new_file_path:
+            document.file_path = new_file_path
+            await session.commit()
     
     return document
 
@@ -143,6 +173,16 @@ async def get_document_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Document not found"
         )
+    
+    # Load content from S3 if stored there
+    if document.file_path and not document.content:
+        s3_content = storage_service.download_document(document.file_path)
+        if s3_content:
+            document.content = s3_content
+        else:
+            # S3 load failed, log error but continue
+            import logging
+            logging.error(f"Failed to load document {document_id} from S3: {document.file_path}")
     
     # Check access permissions
     if user_id:
@@ -328,16 +368,47 @@ async def update_document(
     # Update fields
     update_data = document_data.model_dump(exclude_unset=True)
     
+    content_updated = False
+    new_content = None
+    
     for field, value in update_data.items():
         if value is not None:
-            # Convert dict content to JSON string for database storage
-            if field == "content" and isinstance(value, dict):
-                value = json.dumps(value)
-            setattr(document, field, value)
+            # Handle content updates
+            if field == "content":
+                content_updated = True
+                # Convert dict content to JSON string
+                if isinstance(value, dict):
+                    value = json.dumps(value)
+                new_content = value
+                
+                # Upload to S3 if configured
+                if storage_service.s3_client:
+                    file_path = storage_service.upload_document(
+                        document_id=document.id,
+                        content=value,
+                        tenant_id=document.tenant_id
+                    )
+                    if file_path:
+                        # Delete old S3 file if exists
+                        if document.file_path:
+                            storage_service.delete_document(document.file_path)
+                        
+                        document.file_path = file_path
+                        document.file_size = len(value.encode('utf-8'))
+                        # Don't store in database if S3 upload succeeded
+                        setattr(document, field, None)
+                    else:
+                        # S3 upload failed, store in database
+                        setattr(document, field, value)
+                else:
+                    # S3 not configured, store in database
+                    setattr(document, field, value)
+            else:
+                setattr(document, field, value)
     
     # Recalculate word count if content changed
-    if "content" in update_data:
-        document.word_count = count_words(document.content)
+    if content_updated and new_content:
+        document.word_count = count_words(new_content)
     
     # Update published_at if status changes to published
     if document_data.status == DocumentStatus.PUBLISHED and document.published_at is None:

@@ -58,6 +58,23 @@ class Settings(BaseSettings):
     FROM_EMAIL: str = "noreply@workshelf.dev"
     FRONTEND_URL: str = "https://workshelf.dev"
     
+    # S3-Compatible Object Storage (AWS S3, MinIO, etc.)
+    S3_ENDPOINT_URL: str = ""  # Leave empty for AWS S3, set for MinIO (e.g., http://minio:9000)
+    S3_ACCESS_KEY_ID: str = ""  # Defaults to AWS_ACCESS_KEY_ID if not set
+    S3_SECRET_ACCESS_KEY: str = ""  # Defaults to AWS_SECRET_ACCESS_KEY if not set
+    S3_BUCKET_NAME: str = "workshelf-documents"
+    S3_REGION: str = "us-east-1"
+    
+    @property
+    def S3_ACCESS_KEY_ID_CLEAN(self) -> str:
+        """Return S3 access key, fallback to AWS key"""
+        return self.S3_ACCESS_KEY_ID or self.AWS_ACCESS_KEY_ID
+    
+    @property
+    def S3_SECRET_ACCESS_KEY_CLEAN(self) -> str:
+        """Return S3 secret key, fallback to AWS key"""
+        return self.S3_SECRET_ACCESS_KEY or self.AWS_SECRET_ACCESS_KEY
+    
     # Keycloak
     # Public issuer URL should match Keycloak's external hostname for token "iss"
     KEYCLOAK_SERVER_URL: str = "https://keycloak.workshelf.dev"
