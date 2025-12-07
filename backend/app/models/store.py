@@ -1,6 +1,4 @@
-"""
-"""Store models for WorkShelf marketplace where authors can sell their books.
-"""
+"""Store models for WorkShelf marketplace where authors can sell their books."""
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum

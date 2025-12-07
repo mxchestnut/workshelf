@@ -1,6 +1,4 @@
-"""
-"""Folder database model.
-"""
+"""Folder database model."""
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.base import Base

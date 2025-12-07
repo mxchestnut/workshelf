@@ -1,6 +1,4 @@
-"""
-"""Project database model.
-"""
+"""Project database model."""
 from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
