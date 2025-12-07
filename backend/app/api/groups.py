@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_optional_user
 from app.services import user_service
 from app.services.group_service import GroupService
 from app.services.group_customization_service import GroupCustomizationService
@@ -60,7 +60,7 @@ async def create_group(
 async def get_groups(
     limit: int = 50,
     offset: int = 0,
-    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get discoverable groups based on privacy level and user status."""
@@ -161,7 +161,7 @@ async def get_my_groups(
 @router.get("/{group_id}", response_model=GroupResponse)
 async def get_group(
     group_id: int,
-    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific group."""
@@ -208,7 +208,7 @@ async def get_group(
 @router.get("/slug/{slug}", response_model=GroupResponse)
 async def get_group_by_slug(
     slug: str,
-    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a group by slug with privacy level checking."""
@@ -835,7 +835,7 @@ async def get_group_posts(
     group_id: int,
     limit: int = 50,
     offset: int = 0,
-    current_user: Optional[Dict[str, Any]] = Depends(get_current_user),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all posts in a group based on privacy level."""
