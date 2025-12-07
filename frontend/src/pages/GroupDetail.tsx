@@ -155,11 +155,11 @@ export default function GroupDetail() {
     }
   };
 
-  const loadMembers = async () => {
+  const loadPosts = async () => {
     if (!group?.id) return;
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/members`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/posts`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -197,7 +197,7 @@ export default function GroupDetail() {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/is-following`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/is-following`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -217,7 +217,7 @@ export default function GroupDetail() {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}/followers`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/followers`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
