@@ -110,11 +110,17 @@ export default function GroupDetail() {
   const loadGroup = async () => {
     try {
       const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add auth header if we have a token (for member status)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${groupId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
       if (response.ok) {
         const data = await response.json();

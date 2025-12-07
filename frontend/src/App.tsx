@@ -151,6 +151,9 @@ function App() {
       setCurrentPage('discover')
     } else if (path === '/groups') {
       setCurrentPage('groups')
+    } else if (path.startsWith('/groups/') && !path.includes('/roles') && !path.includes('/settings')) {
+      // Individual group page: /groups/:slug
+      setCurrentPage('group-detail')
     } else if (path === '/group') {
       setCurrentPage('group-detail')
     } else if (path === '/group-settings') {
