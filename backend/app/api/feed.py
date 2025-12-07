@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.collaboration import GroupPost, GroupMember, Group
 from app.models.user import User
+from app.services import user_service
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -52,7 +53,8 @@ async def get_feed(
     """
     Get personalized feed of posts from groups user is a member of
     """
-    user_id = current_user.get("user_id")
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    user_id = user.id
     
     # Get groups user is a member of
     groups_query = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
@@ -121,7 +123,8 @@ async def get_updates_feed(
     """
     Updates feed - pinned posts and recent activity from user's groups
     """
-    user_id = current_user.get("user_id")
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    user_id = user.id
     
     # Get groups user is a member of
     groups_query = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
@@ -257,7 +260,8 @@ async def get_discover_feed(
     """
     Discover feed - public posts from groups user is NOT in
     """
-    user_id = current_user.get("user_id")
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    user_id = user.id
     
     # Get groups user is already a member of
     groups_query = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
