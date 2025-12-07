@@ -620,6 +620,7 @@ export default function GroupDetail() {
                 followerCount={followerCount}
                 onMembershipChange={(isMember) => {
                   setIsMember(isMember);
+                  loadGroup(); // Reload group data to get updated member status
                   loadMembers();
                 }}
                 onFollowChange={(following, newCount) => {
