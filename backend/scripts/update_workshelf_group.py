@@ -25,6 +25,10 @@ async def update_workshelf_group():
         print("❌ DATABASE_URL not found in environment")
         return
     
+    # Convert postgresql:// to postgresql+asyncpg:// for async support
+    if database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+    
     # Create async engine
     engine = create_async_engine(database_url, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
