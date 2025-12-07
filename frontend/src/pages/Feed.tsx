@@ -47,6 +47,7 @@ export function Feed() {
   const [activeTab, setActiveTab] = useState<FeedTab>('personal')
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [selectedPost, setSelectedPost] = useState<{ id: number; title: string } | null>(null)
+  const [sortBy, setSortBy] = useState<'newest' | 'top' | 'controversial'>('newest')
 
   useEffect(() => {
     const loadData = async () => {
@@ -73,9 +74,9 @@ export function Feed() {
     }
 
     loadData()
-  }, [activeTab])
+  }, [activeTab, sortBy])
 
-  const loadFeed = async (tab: FeedTab) => {
+  const loadFeed = async (tab: FeedTab, sort: string = sortBy) => {
     try {
       const token = authService.getToken()
       
@@ -90,8 +91,9 @@ export function Feed() {
       }
       
       const endpoint = endpointMap[tab] || '/api/v1/feed'
+      const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
       
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -233,6 +235,22 @@ export function Feed() {
         </div>
       </div>
 
+      {/* Sort Controls */}
+      <div className="max-w-4xl mx-auto mb-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-foreground">Sort by:</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'newest' | 'top' | 'controversial')}
+            className="px-3 py-1.5 border border-border rounded bg-background text-foreground text-sm"
+          >
+            <option value="newest">Newest</option>
+            <option value="top">Top Voted</option>
+            <option value="controversial">Controversial</option>
+          </select>
+        </div>
+      </div>
+
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
         {posts.length === 0 ? (
@@ -371,18 +389,18 @@ export function Feed() {
                     </button>
                   </div>
                   
-                  <a 
-                    href={`/groups/${post.group.slug}/posts/${post.id}`}
-                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground"
+                  <button 
+                    onClick={() => window.location.href = `/groups/${post.group.slug}/posts/${post.id}`}
+                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     Reply
-                  </a>
+                  </button>
                   <button 
                     onClick={() => {
                       setSelectedPost({ id: post.id, title: post.title })
                       setSaveModalOpen(true)
                     }}
-                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground"
+                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     Save
                   </button>

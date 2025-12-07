@@ -81,10 +81,16 @@ async def get_votes_for_posts(db: AsyncSession, post_ids: List[int]) -> Dict[int
 async def get_feed(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    limit: int = 50
+    limit: int = 50,
+    sort: str = "newest"
 ):
     """
     Get personalized feed of posts from groups user is a member of
+    
+    Sort options:
+    - newest: Sort by creation date (default)
+    - top: Sort by highest score (upvotes - downvotes)
+    - controversial: Sort by most contentious (similar upvotes and downvotes)
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     user_id = user.id
@@ -98,16 +104,23 @@ async def get_feed(
         # User not in any groups yet, return empty feed
         return []
     
-    # Get posts from those groups with author and group info
+    # Build base query
     posts_query = (
         select(GroupPost, User, Group)
         .join(User, GroupPost.author_id == User.id)
         .join(Group, GroupPost.group_id == Group.id)
         .options(joinedload(User.profile))
         .where(GroupPost.group_id.in_(group_ids))
-        .order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
-        .limit(limit)
     )
+    
+    # Apply sorting
+    if sort == "newest":
+        posts_query = posts_query.order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
+    # For vote-based sorting, we'll fetch all and sort in Python after getting vote counts
+    else:
+        posts_query = posts_query.order_by(desc(GroupPost.is_pinned), desc(GroupPost.created_at))
+    
+    posts_query = posts_query.limit(limit * 2 if sort != "newest" else limit)
     
     result = await db.execute(posts_query)
     posts_data = result.all()
@@ -144,7 +157,17 @@ async def get_feed(
             )
         ))
     
-    return feed_posts
+    # Apply vote-based sorting if requested
+    if sort == "top":
+        feed_posts.sort(key=lambda p: (not p.is_pinned, -p.score))
+    elif sort == "controversial":
+        # Controversial = high engagement but close to 50/50 split
+        feed_posts.sort(key=lambda p: (
+            not p.is_pinned,
+            -(min(p.upvotes, p.downvotes) * 2)  # Rewards posts with similar up/down votes
+        ))
+    
+    return feed_posts[:limit]
 
 @router.get("/personal", response_model=List[FeedPost])
 async def get_personal_feed(
