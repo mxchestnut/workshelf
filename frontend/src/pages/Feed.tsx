@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
+import { SaveToCollectionModal } from '../components/SaveToCollectionModal'
 import { BookOpen, Pin, Clock, Users, Bell, Sparkles, Globe } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
@@ -44,6 +45,8 @@ export function Feed() {
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<FeedTab>('personal')
+  const [saveModalOpen, setSaveModalOpen] = useState(false)
+  const [selectedPost, setSelectedPost] = useState<{ id: number; title: string } | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -374,7 +377,13 @@ export function Feed() {
                   >
                     Reply
                   </a>
-                  <button className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <button 
+                    onClick={() => {
+                      setSelectedPost({ id: post.id, title: post.title })
+                      setSaveModalOpen(true)
+                    }}
+                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground"
+                  >
                     Save
                   </button>
                 </div>
@@ -392,6 +401,20 @@ export function Feed() {
           </div>
         )}
       </div>
+      
+      {/* Save to Collection Modal */}
+      {selectedPost && (
+        <SaveToCollectionModal
+          isOpen={saveModalOpen}
+          onClose={() => {
+            setSaveModalOpen(false)
+            setSelectedPost(null)
+          }}
+          itemType="post"
+          itemId={selectedPost.id}
+          itemTitle={selectedPost.title}
+        />
+      )}
     </div>
   )
 }
