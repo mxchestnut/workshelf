@@ -1,5 +1,5 @@
 """
-"""Base model with common fields for all tables
+Base model with common fields for all tables
 """
 from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime
