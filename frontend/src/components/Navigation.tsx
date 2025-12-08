@@ -394,32 +394,35 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   </p>
                   
                   {user.groups.map(group => (
-                    <button 
+                    <div 
                       key={group.id}
-                      onClick={() => navigateTo(`/groups/${group.slug}`)}
                       className={`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-colors ${
                         window.location.pathname.includes(`/groups/${group.slug}`)
                           ? 'bg-primary text-primary-foreground font-medium'
                           : 'text-foreground hover:bg-accent'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => navigateTo(`/groups/${group.slug}`)}
+                        className="flex items-center gap-3 flex-1 text-left"
+                      >
                         <Users className="w-5 h-5" />
                         <span className="truncate">{group.name}</span>
-                      </div>
+                      </button>
                       {group.is_owner && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             navigateTo(`/group-settings?id=${group.id}`)
                           }}
-                          className="p-1 hover:bg-accent rounded transition-colors"
+                          className="p-1 hover:bg-accent rounded transition-colors flex-shrink-0"
                           title="Group Settings"
+                          aria-label={`Settings for ${group.name}`}
                         >
                           <Settings className="w-4 h-4" />
                         </button>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
