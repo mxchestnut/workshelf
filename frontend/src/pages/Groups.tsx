@@ -32,6 +32,7 @@ export default function Groups() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDescription, setNewGroupDescription] = useState('')
+  const [newGroupPrivacyLevel, setNewGroupPrivacyLevel] = useState('guarded')
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -89,7 +90,8 @@ export default function Groups() {
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          is_public: true
+          privacy_level: newGroupPrivacyLevel,
+          is_public: newGroupPrivacyLevel === 'public'
         })
       })
 
@@ -98,6 +100,8 @@ export default function Groups() {
         alert('Group created successfully!')
         setShowCreateModal(false)
         setNewGroupName('')
+        setNewGroupDescription('')
+        setNewGroupPrivacyLevel('guarded')
         setNewGroupDescription('')
         // Refresh user data to update navigation
         const updatedUser = await authService.fetchUserInfo()
@@ -285,6 +289,26 @@ export default function Groups() {
                   rows={4}
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Privacy Level <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={newGroupPrivacyLevel}
+                  onChange={(e) => setNewGroupPrivacyLevel(e.target.value)}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                  required
+                >
+                  <option value="public">🌍 Public - Anyone can see and join (even not logged in)</option>
+                  <option value="guarded">🔐 Guarded - Only logged-in users can see and join (default)</option>
+                  <option value="private">🔒 Private - Only members can see posts/members (name searchable)</option>
+                  <option value="secret">🔑 Secret - Not searchable, invitation only</option>
+                </select>
+                <p className="mt-2 text-xs text-gray-500">
+                  Choose who can discover and access your group. "Guarded" is recommended for most groups.
+                </p>
               </div>
 
               <div className="flex gap-3 pt-4">
