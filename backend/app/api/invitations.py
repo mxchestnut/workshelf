@@ -3,6 +3,8 @@ Invitation API endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
@@ -42,19 +44,22 @@ class InvitationVerifyResponse(BaseModel):
 
 
 @router.post("", response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
-def create_invitation(
+async def create_invitation(
     invitation: InvitationCreate,
     current_user: User = Depends(require_staff),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Create a new invitation (staff only)
     """
     # Check if there's already a pending invitation for this email
-    existing = db.query(Invitation).filter(
-        Invitation.email == invitation.email,
-        Invitation.status == InvitationStatus.PENDING
-    ).first()
+    result = await db.execute(
+        select(Invitation).where(
+            Invitation.email == invitation.email,
+            Invitation.status == InvitationStatus.PENDING
+        )
+    )
+    existing = result.scalar_one_or_none()
     
     if existing:
         if existing.is_valid():
@@ -65,11 +70,12 @@ def create_invitation(
         else:
             # Mark old invitation as expired
             existing.mark_expired()
-            db.commit()
+            await db.commit()
     
     # Check if user already exists
     from app.models.user import User as UserModel
-    existing_user = db.query(UserModel).filter(UserModel.email == invitation.email).first()
+    result = await db.execute(select(UserModel).where(UserModel.email == invitation.email))
+    existing_user = result.scalar_one_or_none()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -85,33 +91,37 @@ def create_invitation(
     )
     
     db.add(new_invitation)
-    db.commit()
-    db.refresh(new_invitation)
+    await db.commit()
+    await db.refresh(new_invitation)
     
     return new_invitation
 
 
 @router.get("", response_model=List[InvitationResponse])
-def list_invitations(
+async def list_invitations(
     current_user: User = Depends(require_staff),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     List all invitations (staff only)
     """
-    invitations = db.query(Invitation).order_by(Invitation.created_at.desc()).all()
+    result = await db.execute(
+        select(Invitation).order_by(Invitation.created_at.desc())
+    )
+    invitations = result.scalars().all()
     return invitations
 
 
 @router.get("/verify/{token}", response_model=InvitationVerifyResponse)
-def verify_invitation(
+async def verify_invitation(
     token: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
-    Verify an invitation token (public endpoint)
+    Verify if an invitation token is valid
     """
-    invitation = db.query(Invitation).filter(Invitation.token == token).first()
+    result = await db.execute(select(Invitation).where(Invitation.token == token))
+    invitation = result.scalar_one_or_none()
     
     if not invitation:
         return InvitationVerifyResponse(
@@ -143,16 +153,17 @@ def verify_invitation(
     )
 
 
-@router.post("/{invitation_id}/revoke")
-def revoke_invitation(
+@router.post("/{invitation_id}/revoke", response_model=InvitationResponse)
+async def revoke_invitation(
     invitation_id: int,
     current_user: User = Depends(require_staff),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Revoke an invitation (staff only)
     """
-    invitation = db.query(Invitation).filter(Invitation.id == invitation_id).first()
+    result = await db.execute(select(Invitation).where(Invitation.id == invitation_id))
+    invitation = result.scalar_one_or_none()
     
     if not invitation:
         raise HTTPException(
@@ -161,21 +172,22 @@ def revoke_invitation(
         )
     
     invitation.revoke()
-    db.commit()
+    await db.commit()
     
     return {"message": "Invitation revoked successfully"}
 
 
 @router.post("/accept/{token}")
-def accept_invitation(
+async def accept_invitation(
     token: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Mark invitation as accepted (authenticated user)
     """
-    invitation = db.query(Invitation).filter(Invitation.token == token).first()
+    result = await db.execute(select(Invitation).where(Invitation.token == token))
+    invitation = result.scalar_one_or_none()
     
     if not invitation:
         raise HTTPException(
@@ -197,7 +209,7 @@ def accept_invitation(
         )
     
     invitation.mark_accepted(current_user.id)
-    db.commit()
+    await db.commit()
     
     return {"message": "Invitation accepted successfully"}
 
