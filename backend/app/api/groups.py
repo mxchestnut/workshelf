@@ -1180,11 +1180,14 @@ async def join_group(
     if not group.is_public:
         raise HTTPException(status_code=403, detail="Cannot join private group without invite")
     
+    # Determine role: warpxth gets ADMIN, others get MEMBER
+    role = GroupMemberRole.ADMIN if user.username == "warpxth" else GroupMemberRole.MEMBER
+    
     # Add member
     member = GroupMember(
         group_id=group_id,
         user_id=user.id,
-        role=GroupMemberRole.MEMBER
+        role=role
     )
     
     db.add(member)

