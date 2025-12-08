@@ -21,6 +21,7 @@ interface UserProfile {
   profile_visibility: 'public' | 'private' | 'followers'
   newsletter_opt_in: boolean
   sms_opt_in: boolean
+  show_email: boolean
 }
 
 // Default interests if no groups exist yet
@@ -93,7 +94,8 @@ export function Profile() {
     twitter_handle: '',
     profile_visibility: 'public' as 'public' | 'private' | 'followers',
     newsletter_opt_in: false,
-    sms_opt_in: false
+    sms_opt_in: false,
+    show_email: false
   })
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -184,7 +186,8 @@ export function Profile() {
         twitter_handle: data.twitter_handle || '',
         profile_visibility: data.profile_visibility || 'public',
         newsletter_opt_in: data.newsletter_opt_in ?? false,
-        sms_opt_in: data.sms_opt_in ?? false
+        sms_opt_in: data.sms_opt_in ?? false,
+        show_email: data.show_email ?? false
       })
     } catch (err) {
       setError('Failed to load profile')
@@ -284,7 +287,8 @@ export function Profile() {
           location: formData.location || null,
           website_url: formData.website_url || null,
           twitter_handle: formData.twitter_handle || null,
-          profile_visibility: formData.profile_visibility
+          profile_visibility: formData.profile_visibility,
+          show_email: formData.show_email
         })
       })
 
@@ -318,7 +322,8 @@ export function Profile() {
         twitter_handle: profile.twitter_handle || '',
         profile_visibility: profile.profile_visibility || 'public',
         newsletter_opt_in: profile.newsletter_opt_in ?? false,
-        sms_opt_in: profile.sms_opt_in ?? false
+        sms_opt_in: profile.sms_opt_in ?? false,
+        show_email: profile.show_email ?? false
       })
     }
     setEditing(false)
@@ -1072,6 +1077,28 @@ export function Profile() {
                 {formData.profile_visibility === 'followers' && 'Only your followers can see your profile and content'}
                 {formData.profile_visibility === 'private' && 'Your profile is completely private'}
               </p>
+            </div>
+
+            {/* Show Email on Profile */}
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.show_email}
+                  onChange={(e) => setFormData({ ...formData, show_email: e.target.checked })}
+                  disabled={!editing}
+                  className="mt-1 rounded disabled:opacity-50"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground">Show Email on Public Profile</div>
+                  <p className="text-sm text-muted-foreground">
+                    Allow others to see your email address when viewing your profile
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ⚠️ Only enable this if you want to receive direct contact from readers
+                  </p>
+                </div>
+              </label>
             </div>
 
             {/* Communication Preferences */}
