@@ -90,11 +90,6 @@ class MemberRoleUpdate(BaseModel):
     role: GroupMemberRole
 
 
-class ModerationAction(BaseModel):
-    """Moderation action (ban, suspend, etc)"""
-    reason: Optional[str] = None
-
-
 # ============================================================================
 # Helper Functions
 # ============================================================================
