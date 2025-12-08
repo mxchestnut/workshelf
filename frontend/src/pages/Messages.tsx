@@ -105,62 +105,19 @@ export default function Messages() {
   }
 
   const checkMatrixStatus = async () => {
-    try {
-      const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/matrix/status`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setHasMatrixAccount(data.has_matrix_account)
-      }
-    } catch (error) {
-      console.error('Failed to check Matrix status:', error)
-    }
+    // Matrix server not yet configured - disable for now
+    setHasMatrixAccount(false)
   }
 
   const initializeMatrix = async () => {
-    setInitializingMatrix(true)
-    try {
-      const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/matrix/initialize`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        await response.json() // Consume response
-        setHasMatrixAccount(true)
-        setShowMatrixPrompt(false)
-        toast.success('Matrix chat enabled! You can now use advanced messaging features.')
-      } else {
-        toast.error('Failed to enable Matrix chat')
-      }
-    } catch (error) {
-      console.error('Failed to initialize Matrix:', error)
-      toast.error('Failed to enable Matrix chat')
-    } finally {
-      setInitializingMatrix(false)
-    }
+    // Matrix server not yet configured
+    toast.error('Matrix chat is not yet available. Coming soon!')
   }
 
   const loadConversations = async () => {
-    try {
-      const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/messaging/conversations`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setConversations(data)
-      }
-    } catch (error) {
-      console.error('Failed to load conversations:', error)
-    } finally {
-      setLoading(false)
-    }
+    // Conversations API not yet available
+    setConversations([])
+    setLoading(false)
   }
 
   const loadMessages = async (conversationId: number) => {
