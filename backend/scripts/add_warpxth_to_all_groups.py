@@ -3,14 +3,14 @@ Add warpxth as ADMIN to all existing groups
 """
 import asyncio
 from sqlalchemy import select
-from app.core.database import async_session_maker
+from app.core.database import AsyncSessionLocal
 from app.models.collaboration import Group, GroupMember, GroupMemberRole
 from app.models.user import User
 
 
 async def add_warpxth_to_all_groups():
     """Add warpxth as ADMIN to all existing groups"""
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         try:
             # Get warpxth user
             result = await session.execute(
