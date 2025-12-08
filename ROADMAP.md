@@ -1198,10 +1198,10 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
   - **Activity:** Recent activity feed (optional)
   - **About:** Extended bio, interests, badges
 - [ ] Privacy controls (in `/settings/profile`)
-  - Profile visibility: Public, Followers-only, Private
-  - Show email on profile (checkbox)
-  - Show location, website (checkboxes)
-  - Hide groups, documents (checkboxes)
+  - [x] Profile visibility: Public, Followers-only, Private ✅ **DEPLOYED**
+  - [ ] Show email on profile (checkbox)
+  - [ ] Show location, website (checkboxes)
+  - [ ] Hide groups, documents (checkboxes)
 
 **Follow System:**
 - [ ] Follow button states
@@ -1907,10 +1907,11 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
   - "Blur by default" (safest)
 
 **Group Privacy:**
-- [ ] Group visibility settings (in group creation/settings)
-  - **PUBLIC:** Anyone can view and join
-  - **GUARDED (default):** Anyone can view, must request to join (owner approves)
-  - **PRIVATE:** Invite-only, not listed publicly
+- [x] Group visibility settings (in group creation/settings) ✅ **DEPLOYED**
+  - **PUBLIC:** Anyone can view and join (even not logged in)
+  - **GUARDED (default):** Only logged-in users can view and join
+  - **PRIVATE:** Only members can see posts/members, name searchable
+  - **SECRET:** Not searchable, invitation only
 - [ ] Enforce privacy
   - Public groups: Show in search, feed, discover
   - Guarded groups: Show in search (with lock icon), posts only visible to members
