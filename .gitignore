@@ -1,1 +1,6 @@
 .CREDENTIALS_SECURE.md
+
+# Environment variables
+.env
+.env.local
+.env.*.local
