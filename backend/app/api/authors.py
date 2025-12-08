@@ -14,7 +14,7 @@ from app.models.user import User
 from app.models.author import Author, AuthorEdit, UserFollowsAuthor
 from app.models.store import StoreItem
 
-router = APIRouter(prefix="/api/v1/authors", tags=["authors"])
+router = APIRouter(prefix="/authors", tags=["authors"])
 
 
 # Schemas
