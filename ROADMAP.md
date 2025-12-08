@@ -1349,39 +1349,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 8. Tag Discovery Page 🏷️ **MEDIUM PRIORITY**
-**Status:** ⚠️ Tags exist, discovery page needed  
-**Goal:** Browse and explore all tags
-
-#### Implementation (Week 1)
-
-**Tag Directory `/tags`:**
-- [ ] Tag cloud visualization
-  - Tags sized by usage count (larger = more popular)
-  - Color-coded by category (if categories added later)
-  - Click tag → Filter posts by that tag
-- [ ] Tag list view
-  - Sortable table: Tag name, usage count, created date
-  - Search bar to filter tags
-  - Pagination (50 per page)
-- [ ] Tag detail page `/tags/{tag_name}`
-  - Tag name + description (if exists)
-  - Usage count
-  - Related tags (tags that often appear together)
-  - Recent posts with this tag
-  - Top posts with this tag (by vote count)
-  - "Follow Tag" button (get notifications when used)
-  - "Include in Feed" / "Exclude from Feed" shortcuts
-
-**Trending Tags Widget:**
-- [ ] Show on homepage and feed sidebar
-  - "Trending Tags" header
-  - Top 10 tags by recent usage (last 7 days)
-  - Click to add to feed filter
-
----
-
-### 9. Writer Admin Dashboard 📊 **HIGH PRIORITY**
+### 8. Writer Admin Dashboard 📊 **HIGH PRIORITY**
 **Status:** 🆕 Not started  
 **Goal:** Ghost-style analytics dashboard for writers
 
@@ -1438,7 +1406,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 10. Image Uploads 🖼️ **HIGH PRIORITY**
+### 9. Image Uploads 🖼️ **HIGH PRIORITY**
 **Status:** ⚠️ S3 configured, upload UI needed  
 **Goal:** Images in posts, documents, and profiles
 
@@ -1510,7 +1478,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 11. Mobile Responsiveness & Accessibility 📱 **HIGH PRIORITY**
+### 10. Mobile Responsiveness & Accessibility 📱 **HIGH PRIORITY**
 **Status:** ⚠️ Partially implemented  
 **Goal:** Fully responsive, mobile-first, accessible design
 
@@ -1589,7 +1557,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 12. Onboarding Flow 🚀 **MEDIUM PRIORITY**
+### 11. Onboarding Flow 🚀 **MEDIUM PRIORITY**
 **Status:** 🆕 Not started  
 **Goal:** Guided setup for new users
 
@@ -1641,7 +1609,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 13. Tipping System 💰 **MEDIUM PRIORITY**
+### 12. Tipping System 💰 **MEDIUM PRIORITY**
 **Status:** ⚠️ Stripe configured, tipping UI needed  
 **Goal:** One-click tips for creators
 
@@ -1692,7 +1660,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 14. Paid Beta Reading 💵 **MEDIUM PRIORITY**
+### 13. Paid Beta Reading 💵 **MEDIUM PRIORITY**
 **Status:** ⚠️ Beta system exists, payment missing  
 **Goal:** Monetize beta reading services
 
@@ -1706,7 +1674,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 15. Subscription Tiers for Site Features 💎 **MEDIUM PRIORITY**
+### 14. Subscription Tiers for Site Features 💎 **MEDIUM PRIORITY**
 **Status:** ⚠️ Stripe products exist, feature gates needed  
 **Goal:** Freemium model with paid tiers
 
@@ -1787,7 +1755,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 16. Reporting System & Anonymous Staff Messaging 🚨 **HIGH PRIORITY**
+### 15. Reporting System & Anonymous Staff Messaging 🚨 **HIGH PRIORITY**
 **Status:** 🆕 Not started  
 **Goal:** Community safety and moderation tools
 
@@ -1871,7 +1839,7 @@ Writers exchange messages back-and-forth (like roleplay), then compile the conve
 
 ---
 
-### 17. NSFW System & Privacy Controls 🔞 **HIGH PRIORITY**
+### 16. NSFW System & Privacy Controls 🔞 **HIGH PRIORITY**
 **Status:** 🆕 Not started  
 **Goal:** Age verification, content warnings, privacy
 
