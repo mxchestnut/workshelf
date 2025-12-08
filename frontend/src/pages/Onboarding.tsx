@@ -222,8 +222,18 @@ export default function Onboarding() {
         })
       });
 
+      console.log('[Onboarding] Response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        const error = await response.json();
+        let error;
+        try {
+          const text = await response.text();
+          console.log('[Onboarding] Response text:', text);
+          error = text ? JSON.parse(text) : { detail: 'Server error' };
+        } catch (parseError) {
+          console.error('[Onboarding] Failed to parse error response:', parseError);
+          throw new Error(`Server error (${response.status}): Could not parse response`);
+        }
         console.error('[Onboarding] API error response:', error);
         
         // Handle validation errors
@@ -252,7 +262,19 @@ export default function Onboarding() {
         throw new Error(error.detail || 'Failed to complete onboarding');
       }
 
-      // Success! Redirect to personal feed
+      // Success! Parse response
+      let result;
+      try {
+        const text = await response.text();
+        console.log('[Onboarding] Success response text:', text);
+        result = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error('[Onboarding] Failed to parse success response:', parseError);
+        // If we got a 200 but can't parse, still consider it success
+        console.log('[Onboarding] Got 200 response, proceeding despite parse error');
+      }
+
+      // Redirect to personal feed
       navigateTo('/feed');
     } catch (error: any) {
       console.error('Onboarding error:', error);
