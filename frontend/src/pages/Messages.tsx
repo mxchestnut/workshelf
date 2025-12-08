@@ -292,26 +292,26 @@ export default function Messages() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="max-w-7xl mx-auto px-6 py-8 text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
-          <p className="mt-4 text-white">Loading messages...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-foreground" />
+          <p className="mt-4 text-foreground">Loading messages...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen flex flex-col bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Conversation List */}
-        <div className="w-80 border-r border-border flex flex-col" style={{ backgroundColor: '#2A2623' }}>
+        <div className="w-80 border-r border-border flex flex-col bg-card">
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
                 Messages
               </h1>
@@ -374,21 +374,21 @@ export default function Messages() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-background">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-border" style={{ backgroundColor: '#2A2623' }}>
-                <h2 className="text-lg font-semibold text-white">
+              <div className="p-4 border-b border-border bg-card">
+                <h2 className="text-lg font-semibold text-foreground">
                   {getConversationTitle(selectedConversation)}
                 </h2>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
                 {loadingMessages ? (
                   <div className="text-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" />
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-foreground" />
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -423,7 +423,7 @@ export default function Messages() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={sendMessage} className="p-4 border-t border-border" style={{ backgroundColor: '#2A2623' }}>
+              <form onSubmit={sendMessage} className="p-4 border-t border-border bg-card">
                 <div className="flex gap-2">
                   <textarea
                     ref={messageInputRef}
