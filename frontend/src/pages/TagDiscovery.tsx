@@ -25,9 +25,12 @@ export function TagDiscovery() {
   const [sortBy, setSortBy] = useState<'popular' | 'alphabetical' | 'recent'>('popular')
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser()
-    setUser(currentUser)
-    fetchTags()
+    const loadData = async () => {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+      await fetchTags()
+    }
+    loadData()
   }, [])
 
   const fetchTags = async () => {
