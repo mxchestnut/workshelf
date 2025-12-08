@@ -579,7 +579,7 @@ export function Feed() {
                 )}
 
                 {/* Post Actions */}
-                <div className="flex items-center gap-6 pt-4 border-t border-border">
+                <div className="flex items-center gap-4 pt-4 border-t border-border">
                   {/* Upvote/Downvote */}
                   <div className="flex items-center gap-2">
                     <button 
@@ -595,13 +595,13 @@ export function Feed() {
                           console.error('Vote error:', error)
                         }
                       }}
-                      className="transition-colors text-muted-foreground hover:text-foreground"
+                      className="transition-colors text-gray-500 hover:text-green-600"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     </button>
-                    <span className="text-sm font-medium text-foreground">{post.score}</span>
+                    <span className="text-sm font-medium text-gray-900">{post.score}</span>
                     <button 
                       onClick={async () => {
                         try {
@@ -615,7 +615,7 @@ export function Feed() {
                           console.error('Vote error:', error)
                         }
                       }}
-                      className="transition-colors text-muted-foreground hover:text-foreground"
+                      className="transition-colors text-gray-500 hover:text-red-600"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -625,7 +625,7 @@ export function Feed() {
                   
                   <button 
                     onClick={() => window.location.href = `/groups/${post.group.slug}/posts/${post.id}`}
-                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="text-sm font-medium text-gray-700 hover:text-indigo-600 hover:underline transition-colors"
                   >
                     Reply
                   </button>
@@ -634,7 +634,7 @@ export function Feed() {
                       setSelectedPost({ id: post.id, title: post.title })
                       setSaveModalOpen(true)
                     }}
-                    className="transition-colors text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="text-sm font-medium text-gray-700 hover:text-indigo-600 hover:underline transition-colors"
                   >
                     Save
                   </button>
@@ -659,7 +659,7 @@ export function Feed() {
                           console.error('Pin error:', error)
                         }
                       }}
-                      className={`transition-colors text-sm font-medium cursor-pointer inline-flex items-center gap-1 ${post.is_pinned ? 'text-yellow-600' : 'text-muted-foreground hover:text-yellow-600'}`}
+                      className={`text-sm font-medium inline-flex items-center gap-1 hover:underline transition-colors ${post.is_pinned ? 'text-yellow-600 hover:text-yellow-700' : 'text-gray-700 hover:text-yellow-600'}`}
                     >
                       <Pin className="w-4 h-4" />
                       {post.is_pinned ? 'Unpin' : 'Pin'}
