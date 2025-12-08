@@ -47,6 +47,13 @@ StorageSessionLocal = async_sessionmaker(
 )
 
 
+def get_db_engine():
+    """
+    Get the database engine (for tests and direct access)
+    """
+    return engine
+
+
 async def get_db():
     """
     Dependency for getting async database session (main database)
