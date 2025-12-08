@@ -247,11 +247,40 @@ export function VersionHistory({ documentId, isOpen, onClose, onRestore }: Versi
                   {selectedVersion?.id === version.id && (
                     <div className="mt-4 pt-4 border-t border-neutral-light">
                       <h4 className="text-sm font-semibold text-neutral-darkest mb-2">Title:</h4>
-                      <p className="text-sm text-neutral mb-3">{version.title}</p>
+                      <p className="text-sm text-neutral-darkest mb-3 font-medium">{version.title}</p>
                       
                       <h4 className="text-sm font-semibold text-neutral-darkest mb-2">Content Preview:</h4>
-                      <div className="text-sm text-neutral bg-neutral-lightest rounded p-3 max-h-48 overflow-y-auto">
-                        {JSON.stringify(version.content, null, 2)}
+                      <div className="text-sm text-neutral bg-neutral-lightest rounded p-4 max-h-64 overflow-y-auto prose prose-sm">
+                        {version.content && typeof version.content === 'object' && version.content.blocks ? (
+                          <div>
+                            {version.content.blocks.slice(0, 5).map((block: any, idx: number) => (
+                              <div key={idx} className="mb-2">
+                                {block.type === 'paragraph' && <p>{block.data.text}</p>}
+                                {block.type === 'header' && (
+                                  <div className={`font-bold ${block.data.level === 1 ? 'text-lg' : 'text-base'}`}>
+                                    {block.data.text}
+                                  </div>
+                                )}
+                                {block.type === 'list' && (
+                                  <ul className="list-disc pl-4">
+                                    {block.data.items.map((item: string, i: number) => (
+                                      <li key={i}>{item}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                            {version.content.blocks.length > 5 && (
+                              <p className="text-xs text-neutral italic mt-2">
+                                ... and {version.content.blocks.length - 5} more blocks
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs font-mono whitespace-pre-wrap">
+                            {JSON.stringify(version.content, null, 2)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

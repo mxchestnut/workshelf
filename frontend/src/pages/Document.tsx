@@ -36,6 +36,9 @@ export function Document() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false)
   const [modeChanging, setModeChanging] = useState(false)
+  const [showCreateVersion, setShowCreateVersion] = useState(false)
+  const [versionMessage, setVersionMessage] = useState('')
+  const [creatingVersion, setCreatingVersion] = useState(false)
 
   // Get document ID from URL path (/document/123) or query (?id=123)
   const pathParts = window.location.pathname.split('/')
@@ -233,6 +236,42 @@ export function Document() {
       console.error('Error saving document:', err)
       toast.error('Failed to save document')
       throw err // Let the Editor component handle the error
+    }
+  }
+
+  const createManualVersion = async () => {
+    if (!document || !versionMessage.trim()) {
+      toast.error('Please enter a version message')
+      return
+    }
+
+    setCreatingVersion(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(
+        `${API_URL}/api/v1/documents/${document.id}/versions?change_summary=${encodeURIComponent(versionMessage)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to create version')
+      }
+
+      const versionData = await response.json()
+      toast.success(`Version ${versionData.version} created`)
+      setShowCreateVersion(false)
+      setVersionMessage('')
+    } catch (err) {
+      console.error('Error creating version:', err)
+      toast.error('Failed to create version')
+    } finally {
+      setCreatingVersion(false)
     }
   }
 
@@ -440,6 +479,14 @@ export function Document() {
               </button>
             )}
             <button
+              onClick={() => setShowCreateVersion(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-primary hover:bg-primary-light rounded-lg transition-colors font-medium"
+              title="Create version snapshot"
+            >
+              <History className="w-4 h-4" />
+              Save Version
+            </button>
+            <button
               onClick={() => setVersionHistoryOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral hover:bg-neutral-lightest rounded-lg transition-colors"
               title="Version history"
@@ -566,6 +613,57 @@ export function Document() {
           loadDocument(document.id.toString())
         }}
       />
+
+      {/* Create Version Modal */}
+      {showCreateVersion && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowCreateVersion(false)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold text-neutral-darkest mb-4">Create Version Snapshot</h2>
+            <p className="text-sm text-neutral mb-4">
+              Create a manual version of your document. This is like a Git commit - it saves a snapshot with your message.
+            </p>
+            
+            <label className="block mb-4">
+              <span className="block text-sm font-medium text-neutral-darkest mb-2">
+                Version Message *
+              </span>
+              <textarea
+                value={versionMessage}
+                onChange={(e) => setVersionMessage(e.target.value)}
+                placeholder="What changed? (e.g., 'Added chapter 3' or 'Fixed plot holes')"
+                className="w-full px-3 py-2 border border-neutral-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                rows={3}
+                autoFocus
+              />
+            </label>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={createManualVersion}
+                disabled={!versionMessage.trim() || creatingVersion}
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {creatingVersion ? 'Creating...' : 'Create Version'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCreateVersion(false)
+                  setVersionMessage('')
+                }}
+                className="px-4 py-2 text-neutral hover:bg-neutral-lightest rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
