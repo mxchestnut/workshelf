@@ -18,6 +18,7 @@ interface UserProfile {
   website_url: string | null
   twitter_handle: string | null
   location: string | null
+  profile_visibility: 'public' | 'private' | 'followers'
 }
 
 // Default interests if no groups exist yet
@@ -87,7 +88,8 @@ export function Profile() {
     bio: '',
     location: '',
     website_url: '',
-    twitter_handle: ''
+    twitter_handle: '',
+    profile_visibility: 'public' as 'public' | 'private' | 'followers'
   })
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -175,7 +177,8 @@ export function Profile() {
         bio: data.bio || '',
         location: data.location || '',
         website_url: data.website_url || '',
-        twitter_handle: data.twitter_handle || ''
+        twitter_handle: data.twitter_handle || '',
+        profile_visibility: data.profile_visibility || 'public'
       })
     } catch (err) {
       setError('Failed to load profile')
@@ -272,7 +275,8 @@ export function Profile() {
           bio: formData.bio || null,
           location: formData.location || null,
           website_url: formData.website_url || null,
-          twitter_handle: formData.twitter_handle || null
+          twitter_handle: formData.twitter_handle || null,
+          profile_visibility: formData.profile_visibility
         })
       })
 
@@ -303,7 +307,8 @@ export function Profile() {
         bio: profile.bio || '',
         location: profile.location || '',
         website_url: profile.website_url || '',
-        twitter_handle: profile.twitter_handle || ''
+        twitter_handle: profile.twitter_handle || '',
+        profile_visibility: profile.profile_visibility || 'public'
       })
     }
     setEditing(false)
@@ -1027,6 +1032,37 @@ export function Profile() {
                 {exportMessage.text}
               </div>
             )}
+
+            {/* Profile Visibility */}
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <label htmlFor="profile_visibility" className="font-semibold mb-1 block text-foreground">
+                    Profile Visibility
+                  </label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Control who can see your profile and content
+                  </p>
+                </div>
+                <select
+                  id="profile_visibility"
+                  value={formData.profile_visibility}
+                  onChange={(e) => setFormData({ ...formData, profile_visibility: e.target.value as 'public' | 'private' | 'followers' })}
+                  disabled={!editing}
+                  className="px-4 py-2 rounded-lg border bg-background text-foreground disabled:opacity-50"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <option value="public">Public - Anyone can see</option>
+                  <option value="followers">Followers Only</option>
+                  <option value="private">Private - Only me</option>
+                </select>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {formData.profile_visibility === 'public' && 'Your profile, posts, and documents are visible to everyone'}
+                {formData.profile_visibility === 'followers' && 'Only your followers can see your profile and content'}
+                {formData.profile_visibility === 'private' && 'Your profile is completely private'}
+              </p>
+            </div>
 
             <div className="p-4 rounded-lg border border-border bg-background/50">
               <div className="flex items-start justify-between gap-4">
