@@ -449,17 +449,17 @@ export default function Bookshelf() {
             >
               <Sparkles className="w-4 h-4" />
               Recommendations
-                        <button
-                          onClick={() => setActiveTab('reading-lists')}
-                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
-                          style={{
-                            backgroundColor: activeTab === 'reading-lists' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-                            color: activeTab === 'reading-lists' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
-                          }}
-                        >
-                          <List className="w-4 h-4" />
-                          Reading Lists
-                        </button>
+            </button>
+            <button
+              onClick={() => setActiveTab('reading-lists')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-opacity hover:opacity-90"
+              style={{
+                backgroundColor: activeTab === 'reading-lists' ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+                color: activeTab === 'reading-lists' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'
+              }}
+            >
+              <List className="w-4 h-4" />
+              Reading Lists
             </button>
           </div>
         </div>
