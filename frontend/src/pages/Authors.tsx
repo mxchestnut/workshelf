@@ -219,7 +219,7 @@ export default function Authors() {
       if (!token) return
 
       const response = await fetch(
-        `${API_URL}/api/v1/authors/search/${encodeURIComponent(authorName)}/books?max_results=20`,
+        `${API_URL}/api/v1/authors/by-name/${encodeURIComponent(authorName)}/books?max_results=20`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

@@ -83,13 +83,14 @@ class EditResponse(BaseModel):
 
 
 # Endpoints
-@router.get("/search/{author_name}/books", response_model=List[BookSummary])
-async def search_author_books(
+# Note: More specific routes must come before generic /{author_id} patterns
+@router.get("/by-name/{author_name}/books", response_model=List[BookSummary])
+async def get_books_by_author_name(
     author_name: str,
     max_results: int = Query(10, le=100),
     db: Session = Depends(get_db)
 ):
-    """Search for books by author name."""
+    """Get books by searching for author by name."""
     # Find author by name (fuzzy match)
     author = db.query(Author).filter(
         Author.name.ilike(f"%{author_name}%")

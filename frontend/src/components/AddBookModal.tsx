@@ -190,7 +190,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
       
       // Load more books by the same author
       const authorResponse = await fetch(
-        `${API_URL}/api/v1/authors/search/${encodeURIComponent(book.author)}/books?max_results=10`,
+        `${API_URL}/api/v1/authors/by-name/${encodeURIComponent(book.author)}/books?max_results=10`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
