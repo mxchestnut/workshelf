@@ -21,6 +21,7 @@ interface DocumentData {
   status: 'draft' | 'published' | 'archived'
   visibility: 'private' | 'public' | 'studio'
   mode: DocumentMode
+  allow_comments: boolean
   word_count: number
   created_at: string
   updated_at: string
@@ -208,7 +209,8 @@ export function Document() {
           title,
           content: document.content,
           status: document.status,
-          visibility: document.visibility
+          visibility: document.visibility,
+          allow_comments: document.allow_comments
         })
       })
 
@@ -408,6 +410,15 @@ export function Document() {
                 <option value="public">🌐 Public (on your profile)</option>
                 <option value="studio">👥 Studio (shared)</option>
               </select>
+              <label className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-neutral-lightest rounded-lg transition-colors" title="Allow others to comment on this document">
+                <input
+                  type="checkbox"
+                  checked={document.allow_comments}
+                  onChange={(e) => setDocument({ ...document, allow_comments: e.target.checked })}
+                  className="rounded"
+                />
+                <span className="text-neutral">💬 Comments</span>
+              </label>
             </div>
           </div>
           
