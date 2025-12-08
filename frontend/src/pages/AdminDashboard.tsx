@@ -106,6 +106,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [managedGroups, setManagedGroups] = useState<Group[]>([])
+  // Default to site-admin tab if user is staff, otherwise overview
   const [activeTab, setActiveTab] = useState<'overview' | 'groups' | 'moderation' | 'site-admin' | 'creator-earnings'>('overview')
   const [isStaff, setIsStaff] = useState(false)
   const [invitations, setInvitations] = useState<Invitation[]>([])
@@ -147,6 +148,11 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       // Check if user is staff or group admin
       const staffUser = currentUser.is_staff || false
       setIsStaff(staffUser)
+
+      // If staff user and accessing via /staff route, default to site-admin tab
+      if (staffUser && window.location.pathname === '/staff') {
+        setActiveTab('site-admin')
+      }
 
       // Check if user is a group admin
       if (!staffUser && (!currentUser.groups || currentUser.groups.length === 0)) {
