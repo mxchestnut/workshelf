@@ -57,6 +57,7 @@ const HouseRules = lazy(() => import('./pages/HouseRules'))
 const DeleteAccount = lazy(() => import('./pages/DeleteAccount'))
 const Trash = lazy(() => import('./pages/Trash'))
 const Sitemap = lazy(() => import('./pages/Sitemap').then(module => ({ default: module.Sitemap })))
+const TagDiscovery = lazy(() => import('./pages/TagDiscovery').then(module => ({ default: module.TagDiscovery })))
 const AdminModeration = lazy(() => import('./pages/AdminModeration'))
 const GroupAdmin = lazy(() => import('./pages/GroupAdmin'))
 const BetaFeed = lazy(() => import('./pages/BetaFeed'))
@@ -80,7 +81,7 @@ const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -148,6 +149,8 @@ function App() {
       setCurrentPage('rules')
     } else if (path === '/sitemap' || path === '/overview') {
       setCurrentPage('sitemap')
+    } else if (path === '/tags') {
+      setCurrentPage('tags')
     } else if (path === '/feed') {
       setCurrentPage('feed')
     } else if (path === '/discover') {
@@ -329,6 +332,10 @@ function App() {
     
     if (currentPage === 'sitemap') {
       return <Sitemap />
+    }
+    
+    if (currentPage === 'tags') {
+      return <TagDiscovery />
     }
     
     if (currentPage === 'invite') {

@@ -216,6 +216,18 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <ShoppingBag className="w-5 h-5" />
                   <span>Store</span>
                 </button>
+                
+                <button 
+                  onClick={() => navigateTo('/tags')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/tags')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <SearchIcon className="w-5 h-5" />
+                  <span>Discover Tags</span>
+                </button>
               </div>
 
               {/* My Studio */}
