@@ -20,7 +20,8 @@ import {
   LogIn,
   LogOut,
   BookOpen,
-  Trash2
+  Trash2,
+  MessageCircle
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -128,6 +129,18 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   >
                     <Users className="w-5 h-5" />
                     <span>Groups</span>
+                  </button>
+
+                  <button 
+                    onClick={() => navigateTo('/messages')}
+                    className={`hidden md:flex items-center gap-2 px-4 py-2 transition-colors ${
+                      isActive('/messages') 
+                        ? 'bg-primary text-primary-foreground font-medium' 
+                        : 'text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <span>Messages</span>
                   </button>
 
                   {/* Notifications */}
@@ -277,6 +290,19 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 >
                   <UserCircle className="w-5 h-5" />
                   <span>Profile & Settings</span>
+                </button>
+
+                {/* Messages */}
+                <button 
+                  onClick={() => navigateTo('/messages')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    isActive('/messages')
+                      ? 'bg-primary text-primary-foreground font-medium'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Messages</span>
                 </button>
 
                 {/* Dashboard - Personal analytics */}
