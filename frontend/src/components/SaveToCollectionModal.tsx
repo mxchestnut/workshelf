@@ -69,6 +69,8 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
       loadCollections()
       checkSavedStatus()
     }
+    // checkSavedStatus is stable and doesn't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, itemType, itemId])
 
   const createCollection = async () => {
