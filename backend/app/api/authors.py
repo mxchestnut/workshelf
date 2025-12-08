@@ -83,6 +83,39 @@ class EditResponse(BaseModel):
 
 
 # Endpoints
+@router.get("/search/{author_name}/books", response_model=List[BookSummary])
+async def search_author_books(
+    author_name: str,
+    max_results: int = Query(10, le=100),
+    db: Session = Depends(get_db)
+):
+    """Search for books by author name."""
+    # Find author by name (fuzzy match)
+    author = db.query(Author).filter(
+        Author.name.ilike(f"%{author_name}%")
+    ).first()
+    
+    if not author:
+        # Return empty list if author not found
+        return []
+    
+    # Get books by this author
+    books = db.query(StoreItem).filter(
+        StoreItem.author_id == author.id,
+        StoreItem.status == "active"
+    ).order_by(StoreItem.published_at.desc()).limit(max_results).all()
+    
+    return [
+        BookSummary(
+            id=book.id,
+            title=book.title,
+            cover_url=book.cover_url,
+            final_price=book.final_price
+        )
+        for book in books
+    ]
+
+
 @router.get("/{author_id}", response_model=AuthorResponse)
 async def get_author(
     author_id: int,
