@@ -6,8 +6,7 @@ from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
 from app.models.collaboration import Group, GroupMember, GroupMemberRole
 from app.models.user import User
-# Import all models to ensure relationships are configured
-import app.models  # noqa
+from app.models.tags import PostTag  # Ensure PostTag is imported for relationships
 
 
 async def add_warpxth_to_all_groups():
