@@ -22,6 +22,7 @@ interface UserProfile {
   newsletter_opt_in: boolean
   sms_opt_in: boolean
   show_email: boolean
+  email_notifications: boolean
 }
 
 // Default interests if no groups exist yet
@@ -95,7 +96,8 @@ export function Profile() {
     profile_visibility: 'public' as 'public' | 'private' | 'followers',
     newsletter_opt_in: false,
     sms_opt_in: false,
-    show_email: false
+    show_email: false,
+    email_notifications: true
   })
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -187,7 +189,8 @@ export function Profile() {
         profile_visibility: data.profile_visibility || 'public',
         newsletter_opt_in: data.newsletter_opt_in ?? false,
         sms_opt_in: data.sms_opt_in ?? false,
-        show_email: data.show_email ?? false
+        show_email: data.show_email ?? false,
+        email_notifications: data.email_notifications ?? true
       })
     } catch (err) {
       setError('Failed to load profile')
@@ -288,7 +291,8 @@ export function Profile() {
           website_url: formData.website_url || null,
           twitter_handle: formData.twitter_handle || null,
           profile_visibility: formData.profile_visibility,
-          show_email: formData.show_email
+          show_email: formData.show_email,
+          email_notifications: formData.email_notifications
         })
       })
 
@@ -323,7 +327,8 @@ export function Profile() {
         profile_visibility: profile.profile_visibility || 'public',
         newsletter_opt_in: profile.newsletter_opt_in ?? false,
         sms_opt_in: profile.sms_opt_in ?? false,
-        show_email: profile.show_email ?? false
+        show_email: profile.show_email ?? false,
+        email_notifications: profile.email_notifications ?? true
       })
     }
     setEditing(false)
@@ -1132,6 +1137,21 @@ export function Profile() {
                     <div className="font-medium text-foreground">SMS Notifications</div>
                     <p className="text-sm text-muted-foreground">
                       Get text message alerts for important account activities (requires phone number)
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.email_notifications}
+                    onChange={(e) => setFormData({ ...formData, email_notifications: e.target.checked })}
+                    disabled={!editing}
+                    className="mt-1 rounded disabled:opacity-50"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">Email Notifications</div>
+                    <p className="text-sm text-muted-foreground">
+                      Receive email alerts for comments, mentions, and important updates
                     </p>
                   </div>
                 </label>
