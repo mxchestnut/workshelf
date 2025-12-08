@@ -263,11 +263,13 @@ export default function Onboarding() {
       }
 
       // Success! Parse response
-      let result;
       try {
         const text = await response.text();
         console.log('[Onboarding] Success response text:', text);
-        result = text ? JSON.parse(text) : {};
+        if (text) {
+          const result = JSON.parse(text);
+          console.log('[Onboarding] Parsed response:', result);
+        }
       } catch (parseError) {
         console.error('[Onboarding] Failed to parse success response:', parseError);
         // If we got a 200 but can't parse, still consider it success

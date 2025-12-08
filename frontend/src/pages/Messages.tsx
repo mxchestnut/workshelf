@@ -130,7 +130,7 @@ export default function Messages() {
       })
       
       if (response.ok) {
-        const data = await response.json()
+        await response.json() // Consume response
         setHasMatrixAccount(true)
         setShowMatrixPrompt(false)
         toast.success('Matrix chat enabled! You can now use advanced messaging features.')
