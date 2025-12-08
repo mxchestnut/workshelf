@@ -70,7 +70,6 @@ export default function Messages() {
   // Matrix integration
   const [hasMatrixAccount, setHasMatrixAccount] = useState(false)
   const [showMatrixPrompt, setShowMatrixPrompt] = useState(false)
-  const [initializingMatrix, setInitializingMatrix] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
@@ -610,17 +609,9 @@ export default function Messages() {
               </button>
               <button
                 onClick={initializeMatrix}
-                disabled={initializingMatrix}
-                className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90"
               >
-                {initializingMatrix ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Enabling...
-                  </>
-                ) : (
-                  'Enable Matrix'
-                )}
+                Enable Matrix
               </button>
             </div>
           </div>
