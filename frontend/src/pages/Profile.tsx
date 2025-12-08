@@ -23,6 +23,9 @@ interface UserProfile {
   sms_opt_in: boolean
   show_email: boolean
   email_notifications: boolean
+  timezone: string
+  language: string
+  theme: string
 }
 
 // Default interests if no groups exist yet
@@ -97,7 +100,10 @@ export function Profile() {
     newsletter_opt_in: false,
     sms_opt_in: false,
     show_email: false,
-    email_notifications: true
+    email_notifications: true,
+    timezone: 'UTC',
+    language: 'en',
+    theme: 'system'
   })
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -190,7 +196,10 @@ export function Profile() {
         newsletter_opt_in: data.newsletter_opt_in ?? false,
         sms_opt_in: data.sms_opt_in ?? false,
         show_email: data.show_email ?? false,
-        email_notifications: data.email_notifications ?? true
+        email_notifications: data.email_notifications ?? true,
+        timezone: data.timezone || 'UTC',
+        language: data.language || 'en',
+        theme: data.theme || 'system'
       })
     } catch (err) {
       setError('Failed to load profile')
@@ -292,7 +301,10 @@ export function Profile() {
           twitter_handle: formData.twitter_handle || null,
           profile_visibility: formData.profile_visibility,
           show_email: formData.show_email,
-          email_notifications: formData.email_notifications
+          email_notifications: formData.email_notifications,
+          timezone: formData.timezone,
+          language: formData.language,
+          theme: formData.theme
         })
       })
 
@@ -328,7 +340,10 @@ export function Profile() {
         newsletter_opt_in: profile.newsletter_opt_in ?? false,
         sms_opt_in: profile.sms_opt_in ?? false,
         show_email: profile.show_email ?? false,
-        email_notifications: profile.email_notifications ?? true
+        email_notifications: profile.email_notifications ?? true,
+        timezone: profile.timezone || 'UTC',
+        language: profile.language || 'en',
+        theme: profile.theme || 'system'
       })
     }
     setEditing(false)
@@ -1159,6 +1174,65 @@ export function Profile() {
               <p className="text-xs text-muted-foreground mt-3">
                 You can unsubscribe from these communications at any time
               </p>
+            </div>
+
+            {/* Display & Language Preferences */}
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <h3 className="font-semibold mb-3 text-foreground">Display & Language</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-foreground">Theme</label>
+                  <select
+                    value={formData.theme}
+                    onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-4 py-2 rounded-lg border bg-background text-foreground disabled:opacity-50"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <option value="system">System Default</option>
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-foreground">Language</label>
+                  <select
+                    value={formData.language}
+                    onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-4 py-2 rounded-lg border bg-background text-foreground disabled:opacity-50"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-foreground">Timezone</label>
+                  <select
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-4 py-2 rounded-lg border bg-background text-foreground disabled:opacity-50"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  >
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">Eastern Time (ET)</option>
+                    <option value="America/Chicago">Central Time (CT)</option>
+                    <option value="America/Denver">Mountain Time (MT)</option>
+                    <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                    <option value="Europe/London">London (GMT)</option>
+                    <option value="Europe/Paris">Paris (CET)</option>
+                    <option value="Asia/Tokyo">Tokyo (JST)</option>
+                    <option value="Australia/Sydney">Sydney (AEST)</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Used for displaying timestamps in your local time
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="p-4 rounded-lg border border-border bg-background/50">
