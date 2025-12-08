@@ -126,7 +126,10 @@ export default function Home() {
   }
 
   const handleNavigation = (path: string) => {
-    window.location.href = path
+    // Use pushState to navigate without full page reload
+    window.history.pushState({}, '', path)
+    // Trigger popstate event so App.tsx picks up the route change
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
   const handleLogin = () => {
