@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Pin, Lock, Pencil } from 'lucide-react';
 import TagInput from '../components/TagInput';
+import { PostModerationActions } from '../components/PostModerationActions';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
 
@@ -19,6 +20,8 @@ interface Post {
   content: string;
   is_pinned: boolean;
   is_locked: boolean;
+  pinned_feeds?: string[];
+  author_id: number;
   created_at: string;
   tags?: Tag[];
   author?: {
@@ -43,6 +46,11 @@ export default function PostDetail() {
   const [editContent, setEditContent] = useState('');
   const [editTags, setEditTags] = useState<Tag[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userPermissions, setUserPermissions] = useState<{
+    can_pin_posts?: boolean;
+    can_delete_posts?: boolean;
+    can_lock_threads?: boolean;
+  }>({});
 
   // Extract group slug and post ID from URL: /groups/:slug/posts/:id
   const pathParts = window.location.pathname.split('/');
@@ -54,6 +62,13 @@ export default function PostDetail() {
     loadPost();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupSlug, postId]);
+
+  useEffect(() => {
+    if (group && currentUser) {
+      checkUserMembership();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group, currentUser]);
 
   const loadCurrentUser = async () => {
     try {
@@ -133,6 +148,149 @@ export default function PostDetail() {
       console.error('Failed to load post:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkUserMembership = async () => {
+    if (!group?.id || !currentUser?.id) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/api/v1/groups/${group.id}/membership`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const rolePermissions: Record<string, any> = {
+          owner: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+          admin: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+          moderator: { can_pin_posts: true, can_delete_posts: true, can_lock_threads: true },
+          member: {}
+        };
+        setUserPermissions(rolePermissions[data.member_role] || {});
+      }
+    } catch (error) {
+      console.error('Failed to check membership:', error);
+    }
+  };
+
+  const togglePostPin = async () => {
+    if (!group?.id || !post?.id) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${API_URL}/api/v1/group-admin/groups/${group.id}/posts/${post.id}/pin`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        loadPost(); // Reload to show updated pin status
+      } else {
+        const error = await response.json();
+        alert(`Failed to pin/unpin post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle pin:', error);
+      alert('Failed to toggle pin');
+    }
+  };
+
+  const togglePostLock = async () => {
+    if (!group?.id || !post?.id) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${API_URL}/api/v1/group-admin/groups/${group.id}/posts/${post.id}/lock`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        loadPost(); // Reload to show updated lock status
+      } else {
+        const error = await response.json();
+        alert(`Failed to lock/unlock post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle lock:', error);
+      alert('Failed to toggle lock');
+    }
+  };
+
+  const deletePost = async () => {
+    if (!group?.id || !post?.id) return;
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${API_URL}/api/v1/groups/${group.id}/posts/${post.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        window.location.href = `/groups/${groupSlug}`;
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete post: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Failed to delete post');
+    }
+  };
+
+  const pinToFeeds = async (feeds: string[]) => {
+    if (!group?.id || !post?.id) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(
+        `${API_URL}/api/v1/group-admin/groups/${group.id}/posts/${post.id}/pin-to-feeds`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ feeds })
+        }
+      );
+      
+      if (response.ok) {
+        loadPost(); // Reload to show updated pin status
+      } else {
+        const error = await response.json();
+        alert(`Failed to pin post to feeds: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to pin to feeds:', error);
+      alert('Failed to pin to feeds');
     }
   };
 
@@ -365,6 +523,19 @@ export default function PostDetail() {
               )}
             </div>
           )}
+
+          {/* Post moderation actions */}
+          <PostModerationActions
+            isPinned={post.is_pinned}
+            isLocked={post.is_locked}
+            pinnedFeeds={post.pinned_feeds || []}
+            isAuthor={currentUser?.id === post.author_id}
+            permissions={userPermissions}
+            onPin={togglePostPin}
+            onLock={togglePostLock}
+            onDelete={deletePost}
+            onPinToFeeds={pinToFeeds}
+          />
         </article>
       </div>
     </div>
