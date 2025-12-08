@@ -100,7 +100,7 @@ async def get_group_owner_or_admin(
     current_user: User
 ) -> Group:
     """
-    Verify user owns or is admin of the group
+    Verify user owns or is admin of the group (or is staff)
     
     Returns:
         Group if user has permission
@@ -114,6 +114,10 @@ async def get_group_owner_or_admin(
     
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Staff users bypass membership checks
+    if current_user.is_staff:
+        return group
     
     # Check if user is a member with owner/admin role
     member_result = await db.execute(
@@ -148,7 +152,7 @@ async def get_group_moderator_or_above(
     current_user: User
 ) -> tuple[Group, GroupMember]:
     """
-    Verify user is at least a moderator of the group
+    Verify user is at least a moderator of the group (or is staff)
     
     Returns:
         Tuple of (Group, GroupMember) if user has permission
@@ -162,6 +166,16 @@ async def get_group_moderator_or_above(
     
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Staff users bypass membership checks
+    if current_user.is_staff:
+        # Create a virtual member object for staff
+        virtual_member = GroupMember(
+            group_id=group_id,
+            user_id=current_user.id,
+            role=GroupMemberRole.ADMIN
+        )
+        return group, virtual_member
     
     # Check if user is a member with moderator, admin, or owner role
     member_result = await db.execute(
