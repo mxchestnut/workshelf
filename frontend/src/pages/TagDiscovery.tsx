@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { authService, User } from '../services/auth'
 import { Tag, Search, TrendingUp, Hash } from 'lucide-react'
 import { toast } from '../services/toast'
 
@@ -18,12 +18,15 @@ interface ContentTag {
 }
 
 export function TagDiscovery() {
+  const [user, setUser] = useState<User | null>(null)
   const [tags, setTags] = useState<ContentTag[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'popular' | 'alphabetical' | 'recent'>('popular')
 
   useEffect(() => {
+    const currentUser = authService.getCurrentUser()
+    setUser(currentUser)
     fetchTags()
   }, [])
 
@@ -83,7 +86,12 @@ export function TagDiscovery() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1A1918' }}>
-      <Navigation />
+      <Navigation 
+        user={user} 
+        onLogin={() => authService.login()} 
+        onLogout={() => authService.logout()} 
+        currentPage="tags" 
+      />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
