@@ -91,20 +91,25 @@ async def get_books_by_author_name(
     db: Session = Depends(get_db)
 ):
     """Get books by searching for author by name."""
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import AsyncSession
+    
     # Find author by name (fuzzy match)
-    author = db.query(Author).filter(
-        Author.name.ilike(f"%{author_name}%")
-    ).first()
+    stmt = select(Author).where(Author.name.ilike(f"%{author_name}%"))
+    result = await db.execute(stmt)
+    author = result.scalars().first()
     
     if not author:
         # Return empty list if author not found
         return []
     
     # Get books by this author
-    books = db.query(StoreItem).filter(
+    stmt = select(StoreItem).where(
         StoreItem.author_id == author.id,
         StoreItem.status == "active"
-    ).order_by(StoreItem.published_at.desc()).limit(max_results).all()
+    ).order_by(StoreItem.published_at.desc()).limit(max_results)
+    result = await db.execute(stmt)
+    books = result.scalars().all()
     
     return [
         BookSummary(
