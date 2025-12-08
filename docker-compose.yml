@@ -132,6 +132,7 @@ services:
       MATRIX_SERVER_NAME: workshelf.dev
       MATRIX_PUBLIC_HOMESERVER: https://workshelf.dev
       MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
+      SENTRY_DSN: ${SENTRY_DSN:-https://a2ae80bf39b2e57c2147574ce75c860f@o4510280685977605.ingest.us.sentry.io/4510448571383808}
       ENVIRONMENT: development
     ports:
       - "8000:8000"
