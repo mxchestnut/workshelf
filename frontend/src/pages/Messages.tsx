@@ -67,6 +67,11 @@ export default function Messages() {
   const [searchResults, setSearchResults] = useState<SearchUser[]>([])
   const [searching, setSearching] = useState(false)
   
+  // Matrix integration
+  const [hasMatrixAccount, setHasMatrixAccount] = useState(false)
+  const [showMatrixPrompt, setShowMatrixPrompt] = useState(false)
+  const [initializingMatrix, setInitializingMatrix] = useState(false)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -77,6 +82,7 @@ export default function Messages() {
   useEffect(() => {
     if (user) {
       loadConversations()
+      checkMatrixStatus()
     }
   }, [user])
 
@@ -95,6 +101,47 @@ export default function Messages() {
     } catch (error) {
       console.error('Failed to load user:', error)
       authService.login()
+    }
+  }
+
+  const checkMatrixStatus = async () => {
+    try {
+      const token = await authService.getAccessToken()
+      const response = await fetch(`${API_URL}/api/v1/matrix/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setHasMatrixAccount(data.has_matrix_account)
+      }
+    } catch (error) {
+      console.error('Failed to check Matrix status:', error)
+    }
+  }
+
+  const initializeMatrix = async () => {
+    setInitializingMatrix(true)
+    try {
+      const token = await authService.getAccessToken()
+      const response = await fetch(`${API_URL}/api/v1/matrix/initialize`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setHasMatrixAccount(true)
+        setShowMatrixPrompt(false)
+        toast.success('Matrix chat enabled! You can now use advanced messaging features.')
+      } else {
+        toast.error('Failed to enable Matrix chat')
+      }
+    } catch (error) {
+      console.error('Failed to initialize Matrix:', error)
+      toast.error('Failed to enable Matrix chat')
+    } finally {
+      setInitializingMatrix(false)
     }
   }
 
@@ -305,6 +352,27 @@ export default function Messages() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      
+      {/* Matrix Upgrade Banner */}
+      {!hasMatrixAccount && !showMatrixPrompt && (
+        <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-6 h-6" />
+              <div>
+                <p className="font-semibold">Enable Advanced Messaging</p>
+                <p className="text-sm opacity-90">Get real-time chat, typing indicators, read receipts & more with Matrix</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowMatrixPrompt(true)}
+              className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-opacity-90"
+            >
+              Learn More
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Conversation List */}
@@ -524,6 +592,79 @@ export default function Messages() {
                   </button>
                 ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Matrix Enable Modal */}
+      {showMatrixPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg max-w-lg w-full p-6 border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-foreground">Enable Matrix Chat</h2>
+              <button
+                onClick={() => setShowMatrixPrompt(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <p className="text-foreground">
+                Matrix is an open protocol for real-time, decentralized messaging. Enabling it gives you:
+              </p>
+              
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Real-time sync</strong> - Messages appear instantly without refreshing</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Typing indicators</strong> - See when others are typing</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Read receipts</strong> - Know when messages are read</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Rich features</strong> - Reactions, threads, file sharing & more</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Federation</strong> - Connect with users on other Matrix servers</span>
+                </li>
+              </ul>
+
+              <p className="text-sm text-muted-foreground">
+                Your Matrix account will be created automatically. You can still use simple messaging if you prefer.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowMatrixPrompt(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted text-foreground"
+              >
+                Maybe Later
+              </button>
+              <button
+                onClick={initializeMatrix}
+                disabled={initializingMatrix}
+                className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {initializingMatrix ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Enabling...
+                  </>
+                ) : (
+                  'Enable Matrix'
+                )}
+              </button>
             </div>
           </div>
         </div>
