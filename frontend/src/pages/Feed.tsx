@@ -41,6 +41,7 @@ interface FeedPost {
   content: string
   created_at: string
   is_pinned: boolean
+  pinned_feeds?: string[]
   author: PostAuthor
   group: GroupInfo
   upvotes: number
@@ -646,23 +647,30 @@ export function Feed() {
                         try {
                           const token = await authService.getAccessToken()
                           const feedName = activeTab === 'global' ? 'global' : activeTab === 'discover' ? 'discover' : 'personal'
-                          await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/pin`, {
-                            method: 'POST',
+                          
+                          // Use pin-to-feeds endpoint to manage feed-specific pinning
+                          const currentFeeds = post.pinned_feeds || []
+                          const newFeeds = currentFeeds.includes(feedName)
+                            ? currentFeeds.filter(f => f !== feedName) // Remove from this feed
+                            : [...currentFeeds, feedName] // Add to this feed
+                          
+                          await fetch(`${API_URL}/api/v1/group-admin/groups/${post.group.id}/posts/${post.id}/pin-to-feeds`, {
+                            method: 'PUT',
                             headers: { 
                               'Authorization': `Bearer ${token}`,
                               'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ feed_name: feedName })
+                            body: JSON.stringify({ feeds: newFeeds })
                           })
                           loadFeed(activeTab)
                         } catch (error) {
                           console.error('Pin error:', error)
                         }
                       }}
-                      className={`text-sm font-medium inline-flex items-center gap-1 hover:underline transition-colors ${post.is_pinned ? 'text-yellow-600 hover:text-yellow-700' : 'text-gray-700 hover:text-yellow-600'}`}
+                      className={`text-sm font-medium inline-flex items-center gap-1 hover:underline transition-colors ${post.pinned_feeds?.includes(activeTab === 'global' ? 'global' : activeTab === 'discover' ? 'discover' : 'personal') ? 'text-yellow-600 hover:text-yellow-700' : 'text-gray-700 hover:text-yellow-600'}`}
                     >
                       <Pin className="w-4 h-4" />
-                      {post.is_pinned ? 'Unpin' : 'Pin'}
+                      {post.pinned_feeds?.includes(activeTab === 'global' ? 'global' : activeTab === 'discover' ? 'discover' : 'personal') ? 'Unpin' : 'Pin'}
                     </button>
                   )}
                 </div>
