@@ -19,6 +19,8 @@ interface UserProfile {
   twitter_handle: string | null
   location: string | null
   profile_visibility: 'public' | 'private' | 'followers'
+  newsletter_opt_in: boolean
+  sms_opt_in: boolean
 }
 
 // Default interests if no groups exist yet
@@ -89,7 +91,9 @@ export function Profile() {
     location: '',
     website_url: '',
     twitter_handle: '',
-    profile_visibility: 'public' as 'public' | 'private' | 'followers'
+    profile_visibility: 'public' as 'public' | 'private' | 'followers',
+    newsletter_opt_in: false,
+    sms_opt_in: false
   })
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -178,7 +182,9 @@ export function Profile() {
         location: data.location || '',
         website_url: data.website_url || '',
         twitter_handle: data.twitter_handle || '',
-        profile_visibility: data.profile_visibility || 'public'
+        profile_visibility: data.profile_visibility || 'public',
+        newsletter_opt_in: data.newsletter_opt_in ?? false,
+        sms_opt_in: data.sms_opt_in ?? false
       })
     } catch (err) {
       setError('Failed to load profile')
@@ -255,7 +261,9 @@ export function Profile() {
           username: formData.username || null,
           phone_number: formData.phone_number || null,
           birth_year: formData.birth_year ? parseInt(formData.birth_year) : null,
-          interests: formData.interests
+          interests: formData.interests,
+          newsletter_opt_in: formData.newsletter_opt_in,
+          sms_opt_in: formData.sms_opt_in
         })
       })
 
@@ -308,7 +316,9 @@ export function Profile() {
         location: profile.location || '',
         website_url: profile.website_url || '',
         twitter_handle: profile.twitter_handle || '',
-        profile_visibility: profile.profile_visibility || 'public'
+        profile_visibility: profile.profile_visibility || 'public',
+        newsletter_opt_in: profile.newsletter_opt_in ?? false,
+        sms_opt_in: profile.sms_opt_in ?? false
       })
     }
     setEditing(false)
@@ -1061,6 +1071,46 @@ export function Profile() {
                 {formData.profile_visibility === 'public' && 'Your profile, posts, and documents are visible to everyone'}
                 {formData.profile_visibility === 'followers' && 'Only your followers can see your profile and content'}
                 {formData.profile_visibility === 'private' && 'Your profile is completely private'}
+              </p>
+            </div>
+
+            {/* Communication Preferences */}
+            <div className="p-4 rounded-lg border border-border bg-background/50">
+              <h3 className="font-semibold mb-3 text-foreground">Communication Preferences</h3>
+              <div className="space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.newsletter_opt_in}
+                    onChange={(e) => setFormData({ ...formData, newsletter_opt_in: e.target.checked })}
+                    disabled={!editing}
+                    className="mt-1 rounded disabled:opacity-50"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">Email Newsletter</div>
+                    <p className="text-sm text-muted-foreground">
+                      Receive updates about new features, writing tips, and community highlights
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.sms_opt_in}
+                    onChange={(e) => setFormData({ ...formData, sms_opt_in: e.target.checked })}
+                    disabled={!editing}
+                    className="mt-1 rounded disabled:opacity-50"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">SMS Notifications</div>
+                    <p className="text-sm text-muted-foreground">
+                      Get text message alerts for important account activities (requires phone number)
+                    </p>
+                  </div>
+                </label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                You can unsubscribe from these communications at any time
               </p>
             </div>
 
