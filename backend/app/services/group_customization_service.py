@@ -304,10 +304,11 @@ class GroupCustomizationService:
         limit: int = 50
     ) -> tuple[List[User], int]:
         """Get followers of a group."""
-        # Query with join
+        # Query with join and eager load profile
         stmt = (
             select(User)
             .join(GroupFollower, GroupFollower.user_id == User.id)
+            .options(selectinload(User.profile))
             .filter(
                 and_(
                     GroupFollower.group_id == group_id,
