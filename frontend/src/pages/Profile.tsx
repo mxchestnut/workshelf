@@ -17,6 +17,7 @@ interface UserProfile {
   avatar_url: string | null
   website_url: string | null
   twitter_handle: string | null
+  github_handle: string | null
   location: string | null
   profile_visibility: 'public' | 'private' | 'followers'
   newsletter_opt_in: boolean
@@ -96,6 +97,7 @@ export function Profile() {
     location: '',
     website_url: '',
     twitter_handle: '',
+    github_handle: '',
     profile_visibility: 'public' as 'public' | 'private' | 'followers',
     newsletter_opt_in: false,
     sms_opt_in: false,
@@ -192,6 +194,7 @@ export function Profile() {
         location: data.location || '',
         website_url: data.website_url || '',
         twitter_handle: data.twitter_handle || '',
+        github_handle: data.github_handle || '',
         profile_visibility: data.profile_visibility || 'public',
         newsletter_opt_in: data.newsletter_opt_in ?? false,
         sms_opt_in: data.sms_opt_in ?? false,
@@ -299,6 +302,7 @@ export function Profile() {
           location: formData.location || null,
           website_url: formData.website_url || null,
           twitter_handle: formData.twitter_handle || null,
+          github_handle: formData.github_handle || null,
           profile_visibility: formData.profile_visibility,
           show_email: formData.show_email,
           email_notifications: formData.email_notifications,
@@ -336,6 +340,7 @@ export function Profile() {
         location: profile.location || '',
         website_url: profile.website_url || '',
         twitter_handle: profile.twitter_handle || '',
+        github_handle: profile.github_handle || '',
         profile_visibility: profile.profile_visibility || 'public',
         newsletter_opt_in: profile.newsletter_opt_in ?? false,
         sms_opt_in: profile.sms_opt_in ?? false,
@@ -1351,20 +1356,42 @@ export function Profile() {
               />
             </div>
 
-            {/* Social Link */}
+            {/* Twitter Handle */}
             <div>
               <label className="block text-sm font-medium mb-1 text-muted-foreground">
-                Social Link
+                Twitter/X Handle
               </label>
-              <input
-                type="text"
-                value={formData.twitter_handle}
-                onChange={(e) => setFormData(prev => ({ ...prev, twitter_handle: e.target.value }))}
-                disabled={!editing}
-                placeholder="https://..."
-                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
-                style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                <input
+                  type="text"
+                  value={formData.twitter_handle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, twitter_handle: e.target.value }))}
+                  disabled={!editing}
+                  placeholder="your_twitter_handle"
+                  className="w-full pl-8 pr-4 py-2 border rounded-lg disabled:opacity-50"
+                  style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
+                />
+              </div>
+            </div>
+
+            {/* GitHub Handle */}
+            <div>
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+                GitHub Username
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                <input
+                  type="text"
+                  value={formData.github_handle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, github_handle: e.target.value }))}
+                  disabled={!editing}
+                  placeholder="your_github_username"
+                  className="w-full pl-8 pr-4 py-2 border rounded-lg disabled:opacity-50"
+                  style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
+                />
+              </div>
             </div>
           </div>
         </div>
