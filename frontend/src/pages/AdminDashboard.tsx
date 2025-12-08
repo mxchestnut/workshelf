@@ -119,6 +119,9 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const [payoutAmount, setPayoutAmount] = useState('')
   const [payoutLoading, setPayoutLoading] = useState(false)
   const [stripeConnectStatus, setStripeConnectStatus] = useState<any>(null)
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [allUsersLoading, setAllUsersLoading] = useState(false)
+  const [siteStats, setSiteStats] = useState<any>(null)
 
   useEffect(() => {
     loadUser()
@@ -298,12 +301,51 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
       if (response.ok) {
         const data = await response.json()
-        setPendingUsers(data.users || [])
+        setPendingUsers(data)
       }
     } catch (error) {
       console.error('[AdminDashboard] Error loading pending users:', error)
     } finally {
       setPendingUsersLoading(false)
+    }
+  }
+
+  const loadAllUsers = async () => {
+    setAllUsersLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/admin/users?limit=100`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setAllUsers(data)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading all users:', error)
+    } finally {
+      setAllUsersLoading(false)
+    }
+  }
+
+  const loadSiteStats = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/admin/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSiteStats(data)
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Error loading site stats:', error)
     }
   }
 
@@ -477,6 +519,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
         loadInvitations()
       }
       loadPendingUsers()
+      loadSiteStats()
+      loadAllUsers()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, isStaff])
@@ -760,7 +804,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <div className="flex items-center justify-between mb-4">
                   <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">--</p>
+                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_users || allUsers.length || '...'}</p>
                 <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Users</p>
               </div>
 
@@ -768,15 +812,15 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <div className="flex items-center justify-between mb-4">
                   <BookOpen className="w-8 h-8" style={{ color: '#B34B0C' }} />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">--</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Books</p>
+                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_documents || '...'}</p>
+                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Documents</p>
               </div>
 
               <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
                 <div className="flex items-center justify-between mb-4">
                   <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">{managedGroups.length}</p>
+                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_groups || managedGroups.length}</p>
                 <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Groups</p>
               </div>
 
@@ -784,7 +828,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <div className="flex items-center justify-between mb-4">
                   <Shield className="w-8 h-8" style={{ color: '#B34B0C' }} />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">--</p>
+                <p className="text-3xl font-bold text-white mb-1">{allUsers.filter((u: any) => u.is_staff).length || '...'}</p>
                 <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Staff</p>
               </div>
             </div>
@@ -952,6 +996,101 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                   ))
                 )}
               </div>
+            </div>
+
+            {/* All Users Management */}
+            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Users className="w-6 h-6" />
+                  All Users
+                  {allUsers.length > 0 && (
+                    <span className="px-2 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: '#37322E', color: '#B3B2B0' }}>
+                      {allUsers.length}
+                    </span>
+                  )}
+                </h3>
+                <button
+                  onClick={loadAllUsers}
+                  disabled={allUsersLoading}
+                  className="px-3 py-1 text-sm border-2 text-white rounded hover:border-[#B34B0C] transition-colors disabled:opacity-50"
+                  style={{ borderColor: '#6C6A68' }}
+                >
+                  {allUsersLoading ? 'Loading...' : 'Refresh'}
+                </button>
+              </div>
+
+              {allUsersLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading users...</div>
+                </div>
+              ) : allUsers.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
+                  <p className="font-semibold text-white mb-1">No users found</p>
+                  <p className="text-sm" style={{ color: '#B3B2B0' }}>User list will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {allUsers.map((usr: any) => (
+                    <div
+                      key={usr.id}
+                      className="p-4 rounded-lg border-2"
+                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-white">
+                              {usr.display_name || usr.username || 'Unnamed User'}
+                            </p>
+                            {usr.is_staff && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B34B0C] text-white">
+                                STAFF
+                              </span>
+                            )}
+                            {!usr.is_approved && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-600 text-white">
+                                PENDING
+                              </span>
+                            )}
+                            {!usr.is_active && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-600 text-white">
+                                INACTIVE
+                              </span>
+                            )}
+                            {usr.is_verified && (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: '#B3B2B0' }}>
+                            <span>{usr.email}</span>
+                            {usr.username && <span>@{usr.username}</span>}
+                            <span>ID: {usr.id}</span>
+                            <span>Joined {new Date(usr.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!usr.is_staff && user?.id !== usr.id && (
+                            <button
+                              onClick={() => {
+                                if (confirm(`Make ${usr.email} a staff member?`)) {
+                                  // TODO: Add make staff endpoint call
+                                  console.log('Make staff:', usr.id)
+                                }
+                              }}
+                              className="px-3 py-1 text-xs border-2 text-white rounded hover:border-[#B34B0C] transition-colors"
+                              style={{ borderColor: '#6C6A68' }}
+                            >
+                              Make Staff
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
