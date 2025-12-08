@@ -222,6 +222,16 @@ async def get_group_by_slug(
     group = await GroupService.get_group_by_slug(db, slug, user_id=user_id, check_access=True)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Populate is_member and member_role based on user membership
+    group.is_member = False
+    group.member_role = None
+    if user_id:
+        member = next((m for m in group.members if m.user_id == user_id), None)
+        if member:
+            group.is_member = True
+            group.member_role = member.role.value if hasattr(member.role, 'value') else member.role
+    
     return group
 
 
