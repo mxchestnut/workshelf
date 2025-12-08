@@ -5,7 +5,7 @@ Manages group themes, branding, and custom styling
 from typing import Optional, List
 import secrets
 from datetime import datetime, timezone
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
