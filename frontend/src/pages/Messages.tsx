@@ -262,8 +262,11 @@ export default function Messages() {
       return 'Conversation'
     }
     
+    // Convert user.id to number for comparison
+    const userId = user ? parseInt(user.id, 10) : null
+    
     // For DM, show other participant's name
-    const otherParticipants = conversation.participants.filter(p => p.id !== user?.id)
+    const otherParticipants = conversation.participants.filter(p => p.id !== userId)
     if (otherParticipants.length === 1) {
       return otherParticipants[0].display_name || otherParticipants[0].username
     }
@@ -394,7 +397,8 @@ export default function Messages() {
                   </div>
                 ) : (
                   messages.map((message) => {
-                    const isOwn = message.sender_id === user?.id
+                    const userId = user ? parseInt(user.id, 10) : null
+                    const isOwn = message.sender_id === userId
                     return (
                       <div
                         key={message.id}
