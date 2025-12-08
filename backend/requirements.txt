@@ -28,6 +28,9 @@ stripe==11.3.0
 # Price Scraping & Web Requests
 aiohttp==3.13.2
 beautifulsoup4==4.12.2
+
+# Matrix Protocol
+matrix-nio==0.24.0
 lxml>=5.0.0  # Python 3.13 compatible
 
 # AI Services

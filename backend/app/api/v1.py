@@ -36,6 +36,7 @@ from app.api import (
     beta_profiles,  # Beta reader marketplace profiles
     groups,
     messaging,
+    matrix,  # Matrix protocol integration
     subscriptions,
     creator,
     content_integrity,
@@ -131,6 +132,7 @@ api_router.include_router(beta_appointments.router)  # Beta reader appointments
 api_router.include_router(beta_profiles.router)  # Beta reader marketplace profiles
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
+api_router.include_router(matrix.router)  # Matrix protocol integration
 
 # Phase 6: Monetization & Premium Features
 api_router.include_router(subscriptions.router)
