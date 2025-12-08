@@ -210,7 +210,7 @@ export default function Messages() {
     try {
       const token = await authService.getAccessToken()
       const response = await fetch(
-        `${API_URL}/api/v1/search?q=${encodeURIComponent(searchQuery)}&type=users`,
+        `${API_URL}/api/v1/search/users?q=${encodeURIComponent(searchQuery)}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       )
 
