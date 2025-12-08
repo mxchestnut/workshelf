@@ -659,7 +659,7 @@ export function Feed() {
                           console.error('Pin error:', error)
                         }
                       }}
-                      className={`transition-colors text-sm font-medium ${post.is_pinned ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} cursor-pointer flex items-center gap-1`}
+                      className={`transition-colors text-sm font-medium cursor-pointer inline-flex items-center gap-1 ${post.is_pinned ? 'text-yellow-600' : 'text-muted-foreground hover:text-yellow-600'}`}
                     >
                       <Pin className="w-4 h-4" />
                       {post.is_pinned ? 'Unpin' : 'Pin'}
