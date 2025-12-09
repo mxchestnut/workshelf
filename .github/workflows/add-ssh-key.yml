@@ -27,11 +27,11 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       
       - name: Add SSH Key to Server
-      env:
-        EC2_HOST: ${{ secrets.EC2_HOST }}
-        EC2_USER: ubuntu
-        NEW_SSH_KEY: ${{ github.event.inputs.ssh_public_key }}
-      run: |
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+          NEW_SSH_KEY: ${{ github.event.inputs.ssh_public_key }}
+        run: |
         ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << EOF
           echo "🔑 Adding new SSH key..."
           
