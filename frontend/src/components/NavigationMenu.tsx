@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Construction, StarHalf, Star, MoonStar, Filter, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 interface NavigationItem {
@@ -106,7 +105,13 @@ const NavigationMenu: React.FC = () => {
     path: '',
     title: ''
   });
-  const navigate = useNavigate();
+
+  const navigateTo = (path: string) => {
+    // Use pushState to navigate without full page reload
+    window.history.pushState({}, '', path);
+    // Trigger popstate event so App.tsx picks up the route change
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
 
   const fetchNavigation = async (filterBy?: string) => {
     setLoading(true);
@@ -127,10 +132,11 @@ const NavigationMenu: React.FC = () => {
 
   const handleItemClick = (item: NavigationItem) => {
     // Navigate to the page
-    navigate(item.page_path);
+    navigateTo(item.page_path);
     
     // Record the view
-    axios.post(`/api/v1/pages/${item.page_path.substring(1)}/view`).catch(console.error);
+    const apiPath = item.page_path === '/' ? 'landing' : item.page_path.substring(1);
+    axios.post(`/api/v1/pages/${apiPath}/view`).catch(console.error);
   };
 
   const handleMarkViewed = async (item: NavigationItem, event: React.MouseEvent) => {
