@@ -1,11 +1,31 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: workshelf-postgres
+    environment:
+      POSTGRES_DB: workshelf
+      POSTGRES_USER: workshelf
+      POSTGRES_PASSWORD: workshelf_password
+    ports:
+    - 5432:5432
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U workshelf
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+    - workshelf
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: workshelf-keycloak
     command: start-dev
     environment:
       KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: h2@n4me#Yu!ac!6
+      KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=public
       KC_DB_USERNAME: neondb_owner
@@ -176,6 +196,7 @@ services:
     - workshelf
     restart: unless-stopped
 volumes:
+  postgres_data: null
   synapse_data: null
   minio_data: null
   redis_data: null
