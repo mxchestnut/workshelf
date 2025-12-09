@@ -20,7 +20,7 @@ from app.schemas.page_tracking import (
     NavigationResponse
 )
 
-router = APIRouter(prefix="/api/v1/pages", tags=["pages"])
+router = APIRouter(prefix="/pages", tags=["pages"])
 
 
 @router.get("/navigation", response_model=NavigationResponse)

@@ -29,14 +29,13 @@ interface NavigationProps {
 }
 
 export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationProps) {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true) // Default to open
 
   const navigateTo = (path: string) => {
     // Use pushState to navigate without full page reload
     window.history.pushState({}, '', path)
     // Trigger popstate event so App.tsx picks up the route change
     window.dispatchEvent(new PopStateEvent('popstate'))
-    setMenuOpen(false)
   }
 
   const isActive = (path: string) => {
@@ -52,16 +51,16 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
       <header className="border-b border-border sticky top-0 z-50 shadow-sm bg-card" role="banner">
         <div className="py-4">
           <div className="flex items-center justify-between px-6">
-            {/* Left: Logo & Menu */}
+            {/* Left: Logo & Hamburger Toggle */}
             <div className="flex items-center gap-4">
               <button 
-                onClick={() => setMenuOpen(!menuOpen)}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-accent transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-                aria-expanded={menuOpen}
+                aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                aria-expanded={sidebarOpen}
                 aria-controls="main-navigation"
               >
-                {menuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
+                {sidebarOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
               </button>
               
               <button 
@@ -163,41 +162,34 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
         </div>
       </header>
 
-      {/* Sidebar Navigation */}
-      <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity ${
-          menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setMenuOpen(false)}
-        aria-hidden="true"
-      />
-      
+      {/* Persistent Sidebar Navigation - Opens by default, can be collapsed */}
       <nav 
         id="main-navigation"
-        className={`fixed top-0 left-0 h-full w-80 bg-card border-r border-border shadow-2xl z-50 transform transition-transform ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 h-full bg-card border-r border-border shadow-lg z-40 transform transition-all duration-300 ease-in-out ${
+          sidebarOpen ? 'w-80 translate-x-0' : 'w-0 -translate-x-full'
         }`}
         aria-label="Main navigation"
-        aria-hidden={!menuOpen}
+        aria-hidden={!sidebarOpen}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full w-80">
           {/* Sidebar Header */}
           <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-7 h-7" />
-                <h2 className="text-xl font-bold font-mono">Work Shelf</h2>
+                <h2 className="text-xl font-bold font-mono">Navigation</h2>
               </div>
               <button 
-                onClick={() => setMenuOpen(false)}
-                className="p-2 hover:bg-accent"
+                onClick={() => setSidebarOpen(false)}
+                className="p-2 hover:bg-accent rounded-lg"
+                aria-label="Collapse sidebar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {user && (
-              <div className="bg-muted p-3">
+              <div className="bg-muted p-3 rounded-lg">
                 <p className="font-medium">{user.display_name || user.username}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
