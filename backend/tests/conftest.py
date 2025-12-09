@@ -23,7 +23,7 @@ from app.models import User, Tenant
 TEST_DATABASE_URL = "postgresql+asyncpg://workshelf:workshelf@postgres/workshelf_test"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def anyio_backend():
     """Configure anyio to use asyncio backend"""
     return "asyncio"
@@ -174,11 +174,11 @@ def custom_user_override():
 # Database Fixtures (Optional - for integration tests)
 # ============================================================================
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def setup_test_user_in_db():
     """
-    Auto-create test user and tenant in database once per test session.
-    This runs automatically at the start of the test session.
+    Auto-create test user and tenant in database for each test function.
+    This runs automatically before each test.
     """
     from app.core.database import get_db_engine
     from sqlalchemy import text
