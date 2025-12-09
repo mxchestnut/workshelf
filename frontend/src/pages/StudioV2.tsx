@@ -551,7 +551,6 @@ export default function StudioV2() {
           </div>
         )}
       </div>
-      </div>
 
       {/* New Project Modal */}
       {showNewProjectModal && (
@@ -605,10 +604,13 @@ export default function StudioV2() {
         }}
       />
       )}
-      </div> {/* Close ml-0 md:ml-80 wrapper */}
+      </div>
     </div>
-  )
-}// Folder Tree View Component
+  </div>
+)
+}
+
+// Folder Tree View Component
 function FolderTreeView({
   folders,
   documents,
@@ -619,6 +621,7 @@ function FolderTreeView({
   onNavigateToFolder,
   onNavigateBack,
   onDocumentSelect,
+  onFolderCreate: _onFolderCreate,
   onFolderRename,
   onFolderDelete,
   onDocumentCreate,
@@ -795,7 +798,6 @@ function FolderTreeView({
           </button>
         </div>
       </div>
-      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

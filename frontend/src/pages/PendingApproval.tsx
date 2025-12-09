@@ -12,7 +12,9 @@ export default function PendingApproval() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={null} onLogin={() => authService.login()} onLogout={handleLogout} />
       
-      <div className="max-w-2xl mx-auto px-4 py-16">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <div className="max-w-2xl mx-auto px-4 py-16">
         <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#524944' }}>
           <div className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ backgroundColor: '#B34B0C' }}>
             <Clock className="w-8 h-8 text-white" />

@@ -541,8 +541,10 @@ export default function GroupDetail() {
         currentPage="groups"
       />
       
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={goBack}
@@ -938,5 +940,5 @@ export default function GroupDetail() {
       )}
       </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
-  );
+  )
 }
