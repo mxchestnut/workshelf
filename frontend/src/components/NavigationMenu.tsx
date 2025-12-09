@@ -115,8 +115,7 @@ const NavigationMenu: React.FC = () => {
   const [items, setItems] = useState<NavigationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string | null>(null);
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open sidebar
+  const [showFilter, setShowFilter] = useState(false);
   const [feedbackModal, setFeedbackModal] = useState<{ open: boolean; path: string; title: string }>({
     open: false,
     path: '',
