@@ -22,8 +22,12 @@ class PageStatus(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
-    # Relationships
-    versions = relationship("PageVersion", back_populates="page_status", cascade="all, delete-orphan")
+    # Relationships - using page_path as the join key
+    versions = relationship("PageVersion", 
+                          foreign_keys="PageVersion.page_path",
+                          primaryjoin="PageStatus.page_path == PageVersion.page_path",
+                          back_populates="page_status", 
+                          cascade="all, delete-orphan")
 
 
 class PageVersion(Base):
@@ -39,8 +43,11 @@ class PageVersion(Base):
     changes = Column(Text, nullable=True)  # Description of what changed
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
-    # Relationship to page status
-    page_status = relationship("PageStatus", back_populates="versions", foreign_keys=[page_path], primaryjoin="PageVersion.page_path == PageStatus.page_path")
+    # Relationship to page status - using page_path as join condition
+    page_status = relationship("PageStatus", 
+                              foreign_keys="[PageVersion.page_path]",
+                              primaryjoin="PageVersion.page_path == PageStatus.page_path",
+                              back_populates="versions")
 
 
 class UserPageView(Base):
