@@ -6,21 +6,12 @@ import {
   Home,
   BookMarked,
   PenTool,
-  ShoppingBag,
-  UserCircle,
   Users,
-  BarChart,
-  Settings,
-  Shield,
-  Download,
-  Search as SearchIcon,
-  Eye,
   Menu,
   X,
   LogIn,
   LogOut,
   BookOpen,
-  Trash2,
   MessageCircle
 } from 'lucide-react'
 import { useState } from 'react'
