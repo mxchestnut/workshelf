@@ -1,120 +1,88 @@
 services:
-  # PostgreSQL Database (ARM64 compatible)
-  postgres:
-    image: postgres:15-alpine
-    
-    container_name: workshelf-postgres
-    environment:
-      POSTGRES_DB: workshelf
-      POSTGRES_USER: workshelf
-      POSTGRES_PASSWORD: workshelf_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U workshelf"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - workshelf
-
-  # Keycloak for Authentication (ARM64 compatible)
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
-    
     container_name: workshelf-keycloak
     command: start-dev
     environment:
       KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN_PASSWORD: h2@n4me#Yu!ac!6
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/workshelf
-      KC_DB_USERNAME: workshelf
-      KC_DB_PASSWORD: workshelf_password
+      KC_DB_URL: jdbc:postgresql://ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=public
+      KC_DB_USERNAME: neondb_owner
+      KC_DB_PASSWORD: PASSWORD
       KC_HTTP_PORT: 8080
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HTTP_ENABLED: 'true'
       KC_PROXY: edge
     ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    - 8080:8080
     networks:
-      - workshelf
-
-  # Matrix Synapse Chat Server (ARM64 compatible)
+    - workshelf
   synapse:
     image: matrixdotorg/synapse:latest
-    
     container_name: workshelf-synapse
     environment:
       SYNAPSE_SERVER_NAME: matrix.localhost
-      SYNAPSE_REPORT_STATS: "no"
-      SYNAPSE_NO_TLS: "true"
+      SYNAPSE_REPORT_STATS: 'no'
+      SYNAPSE_NO_TLS: 'true'
       POSTGRES_HOST: postgres
       POSTGRES_USER: workshelf
       POSTGRES_PASSWORD: workshelf_password
       POSTGRES_DB: synapse
     ports:
-      - "8008:8008"
+    - 8008:8008
     volumes:
-      - synapse_data:/data
+    - synapse_data:/data
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - workshelf
-
-  # MinIO for Object Storage (S3-compatible, ARM64 compatible)
+    - workshelf
   minio:
     image: minio/minio:latest
-    
     container_name: workshelf-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000"
-      - "9001:9001"
+    - 9000:9000
+    - 9001:9001
     volumes:
-      - minio_data:/data
+    - minio_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:9000/minio/health/live
       interval: 30s
       timeout: 20s
       retries: 3
     networks:
-      - workshelf
-
-  # Redis for Caching (ARM64 compatible)
+    - workshelf
   redis:
     image: redis:7-alpine
-    
     container_name: workshelf-redis
     ports:
-      - "6379:6379"
+    - 6379:6379
     volumes:
-      - redis_data:/data
+    - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - ping
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - workshelf
-
-  # FastAPI Backend
+    - workshelf
   backend:
     image: python:3.11-slim
-    
     container_name: workshelf-backend
     working_dir: /app
-    # Use startup script to ensure tables exist & migrations run before app launches
     command: bash -c "pip install -q -r requirements.txt && bash start.sh"
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -135,7 +103,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN:-https://a2ae80bf39b2e57c2147574ce75c860f@o4510280685977605.ingest.us.sentry.io/4510448571383808}
       ENVIRONMENT: development
     ports:
-      - "8000:8000"
+    - 8000:8000
     depends_on:
       postgres:
         condition: service_healthy
@@ -144,14 +112,11 @@ services:
       keycloak:
         condition: service_started
     volumes:
-      - ./backend:/app
+    - ./backend:/app
     networks:
-      - workshelf
-
-  # React Frontend
+    - workshelf
   frontend:
     image: node:20-alpine
-    
     container_name: workshelf-frontend
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
@@ -166,63 +131,56 @@ services:
       VITE_POSTHOG_KEY: ${VITE_POSTHOG_KEY:-phc_GnJ8zb09tygMcjttDyBrcY3lULGThdeQc8IpP695rpb}
       VITE_POSTHOG_HOST: ${VITE_POSTHOG_HOST:-https://us.i.posthog.com}
     ports:
-      - "5173:5173"
+    - 5173:5173
     depends_on:
-      - backend
+    - backend
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    - ./frontend:/app
+    - /app/node_modules
     networks:
-      - workshelf
-
-  # Prometheus - Metrics Collection
+    - workshelf
   prometheus:
     image: prom/prometheus:latest
     container_name: workshelf-prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    - --web.console.libraries=/usr/share/prometheus/console_libraries
+    - --web.console.templates=/usr/share/prometheus/consoles
     ports:
-      - "9090:9090"
+    - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - prometheus_data:/prometheus
     depends_on:
-      - backend
+    - backend
     networks:
-      - workshelf
+    - workshelf
     restart: unless-stopped
-
-  # Grafana - Metrics Dashboards
   grafana:
     image: grafana/grafana:latest
     container_name: workshelf-grafana
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_USERS_ALLOW_SIGN_UP=false
+    - GF_SERVER_ROOT_URL=http://localhost:3000
     ports:
-      - "3000:3000"
+    - 3000:3000
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    - grafana_data:/var/lib/grafana
+    - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
     depends_on:
-      - prometheus
+    - prometheus
     networks:
-      - workshelf
+    - workshelf
     restart: unless-stopped
-
 volumes:
-  postgres_data:
-  synapse_data:
-  minio_data:
-  redis_data:
-  prometheus_data:
-  grafana_data:
-
+  synapse_data: null
+  minio_data: null
+  redis_data: null
+  prometheus_data: null
+  grafana_data: null
 networks:
   workshelf:
     driver: bridge
