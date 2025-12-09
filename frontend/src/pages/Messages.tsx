@@ -70,6 +70,9 @@ export default function Messages() {
   // Matrix integration
   const [hasMatrixAccount, setHasMatrixAccount] = useState(false)
   const [showMatrixPrompt, setShowMatrixPrompt] = useState(false)
+  const [showMatrixSetup, setShowMatrixSetup] = useState(false)
+  const [matrixUsername, setMatrixUsername] = useState('')
+  const [matrixHomeserver, setMatrixHomeserver] = useState('matrix.org')
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
@@ -104,13 +107,60 @@ export default function Messages() {
   }
 
   const checkMatrixStatus = async () => {
-    // Matrix server not yet configured - disable for now
-    setHasMatrixAccount(false)
+    try {
+      const token = await authService.getAccessToken()
+      const response = await fetch(`${API_URL}/api/v1/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.matrix_username) {
+          setHasMatrixAccount(true)
+          setMatrixUsername(data.matrix_username)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check Matrix status:', error)
+    }
   }
 
-  const initializeMatrix = async () => {
-    // Matrix server not yet configured
-    toast.error('Matrix chat is not yet available. Coming soon!')
+  const initializeMatrix = () => {
+    setShowMatrixSetup(true)
+    setShowMatrixPrompt(false)
+  }
+
+  const saveMatrixConnection = async () => {
+    if (!matrixUsername.trim()) {
+      toast.error('Please enter your Matrix username')
+      return
+    }
+
+    try {
+      const token = await authService.getAccessToken()
+      const response = await fetch(`${API_URL}/api/v1/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          matrix_username: matrixUsername,
+          matrix_homeserver: matrixHomeserver
+        })
+      })
+
+      if (response.ok) {
+        setHasMatrixAccount(true)
+        setShowMatrixSetup(false)
+        toast.success('Matrix account connected! Use Element or any Matrix client to chat.')
+      } else {
+        toast.error('Failed to save Matrix connection')
+      }
+    } catch (error) {
+      console.error('Failed to save Matrix connection:', error)
+      toast.error('Failed to save Matrix connection')
+    }
   }
 
   const loadConversations = async () => {
@@ -476,10 +526,29 @@ export default function Messages() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
+              <div className="text-center max-w-md px-4">
                 <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">Select a conversation to start messaging</p>
-                <p className="text-sm mt-2">or click "New" to start a new conversation</p>
+                <p className="text-lg mb-2">Select a conversation to start messaging</p>
+                <p className="text-sm mb-4">or click "New" to start a new conversation</p>
+                
+                {hasMatrixAccount ? (
+                  <div className="mt-6 p-4 bg-muted rounded-lg text-left">
+                    <p className="text-sm font-semibold text-foreground mb-2">Matrix Connected</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Your Matrix account: <span className="font-mono text-foreground">{matrixUsername}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Use Element or any Matrix client to message other Workshelf users in real-time.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowMatrixPrompt(true)}
+                    className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90"
+                  >
+                    Connect Matrix Account
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -569,34 +638,33 @@ export default function Messages() {
 
             <div className="space-y-4 mb-6">
               <p className="text-foreground">
-                Matrix is an open protocol for real-time, decentralized messaging. Enabling it gives you:
+                Connect your Matrix account to enable real-time messaging with Element or any Matrix client.
               </p>
               
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span><strong>Real-time sync</strong> - Messages appear instantly without refreshing</span>
+                  <span><strong>Use any Matrix client</strong> - Element, FluffyChat, Nheko, etc.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span><strong>Typing indicators</strong> - See when others are typing</span>
+                  <span><strong>Real-time sync</strong> - Messages appear instantly</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span><strong>Read receipts</strong> - Know when messages are read</span>
+                  <span><strong>End-to-end encryption</strong> - Secure by default</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span><strong>Rich features</strong> - Reactions, threads, file sharing & more</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span><strong>Federation</strong> - Connect with users on other Matrix servers</span>
+                  <span><strong>Federation</strong> - Connect with users on any Matrix server</span>
                 </li>
               </ul>
 
               <p className="text-sm text-muted-foreground">
-                Your Matrix account will be created automatically. You can still use simple messaging if you prefer.
+                You'll need an existing Matrix account. Don't have one? Create one at{' '}
+                <a href="https://app.element.io/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  element.io
+                </a>
               </p>
             </div>
 
@@ -611,7 +679,84 @@ export default function Messages() {
                 onClick={initializeMatrix}
                 className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90"
               >
-                Enable Matrix
+                Connect Matrix
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Matrix Setup Modal */}
+      {showMatrixSetup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg max-w-lg w-full p-6 border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-foreground">Connect Matrix Account</h2>
+              <button
+                onClick={() => setShowMatrixSetup(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Matrix Username
+                </label>
+                <input
+                  type="text"
+                  value={matrixUsername}
+                  onChange={(e) => setMatrixUsername(e.target.value)}
+                  placeholder="@username:matrix.org"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your full Matrix ID (e.g., @alice:matrix.org)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Homeserver
+                </label>
+                <input
+                  type="text"
+                  value={matrixHomeserver}
+                  onChange={(e) => setMatrixHomeserver(e.target.value)}
+                  placeholder="matrix.org"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  The Matrix homeserver you're registered on
+                </p>
+              </div>
+
+              <div className="bg-muted p-4 rounded-lg">
+                <p className="text-sm text-foreground mb-2">
+                  <strong>How to find your Matrix ID:</strong>
+                </p>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Open Element (or your Matrix client)</li>
+                  <li>Click on your profile/settings</li>
+                  <li>Copy your Matrix ID (starts with @)</li>
+                </ol>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowMatrixSetup(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-border hover:bg-muted text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveMatrixConnection}
+                className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90"
+              >
+                Save Connection
               </button>
             </div>
           </div>

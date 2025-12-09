@@ -18,6 +18,7 @@ interface UserProfile {
   website_url: string | null
   twitter_handle: string | null
   github_handle: string | null
+  matrix_username: string | null
   location: string | null
   profile_visibility: 'public' | 'private' | 'followers'
   newsletter_opt_in: boolean
@@ -98,6 +99,7 @@ export function Profile() {
     website_url: '',
     twitter_handle: '',
     github_handle: '',
+    matrix_username: '',
     profile_visibility: 'public' as 'public' | 'private' | 'followers',
     newsletter_opt_in: false,
     sms_opt_in: false,
@@ -1392,6 +1394,24 @@ export function Profile() {
                   style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-muted-foreground">
+                Matrix Username (for real-time messaging)
+              </label>
+              <input
+                type="text"
+                value={formData.matrix_username || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, matrix_username: e.target.value }))}
+                disabled={!editing}
+                placeholder="@username:matrix.org"
+                className="w-full px-4 py-2 border rounded-lg disabled:opacity-50"
+                style={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', color: 'white' }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Your Matrix ID for messaging via Element or other Matrix clients
+              </p>
             </div>
           </div>
         </div>
