@@ -109,7 +109,7 @@ export default function Messages() {
   const checkMatrixStatus = async () => {
     try {
       const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/profile`, {
+      const response = await fetch(`${API_URL}/api/v1/users/me/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
@@ -138,8 +138,8 @@ export default function Messages() {
 
     try {
       const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/profile`, {
-        method: 'PATCH',
+      const response = await fetch(`${API_URL}/api/v1/users/me/profile`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
