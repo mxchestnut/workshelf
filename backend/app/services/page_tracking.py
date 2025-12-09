@@ -3,8 +3,8 @@ Page tracking service - business logic for page versions and user views
 """
 from datetime import datetime
 from typing import Optional, List, Literal
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import desc, and_, select
 
 from app.models.page_tracking import PageStatus, PageVersion, UserPageView
 from app.schemas.page_tracking import (
@@ -38,26 +38,32 @@ SITEMAP_PAGES = [
 class PageTrackingService:
     """Service for managing page versions and user view tracking"""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_or_create_page_status(self, page_path: str, default_status: str = "ready") -> PageStatus:
+    async def get_or_create_page_status(self, page_path: str, default_status: str = "ready") -> PageStatus:
         """Get existing page status or create with default"""
-        page_status = self.db.query(PageStatus).filter(PageStatus.page_path == page_path).first()
+        result = await self.db.execute(
+            select(PageStatus).filter(PageStatus.page_path == page_path)
+        )
+        page_status = result.scalar_one_or_none()
         if not page_status:
             page_status = PageStatus(page_path=page_path, status=default_status)
             self.db.add(page_status)
-            self.db.commit()
-            self.db.refresh(page_status)
+            await self.db.commit()
+            await self.db.refresh(page_status)
         return page_status
 
-    def get_latest_version(self, page_path: str) -> Optional[PageVersion]:
+    async def get_latest_version(self, page_path: str) -> Optional[PageVersion]:
         """Get the most recent version for a page"""
-        return self.db.query(PageVersion).filter(
-            PageVersion.page_path == page_path
-        ).order_by(desc(PageVersion.created_at)).first()
+        result = await self.db.execute(
+            select(PageVersion)
+            .filter(PageVersion.page_path == page_path)
+            .order_by(desc(PageVersion.created_at))
+        )
+        return result.scalar_one_or_none()
 
-    def create_page_version(self, page_path: str, version: str, changes: Optional[str] = None) -> PageVersion:
+    async def create_page_version(self, page_path: str, version: str, changes: Optional[str] = None) -> PageVersion:
         """Create a new version entry for a page"""
         page_version = PageVersion(
             page_path=page_path,
@@ -65,22 +71,25 @@ class PageTrackingService:
             changes=changes
         )
         self.db.add(page_version)
-        self.db.commit()
-        self.db.refresh(page_version)
+        await self.db.commit()
+        await self.db.refresh(page_version)
         return page_version
 
-    def get_user_page_view(self, user_id: int, page_path: str) -> Optional[UserPageView]:
+    async def get_user_page_view(self, user_id: int, page_path: str) -> Optional[UserPageView]:
         """Get user's view record for a page"""
-        return self.db.query(UserPageView).filter(
-            and_(
-                UserPageView.user_id == user_id,
-                UserPageView.page_path == page_path
+        result = await self.db.execute(
+            select(UserPageView).filter(
+                and_(
+                    UserPageView.user_id == user_id,
+                    UserPageView.page_path == page_path
+                )
             )
-        ).first()
+        )
+        return result.scalar_one_or_none()
 
-    def record_page_view(self, user_id: int, page_path: str) -> UserPageView:
+    async def record_page_view(self, user_id: int, page_path: str) -> UserPageView:
         """Record that user viewed a page (updates timestamp)"""
-        view = self.get_user_page_view(user_id, page_path)
+        view = await self.get_user_page_view(user_id, page_path)
         if view:
             view.last_viewed_at = datetime.utcnow()
         else:
@@ -91,13 +100,13 @@ class PageTrackingService:
                 marked_as_viewed=False
             )
             self.db.add(view)
-        self.db.commit()
-        self.db.refresh(view)
+        await self.db.commit()
+        await self.db.refresh(view)
         return view
 
-    def mark_page_viewed(self, user_id: int, page_path: str, marked: bool = True) -> UserPageView:
+    async def mark_page_viewed(self, user_id: int, page_path: str, marked: bool = True) -> UserPageView:
         """Mark page as viewed/reviewed by user"""
-        view = self.get_user_page_view(user_id, page_path)
+        view = await self.get_user_page_view(user_id, page_path)
         if not view:
             # Create view record if doesn't exist
             view = UserPageView(
@@ -111,11 +120,11 @@ class PageTrackingService:
         else:
             view.marked_as_viewed = marked
             view.marked_at = datetime.utcnow() if marked else None
-        self.db.commit()
-        self.db.refresh(view)
+        await self.db.commit()
+        await self.db.refresh(view)
         return view
 
-    def calculate_page_icon(
+    async def calculate_page_icon(
         self, 
         page_path: str, 
         user_id: int
@@ -128,21 +137,21 @@ class PageTrackingService:
         4. No changes since last view (moon-star)
         """
         # Get page status
-        page_status = self.get_or_create_page_status(page_path)
+        page_status = await self.get_or_create_page_status(page_path)
         
         # If page is under construction, always show construction icon
         if page_status.status == "construction":
             return "construction"
         
         # Get user's view record
-        user_view = self.get_user_page_view(user_id, page_path)
+        user_view = await self.get_user_page_view(user_id, page_path)
         
         # If user marked as viewed, show star
         if user_view and user_view.marked_as_viewed:
             return "star"
         
         # Check if there's a new version since user last viewed
-        latest_version = self.get_latest_version(page_path)
+        latest_version = await self.get_latest_version(page_path)
         
         if not user_view or not user_view.last_viewed_at:
             # User never viewed - if page is ready, show star-half
@@ -158,7 +167,7 @@ class PageTrackingService:
         # No changes since last view
         return "moon-star"
 
-    def get_navigation_items(
+    async def get_navigation_items(
         self, 
         user_id: int, 
         filter_by: Optional[str] = None,
@@ -175,9 +184,9 @@ class PageTrackingService:
             if page["staff"] and not is_staff:
                 continue
             
-            page_status = self.get_or_create_page_status(page["path"])
-            latest_version = self.get_latest_version(page["path"])
-            icon = self.calculate_page_icon(page["path"], user_id)
+            page_status = await self.get_or_create_page_status(page["path"])
+            latest_version = await self.get_latest_version(page["path"])
+            icon = await self.calculate_page_icon(page["path"], user_id)
             
             # Apply filter
             if filter_by:
@@ -203,12 +212,12 @@ class PageTrackingService:
         
         return items
 
-    def get_page_status_icon(self, page_path: str, user_id: int) -> PageStatusIcon:
+    async def get_page_status_icon(self, page_path: str, user_id: int) -> PageStatusIcon:
         """Get detailed status information for a single page"""
-        page_status = self.get_or_create_page_status(page_path)
-        latest_version = self.get_latest_version(page_path)
-        user_view = self.get_user_page_view(user_id, page_path)
-        icon = self.calculate_page_icon(page_path, user_id)
+        page_status = await self.get_or_create_page_status(page_path)
+        latest_version = await self.get_latest_version(page_path)
+        user_view = await self.get_user_page_view(user_id, page_path)
+        icon = await self.calculate_page_icon(page_path, user_id)
         
         # Determine if there are updates
         has_updates = False

@@ -39,7 +39,7 @@ async def get_navigation(
     - stable: Pages with no changes since last view
     """
     service = PageTrackingService(db)
-    items = service.get_navigation_items(
+    items = await service.get_navigation_items(
         user_id=current_user.id,
         filter_by=filter_by,
         is_staff=current_user.is_staff
@@ -70,7 +70,7 @@ async def get_page_status(
         page_path = '/' + page_path
     
     service = PageTrackingService(db)
-    return service.get_page_status_icon(page_path, current_user.id)
+    return await service.get_page_status_icon(page_path, current_user.id)
 
 
 @router.post("/{page_path:path}/view", response_model=UserPageViewResponse)
@@ -88,7 +88,7 @@ async def record_page_view(
         page_path = '/' + page_path
     
     service = PageTrackingService(db)
-    view = service.record_page_view(current_user.id, page_path)
+    view = await service.record_page_view(current_user.id, page_path)
     return view
 
 
@@ -108,7 +108,7 @@ async def mark_page_viewed(
         page_path = '/' + page_path
     
     service = PageTrackingService(db)
-    view = service.mark_page_viewed(
+    view = await service.mark_page_viewed(
         current_user.id, 
         page_path, 
         mark_request.marked_as_viewed
@@ -131,7 +131,7 @@ async def get_page_version(
         page_path = '/' + page_path
     
     service = PageTrackingService(db)
-    version = service.get_latest_version(page_path)
+    version = await service.get_latest_version(page_path)
     return version
 
 
@@ -157,7 +157,7 @@ async def create_page_version(
         page_path = '/' + page_path
     
     service = PageTrackingService(db)
-    version = service.create_page_version(
+    version = await service.create_page_version(
         page_path=page_path,
         version=version_data.version,
         changes=version_data.changes
