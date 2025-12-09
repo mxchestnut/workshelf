@@ -250,6 +250,51 @@ async def approve_user(
         await db.commit()
         return {"success": True, "message": f"User {user.email} rejected", "reason": request.rejection_reason}
 
+
+class UserUpdateRequest(BaseModel):
+    username: Optional[str] = None
+
+
+@router.patch("/users/{user_id}")
+async def update_user(
+    user_id: int,
+    update_request: UserUpdateRequest,
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update user details (staff only)
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # If username provided, update it
+    if update_request.username is not None:
+        # Check if username is already taken
+        existing = await db.execute(
+            select(User).where(
+                User.username == update_request.username,
+                User.id != user_id
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Username already taken")
+        
+        user.username = update_request.username
+    
+    await db.commit()
+    await db.refresh(user)
+    
+    return {"success": True, "message": "User updated successfully", "username": user.username}
+
+
 @router.get("/stats", response_model=AdminStatsResponse)
 async def get_admin_stats(
     staff_user: User = Depends(require_staff),

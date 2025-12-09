@@ -56,6 +56,8 @@ export function StaffPanel() {
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [allUsersLoading, setAllUsersLoading] = useState(false)
   const [siteStats, setSiteStats] = useState<any>(null)
+  const [editingUserId, setEditingUserId] = useState<number | null>(null)
+  const [editUsername, setEditUsername] = useState('')
 
   useEffect(() => {
     loadUser()
@@ -246,6 +248,68 @@ export function StaffPanel() {
         body: JSON.stringify({ approved: approve })
       })
 
+      if (response.ok) {
+        setInviteMessage({ 
+          type: 'success', 
+          text: approve ? 'User approved successfully' : 'User rejected' 
+        })
+        loadPendingUsers()
+        loadAllUsers()
+        setTimeout(() => setInviteMessage(null), 2000)
+      }
+    } catch (error) {
+      console.error('[StaffPanel] Error approving user:', error)
+    }
+  }
+
+  const startEditingUsername = (userId: number, currentUsername: string) => {
+    setEditingUserId(userId)
+    setEditUsername(currentUsername || '')
+  }
+
+  const cancelEditingUsername = () => {
+    setEditingUserId(null)
+    setEditUsername('')
+  }
+
+  const saveUsername = async (userId: number) => {
+    if (!editUsername.trim()) {
+      setInviteMessage({ type: 'error', text: 'Username cannot be empty' })
+      setTimeout(() => setInviteMessage(null), 2000)
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: editUsername.trim() })
+      })
+
+      if (response.ok) {
+        setInviteMessage({ type: 'success', text: 'Username updated successfully' })
+        setEditingUserId(null)
+        setEditUsername('')
+        loadAllUsers()
+        loadPendingUsers()
+        setTimeout(() => setInviteMessage(null), 2000)
+      } else {
+        const error = await response.json()
+        setInviteMessage({ type: 'error', text: error.detail || 'Failed to update username' })
+        setTimeout(() => setInviteMessage(null), 3000)
+      }
+    } catch (error) {
+      console.error('[StaffPanel] Error updating username:', error)
+      setInviteMessage({ type: 'error', text: 'Failed to update username' })
+      setTimeout(() => setInviteMessage(null), 2000)
+    }
+  }
       if (response.ok) {
         setInviteMessage({ 
           type: 'success', 
@@ -531,31 +595,74 @@ export function StaffPanel() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-white">
-                          {usr.display_name || usr.username || 'Unnamed User'}
-                        </p>
-                        {usr.is_staff && (
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B34B0C] text-white">
-                            STAFF
-                          </span>
-                        )}
-                        {!usr.is_approved && (
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-600 text-white">
-                            PENDING
-                          </span>
-                        )}
-                        {!usr.is_active && (
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-600 text-white">
-                            INACTIVE
-                          </span>
-                        )}
-                        {usr.is_verified && (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        {editingUserId === usr.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={editUsername}
+                              onChange={(e) => setEditUsername(e.target.value)}
+                              placeholder="username"
+                              className="px-2 py-1 rounded text-sm border-2 focus:outline-none focus:border-[#B34B0C]"
+                              style={{ backgroundColor: '#524944', borderColor: '#6C6A68', color: 'white' }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => saveUsername(usr.id)}
+                              className="px-2 py-1 text-xs rounded bg-[#B34B0C] text-white hover:opacity-80"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={cancelEditingUsername}
+                              className="px-2 py-1 text-xs rounded border-2 text-white hover:border-red-500"
+                              style={{ borderColor: '#6C6A68' }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="font-medium text-white">
+                              {usr.display_name || usr.username || 'Unnamed User'}
+                            </p>
+                            {usr.is_staff && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B34B0C] text-white">
+                                STAFF
+                              </span>
+                            )}
+                            {!usr.is_approved && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-600 text-white">
+                                PENDING
+                              </span>
+                            )}
+                            {!usr.is_active && (
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-600 text-white">
+                                INACTIVE
+                              </span>
+                            )}
+                            {usr.is_verified && (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            )}
+                          </>
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: '#B3B2B0' }}>
                         <span>{usr.email}</span>
-                        {usr.username && <span>@{usr.username}</span>}
+                        {usr.username ? (
+                          <button
+                            onClick={() => startEditingUsername(usr.id, usr.username)}
+                            className="hover:text-[#B34B0C] transition-colors"
+                          >
+                            @{usr.username} ✎
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => startEditingUsername(usr.id, '')}
+                            className="text-yellow-500 hover:text-[#B34B0C] transition-colors"
+                          >
+                            [No username - click to set] ✎
+                          </button>
+                        )}
                         <span>ID: {usr.id}</span>
                         <span>Joined {new Date(usr.created_at).toLocaleDateString()}</span>
                       </div>
