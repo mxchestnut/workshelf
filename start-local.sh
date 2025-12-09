@@ -25,7 +25,9 @@ if [ ! -f "backend/.env.local" ]; then
     echo "⚠️  Creating backend/.env.local..."
     cat > backend/.env.local << 'EOF'
 # Local Development Environment
-DATABASE_URL=postgresql://neondb_owner:PASSWORD@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require
+# IMPORTANT: Copy your actual DATABASE_URL from production environment variables
+# This is just a template - replace with your real connection string
+DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
 KEYCLOAK_SERVER_URL=https://keycloak.workshelf.dev
 KEYCLOAK_REALM=workshelf
 KEYCLOAK_CLIENT_ID=workshelf-backend
@@ -37,6 +39,7 @@ AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 EOF
     echo "✅ Created backend/.env.local"
+    echo "⚠️  IMPORTANT: Edit backend/.env.local and add your real DATABASE_URL"
 fi
 
 # Start backend
