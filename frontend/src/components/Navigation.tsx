@@ -223,14 +223,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           </div>
         </div>
       </nav>
-
-      {/* Main Content Wrapper - adds left margin when sidebar is open */}
-      <div 
-        className={`transition-all duration-300 ease-in-out ${sidebarOpen ? 'ml-80' : 'ml-0'}`}
-        style={{ minHeight: 'calc(100vh - 73px)' }}
-      >
-        {/* Page content will be rendered here by the parent */}
-      </div>
     </>
   )
 }
