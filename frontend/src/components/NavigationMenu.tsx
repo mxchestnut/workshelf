@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Construction, StarHalf, Star, MoonStar, Filter, X } from 'lucide-react';
-import axios from 'axios';
+import { authService } from '../services/auth';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
 
 interface NavigationItem {
   page_path: string;
@@ -116,9 +118,26 @@ const NavigationMenu: React.FC = () => {
   const fetchNavigation = async (filterBy?: string) => {
     setLoading(true);
     try {
-      const params = filterBy ? { filter_by: filterBy } : {};
-      const response = await axios.get<NavigationResponse>('/api/v1/pages/navigation', { params });
-      setItems(response.data.items);
+      const token = authService.getToken();
+      const url = filterBy 
+        ? `${API_URL}/api/v1/pages/navigation?filter_by=${filterBy}`
+        : `${API_URL}/api/v1/pages/navigation`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch navigation');
+      }
+
+      const data: NavigationResponse = await response.json();
+      setItems(data.items);
     } catch (error) {
       console.error('Failed to load navigation:', error);
     } finally {
@@ -136,7 +155,16 @@ const NavigationMenu: React.FC = () => {
     
     // Record the view
     const apiPath = item.page_path === '/' ? 'landing' : item.page_path.substring(1);
-    axios.post(`/api/v1/pages/${apiPath}/view`).catch(console.error);
+    const token = authService.getToken();
+    fetch(`${API_URL}/api/v1/pages/${apiPath}/view`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      mode: 'cors'
+    }).catch(console.error);
   };
 
   const handleMarkViewed = async (item: NavigationItem, event: React.MouseEvent) => {

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { authService } from '../services/auth';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
 
 interface PageVersionProps {
   path: string;
@@ -19,9 +21,23 @@ const PageVersion: React.FC<PageVersionProps> = ({ path }) => {
     const fetchVersion = async () => {
       try {
         // Remove leading slash for API call
-        const apiPath = path.startsWith('/') ? path.substring(1) : path;
-        const response = await axios.get<PageVersionData>(`/api/v1/pages/${apiPath}/version`);
-        setVersion(response.data);
+        const apiPath = path === '/' ? 'landing' : (path.startsWith('/') ? path.substring(1) : path);
+        const token = authService.getToken();
+        const response = await fetch(`${API_URL}/api/v1/pages/${apiPath}/version`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          mode: 'cors'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch version');
+        }
+
+        const data: PageVersionData = await response.json();
+        setVersion(data);
       } catch (error) {
         console.error('Failed to fetch page version:', error);
       } finally {
@@ -34,8 +50,17 @@ const PageVersion: React.FC<PageVersionProps> = ({ path }) => {
     // Also record page view
     const recordView = async () => {
       try {
-        const apiPath = path.startsWith('/') ? path.substring(1) : path;
-        await axios.post(`/api/v1/pages/${apiPath}/view`);
+        const apiPath = path === '/' ? 'landing' : (path.startsWith('/') ? path.substring(1) : path);
+        const token = authService.getToken();
+        await fetch(`${API_URL}/api/v1/pages/${apiPath}/view`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          mode: 'cors'
+        });
       } catch (error) {
         console.error('Failed to record page view:', error);
       }
