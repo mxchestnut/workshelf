@@ -368,7 +368,7 @@ export default function BetaProfileView() {
               <button onClick={submitReview} disabled={submittingReview || !newReview.comment.trim()} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground">
                 {submittingReview ? 'Submitting...' : 'Submit Review'}
               </button>
-              {reviewMessage && <span className=\"text-muted-foreground\">{reviewMessage}</span>}
+              {reviewMessage && <span className="text-muted-foreground">{reviewMessage}</span>}
             </div>
           </div>
         </div>

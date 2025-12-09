@@ -602,14 +602,13 @@ export default function StudioV2() {
               // Close the modal
               setShowBulkUploadModal(false)
             }
-          }}
-        />
+        }}
+      />
       )}
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
-}
-
-// Folder Tree View Component
+}// Folder Tree View Component
 function FolderTreeView({
   folders,
   documents,

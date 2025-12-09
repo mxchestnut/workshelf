@@ -307,6 +307,8 @@ export default function BetaFeed() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
+}
 }

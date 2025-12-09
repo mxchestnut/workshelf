@@ -48,6 +48,7 @@ export default function PendingApproval() {
           </button>
         </div>
       </div>
-      </div> {/* Close ml-0 md:ml-80 wrapper */}\n    </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
+    </div>
   )
 }
