@@ -5,6 +5,7 @@ import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
 import { ReadingListsTab } from '../components/ReadingListsTab'
+import PageVersion from '../components/PageVersion'
 
 interface BookshelfItem {
   id: number
@@ -700,6 +701,9 @@ export default function Bookshelf() {
           loadStats()
         }}
       />
+
+      {/* Page Version */}
+      <PageVersion path="/bookshelf" />
     </div>
       )}
     </>

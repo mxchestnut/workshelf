@@ -53,7 +53,8 @@ from app.api import (
     invitations,  # Email invitations for onboarding
     account_deletion,  # Account deletion with username freezing
     trash,  # Trash bin for soft-deleted documents/projects
-    collections  # Universal bookmarking system
+    collections,  # Universal bookmarking system
+    pages  # Page tracking and navigation
 )
 
 api_router = APIRouter()
@@ -169,3 +170,6 @@ api_router.include_router(account_deletion.router)
 
 # Trash bin for soft-deleted documents and projects
 api_router.include_router(trash.router)
+
+# Page tracking and navigation system
+api_router.include_router(pages.router)

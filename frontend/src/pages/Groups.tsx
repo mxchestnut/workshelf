@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react'
 import { Users, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
+import PageVersion from '../components/PageVersion'
 import { authService, User } from '../services/auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -331,6 +332,9 @@ export default function Groups() {
           </div>
         </div>
       )}
+
+      {/* Page Version */}
+      <PageVersion path="/groups" />
     </div>
   )
 }

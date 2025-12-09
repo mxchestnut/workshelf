@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
+import PageVersion from '../components/PageVersion'
 import { authService } from '../services/auth'
 import { 
   Users, 
@@ -737,6 +738,9 @@ export function StaffPanel() {
             <p style={{ color: '#B3B2B0' }}>Activity feed coming soon</p>
           </div>
         </div>
+
+        {/* Page Version */}
+        <PageVersion path="/staff" />
       </div>
     </div>
   )

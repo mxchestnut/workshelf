@@ -28,6 +28,7 @@ import { User } from '../services/auth'
 import NotificationBell from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
 import { SkipLink } from './SkipLink'
+import NavigationMenu from './NavigationMenu'
 
 interface NavigationProps {
   user: User | null
@@ -213,224 +214,17 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-1">
-              {/* Library Section */}
-              <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-                  Library
+          <div className="flex-1 overflow-y-auto">
+            {user ? (
+              <NavigationMenu />
+            ) : (
+              <div className="p-6">
+                <p className="text-muted-foreground text-center">
+                  Please log in to access navigation
                 </p>
-                
-                <button 
-                  onClick={() => navigateTo('/store')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/store')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Store</span>
-                </button>
-                
-                <button 
-                  onClick={() => navigateTo('/tags')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/tags')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <SearchIcon className="w-5 h-5" />
-                  <span>Discover Tags</span>
-                </button>
               </div>
-
-              {/* My Studio */}
-              <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-                  My Studio
-                </p>
-                
-                <button 
-                  onClick={() => navigateTo('/ai-assistance')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/ai-assistance')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <PenTool className="w-5 h-5" />
-                  <span>Writing Prompts</span>
-                </button>
-                
-                <button 
-                  onClick={() => navigateTo('/beta-marketplace')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/beta-marketplace')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <UserCircle className="w-5 h-5" />
-                  <span>Marketplace</span>
-                </button>
-              </div>
-
-              {/* Account */}
-              <div className="mb-6">
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-                  Account
-                </p>
-                
-                <button 
-                  onClick={() => navigateTo('/me')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/me')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <UserCircle className="w-5 h-5" />
-                  <span>Profile & Settings</span>
-                </button>
-
-                {/* Messages */}
-                <button 
-                  onClick={() => navigateTo('/messages')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/messages')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Messages</span>
-                </button>
-
-                {/* Dashboard - Personal analytics */}
-                <button 
-                  onClick={() => navigateTo('/dashboard')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/dashboard')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <BarChart className="w-5 h-5" />
-                  <span>Dashboard</span>
-                </button>
-
-                {/* Export Center - Data exports and Matrix integration */}
-                <button 
-                  onClick={() => navigateTo('/export-center')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/export-center')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Download className="w-5 h-5" />
-                  <span>Export Center</span>
-                </button>
-
-                {/* Trash - Deleted items with 30-day retention */}
-                <button 
-                  onClick={() => navigateTo('/trash')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/trash')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Trash2 className="w-5 h-5" />
-                  <span>Trash</span>
-                </button>
-
-                {/* Advanced Search */}
-                <button 
-                  onClick={() => navigateTo('/advanced-search')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/advanced-search')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <SearchIcon className="w-5 h-5" />
-                  <span>Advanced Search</span>
-                </button>
-
-                {/* Accessibility Settings - WCAG compliance and preferences */}
-                <button 
-                  onClick={() => navigateTo('/accessibility')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    isActive('/accessibility')
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <Eye className="w-5 h-5" />
-                  <span>Accessibility</span>
-                </button>
-
-                {/* Staff - Platform administration */}
-                {user?.is_staff && (
-                  <button 
-                    onClick={() => navigateTo('/staff')}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      isActive('/staff')
-                        ? 'bg-primary text-primary-foreground font-medium'
-                        : 'text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span>Staff Panel</span>
-                  </button>
-                )}
-              </div>
-
-              {/* My Groups Section */}
-              {user?.groups && user.groups.length > 0 && (
-                <div className="mb-6">
-                  <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-                    My Groups
-                  </p>
-                  
-                  {user.groups.map(group => (
-                    <div 
-                      key={group.id}
-                      className={`w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-colors ${
-                        window.location.pathname.includes(`/groups/${group.slug}`)
-                          ? 'bg-primary text-primary-foreground font-medium'
-                          : 'text-foreground hover:bg-accent'
-                      }`}
-                    >
-                      <button
-                        onClick={() => navigateTo(`/groups/${group.slug}`)}
-                        className="flex items-center gap-3 flex-1 text-left"
-                      >
-                        <Users className="w-5 h-5" />
-                        <span className="truncate">{group.name}</span>
-                      </button>
-                      {group.is_owner && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigateTo(`/group-settings?id=${group.id}`)
-                          }}
-                          className="p-1 hover:bg-accent rounded transition-colors flex-shrink-0"
-                          title="Group Settings"
-                          aria-label={`Settings for ${group.name}`}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </nav>
+            )}
+          </div>
 
           {/* Footer Actions */}
           <div className="p-6 border-t border-border space-y-2">
