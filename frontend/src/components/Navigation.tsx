@@ -12,15 +12,9 @@ import {
   LogOut,
   BookOpen,
   MessageCircle,
-  Search,
-  FileText,
   UserCircle,
   Settings,
   Shield,
-  Trash2,
-  Globe,
-  Briefcase,
-  Download,
   UserRoundPen
 } from 'lucide-react'
 import { useState } from 'react'

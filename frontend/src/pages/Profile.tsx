@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2, Download, Shield } from 'lucide-react'
+import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2, Download, Shield, Settings, UserCircle } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
