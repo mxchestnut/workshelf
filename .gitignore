@@ -1,6 +1,49 @@
-.CREDENTIALS_SECURE.md
 
 # Environment variables
+# IDEs
+# Local development
+# Node
+# OS
+# Python
+*$py.class
+*.egg
+*.egg-info/
+*.py[cod]
+*.so
+*.swo
+*.swp
+*~
+.CREDENTIALS_SECURE.md
+.DS_Store
+.Python
+.eggs/
 .env
-.env.local
 .env.*.local
+.env.local
+.idea/
+.installed.cfg
+.local-dev.pid
+.pnpm-debug.log*
+.venv/
+.vscode/
+ENV/
+Thumbs.db
+__pycache__/
+backend/.env.local
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+frontend/.env.local
+lib/
+lib64/
+node_modules/
+npm-debug.log*
+parts/
+sdist/
+var/
+venv/
+wheels/
+yarn-debug.log*
+yarn-error.log*

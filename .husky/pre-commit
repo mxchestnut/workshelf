@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run frontend linting and type check before commit
+cd frontend
+npm run lint --silent
+npm run type-check --silent
