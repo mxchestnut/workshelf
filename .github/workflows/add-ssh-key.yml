@@ -1,0 +1,53 @@
+name: Add SSH Key to Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      ssh_public_key:
+        description: 'SSH public key to add'
+        required: true
+      confirm:
+        description: 'Type "add" to confirm'
+        required: true
+
+jobs:
+  add-key:
+    name: Add SSH Key
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'add'
+    
+    steps:
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
+          chmod 600 ~/.ssh/workshelf-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Add SSH Key to Server
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+          NEW_SSH_KEY: ${{ github.event.inputs.ssh_public_key }}
+        run: |
+          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            echo "🔑 Adding new SSH key..."
+            
+            # Add the key to authorized_keys
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            
+            # Check if key already exists
+            if grep -q "$NEW_SSH_KEY" ~/.ssh/authorized_keys 2>/dev/null; then
+              echo "⚠️  Key already exists"
+            else
+              echo "$NEW_SSH_KEY" >> ~/.ssh/authorized_keys
+              chmod 600 ~/.ssh/authorized_keys
+              echo "✅ SSH key added successfully!"
+            fi
+            
+            # Show the key fingerprint for verification
+            ssh-keygen -lf ~/.ssh/authorized_keys | tail -1
+          EOF
