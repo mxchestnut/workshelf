@@ -21,11 +21,9 @@ import {
   Shield,
   Trash2,
   Globe,
-  Tag,
   Briefcase,
   Library,
-  Download,
-  Archive
+  Download
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
