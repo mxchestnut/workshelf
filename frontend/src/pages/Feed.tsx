@@ -238,23 +238,25 @@ export function Feed() {
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
       
-      {/* Feed Tabs */}
-      <div className="border-b border-border bg-muted">
-        <div className="max-w-4xl mx-auto px-6">
-          <nav className="flex gap-1 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('personal')}
-              className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'personal' 
-                  ? 'text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              style={{ 
-                borderColor: activeTab === 'personal' ? 'hsl(var(--primary))' : 'transparent'
-              }}
-            >
-              Personal
-            </button>
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Feed Tabs */}
+        <div className="border-b border-border bg-muted">
+          <div className="max-w-4xl mx-auto px-6">
+            <nav className="flex gap-1 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('personal')}
+                className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === 'personal' 
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                style={{ 
+                  borderColor: activeTab === 'personal' ? 'hsl(var(--primary))' : 'transparent'
+                }}
+              >
+                Personal
+              </button>
             <button
               onClick={() => setActiveTab('updates')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
@@ -706,6 +708,7 @@ export function Feed() {
           itemTitle={selectedPost.title}
         />
       )}
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }
