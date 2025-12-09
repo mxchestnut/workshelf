@@ -39,11 +39,25 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, pagePath
     
     setSending(true);
     try {
+      const token = authService.getToken();
       // Send feedback message (you can customize this endpoint)
-      await axios.post('/api/v1/messaging/send', {
-        recipient_username: 'warpxth',
-        message: `Feedback on ${pageTitle} (${pagePath}):\n\n${feedback}`
+      const response = await fetch(`${API_URL}/api/v1/messaging/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        mode: 'cors',
+        body: JSON.stringify({
+          recipient_username: 'warpxth',
+          message: `Feedback on ${pageTitle} (${pagePath}):\n\n${feedback}`
+        })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send feedback');
+      }
       
       alert('Feedback sent to warpxth! Thank you for your review.');
       setFeedback('');
@@ -171,9 +185,24 @@ const NavigationMenu: React.FC = () => {
     event.stopPropagation();
     
     try {
-      await axios.post(`/api/v1/pages/${item.page_path.substring(1)}/mark-viewed`, {
-        marked_as_viewed: true
+      const apiPath = item.page_path === '/' ? 'landing' : item.page_path.substring(1);
+      const token = authService.getToken();
+      const response = await fetch(`${API_URL}/api/v1/pages/${apiPath}/mark-viewed`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        mode: 'cors',
+        body: JSON.stringify({
+          marked_as_viewed: true
+        })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mark as viewed');
+      }
       
       // Show feedback modal
       setFeedbackModal({
