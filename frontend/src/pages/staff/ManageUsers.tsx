@@ -84,11 +84,11 @@ export function ManageUsers() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading...</div>
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
         </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
@@ -96,25 +96,25 @@ export function ManageUsers() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+      <div className="border-b bg-card border-border">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <button
             onClick={() => window.location.href = '/staff'}
-            className="flex items-center gap-2 mb-4 text-white hover:text-[#B34B0C] transition-colors"
+            className="flex items-center gap-2 mb-4 text-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Staff Panel
           </button>
           <div className="flex items-center gap-3">
-            <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+            <Users className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold text-white">Manage Users</h1>
-              <p style={{ color: '#B3B2B0' }}>View and manage all user accounts</p>
+              <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
+              <p className="text-muted-foreground">View and manage all user accounts</p>
             </div>
           </div>
         </div>
@@ -124,51 +124,46 @@ export function ManageUsers() {
         {/* Search and Filters */}
         <div className="mb-6 flex gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#B3B2B0' }} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by email or username..."
-              className="w-full pl-10 pr-4 py-3 rounded-lg text-white placeholder-gray-400 border focus:outline-none focus:border-[#B34B0C]"
-              style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}
+              className="w-full pl-10 pr-4 py-3 rounded-lg text-foreground placeholder-muted-foreground border border-input bg-card focus:outline-none focus:border-primary"
             />
           </div>
           
-          <div className="flex gap-2 rounded-lg p-1" style={{ backgroundColor: '#524944' }}>
+          <div className="flex gap-2 rounded-lg p-1 bg-card">
             <button
               onClick={() => setFilterStatus('all')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                filterStatus === 'all' ? 'text-white' : 'text-[#B3B2B0] hover:text-white'
+                filterStatus === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ backgroundColor: filterStatus === 'all' ? '#B34B0C' : 'transparent' }}
             >
               All
             </button>
             <button
               onClick={() => setFilterStatus('active')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                filterStatus === 'active' ? 'text-white' : 'text-[#B3B2B0] hover:text-white'
+                filterStatus === 'active' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ backgroundColor: filterStatus === 'active' ? '#B34B0C' : 'transparent' }}
             >
               Active
             </button>
             <button
               onClick={() => setFilterStatus('inactive')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                filterStatus === 'inactive' ? 'text-white' : 'text-[#B3B2B0] hover:text-white'
+                filterStatus === 'inactive' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ backgroundColor: filterStatus === 'inactive' ? '#B34B0C' : 'transparent' }}
             >
               Inactive
             </button>
             <button
               onClick={() => setFilterStatus('staff')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                filterStatus === 'staff' ? 'text-white' : 'text-[#B3B2B0] hover:text-white'
+                filterStatus === 'staff' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ backgroundColor: filterStatus === 'staff' ? '#B34B0C' : 'transparent' }}
             >
               Staff
             </button>
@@ -176,36 +171,36 @@ export function ManageUsers() {
         </div>
 
         {/* Users Table */}
-        <div className="rounded-lg border" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+        <div className="rounded-lg border bg-card border-border">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b" style={{ borderColor: '#6C6A68' }}>
+              <thead className="border-b border-border">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">User</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Role</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Joined</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-white">Last Login</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-white">Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">User</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Email</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Role</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Joined</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Last Login</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center">
-                      <Users className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                      <p style={{ color: '#B3B2B0' }}>No users found</p>
+                      <Users className="w-12 h-12 mx-auto mb-3 text-muted" />
+                      <p className="text-muted-foreground">No users found</p>
                     </td>
                   </tr>
                 ) : (
                   filteredUsers.map(u => (
-                    <tr key={u.id} className="border-b hover:bg-opacity-50" style={{ borderColor: '#6C6A68' }}>
+                    <tr key={u.id} className="border-b border-border hover:bg-muted/50">
                       <td className="px-6 py-4">
-                        <p className="font-medium text-white">{u.username}</p>
+                        <p className="font-medium text-foreground">{u.username}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <p style={{ color: '#B3B2B0' }}>{u.email}</p>
+                        <p className="text-muted-foreground">{u.email}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
@@ -222,20 +217,20 @@ export function ManageUsers() {
                             Staff
                           </span>
                         ) : (
-                          <span style={{ color: '#B3B2B0' }}>User</span>
+                          <span className="text-muted-foreground">User</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <p style={{ color: '#B3B2B0' }}>{new Date(u.created_at).toLocaleDateString()}</p>
+                        <p className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <p style={{ color: '#B3B2B0' }}>
+                        <p className="text-muted-foreground">
                           {u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never'}
                         </p>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 hover:bg-[#37322E] rounded transition-colors">
-                          <MoreVertical className="w-5 h-5" style={{ color: '#B3B2B0' }} />
+                        <button className="p-2 hover:bg-background rounded transition-colors">
+                          <MoreVertical className="w-5 h-5 text-muted-foreground" />
                         </button>
                       </td>
                     </tr>
@@ -248,23 +243,23 @@ export function ManageUsers() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-            <p className="text-2xl font-bold text-white">{users.length}</p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Users</p>
+          <div className="p-6 rounded-lg bg-card border border-border">
+            <p className="text-2xl font-bold text-foreground">{users.length}</p>
+            <p className="text-sm text-muted-foreground">Total Users</p>
           </div>
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-            <p className="text-2xl font-bold text-white">{users.filter(u => u.is_active).length}</p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Users</p>
+          <div className="p-6 rounded-lg bg-card border border-border">
+            <p className="text-2xl font-bold text-foreground">{users.filter(u => u.is_active).length}</p>
+            <p className="text-sm text-muted-foreground">Active Users</p>
           </div>
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-            <p className="text-2xl font-bold text-white">{users.filter(u => u.is_staff).length}</p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Staff Members</p>
+          <div className="p-6 rounded-lg bg-card border border-border">
+            <p className="text-2xl font-bold text-foreground">{users.filter(u => u.is_staff).length}</p>
+            <p className="text-sm text-muted-foreground">Staff Members</p>
           </div>
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-            <p className="text-2xl font-bold text-white">
+          <div className="p-6 rounded-lg bg-card border border-border">
+            <p className="text-2xl font-bold text-foreground">
               {users.filter(u => u.last_login && new Date(u.last_login) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
             </p>
-            <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Last 7 Days</p>
+            <p className="text-sm text-muted-foreground">Active Last 7 Days</p>
           </div>
         </div>
       </div>

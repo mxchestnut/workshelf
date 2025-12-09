@@ -3,7 +3,7 @@ import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lo
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 
-type ProfileTab = 'general' | 'beta' | 'writer' | 'connections'
+type ProfileTab = 'settings' | 'profile' | 'writer' | 'beta' | 'reader'
 
 interface UserProfile {
   id: number
@@ -66,7 +66,7 @@ export function Profile() {
   const [loginHomeserver, setLoginHomeserver] = useState('https://matrix.org')
   
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
-  const [activeTab, setActiveTab] = useState<ProfileTab>('general')
+  const [activeTab, setActiveTab] = useState<ProfileTab>('profile')
 
   // Connections state
   interface ConnectionUser {
@@ -120,7 +120,7 @@ export function Profile() {
   }, [])
 
   useEffect(() => {
-    if (activeTab === 'connections') {
+    if (activeTab === 'settings') {
       loadConnections()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -170,6 +170,58 @@ export function Profile() {
       const token = authService.getToken()
       if (!token) {
         setError('Not authenticated')
+        return
+      }
+
+      // Mock data for local development
+      if (import.meta.env.VITE_MOCK_AUTH === 'true') {
+        const mockProfile: UserProfile = {
+          id: 1,
+          email: 'dev@local.test',
+          username: 'localdev',
+          phone_number: null,
+          birth_year: null,
+          interests: ['fiction', 'sci-fi', 'creative-writing'],
+          display_name: 'Local Developer',
+          bio: 'This is a mock profile for local development',
+          avatar_url: null,
+          website_url: null,
+          twitter_handle: null,
+          github_handle: null,
+          matrix_username: null,
+          location: null,
+          profile_visibility: 'public',
+          newsletter_opt_in: false,
+          sms_opt_in: false,
+          show_email: false,
+          email_notifications: true,
+          timezone: 'UTC',
+          language: 'en',
+          theme: 'system'
+        }
+        
+        setProfile(mockProfile)
+        setFormData({
+          username: mockProfile.username,
+          phone_number: mockProfile.phone_number || '',
+          birth_year: mockProfile.birth_year?.toString() || '',
+          interests: mockProfile.interests,
+          bio: mockProfile.bio || '',
+          location: mockProfile.location || '',
+          website_url: mockProfile.website_url || '',
+          twitter_handle: mockProfile.twitter_handle || '',
+          github_handle: mockProfile.github_handle || '',
+          matrix_username: mockProfile.matrix_username || '',
+          profile_visibility: mockProfile.profile_visibility,
+          newsletter_opt_in: mockProfile.newsletter_opt_in,
+          sms_opt_in: mockProfile.sms_opt_in,
+          show_email: mockProfile.show_email,
+          email_notifications: mockProfile.email_notifications,
+          timezone: mockProfile.timezone,
+          language: mockProfile.language,
+          theme: mockProfile.theme
+        })
+        setLoading(false)
         return
       }
 
@@ -579,19 +631,34 @@ export function Profile() {
 
       {/* Profile Tabs */}
       <div className="border-b mb-6 border-border">
-        <nav className="flex gap-1">
+        <nav className="flex gap-1 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('general')}
-            className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'general' 
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'settings' 
                 ? 'text-foreground' 
                 : 'text-muted-foreground hover:text-white'
             }`}
             style={{ 
-              borderColor: activeTab === 'general' ? 'hsl(var(--primary))' : 'transparent'
+              borderColor: activeTab === 'settings' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
-            General Profile
+            <Settings className="w-4 h-4" />
+            Settings
+          </button>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === 'profile' 
+                ? 'text-foreground' 
+                : 'text-muted-foreground hover:text-white'
+            }`}
+            style={{ 
+              borderColor: activeTab === 'profile' ? 'hsl(var(--primary))' : 'transparent'
+            }}
+          >
+            <UserCircle className="w-4 h-4" />
+            Profile
           </button>
           <button
             onClick={() => setActiveTab('writer')}
@@ -619,27 +686,27 @@ export function Profile() {
             }}
           >
             <BookOpen className="w-4 h-4" />
-            Beta Reader Profile
+            Beta Profile
           </button>
           <button
-            onClick={() => setActiveTab('connections')}
+            onClick={() => setActiveTab('reader')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'connections' 
+              activeTab === 'reader' 
                 ? 'text-foreground' 
                 : 'text-muted-foreground hover:text-white'
             }`}
             style={{ 
-              borderColor: activeTab === 'connections' ? 'hsl(var(--primary))' : 'transparent'
+              borderColor: activeTab === 'reader' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
-            <UsersIcon className="w-4 h-4" />
-            Connections
+            <BookOpen className="w-4 h-4" />
+            Reader Profile
           </button>
         </nav>
       </div>
 
       {/* Tab Content */}
-        {activeTab === 'general' && (
+        {activeTab === 'settings' && (
         <div>
           {/* Success/Error Messages */}
           {success && (
@@ -1427,30 +1494,53 @@ export function Profile() {
         )}
 
         {activeTab === 'writer' && (
-        <div className="rounded-lg border p-8 bg-card border-border">
-          <div className="text-center py-12">
-            <Edit2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-            <h3 className="text-xl font-semibold mb-2 text-white">Writer Profile</h3>
-            <p className="mb-4 text-muted-foreground">
-              Showcase your published works, writing style, and connect with readers.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Coming soon: Writer bio, published works, writing genres, and reader engagement stats.
-            </p>
+        <div className="space-y-6">
+          <div className="rounded-lg border p-6 bg-card border-border">
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Writer Profile</h2>
+            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded border-border" />
+                <div>
+                  <div className="font-medium text-foreground">Make Writer Profile Public</div>
+                  <div className="text-sm text-muted-foreground">Allow other users to discover you as a writer</div>
+                </div>
+              </label>
+            </div>
+            <div className="text-center py-8">
+              <Edit2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2 text-foreground">Writer Profile</h3>
+              <p className="mb-4 text-muted-foreground">
+                Showcase your published works, writing style, and connect with readers.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Coming soon: Writer bio, published works, writing genres, and reader engagement stats.
+              </p>
+            </div>
           </div>
         </div>
         )}
 
         {activeTab === 'beta' && (
-        <div className="rounded-lg border p-8 bg-card border-border">
-          <div className="text-center py-12">
-            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-            <h3 className="text-xl font-semibold mb-2 text-white">Beta Reader Profile</h3>
-            <p className="mb-4 text-muted-foreground">
-              Set up your beta reading profile to offer feedback services to writers.
-            </p>
-            <button
-              onClick={() => window.location.href = '/my-beta-profile'}
+        <div className="space-y-6">
+          <div className="rounded-lg border p-6 bg-card border-border">
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Beta Reader Profile</h2>
+            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-6">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded border-border" />
+                <div>
+                  <div className="font-medium text-foreground">Make Beta Profile Public</div>
+                  <div className="text-sm text-muted-foreground">Allow writers to find you and request beta reading services</div>
+                </div>
+              </label>
+            </div>
+            <div className="text-center py-8">
+              <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2 text-foreground">Beta Reader Profile</h3>
+              <p className="mb-4 text-muted-foreground">
+                Set up your beta reading profile to offer feedback services to writers.
+              </p>
+              <button
+                onClick={() => window.location.href = '/my-beta-profile'}
               className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
               style={{ backgroundColor: 'hsl(var(--primary))' }}
             >
@@ -1460,10 +1550,111 @@ export function Profile() {
               </div>
             </button>
           </div>
+          </div>
         </div>
         )}
 
-        {activeTab === 'connections' && (
+        {activeTab === 'profile' && (
+        <div className="space-y-6">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Public Profile</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              This is your basic public profile visible to other users.
+            </p>
+            {/* Basic profile fields: display name, bio, avatar, location, website, social links */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">Display Name</label>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  disabled={!editing}
+                  className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">Bio</label>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  disabled={!editing}
+                  rows={4}
+                  className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                  placeholder="Tell us about yourself..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  disabled={!editing}
+                  className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                  placeholder="City, Country"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-muted-foreground">Website</label>
+                <input
+                  type="url"
+                  value={formData.website_url}
+                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                  disabled={!editing}
+                  className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                  placeholder="https://yourwebsite.com"
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">Twitter Handle</label>
+                  <input
+                    type="text"
+                    value={formData.twitter_handle}
+                    onChange={(e) => setFormData({ ...formData, twitter_handle: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                    placeholder="@username"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">GitHub Handle</label>
+                  <input
+                    type="text"
+                    value={formData.github_handle}
+                    onChange={(e) => setFormData({ ...formData, github_handle: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-4 py-2 border rounded-lg bg-background border-border text-foreground disabled:opacity-50"
+                    placeholder="@username"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {activeTab === 'reader' && (
+        <div className="space-y-6">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-foreground">Reader Profile</h2>
+            <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-5 h-5 rounded border-border" />
+                <div>
+                  <div className="font-medium text-foreground">Make Reader Profile Public</div>
+                  <div className="text-sm text-muted-foreground">Show your reading activity and bookshelf to others</div>
+                </div>
+              </label>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Reader Profile will be enabled when the bookshelf feature is reintroduced. 
+              This will show your reading history, favorite books, and reading preferences.
+            </p>
+          </div>
+        </div>
+        )}
         <div className="space-y-6">
           {/* Summary Stats */}
           <div className="grid grid-cols-2 gap-4">
@@ -1579,7 +1770,7 @@ export function Profile() {
             </div>
           )}
         </div>
-        )}
+
         </div>
       </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>

@@ -206,11 +206,11 @@ export function StoreAnalytics() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading...</div>
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
         </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
@@ -220,7 +220,7 @@ export function StoreAnalytics() {
   if (!user) return null
 
   return (
-    <div style={{ backgroundColor: '#1C1917', minHeight: '100vh' }}>
+    <div className="bg-background min-h-screen">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
@@ -230,22 +230,21 @@ export function StoreAnalytics() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => window.location.href = '/staff/settings'}
-              className="p-2 rounded hover:bg-[#524944] transition-colors"
+              className="p-2 rounded hover:bg-card transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                <TrendingUp className="w-8 h-8" style={{ color: '#B34B0C' }} />
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-primary" />
                 Store Analytics
               </h1>
-              <p className="text-[#B3B2B0] mt-1">View sales data and manage store items</p>
+              <p className="text-muted-foreground mt-1">View sales data and manage store items</p>
             </div>
           </div>
           <button
             onClick={handleAddItem}
-            className="px-4 py-2 rounded flex items-center gap-2 text-white font-semibold transition-colors"
-            style={{ backgroundColor: '#B34B0C' }}
+            className="px-4 py-2 rounded flex items-center gap-2 text-primary-foreground font-semibold transition-colors bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4" />
             Add Item
@@ -254,33 +253,29 @@ export function StoreAnalytics() {
 
         {/* Audiobook Eligibility Alerts */}
         {eligibleForAudiobook.length > 0 && (
-          <div className="mb-8 p-6 rounded-lg border-2" style={{ 
-            backgroundColor: '#37322E', 
-            borderColor: '#B34B0C' 
-          }}>
+          <div className="mb-8 p-6 rounded-lg border-2 bg-background border-primary">
             <div className="flex items-start gap-4">
-              <Sparkles className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#B34B0C' }} />
+              <Sparkles className="w-6 h-6 flex-shrink-0 mt-1 text-primary" />
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
                   🎉 {eligibleForAudiobook.length} {eligibleForAudiobook.length === 1 ? 'Book' : 'Books'} Ready for Immersive Upgrade!
                 </h3>
-                <p className="text-[#B3B2B0] mb-4">
+                <p className="text-muted-foreground mb-4">
                   The following {eligibleForAudiobook.length === 1 ? 'book has' : 'books have'} earned enough revenue ($120+) to fund premium ElevenLabs audiobook narration. 
                   Approve to generate immersive versions and upgrade to bundles at $11.99.
                 </p>
                 <div className="space-y-3">
                   {eligibleForAudiobook.map(item => (
-                    <div key={item.id} className="flex items-center justify-between p-4 rounded" style={{ backgroundColor: '#524944' }}>
+                    <div key={item.id} className="flex items-center justify-between p-4 rounded bg-card">
                       <div>
-                        <p className="text-white font-semibold">{item.title}</p>
-                        <p className="text-sm text-[#B3B2B0]">
+                        <p className="text-foreground font-semibold">{item.title}</p>
+                        <p className="text-sm text-muted-foreground">
                           {item.author} • {item.sales_count} sales • ${item.revenue.toFixed(2)} revenue
                         </p>
                       </div>
                       <button
                         onClick={() => handleGenerateAudiobook(item.id, item.title)}
-                        className="px-4 py-2 rounded text-white font-semibold hover:opacity-90 transition-opacity"
-                        style={{ backgroundColor: '#B34B0C' }}
+                        className="px-4 py-2 rounded text-primary-foreground font-semibold hover:opacity-90 transition-opacity bg-primary"
                       >
                         Generate Audiobook
                       </button>
@@ -294,58 +289,57 @@ export function StoreAnalytics() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+          <div className="p-6 rounded-lg bg-card border border-border">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#B3B2B0] text-sm">Total Revenue</span>
-              <DollarSign className="w-5 h-5" style={{ color: '#B34B0C' }} />
+              <span className="text-muted-foreground text-sm">Total Revenue</span>
+              <DollarSign className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-foreground">
               ${stats.total_revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </p>
           </div>
 
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+          <div className="p-6 rounded-lg bg-card border border-border">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#B3B2B0] text-sm">Total Sales</span>
-              <ShoppingBag className="w-5 h-5" style={{ color: '#B34B0C' }} />
+              <span className="text-muted-foreground text-sm">Total Sales</span>
+              <ShoppingBag className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-white">{stats.total_sales}</p>
+            <p className="text-3xl font-bold text-foreground">{stats.total_sales}</p>
           </div>
 
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+          <div className="p-6 rounded-lg bg-card border border-border">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#B3B2B0] text-sm">Active Items</span>
-              <Package className="w-5 h-5" style={{ color: '#B34B0C' }} />
+              <span className="text-muted-foreground text-sm">Active Items</span>
+              <Package className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-white">{stats.active_items}</p>
+            <p className="text-3xl font-bold text-foreground">{stats.active_items}</p>
           </div>
 
-          <div className="p-6 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+          <div className="p-6 rounded-lg bg-card border border-border">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#B3B2B0] text-sm">Avg Sale Price</span>
-              <TrendingUp className="w-5 h-5" style={{ color: '#B34B0C' }} />
+              <span className="text-muted-foreground text-sm">Avg Sale Price</span>
+              <TrendingUp className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-foreground">
               ${stats.avg_sale_price.toFixed(2)}
             </p>
           </div>
         </div>
 
         {/* Items Management */}
-        <div className="p-6 rounded-lg" style={{ backgroundColor: '#37322E' }}>
-          <h2 className="text-xl font-bold text-white mb-6">Store Items</h2>
+        <div className="p-6 rounded-lg bg-card border border-border">
+          <h2 className="text-xl font-bold text-foreground mb-6">Store Items</h2>
 
           {/* Search and Filter */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-[#B3B2B0]" />
+              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search by title or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded text-white placeholder-[#B3B2B0]"
-                style={{ backgroundColor: '#524944' }}
+                className="w-full pl-10 pr-4 py-2 rounded text-foreground placeholder-muted-foreground bg-background border border-input"
               />
             </div>
 
@@ -353,27 +347,24 @@ export function StoreAnalytics() {
               <button
                 onClick={() => setFilterStatus('all')}
                 className={`px-4 py-2 rounded font-semibold transition-colors ${
-                  filterStatus === 'all' ? 'text-white' : 'text-[#B3B2B0]'
+                  filterStatus === 'all' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'
                 }`}
-                style={{ backgroundColor: filterStatus === 'all' ? '#B34B0C' : '#524944' }}
               >
                 All
               </button>
               <button
                 onClick={() => setFilterStatus('active')}
                 className={`px-4 py-2 rounded font-semibold transition-colors ${
-                  filterStatus === 'active' ? 'text-white' : 'text-[#B3B2B0]'
+                  filterStatus === 'active' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'
                 }`}
-                style={{ backgroundColor: filterStatus === 'active' ? '#B34B0C' : '#524944' }}
               >
                 Active
               </button>
               <button
                 onClick={() => setFilterStatus('inactive')}
                 className={`px-4 py-2 rounded font-semibold transition-colors ${
-                  filterStatus === 'inactive' ? 'text-white' : 'text-[#B3B2B0]'
+                  filterStatus === 'inactive' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'
                 }`}
-                style={{ backgroundColor: filterStatus === 'inactive' ? '#B34B0C' : '#524944' }}
               >
                 Inactive
               </button>
@@ -384,29 +375,29 @@ export function StoreAnalytics() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b" style={{ borderColor: '#524944' }}>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Title</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Author</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Price</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Sales</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Revenue</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Audiobook</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Status</th>
-                  <th className="text-left py-3 px-4 text-[#B3B2B0] font-semibold">Actions</th>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Title</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Author</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Price</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Sales</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Revenue</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Audiobook</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Status</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className="border-b" style={{ borderColor: '#524944' }}>
-                    <td className="py-3 px-4 text-white">{item.title}</td>
-                    <td className="py-3 px-4 text-[#B3B2B0]">{item.author}</td>
-                    <td className="py-3 px-4 text-white">${item.price.toFixed(2)}</td>
-                    <td className="py-3 px-4 text-white">{item.sales_count}</td>
+                  <tr key={item.id} className="border-b border-border">
+                    <td className="py-3 px-4 text-foreground">{item.title}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{item.author}</td>
+                    <td className="py-3 px-4 text-foreground">${item.price.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-foreground">{item.sales_count}</td>
                     <td className="py-3 px-4">
                       <div className="flex flex-col">
-                        <span className="text-white">${item.revenue.toFixed(2)}</span>
+                        <span className="text-foreground">${item.revenue.toFixed(2)}</span>
                         {!item.has_audiobook && item.revenue >= 60 && item.revenue < AUDIOBOOK_THRESHOLD && (
-                          <span className="text-xs text-[#B34B0C] mt-1">
+                          <span className="text-xs text-primary mt-1">
                             {Math.floor((item.revenue / AUDIOBOOK_THRESHOLD) * 100)}% to audiobook
                           </span>
                         )}
@@ -443,14 +434,14 @@ export function StoreAnalytics() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleToggleStatus(item.id, item.status)}
-                          className="p-1 rounded hover:bg-[#524944] transition-colors"
+                          className="p-1 rounded hover:bg-card transition-colors"
                           title={item.status === 'active' ? 'Mark as inactive' : 'Mark as active'}
                         >
-                          <Edit className="w-4 h-4 text-[#B3B2B0]" />
+                          <Edit className="w-4 h-4 text-muted-foreground" />
                         </button>
                         <button
                           onClick={() => handleDeleteItem(item.id, item.sales_count)}
-                          className="p-1 rounded hover:bg-[#524944] transition-colors"
+                          className="p-1 rounded hover:bg-card transition-colors"
                           title="Delete item"
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />
@@ -464,8 +455,8 @@ export function StoreAnalytics() {
 
             {filteredItems.length === 0 && (
               <div className="text-center py-12">
-                <Package className="w-12 h-12 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-                <p className="text-[#B3B2B0]">No items found</p>
+                <Package className="w-12 h-12 mx-auto mb-4 text-muted" />
+                <p className="text-muted-foreground">No items found</p>
               </div>
             )}
           </div>

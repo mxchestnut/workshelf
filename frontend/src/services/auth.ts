@@ -29,6 +29,20 @@ const KEYCLOAK_REALM = 'workshelf'
 const KEYCLOAK_CLIENT_ID = 'workshelf-frontend'
 // Use production API domain as safer fallback (avoid main site domain)
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const MOCK_AUTH = import.meta.env.VITE_MOCK_AUTH === 'true'
+
+// Mock user for local development
+const MOCK_USER: User = {
+  id: '1',
+  email: 'dev@local.test',
+  username: 'localdev',
+  display_name: 'Local Developer',
+  is_staff: true,
+  is_approved: true,
+  keycloak_id: 'mock-keycloak-id',
+  matrix_onboarding_seen: true,
+  groups: []
+}
 
 class AuthService {
   private accessToken: string | null = null
@@ -36,6 +50,14 @@ class AuthService {
   private user: User | null = null
 
   constructor() {
+    // Mock auth for local development
+    if (MOCK_AUTH) {
+      console.log('[AuthService] MOCK AUTH ENABLED - Using fake user for local dev')
+      this.user = MOCK_USER
+      this.accessToken = 'mock-token-for-local-dev'
+      return
+    }
+    
     // Load tokens from localStorage on initialization
     this.accessToken = localStorage.getItem('access_token')
     this.refreshToken = localStorage.getItem('refresh_token')
@@ -74,6 +96,13 @@ class AuthService {
    * Redirect to Keycloak login page with PKCE
    */
   async login() {
+    // Mock auth - instant login
+    if (MOCK_AUTH) {
+      console.log('[AuthService] Mock login - already logged in')
+      this.user = MOCK_USER
+      return
+    }
+    
     // Generate PKCE code verifier and challenge
     const codeVerifier = this.generateCodeVerifier()
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
@@ -172,6 +201,13 @@ class AuthService {
    * Fetch user information from backend API
    */
   async fetchUserInfo(): Promise<User> {
+    // Mock auth - return fake user
+    if (MOCK_AUTH) {
+      console.log('[AuthService] Mock auth - returning fake user')
+      this.user = MOCK_USER
+      return MOCK_USER
+    }
+    
     if (!this.accessToken) {
       throw new Error('No access token available')
     }
@@ -280,6 +316,7 @@ class AuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
+    if (MOCK_AUTH) return true
     return this.accessToken !== null
   }
 
@@ -287,6 +324,10 @@ class AuthService {
    * Get current user
    */
   async getCurrentUser(): Promise<User | null> {
+    if (MOCK_AUTH) {
+      return MOCK_USER
+    }
+    
     if (!this.isAuthenticated()) {
       return null
     }

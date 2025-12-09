@@ -546,13 +546,13 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+      <div className="min-h-screen bg-background">
         {!embedded && (
           <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
         )}
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading admin dashboard...</div>
+          <div className="animate-pulse text-muted-foreground">Loading admin dashboard...</div>
         </div>
         </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
@@ -560,33 +560,33 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
+    <div className="min-h-screen bg-background">
       {!embedded && (
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
       )}
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+      <div className="border-b bg-card border-border">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-8 h-8" style={{ color: '#B34B0C' }} />
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <Shield className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
           </div>
-          <p style={{ color: '#B3B2B0' }}>Manage your groups and community</p>
+          <p className="text-muted-foreground">Manage your groups and community</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+      <div className="border-b bg-card border-border">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-6">
             <button
               onClick={() => setActiveTab('overview')}
               className={`px-4 py-3 border-b-2 transition-colors ${
                 activeTab === 'overview'
-                  ? 'border-[#B34B0C] text-white font-semibold'
-                  : 'border-transparent text-[#B3B2B0] hover:text-white'
+                  ? 'border-primary text-foreground font-semibold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -598,8 +598,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               onClick={() => setActiveTab('groups')}
               className={`px-4 py-3 border-b-2 transition-colors ${
                 activeTab === 'groups'
-                  ? 'border-[#B34B0C] text-white font-semibold'
-                  : 'border-transparent text-[#B3B2B0] hover:text-white'
+                  ? 'border-primary text-foreground font-semibold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -611,8 +611,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               onClick={() => setActiveTab('moderation')}
               className={`px-4 py-3 border-b-2 transition-colors ${
                 activeTab === 'moderation'
-                  ? 'border-[#B34B0C] text-white font-semibold'
-                  : 'border-transparent text-[#B3B2B0] hover:text-white'
+                  ? 'border-primary text-foreground font-semibold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -624,8 +624,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               onClick={() => setActiveTab('creator-earnings')}
               className={`px-4 py-3 border-b-2 transition-colors ${
                 activeTab === 'creator-earnings'
-                  ? 'border-[#B34B0C] text-white font-semibold'
-                  : 'border-transparent text-[#B3B2B0] hover:text-white'
+                  ? 'border-primary text-foreground font-semibold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -639,8 +639,8 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 onClick={() => setActiveTab('site-admin')}
                 className={`px-4 py-3 border-b-2 transition-colors ${
                   activeTab === 'site-admin'
-                    ? 'border-[#B34B0C] text-white font-semibold'
-                    : 'border-transparent text-[#B3B2B0] hover:text-white'
+                    ? 'border-primary text-foreground font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -660,42 +660,42 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
           <div className="space-y-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <Users className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats?.total_members || 0}</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Members</p>
+                    <p className="text-2xl font-bold text-foreground">{stats?.total_members || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total Members</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <UserCheck className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <UserCheck className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats?.pending_requests || 0}</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Pending Requests</p>
+                    <p className="text-2xl font-bold text-foreground">{stats?.pending_requests || 0}</p>
+                    <p className="text-sm text-muted-foreground">Pending Requests</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <MessageSquare className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats?.total_posts || 0}</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Posts</p>
+                    <p className="text-2xl font-bold text-foreground">{stats?.total_posts || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total Posts</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <Flag className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <Flag className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="text-2xl font-bold text-white">{stats?.flagged_content || 0}</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>Flagged Content</p>
+                    <p className="text-2xl font-bold text-foreground">{stats?.flagged_content || 0}</p>
+                    <p className="text-sm text-muted-foreground">Flagged Content</p>
                   </div>
                 </div>
               </div>
@@ -703,26 +703,24 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab('groups')}
-                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                  style={{ backgroundColor: '#524944' }}
+                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left bg-card border border-border"
                 >
-                  <Users className="w-8 h-8 mb-3" style={{ color: '#B34B0C' }} />
-                  <h3 className="text-lg font-semibold mb-2 text-white">Manage Groups</h3>
-                  <p style={{ color: '#B3B2B0' }}>View and manage your groups, approve members</p>
+                  <Users className="w-8 h-8 mb-3 text-primary" />
+                  <h3 className="text-lg font-semibold mb-2 text-foreground">Manage Groups</h3>
+                  <p className="text-muted-foreground">View and manage your groups, approve members</p>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('moderation')}
-                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left"
-                  style={{ backgroundColor: '#524944' }}
+                  className="p-6 rounded-lg hover:opacity-90 transition-opacity text-left bg-card border border-border"
                 >
-                  <Flag className="w-8 h-8 mb-3" style={{ color: '#B34B0C' }} />
-                  <h3 className="text-lg font-semibold mb-2 text-white">Review Reports</h3>
-                  <p style={{ color: '#B3B2B0' }}>Review flagged content and user reports</p>
+                  <Flag className="w-8 h-8 mb-3 text-primary" />
+                  <h3 className="text-lg font-semibold mb-2 text-foreground">Review Reports</h3>
+                  <p className="text-muted-foreground">Review flagged content and user reports</p>
                 </button>
               </div>
             </div>
@@ -733,32 +731,31 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
         {activeTab === 'groups' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Your Groups</h2>
+              <h2 className="text-2xl font-bold text-foreground">Your Groups</h2>
               <button
                 onClick={() => window.location.href = '/groups'}
-                className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
               >
                 View All Groups
               </button>
             </div>
 
             {managedGroups.length === 0 ? (
-              <div className="text-center py-12 rounded-lg" style={{ backgroundColor: '#524944' }}>
-                <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-                <p className="text-lg font-semibold text-white mb-2">No groups yet</p>
-                <p style={{ color: '#B3B2B0' }}>You don't manage any groups currently</p>
+              <div className="text-center py-12 rounded-lg bg-card border border-border">
+                <Users className="w-16 h-16 mx-auto mb-4 text-muted" />
+                <p className="text-lg font-semibold text-foreground mb-2">No groups yet</p>
+                <p className="text-muted-foreground">You don't manage any groups currently</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {managedGroups.map(group => (
                   <div
                     key={group.id}
-                    className="p-6 rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                    style={{ backgroundColor: '#524944' }}
+                    className="p-6 rounded-lg hover:opacity-90 transition-opacity cursor-pointer bg-card border border-border"
                     onClick={() => navigateToGroup(group.slug)}
                   >
-                    <h3 className="text-xl font-bold text-white mb-2">{group.name}</h3>
-                    <div className="flex gap-4 text-sm" style={{ color: '#B3B2B0' }}>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{group.name}</h3>
+                    <div className="flex gap-4 text-sm text-muted-foreground">
                       <span>{group.member_count} members</span>
                       <span>{group.post_count} posts</span>
                     </div>
@@ -767,7 +764,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                         e.stopPropagation()
                         navigateToGroup(group.slug)
                       }}
-                      className="mt-4 px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors"
+                      className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                     >
                       Manage Group
                     </button>
@@ -781,12 +778,12 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
         {/* Moderation Tab */}
         {activeTab === 'moderation' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Content Moderation</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Content Moderation</h2>
             
-            <div className="text-center py-12 rounded-lg" style={{ backgroundColor: '#524944' }}>
-              <Flag className="w-16 h-16 mx-auto mb-4" style={{ color: '#6C6A68' }} />
-              <p className="text-lg font-semibold text-white mb-2">No flagged content</p>
-              <p style={{ color: '#B3B2B0' }}>All clear! No reports to review at this time.</p>
+            <div className="text-center py-12 rounded-lg bg-card border border-border">
+              <Flag className="w-16 h-16 mx-auto mb-4 text-muted" />
+              <p className="text-lg font-semibold text-foreground mb-2">No flagged content</p>
+              <p className="text-muted-foreground">All clear! No reports to review at this time.</p>
             </div>
           </div>
         )}
@@ -795,12 +792,12 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
         {activeTab === 'site-admin' && isStaff && (
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Site Administration</h2>
+              <h2 className="text-2xl font-bold text-foreground">Site Administration</h2>
               <a
                 href="https://auth.workshelf.dev/admin"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2"
               >
                 <Shield className="w-4 h-4" />
                 Open Keycloak Console
@@ -809,42 +806,42 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
             {/* Site-Wide Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center justify-between mb-4">
-                  <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <Users className="w-8 h-8 text-primary" />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_users || allUsers.length || '...'}</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Users</p>
+                <p className="text-3xl font-bold text-foreground mb-1">{siteStats?.total_users || allUsers.length || '...'}</p>
+                <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center justify-between mb-4">
-                  <BookOpen className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <BookOpen className="w-8 h-8 text-primary" />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_documents || '...'}</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Documents</p>
+                <p className="text-3xl font-bold text-foreground mb-1">{siteStats?.total_documents || '...'}</p>
+                <p className="text-sm text-muted-foreground">Total Documents</p>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center justify-between mb-4">
-                  <Users className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <Users className="w-8 h-8 text-primary" />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">{siteStats?.total_groups || managedGroups.length}</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Groups</p>
+                <p className="text-3xl font-bold text-foreground mb-1">{siteStats?.total_groups || managedGroups.length}</p>
+                <p className="text-sm text-muted-foreground">Total Groups</p>
               </div>
 
-              <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+              <div className="p-6 rounded-lg bg-card border border-border">
                 <div className="flex items-center justify-between mb-4">
-                  <Shield className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
-                <p className="text-3xl font-bold text-white mb-1">{allUsers.filter((u: any) => u.is_staff).length || '...'}</p>
-                <p className="text-sm" style={{ color: '#B3B2B0' }}>Active Staff</p>
+                <p className="text-3xl font-bold text-foreground mb-1">{allUsers.filter((u: any) => u.is_staff).length || '...'}</p>
+                <p className="text-sm text-muted-foreground">Active Staff</p>
               </div>
             </div>
 
             {/* Invite Users */}
-            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className="p-6 rounded-lg bg-card border border-border">
+              <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Mail className="w-6 h-6" />
                 Invite Users
               </h3>
@@ -857,13 +854,12 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="Enter email address"
                     required
-                    className="flex-1 px-4 py-2 rounded-lg text-white placeholder-gray-400 border-2 focus:outline-none focus:border-[#B34B0C]"
-                    style={{ backgroundColor: '#37322E', borderColor: '#6C6A68' }}
+                    className="flex-1 px-4 py-2 rounded-lg text-foreground placeholder-muted-foreground border-2 border-input bg-background focus:outline-none focus:border-primary"
                   />
                   <button
                     type="submit"
                     disabled={inviteLoading || !inviteEmail}
-                    className="px-6 py-2 bg-[#B34B0C] text-white rounded-lg font-semibold hover:bg-[#8A3809] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     {inviteLoading ? 'Sending...' : 'Send Invite'}
@@ -886,19 +882,18 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               )}
 
               <div className="space-y-3">
-                <h4 className="font-semibold text-white mb-2">Recent Invitations</h4>
+                <h4 className="font-semibold text-foreground mb-2">Recent Invitations</h4>
                 {invitations.length === 0 ? (
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>No invitations sent yet</p>
+                  <p className="text-sm text-muted-foreground">No invitations sent yet</p>
                 ) : (
                   invitations.slice(0, 10).map(invitation => (
                     <div
                       key={invitation.id}
-                      className="p-4 rounded-lg border-2 flex items-center justify-between"
-                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                      className="p-4 rounded-lg border-2 flex items-center justify-between border-border bg-background"
                     >
                       <div className="flex-1">
-                        <p className="font-medium text-white">{invitation.email}</p>
-                        <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: '#B3B2B0' }}>
+                        <p className="font-medium text-foreground">{invitation.email}</p>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             {invitation.status === 'pending' && <Clock className="w-4 h-4 text-yellow-500" />}
                             {invitation.status === 'accepted' && <CheckCircle className="w-4 h-4 text-green-500" />}
@@ -914,14 +909,13 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                           <>
                             <button
                               onClick={() => copyInviteLink(invitation.token)}
-                              className="px-3 py-1 bg-[#B34B0C] text-white text-sm rounded hover:bg-[#8A3809] transition-colors"
+                              className="px-3 py-1 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 transition-colors"
                             >
                               Copy Link
                             </button>
                             <button
                               onClick={() => revokeInvitation(invitation.id)}
-                              className="px-3 py-1 border-2 text-white text-sm rounded hover:border-red-500 transition-colors"
-                              style={{ borderColor: '#6C6A68' }}
+                              className="px-3 py-1 border-2 border-border text-foreground text-sm rounded hover:border-destructive transition-colors"
                             >
                               Revoke
                             </button>
@@ -935,13 +929,13 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             </div>
 
             {/* Pending User Approvals */}
-            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+            <div className="p-6 rounded-lg bg-card border border-border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <UserCheck className="w-6 h-6" />
                   Pending User Approvals
                   {pendingUsers.length > 0 && (
-                    <span className="px-2 py-1 rounded-full bg-[#B34B0C] text-white text-sm font-semibold">
+                    <span className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
                       {pendingUsers.length}
                     </span>
                   )}
@@ -949,8 +943,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <button
                   onClick={loadPendingUsers}
                   disabled={pendingUsersLoading}
-                  className="px-3 py-1 text-sm border-2 text-white rounded hover:border-[#B34B0C] transition-colors disabled:opacity-50"
-                  style={{ borderColor: '#6C6A68' }}
+                  className="px-3 py-1 text-sm border-2 border-border text-foreground rounded hover:border-primary transition-colors disabled:opacity-50"
                 >
                   {pendingUsersLoading ? 'Loading...' : 'Refresh'}
                 </button>
@@ -959,24 +952,23 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
               <div className="space-y-3">
                 {pendingUsersLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading pending users...</div>
+                    <div className="animate-pulse text-muted-foreground">Loading pending users...</div>
                   </div>
                 ) : pendingUsers.length === 0 ? (
                   <div className="text-center py-8">
-                    <UserCheck className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                    <p className="font-semibold text-white mb-1">No pending approvals</p>
-                    <p className="text-sm" style={{ color: '#B3B2B0' }}>All users have been approved</p>
+                    <UserCheck className="w-12 h-12 mx-auto mb-3 text-muted" />
+                    <p className="font-semibold text-foreground mb-1">No pending approvals</p>
+                    <p className="text-sm text-muted-foreground">All users have been approved</p>
                   </div>
                 ) : (
                   pendingUsers.map(user => (
                     <div
                       key={user.id}
-                      className="p-4 rounded-lg border-2 flex items-center justify-between"
-                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                      className="p-4 rounded-lg border-2 flex items-center justify-between border-border bg-background"
                     >
                       <div className="flex-1">
-                        <p className="font-medium text-white">{user.display_name || user.username || 'New User'}</p>
-                        <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: '#B3B2B0' }}>
+                        <p className="font-medium text-foreground">{user.display_name || user.username || 'New User'}</p>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                           <span>{user.email}</span>
                           <span>Registered {new Date(user.created_at).toLocaleDateString()}</span>
                         </div>
@@ -1008,13 +1000,13 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             </div>
 
             {/* All Users Management */}
-            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+            <div className="p-6 rounded-lg bg-card border border-border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Users className="w-6 h-6" />
                   All Users
                   {allUsers.length > 0 && (
-                    <span className="px-2 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: '#37322E', color: '#B3B2B0' }}>
+                    <span className="px-2 py-1 rounded-full text-sm font-semibold bg-background text-muted-foreground">
                       {allUsers.length}
                     </span>
                   )}
@@ -1022,8 +1014,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 <button
                   onClick={loadAllUsers}
                   disabled={allUsersLoading}
-                  className="px-3 py-1 text-sm border-2 text-white rounded hover:border-[#B34B0C] transition-colors disabled:opacity-50"
-                  style={{ borderColor: '#6C6A68' }}
+                  className="px-3 py-1 text-sm border-2 border-border text-foreground rounded hover:border-primary transition-colors disabled:opacity-50"
                 >
                   {allUsersLoading ? 'Loading...' : 'Refresh'}
                 </button>
@@ -1031,30 +1022,29 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
               {allUsersLoading ? (
                 <div className="text-center py-8">
-                  <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading users...</div>
+                  <div className="animate-pulse text-muted-foreground">Loading users...</div>
                 </div>
               ) : allUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                  <p className="font-semibold text-white mb-1">No users found</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>User list will appear here</p>
+                  <Users className="w-12 h-12 mx-auto mb-3 text-muted" />
+                  <p className="font-semibold text-foreground mb-1">No users found</p>
+                  <p className="text-sm text-muted-foreground">User list will appear here</p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {allUsers.map((usr: any) => (
                     <div
                       key={usr.id}
-                      className="p-4 rounded-lg border-2"
-                      style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                      className="p-4 rounded-lg border-2 border-border bg-background"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-white">
+                            <p className="font-medium text-foreground">
                               {usr.display_name || usr.username || 'Unnamed User'}
                             </p>
                             {usr.is_staff && (
-                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B34B0C] text-white">
+                              <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary text-primary-foreground">
                                 STAFF
                               </span>
                             )}
@@ -1072,7 +1062,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                               <CheckCircle className="w-4 h-4 text-green-500" />
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: '#B3B2B0' }}>
+                          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                             <span>{usr.email}</span>
                             {usr.username && <span>@{usr.username}</span>}
                             <span>ID: {usr.id}</span>
@@ -1088,8 +1078,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                                   console.log('Make staff:', usr.id)
                                 }
                               }}
-                              className="px-3 py-1 text-xs border-2 text-white rounded hover:border-[#B34B0C] transition-colors"
-                              style={{ borderColor: '#6C6A68' }}
+                              className="px-3 py-1 text-xs border-2 border-border text-foreground rounded hover:border-primary transition-colors"
                             >
                               Make Staff
                             </button>
@@ -1103,77 +1092,71 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             </div>
 
             {/* Quick Actions */}
-            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-              <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
+            <div className="p-6 rounded-lg bg-card border border-border">
+              <h3 className="text-xl font-bold text-foreground mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => window.location.href = '/staff/users'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <Users className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">Manage All Users</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>View and manage user accounts</p>
+                  <Users className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">Manage All Users</p>
+                  <p className="text-sm text-muted-foreground">View and manage user accounts</p>
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/staff/groups'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <Users className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">View All Groups</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Browse and manage all groups</p>
+                  <Users className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">View All Groups</p>
+                  <p className="text-sm text-muted-foreground">Browse and manage all groups</p>
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/staff/moderation'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <Flag className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">Global Moderation</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Review all flagged content</p>
+                  <Flag className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">Global Moderation</p>
+                  <p className="text-sm text-muted-foreground">Review all flagged content</p>
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/staff/settings'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <Settings className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">System Settings</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Configure site-wide settings</p>
+                  <Settings className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">System Settings</p>
+                  <p className="text-sm text-muted-foreground">Configure site-wide settings</p>
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/staff/store'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <ShoppingBag className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">Store Analytics</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Manage store and EPUB uploads</p>
+                  <ShoppingBag className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">Store Analytics</p>
+                  <p className="text-sm text-muted-foreground">Manage store and EPUB uploads</p>
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/staff/ai-templates'}
-                  className="p-4 rounded-lg border-2 hover:border-[#B34B0C] transition-colors text-left"
-                  style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                  className="p-4 rounded-lg border-2 border-border hover:border-primary transition-colors text-left bg-background"
                 >
-                  <Wand2 className="w-6 h-6 mb-2" style={{ color: '#B34B0C' }} />
-                  <p className="font-semibold text-white">AI Template Review</p>
-                  <p className="text-sm" style={{ color: '#B3B2B0' }}>Review AI-generated templates</p>
+                  <Wand2 className="w-6 h-6 mb-2 text-primary" />
+                  <p className="font-semibold text-foreground">AI Template Review</p>
+                  <p className="text-sm text-muted-foreground">Review AI-generated templates</p>
                 </button>
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-              <h3 className="text-xl font-bold text-white mb-4">Recent Site Activity</h3>
+            <div className="p-6 rounded-lg bg-card border border-border">
+              <h3 className="text-xl font-bold text-foreground mb-4">Recent Site Activity</h3>
               <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                <p style={{ color: '#B3B2B0' }}>Activity feed coming soon</p>
+                <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted" />
+                <p className="text-muted-foreground">Activity feed coming soon</p>
               </div>
             </div>
           </div>
@@ -1184,66 +1167,66 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
           <div className="space-y-8">
             {earningsLoading ? (
               <div className="text-center py-12">
-                <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading earnings data...</div>
+                <div className="animate-pulse text-muted-foreground">Loading earnings data...</div>
               </div>
             ) : (
               <>
                 {/* Earnings Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="p-6 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-3 mb-2">
-                      <DollarSign className="w-8 h-8" style={{ color: '#B34B0C' }} />
+                      <DollarSign className="w-8 h-8 text-primary" />
                       <div>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-2xl font-bold text-foreground">
                           ${earningsDashboard?.earnings.total_earnings_usd.toFixed(2) || '0.00'}
                         </p>
-                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Total Earnings</p>
+                        <p className="text-sm text-muted-foreground">Total Earnings</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="p-6 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-3 mb-2">
                       <CreditCard className="w-8 h-8" style={{ color: '#10b981' }} />
                       <div>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-2xl font-bold text-foreground">
                           ${earningsDashboard?.earnings.available_balance_usd.toFixed(2) || '0.00'}
                         </p>
-                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Available Balance</p>
+                        <p className="text-sm text-muted-foreground">Available Balance</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="p-6 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-3 mb-2">
                       <Clock className="w-8 h-8" style={{ color: '#f59e0b' }} />
                       <div>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-2xl font-bold text-foreground">
                           ${earningsDashboard?.earnings.pending_balance_usd.toFixed(2) || '0.00'}
                         </p>
-                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Pending</p>
+                        <p className="text-sm text-muted-foreground">Pending</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                  <div className="p-6 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-3 mb-2">
                       <Download className="w-8 h-8" style={{ color: '#6366f1' }} />
                       <div>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-2xl font-bold text-foreground">
                           ${earningsDashboard?.earnings.lifetime_payouts_usd.toFixed(2) || '0.00'}
                         </p>
-                        <p className="text-sm" style={{ color: '#B3B2B0' }}>Lifetime Payouts</p>
+                        <p className="text-sm text-muted-foreground">Lifetime Payouts</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Stripe Connect Status */}
-                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
+                <div className="p-6 rounded-lg bg-card border border-border">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <CreditCard className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                    <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                      <CreditCard className="w-6 h-6 text-primary" />
                       Stripe Connect Status
                     </h3>
                     {stripeConnectStatus?.connected && stripeConnectStatus?.charges_enabled && (
@@ -1262,8 +1245,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                         </p>
                         <button
                           onClick={setupStripeConnect}
-                          className="px-6 py-3 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity flex items-center gap-2"
-                          style={{ backgroundColor: '#B34B0C' }}
+                          className="px-6 py-3 rounded-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-2 bg-primary"
                         >
                           <ArrowUpCircle className="w-5 h-5" />
                           Connect Stripe Account
@@ -1271,26 +1253,26 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
+                    <div className="p-4 rounded-lg bg-background">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p style={{ color: '#B3B2B0' }}>Account ID</p>
-                          <p className="text-white font-mono">{stripeConnectStatus.account_id}</p>
+                          <p className="text-muted-foreground">Account ID</p>
+                          <p className="text-foreground font-mono">{stripeConnectStatus.account_id}</p>
                         </div>
                         <div>
-                          <p style={{ color: '#B3B2B0' }}>Payouts Enabled</p>
+                          <p className="text-muted-foreground">Payouts Enabled</p>
                           <p className={stripeConnectStatus.payouts_enabled ? 'text-green-400' : 'text-red-400'}>
                             {stripeConnectStatus.payouts_enabled ? 'Yes' : 'No'}
                           </p>
                         </div>
                         <div>
-                          <p style={{ color: '#B3B2B0' }}>Charges Enabled</p>
+                          <p className="text-muted-foreground">Charges Enabled</p>
                           <p className={stripeConnectStatus.charges_enabled ? 'text-green-400' : 'text-red-400'}>
                             {stripeConnectStatus.charges_enabled ? 'Yes' : 'No'}
                           </p>
                         </div>
                         <div>
-                          <p style={{ color: '#B3B2B0' }}>Details Submitted</p>
+                          <p className="text-muted-foreground">Details Submitted</p>
                           <p className={stripeConnectStatus.details_submitted ? 'text-green-400' : 'text-red-400'}>
                             {stripeConnectStatus.details_submitted ? 'Yes' : 'No'}
                           </p>
@@ -1302,27 +1284,27 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
 
                 {/* Request Payout */}
                 {stripeConnectStatus?.connected && stripeConnectStatus?.payouts_enabled && (
-                  <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                      <ArrowUpCircle className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                  <div className="p-6 rounded-lg bg-card border border-border">
+                    <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                      <ArrowUpCircle className="w-6 h-6 text-primary" />
                       Request Payout
                     </h3>
 
                     <div className="space-y-4">
                       <div>
-                        <p className="text-sm mb-2" style={{ color: '#B3B2B0' }}>
-                          Available for payout: <span className="text-white font-bold text-lg">
+                        <p className="text-sm mb-2 text-muted-foreground">
+                          Available for payout: <span className="text-foreground font-bold text-lg">
                             ${earningsDashboard?.available_for_payout_usd.toFixed(2) || '0.00'}
                           </span>
                         </p>
-                        <p className="text-xs" style={{ color: '#B3B2B0' }}>
+                        <p className="text-xs text-muted-foreground">
                           Minimum payout: ${earningsDashboard?.minimum_payout_usd.toFixed(2) || '10.00'}
                         </p>
                       </div>
 
                       <div className="flex gap-3">
                         <div className="flex-1">
-                          <label className="text-sm mb-2 block" style={{ color: '#B3B2B0' }}>
+                          <label className="text-sm mb-2 block text-muted-foreground">
                             Payout Amount (USD)
                           </label>
                           <input
@@ -1332,16 +1314,14 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                             value={payoutAmount}
                             onChange={(e) => setPayoutAmount(e.target.value)}
                             placeholder="10.00"
-                            className="w-full px-4 py-2 rounded-lg bg-[#37322E] border-2 text-white placeholder-[#6C6A68] focus:border-[#B34B0C] focus:outline-none"
-                            style={{ borderColor: '#6C6A68' }}
+                            className="w-full px-4 py-2 rounded-lg bg-background border-2 border-input text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                           />
                         </div>
                         <div className="flex items-end">
                           <button
                             onClick={requestPayout}
                             disabled={payoutLoading || !payoutAmount || parseFloat(payoutAmount) < 10}
-                            className="px-6 py-2 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                            style={{ backgroundColor: '#B34B0C' }}
+                            className="px-6 py-2 rounded-lg font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-primary"
                           >
                             {payoutLoading ? (
                               <>
@@ -1372,17 +1352,17 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                 )}
 
                 {/* Payout History */}
-                <div className="p-6 rounded-lg" style={{ backgroundColor: '#524944' }}>
-                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-6 h-6" style={{ color: '#B34B0C' }} />
+                <div className="p-6 rounded-lg bg-card border border-border">
+                  <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6 text-primary" />
                     Payout History
                   </h3>
 
                   {!earningsDashboard?.recent_payouts || earningsDashboard.recent_payouts.length === 0 ? (
                     <div className="text-center py-8">
-                      <Download className="w-12 h-12 mx-auto mb-3" style={{ color: '#6C6A68' }} />
-                      <p className="font-semibold text-white mb-1">No payouts yet</p>
-                      <p className="text-sm" style={{ color: '#B3B2B0' }}>
+                      <Download className="w-12 h-12 mx-auto mb-3 text-muted" />
+                      <p className="font-semibold text-foreground mb-1">No payouts yet</p>
+                      <p className="text-sm text-muted-foreground">
                         Your payout history will appear here
                       </p>
                     </div>
@@ -1391,12 +1371,11 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                       {earningsDashboard.recent_payouts.map((payout) => (
                         <div
                           key={payout.id}
-                          className="p-4 rounded-lg border-2 flex items-center justify-between"
-                          style={{ borderColor: '#6C6A68', backgroundColor: '#37322E' }}
+                          className="p-4 rounded-lg border-2 flex items-center justify-between border-border bg-background"
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-1">
-                              <p className="text-lg font-bold text-white">
+                              <p className="text-lg font-bold text-foreground">
                                 ${payout.amount_usd.toFixed(2)}
                               </p>
                               <div className={`flex items-center gap-1 ${getPayoutStatusColor(payout.status)}`}>
@@ -1404,7 +1383,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                                 <span className="text-sm font-medium capitalize">{payout.status}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm" style={{ color: '#B3B2B0' }}>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span>Method: {payout.payout_method}</span>
                               <span>Requested {new Date(payout.created_at).toLocaleDateString()}</span>
                               {payout.processed_at && (
@@ -1412,7 +1391,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                               )}
                             </div>
                             {payout.notes && (
-                              <p className="text-sm mt-2" style={{ color: '#B3B2B0' }}>
+                              <p className="text-sm mt-2 text-muted-foreground">
                                 Note: {payout.notes}
                               </p>
                             )}

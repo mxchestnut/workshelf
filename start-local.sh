@@ -46,11 +46,15 @@ cd backend
 if [ ! -d ".venv" ]; then
     echo "Creating Python virtual environment..."
     python3 -m venv .venv
+    source .venv/bin/activate
+    echo "Installing backend dependencies..."
+    pip install -q uvicorn fastapi sqlalchemy python-jose cryptography
+    pip install -q -r requirements.txt 2>/dev/null || echo "⚠️  Some packages may not install (this is OK for local dev)"
+else
+    source .venv/bin/activate
 fi
-source .venv/bin/activate
-pip install -q -r requirements.txt 2>/dev/null || echo "⚠️  Some packages may not install (this is OK for local dev)"
 echo "Starting backend server..."
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 cd ..
 

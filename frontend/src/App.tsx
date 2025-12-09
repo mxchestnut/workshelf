@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import BetaBanner from './components/BetaBanner'
+import ChatBar from './components/ChatBar'
 import './App.css'
 import { authService } from './services/auth'
 import { trackPageView } from './matomo'
@@ -171,6 +172,8 @@ function App() {
     } else if (path.startsWith('/groups/') && path.includes('/roles')) {
       setCurrentPage('group-roles')
     } else if (path === '/me') {
+      setCurrentPage('profile')
+    } else if (path === '/profile') {
       setCurrentPage('profile')
     } else if (path === '/studio') {
       setCurrentPage('studio')
@@ -565,6 +568,7 @@ function App() {
       </Suspense>
       <ToastContainer />
       <BetaBanner />
+      <ChatBar />
     </>
   )
 }

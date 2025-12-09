@@ -43,6 +43,7 @@ from app.api import (
     export,
     accessibility,
     ai_assist,
+    ai_chat,  # AI chat assistant with streaming
     # ai_templates,  # AI template generation - DISABLED
     admin,  # Admin endpoints for platform staff
     admin_store,  # Admin store management endpoints
@@ -146,6 +147,7 @@ api_router.include_router(accessibility.router)
 
 # AI Assistance (helps users CREATE, never writes FOR them)
 api_router.include_router(ai_assist.router)
+api_router.include_router(ai_chat.router)  # Conversational AI assistant
 
 # AI Templates (generate custom templates based on interests) - DISABLED
 # api_router.include_router(ai_templates.router)
