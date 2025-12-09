@@ -177,9 +177,11 @@ export default function GroupSettings() {
          
           currentPage="groups"
         />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     );
   }
@@ -193,6 +195,7 @@ export default function GroupSettings() {
          
           currentPage="groups"
         />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">Group not found</h2>
@@ -204,6 +207,7 @@ export default function GroupSettings() {
             </button>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     );
   }
@@ -216,6 +220,7 @@ export default function GroupSettings() {
        
         currentPage="groups"
       />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -439,6 +444,7 @@ export default function GroupSettings() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   );
 }

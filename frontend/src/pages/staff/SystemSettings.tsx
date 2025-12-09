@@ -34,9 +34,11 @@ export function SystemSettings() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading...</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -44,6 +46,7 @@ export function SystemSettings() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -122,6 +125,7 @@ export function SystemSettings() {
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

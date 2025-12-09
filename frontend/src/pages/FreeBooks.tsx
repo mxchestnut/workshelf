@@ -132,6 +132,7 @@ export default function FreeBooks() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="free-books" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}
       <div className="text-white py-16" style={{ 
@@ -312,6 +313,7 @@ export default function FreeBooks() {
           </>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

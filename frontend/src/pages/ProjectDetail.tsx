@@ -360,9 +360,11 @@ export function ProjectDetail() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading project...</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -371,9 +373,11 @@ export function ProjectDetail() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div style={{ color: '#B3B2B0' }}>Project not found</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -387,6 +391,7 @@ export function ProjectDetail() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
@@ -519,6 +524,6 @@ export function ProjectDetail() {
           </div>
         </div>
       </div>
-    </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}\n    </div>
   )
 }

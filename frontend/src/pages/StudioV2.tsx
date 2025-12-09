@@ -420,8 +420,9 @@ export default function StudioV2() {
         
         currentPage="studio" 
       />
+      <div className="ml-0 md:ml-80 transition-all duration-300 flex-1 overflow-hidden">
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden h-full">
         {/* Left Sidebar - File Explorer */}
         <div className="w-64 border-r border-border flex flex-col">
           {/* Header with Project Switcher */}
@@ -795,6 +796,7 @@ function FolderTreeView({
           </button>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

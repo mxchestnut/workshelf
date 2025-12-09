@@ -318,10 +318,12 @@ export default function Author() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-white mb-2">Author Not Found</h1>
-            <p style={{ color: '#B3B2B0' }}>The author you're looking for doesn't exist.</p>
+        <div className="ml-0 md:ml-80 transition-all duration-300">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-white mb-2">Author Not Found</h1>
+              <p style={{ color: '#B3B2B0' }}>The author you're looking for doesn't exist.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -332,8 +334,10 @@ export default function Author() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
       
-      {/* Header */}
-      <div className="text-white py-16" style={{ 
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Header */}
+        <div className="text-white py-16" style={{ 
         background: 'linear-gradient(135deg, #B34B0C 0%, #7C3306 100%)'
       }}>
         <div className="max-w-7xl mx-auto px-4">
@@ -675,6 +679,7 @@ export default function Author() {
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

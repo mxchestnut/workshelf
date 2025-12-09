@@ -95,6 +95,7 @@ export function TagDiscovery() {
         onLogout={() => authService.logout()} 
         currentPage="tags" 
       />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
@@ -233,6 +234,7 @@ export function TagDiscovery() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

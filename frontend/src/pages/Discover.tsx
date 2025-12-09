@@ -97,12 +97,14 @@ export function Discover() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="discover" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse" style={{ color: '#B34B0C' }} />
             <p style={{ color: '#B3B2B0' }}>Loading discover feed...</p>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -110,6 +112,7 @@ export function Discover() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="discover" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Feed Content */}
       <div className="max-w-4xl mx-auto px-6 py-6">
@@ -174,6 +177,7 @@ export function Discover() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

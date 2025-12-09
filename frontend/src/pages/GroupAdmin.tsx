@@ -571,6 +571,7 @@ export default function GroupAdmin() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
           <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#B34B0C' }} />
           <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
@@ -583,6 +584,7 @@ export default function GroupAdmin() {
             Log In
           </button>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -591,10 +593,12 @@ export default function GroupAdmin() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 py-12 text-center">
           <div className="animate-spin w-12 h-12 border-4 rounded-full mx-auto" style={{ borderColor: '#B34B0C', borderTopColor: 'transparent' }} />
           <p className="text-gray-400 mt-4">Loading group data...</p>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -602,6 +606,7 @@ export default function GroupAdmin() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="/admin" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
@@ -2012,6 +2017,7 @@ export default function GroupAdmin() {
           existingRoles={roles}
         />
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

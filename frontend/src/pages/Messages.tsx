@@ -347,9 +347,11 @@ export default function Messages() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
-        <div className="max-w-7xl mx-auto px-6 py-8 text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-foreground" />
-          <p className="mt-4 text-foreground">Loading messages...</p>
+        <div className="ml-0 md:ml-80 transition-all duration-300">
+          <div className="max-w-7xl mx-auto px-6 py-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-foreground" />
+            <p className="mt-4 text-foreground">Loading messages...</p>
+          </div>
         </div>
       </div>
     )
@@ -359,8 +361,10 @@ export default function Messages() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       
-      {/* Matrix Upgrade Banner */}
-      {!hasMatrixAccount && !showMatrixPrompt && (
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Matrix Upgrade Banner */}
+        {!hasMatrixAccount && !showMatrixPrompt && (
         <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -762,6 +766,7 @@ export default function Messages() {
           </div>
         </div>
       )}
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

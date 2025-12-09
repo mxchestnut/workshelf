@@ -305,8 +305,10 @@ export default function Bookshelf() {
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
       
-      {/* Header */}
-      <div className="pb-8 bg-card">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Header */}
+        <div className="pb-8 bg-card">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -702,8 +704,9 @@ export default function Bookshelf() {
         }}
       />
 
-      {/* Page Version */}
-      <PageVersion path="/bookshelf" />
+        {/* Page Version */}
+        <PageVersion path="/bookshelf" />
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
       )}
     </>

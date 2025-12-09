@@ -313,8 +313,10 @@ export default function Trash() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading trash...</div>
+        <div className="ml-0 md:ml-80 transition-all duration-300">
+          <div className="flex items-center justify-center h-screen">
+            <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading trash...</div>
+          </div>
         </div>
       </div>
     )
@@ -326,7 +328,9 @@ export default function Trash() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
 
-      <main id="main-content" className="max-w-7xl mx-auto px-6 py-24" role="main">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <main id="main-content" className="max-w-7xl mx-auto px-6 py-24" role="main">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -587,6 +591,7 @@ export default function Trash() {
         variant="danger"
         loading={loading}
       />
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

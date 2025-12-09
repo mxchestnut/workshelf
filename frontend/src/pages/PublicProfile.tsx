@@ -301,9 +301,11 @@ export default function PublicProfile() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading profile...</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -312,9 +314,11 @@ export default function PublicProfile() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div style={{ color: '#B3B2B0' }}>Profile not found</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -322,6 +326,7 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
 
       <div className="max-w-5xl mx-auto px-6 py-24">
         {/* Profile Header */}
@@ -556,6 +561,7 @@ export default function PublicProfile() {
       {/* Modals */}
       {showFollowersModal && renderUserList(followers, 'Followers')}
       {showFollowingModal && renderUserList(following, 'Following')}
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

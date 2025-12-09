@@ -175,10 +175,12 @@ export default function MyBetaProfile() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-6 py-8 text-center text-white">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
           <p className="mt-4">Loading profile...</p>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -186,6 +188,7 @@ export default function MyBetaProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
@@ -439,6 +442,7 @@ export default function MyBetaProfile() {
           </button>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

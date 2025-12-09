@@ -484,10 +484,12 @@ export function Profile() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'hsl(var(--primary))' }}></div>
-            <p className="mt-4 text-muted-foreground">Loading profile...</p>
+        <div className="ml-0 md:ml-80 transition-all duration-300">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'hsl(var(--primary))' }}></div>
+              <p className="mt-4 text-muted-foreground">Loading profile...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -498,9 +500,11 @@ export function Profile() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="text-center py-12">
-            <p className="text-primary">{error || 'Profile not found'}</p>
+        <div className="ml-0 md:ml-80 transition-all duration-300">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="text-center py-12">
+              <p className="text-primary">{error || 'Profile not found'}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -510,7 +514,8 @@ export function Profile() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={profile as any} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <div className="max-w-4xl mx-auto p-6">
         {/* Navigation Bar */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
         <button
@@ -1575,7 +1580,8 @@ export function Profile() {
           )}
         </div>
         )}
-    </div>
+        </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

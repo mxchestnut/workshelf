@@ -327,8 +327,10 @@ export function StaffPanel() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="staff" />
       
-      {/* Header */}
-      <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Header */}
+        <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center gap-3 mb-2">
             <Shield className="w-8 h-8" style={{ color: '#B34B0C' }} />
@@ -739,9 +741,10 @@ export function StaffPanel() {
           </div>
         </div>
 
-        {/* Page Version */}
-        <PageVersion path="/staff" />
-      </div>
+          {/* Page Version */}
+          <PageVersion path="/staff" />
+        </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

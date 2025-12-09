@@ -195,9 +195,11 @@ export default function Documents() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -205,6 +207,7 @@ export default function Documents() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
 
       <div className="flex h-screen pt-16">
         {/* Folder Sidebar */}
@@ -400,6 +403,7 @@ export default function Documents() {
         onChange={handleFolderChange}
         className="hidden"
       />
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

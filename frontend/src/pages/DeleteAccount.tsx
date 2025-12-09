@@ -139,6 +139,7 @@ export default function DeleteAccount() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
@@ -170,6 +171,7 @@ export default function DeleteAccount() {
             </p>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -178,6 +180,7 @@ export default function DeleteAccount() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
@@ -185,6 +188,7 @@ export default function DeleteAccount() {
             <p className="mt-4 text-gray-600 dark:text-gray-300">Loading account information...</p>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -193,12 +197,14 @@ export default function DeleteAccount() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <p className="text-red-900 dark:text-red-200">Failed to load account information</p>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -206,6 +212,7 @@ export default function DeleteAccount() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Warning Header */}
@@ -368,6 +375,7 @@ export default function DeleteAccount() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

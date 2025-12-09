@@ -65,6 +65,7 @@ export default function BetaRequest() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       <div className="max-w-3xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold text-foreground mb-4">Request a Beta Read</h1>
         <div className="space-y-4 bg-card p-6 rounded-lg border border-border">
@@ -125,6 +126,7 @@ export default function BetaRequest() {
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

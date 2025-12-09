@@ -321,9 +321,11 @@ export default function StudioSettings() {
           onLogin={() => authService.login()} onLogout={() => authService.logout()}
           
         />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -336,6 +338,7 @@ export default function StudioSettings() {
           onLogin={() => authService.login()} onLogout={() => authService.logout()}
           
         />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-2xl mx-auto px-4 py-16">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -348,6 +351,7 @@ export default function StudioSettings() {
             </button>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -359,6 +363,7 @@ export default function StudioSettings() {
         onLogin={() => authService.login()} onLogout={() => authService.logout()}
         
       />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
@@ -782,6 +787,7 @@ export default function StudioSettings() {
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

@@ -251,6 +251,7 @@ export function ContentIntegrity() {
         
         currentPage="content-integrity" 
       />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
@@ -644,6 +645,7 @@ export function ContentIntegrity() {
           </div>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

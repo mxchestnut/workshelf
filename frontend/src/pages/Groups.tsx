@@ -132,7 +132,9 @@ export default function Groups() {
         currentPage="groups"
       />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -333,8 +335,9 @@ export default function Groups() {
         </div>
       )}
 
-      {/* Page Version */}
-      <PageVersion path="/groups" />
+        {/* Page Version */}
+        <PageVersion path="/groups" />
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

@@ -146,12 +146,14 @@ export function Dashboard() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <BarChart3 className="w-16 h-16 mx-auto mb-4 animate-pulse text-primary" />
             <p className="text-muted-foreground">Loading your dashboard...</p>
           </div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -159,6 +161,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}
       <div className="border-b bg-card border-border">
@@ -362,6 +365,7 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

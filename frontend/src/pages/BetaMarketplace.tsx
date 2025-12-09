@@ -163,7 +163,9 @@ export default function BetaMarketplace() {
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -466,7 +468,8 @@ export default function BetaMarketplace() {
             </button>
           </div>
         )}
-      </div>
+        </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

@@ -155,7 +155,9 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="home" />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Hero Section */}
           <div className="mb-12">
@@ -453,7 +455,8 @@ export default function Home() {
             </div>
           </div>
 
-      </main>
+        </main>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

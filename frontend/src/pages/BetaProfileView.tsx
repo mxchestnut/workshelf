@@ -155,10 +155,12 @@ export default function BetaProfileView() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-5xl mx-auto px-6 py-12 text-center text-foreground">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
           <p className="mt-4">Loading profile...</p>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -167,9 +169,11 @@ export default function BetaProfileView() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-5xl mx-auto px-6 py-12 text-center">
           <p className="text-foreground">Profile not found.</p>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -177,6 +181,7 @@ export default function BetaProfileView() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={viewer} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -363,11 +368,12 @@ export default function BetaProfileView() {
               <button onClick={submitReview} disabled={submittingReview || !newReview.comment.trim()} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground">
                 {submittingReview ? 'Submitting...' : 'Submit Review'}
               </button>
-              {reviewMessage && <span className="text-muted-foreground">{reviewMessage}</span>}
+              {reviewMessage && <span className=\"text-muted-foreground\">{reviewMessage}</span>}
             </div>
           </div>
         </div>
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

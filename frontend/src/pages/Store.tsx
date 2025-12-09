@@ -186,8 +186,10 @@ export default function Store() {
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="store" />
       
-      {/* Header */}
-      <div className="bg-primary text-primary-foreground py-16">
+      {/* Main content with left margin for sidebar */}
+      <div className="ml-0 md:ml-80 transition-all duration-300">
+        {/* Header */}
+        <div className="bg-primary text-primary-foreground py-16">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4">eBooks</h1>
           <p className="text-xl text-primary-foreground/80">Discover free classics and purchase quality ebooks. Read instantly in our beautiful EPUB reader.</p>
@@ -389,6 +391,7 @@ export default function Store() {
         </section>
         )}
       </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
   )
 }

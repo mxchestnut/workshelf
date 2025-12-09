@@ -208,9 +208,11 @@ export function StoreAnalytics() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
         <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading...</div>
         </div>
+        </div> {/* Close ml-0 md:ml-80 wrapper */}
       </div>
     )
   }
@@ -220,6 +222,7 @@ export function StoreAnalytics() {
   return (
     <div style={{ backgroundColor: '#1C1917', minHeight: '100vh' }}>
       <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
@@ -468,6 +471,6 @@ export function StoreAnalytics() {
           </div>
         </div>
       </div>
-    </div>
+      </div> {/* Close ml-0 md:ml-80 wrapper */}\n    </div>
   )
 }
