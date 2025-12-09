@@ -1,0 +1,15 @@
+{
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportMissingTypeStubs": "none",
+    "reportGeneralTypeIssues": "none"
+  },
+  "python.analysis.ignore": [
+    "**/node_modules",
+    "**/__pycache__"
+  ],
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "eslint.workingDirectories": ["frontend"],
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python"
+}
