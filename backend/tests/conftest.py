@@ -174,11 +174,11 @@ def custom_user_override():
 # Database Fixtures (Optional - for integration tests)
 # ============================================================================
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 async def setup_test_user_in_db():
     """
-    Auto-create test user and tenant in database before each test.
-    This runs automatically for all tests.
+    Auto-create test user and tenant in database once per test session.
+    This runs automatically at the start of the test session.
     """
     from app.core.database import get_db_engine
     from sqlalchemy import text
@@ -188,53 +188,55 @@ async def setup_test_user_in_db():
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with async_session() as session:
-        # Check if test tenant exists
-        result = await session.execute(
-            text("SELECT id FROM tenants WHERE slug = 'test-workspace' LIMIT 1")
-        )
-        tenant = result.first()
-        
-        if not tenant:
-            # Create test tenant
-            await session.execute(
-                text("""
-                    INSERT INTO tenants (name, slug, subdomain, subdomain_approved, trial_ends_at)
-                    VALUES ('Test Workspace', 'test-workspace', 'test', true, NOW() + INTERVAL '30 days')
-                    ON CONFLICT (slug) DO NOTHING
-                """)
-            )
-            await session.commit()
-            
-            # Get tenant ID
+        try:
+            # Check if test tenant exists
             result = await session.execute(
                 text("SELECT id FROM tenants WHERE slug = 'test-workspace' LIMIT 1")
             )
             tenant = result.first()
-        
-        tenant_id = tenant[0]
-        
-        # Check if test user exists
-        result = await session.execute(
-            text("SELECT id FROM users WHERE keycloak_id = 'test-keycloak-id-123' LIMIT 1")
-        )
-        user = result.first()
-        
-        if not user:
-            # Create test user
-            await session.execute(
-                text("""
-                    INSERT INTO users (keycloak_id, email, username, tenant_id, is_active, is_verified)
-                    VALUES ('test-keycloak-id-123', 'testuser@example.com', 'testuser', :tenant_id, true, true)
-                    ON CONFLICT (keycloak_id) DO NOTHING
-                """),
-                {"tenant_id": tenant_id}
+            
+            if not tenant:
+                # Create test tenant
+                await session.execute(
+                    text("""
+                        INSERT INTO tenants (name, slug, subdomain, subdomain_approved, trial_ends_at)
+                        VALUES ('Test Workspace', 'test-workspace', 'test', true, NOW() + INTERVAL '30 days')
+                        ON CONFLICT (slug) DO NOTHING
+                    """)
+                )
+                await session.commit()
+                
+                # Get tenant ID
+                result = await session.execute(
+                    text("SELECT id FROM tenants WHERE slug = 'test-workspace' LIMIT 1")
+                )
+                tenant = result.first()
+            
+            tenant_id = tenant[0]
+            
+            # Check if test user exists
+            result = await session.execute(
+                text("SELECT id FROM users WHERE keycloak_id = 'test-keycloak-id-123' LIMIT 1")
             )
-            await session.commit()
+            user = result.first()
+            
+            if not user:
+                # Create test user
+                await session.execute(
+                    text("""
+                        INSERT INTO users (keycloak_id, email, username, tenant_id, is_active, is_verified)
+                        VALUES ('test-keycloak-id-123', 'testuser@example.com', 'testuser', :tenant_id, true, true)
+                        ON CONFLICT (keycloak_id) DO NOTHING
+                    """),
+                    {"tenant_id": tenant_id}
+                )
+                await session.commit()
+        except Exception as e:
+            # Skip if tenants table doesn't exist (expected in CI without DB)
+            pass
     
+    await engine.dispose()
     yield
-    
-    # Optional: cleanup after test if needed
-    # For now we keep the test data to avoid recreating it each time
 
 
 @pytest.fixture
@@ -259,10 +261,11 @@ async def test_db_session():
         expire_on_commit=False
     )
     
-    async with async_session() as session:
-        yield session
-    
-    await engine.dispose()
+    try:
+        async with async_session() as session:
+            yield session
+    finally:
+        await engine.dispose()
 
 
 # ============================================================================
