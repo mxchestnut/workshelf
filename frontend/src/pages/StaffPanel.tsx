@@ -310,19 +310,6 @@ export function StaffPanel() {
       setTimeout(() => setInviteMessage(null), 2000)
     }
   }
-      if (response.ok) {
-        setInviteMessage({ 
-          type: 'success', 
-          text: approve ? 'User approved successfully' : 'User rejected' 
-        })
-        loadPendingUsers()
-        loadAllUsers()
-        setTimeout(() => setInviteMessage(null), 2000)
-      }
-    } catch (error) {
-      console.error('[StaffPanel] Error approving user:', error)
-    }
-  }
 
   if (loading) {
     return (
