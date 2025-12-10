@@ -466,6 +466,7 @@ async def get_suggested_groups(
             and_(
                 Group.is_public == True,
                 Group.is_active == True,
+                Group.is_deleted == False,
                 Group.id.notin_(member_group_ids) if member_group_ids else True,
                 or_(*interest_conditions) if interest_conditions else True
             )
@@ -854,7 +855,7 @@ async def get_group_posts(
     
     # Get group to check privacy level
     group_result = await db.execute(
-        select(Group).where(Group.id == group_id)
+        select(Group).where(Group.id == group_id, Group.is_deleted == False)
     )
     group = group_result.scalar_one_or_none()
     if not group:
@@ -921,7 +922,7 @@ async def get_group_post(
     
     # Get group to check privacy level
     group_result = await db.execute(
-        select(Group).where(Group.id == group_id)
+        select(Group).where(Group.id == group_id, Group.is_deleted == False)
     )
     group = group_result.scalar_one_or_none()
     if not group:
@@ -1169,7 +1170,7 @@ async def join_group(
     
     # Get group
     group_result = await db.execute(
-        select(Group).where(Group.id == group_id)
+        select(Group).where(Group.id == group_id, Group.is_deleted == False)
     )
     group = group_result.scalar_one_or_none()
     if not group:
@@ -1339,7 +1340,7 @@ async def create_custom_domain(
     # Check if group has subdomain approved (requirement for custom domain)
     from sqlalchemy import select
     from app.models.collaboration import Group
-    result = await db.execute(select(Group).filter(Group.id == group_id))
+    result = await db.execute(select(Group).filter(Group.id == group_id, Group.is_deleted == False))
     group = result.scalar_one_or_none()
     
     if not group:

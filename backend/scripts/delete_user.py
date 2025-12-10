@@ -1,6 +1,14 @@
 """
 Delete a user from the database by email
 Run with: python scripts/delete_user.py <email>
+
+⚠️  WARNING: This script performs HARD DELETE with CASCADE!
+This will permanently delete:
+- The user account
+- All user-created content (documents, posts, comments, etc.)
+- Group memberships (but NOT the groups themselves)
+
+Consider using soft-delete or archiving instead for production data.
 """
 import os
 import sys

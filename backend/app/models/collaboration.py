@@ -365,6 +365,10 @@ class Group(Base, TimestampMixin):
     scholarship_monthly_price = Column(Numeric(10, 2), nullable=True)
     scholarship_expires_at = Column(DateTime(timezone=True), nullable=True)
     
+    # Soft delete (prevents permanent data loss)
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+    
     # Relationships
     members = relationship("GroupMember", back_populates="group", cascade="all, delete-orphan")
     posts = relationship("GroupPost", back_populates="group", cascade="all, delete-orphan")

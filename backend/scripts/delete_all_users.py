@@ -1,6 +1,15 @@
 """
 Delete ALL users from the database
-Use with caution!
+Use with extreme caution!
+
+⚠️  DANGER: This script performs MASS HARD DELETE!
+This will permanently delete:
+- ALL user accounts (except one placeholder)
+- ALL user-created content
+- ALL group memberships
+
+This script should NEVER be run on production!
+Only use for local development or testing environments.
 """
 import os
 import sys
