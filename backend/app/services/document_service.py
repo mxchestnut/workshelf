@@ -296,6 +296,8 @@ async def list_user_documents(
         Document.owner_id == user_id,
         Document.is_deleted == False
     )
+    if project_id is not None:
+        count_query = count_query.where(Document.project_id == project_id)
     if folder_id is not None:
         from app.models.project import Project
         count_query = count_query.join(Project, Document.project_id == Project.id).where(Project.folder_id == folder_id)
