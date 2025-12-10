@@ -36,6 +36,10 @@ class BookshelfItemCreate(BaseModel):
     # For Work Shelf documents
     document_id: Optional[int] = None
     
+    # For published Work Shelf store items
+    store_item_id: Optional[int] = None
+    epub_url: Optional[str] = None
+    
     # For external books
     isbn: Optional[str] = None
     title: Optional[str] = None
@@ -86,6 +90,9 @@ class BookshelfItemResponse(BaseModel):
     document_id: Optional[int]
     document_title: Optional[str]
     document_author: Optional[str]
+    
+    # Store item data (published Work Shelf books)
+    store_item_id: Optional[int]
     
     # Book data
     isbn: Optional[str]

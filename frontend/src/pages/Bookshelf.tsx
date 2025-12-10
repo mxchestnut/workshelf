@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
@@ -12,6 +13,9 @@ interface BookshelfItem {
   item_type: 'document' | 'book'
   document_id?: number
   document_title?: string
+  store_item_id?: number
+  epub_url?: string
+  reading_progress?: number
   isbn?: string
   title?: string
   author?: string
@@ -65,6 +69,7 @@ interface ReadingList {
 }
 
 export default function Bookshelf() {
+  const navigate = useNavigate()
   const [books, setBooks] = useState<BookshelfItem[]>([])
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
   const [stats, setStats] = useState<BookshelfStats | null>(null)
@@ -686,6 +691,24 @@ export default function Bookshelf() {
                   {/* Page Count */}
                   {book.page_count && (
                     <p className="text-xs text-gray-500">{book.page_count} pages</p>
+                  )}
+
+                  {/* Read Button */}
+                  {(book.epub_url || book.store_item_id) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (book.store_item_id) {
+                          navigate(`/read/${book.store_item_id}`)
+                        } else if (book.epub_url) {
+                          navigate(`/read/epub?url=${encodeURIComponent(book.epub_url)}`)
+                        }
+                      }}
+                      className="mt-3 w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      {book.reading_progress ? `Continue (${Math.round(book.reading_progress)}%)` : 'Read'}
+                    </button>
                   )}
                 </div>
               </div>

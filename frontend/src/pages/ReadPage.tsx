@@ -27,9 +27,12 @@ export default function ReadPage() {
   const [hasAccess, setHasAccess] = useState(false)
   const [showReader, setShowReader] = useState(false)
   const [readingProgress, setReadingProgress] = useState(0)
+  const [inBookshelf, setInBookshelf] = useState(false)
+  const [addingToShelf, setAddingToShelf] = useState(false)
 
   useEffect(() => {
     loadStoreItem()
+    checkIfInBookshelf()
   }, [itemId])
 
   const loadStoreItem = async () => {
@@ -72,6 +75,67 @@ export default function ReadPage() {
       console.error('Error loading book:', err)
       setError(err.message || 'Failed to load book')
       setLoading(false)
+    }
+  }
+
+  const checkIfInBookshelf = async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        const bookshelf = await response.json()
+        // Check if this store item is already in bookshelf
+        const found = bookshelf.some((item: any) => 
+          item.store_item_id?.toString() === itemId
+        )
+        setInBookshelf(found)
+      }
+    } catch (error) {
+      console.error('Failed to check bookshelf:', error)
+    }
+  }
+
+  const handleAddToBookshelf = async () => {
+    if (!storeItem) return
+    
+    setAddingToShelf(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setAddingToShelf(false)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_type: 'book',
+          title: storeItem.title,
+          author: storeItem.author_name,
+          cover_url: storeItem.cover_url,
+          epub_url: storeItem.epub_blob_url,
+          store_item_id: parseInt(itemId),
+          status: 'want-to-read',
+        }),
+      })
+
+      if (response.ok) {
+        setInBookshelf(true)
+      }
+    } catch (error) {
+      console.error('Failed to add to bookshelf:', error)
+    } finally {
+      setAddingToShelf(false)
     }
   }
 
@@ -202,12 +266,30 @@ export default function ReadPage() {
             {/* Actions */}
             <div className="space-y-4">
               {hasAccess ? (
-                <button
-                  onClick={() => setShowReader(true)}
-                  className="w-full md:w-auto px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
-                >
-                  {readingProgress > 0 ? `Continue Reading (${Math.round(readingProgress)}%)` : 'Start Reading'}
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowReader(true)}
+                    className="w-full md:w-auto px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    {readingProgress > 0 ? `Continue Reading (${Math.round(readingProgress)}%)` : 'Start Reading'}
+                  </button>
+                  {!inBookshelf && (
+                    <button
+                      onClick={handleAddToBookshelf}
+                      disabled={addingToShelf}
+                      className="w-full md:w-auto px-8 py-3 bg-secondary text-secondary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      {addingToShelf ? 'Adding...' : 'Save to Bookshelf'}
+                    </button>
+                  )}
+                  {inBookshelf && (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <BookOpen className="w-4 h-4" />
+                      <span className="font-medium">In your bookshelf</span>
+                    </div>
+                  )}
+                </>
               ) : storeItem.price_usd === 0 ? (
                 <button
                   onClick={() => {

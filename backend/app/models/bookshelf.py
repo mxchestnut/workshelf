@@ -53,6 +53,11 @@ class BookshelfItem(Base, TimestampMixin):
     document_id = Column(Integer, ForeignKey('documents.id', ondelete='CASCADE'), nullable=True, index=True)
     
     # ========================================================================
+    # For published Work Shelf store items
+    # ========================================================================
+    store_item_id = Column(Integer, ForeignKey('store_items.id', ondelete='CASCADE'), nullable=True, index=True)
+    
+    # ========================================================================
     # For external books (item_type='book')
     # ========================================================================
     isbn = Column(String(20), nullable=True, index=True)  # ISBN-10 or ISBN-13
