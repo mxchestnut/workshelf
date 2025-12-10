@@ -22,9 +22,7 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 sentry_dsn = os.getenv("SENTRY_DSN")
-# Temporarily disable Sentry due to 403 errors (invalid/expired DSN)
-# Re-enable when DSN is updated
-if False and sentry_dsn:
+if sentry_dsn:
     sentry_sdk.init(
         dsn=sentry_dsn,
         integrations=[

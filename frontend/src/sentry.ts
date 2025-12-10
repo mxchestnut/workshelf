@@ -1,21 +1,60 @@
 /**
  * Sentry configuration for WorkShelf frontend
  * Provides error tracking, performance monitoring, and session replay
- * 
- * NOTE: Temporarily disabled due to expired Sentry DSN
  */
-// import * as Sentry from '@sentry/react';
+import * as Sentry from '@sentry/react';
 
-// const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
-// const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'production';
-// const RELEASE = import.meta.env.VITE_RELEASE || 'unknown';
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'production';
+const RELEASE = import.meta.env.VITE_RELEASE || 'unknown';
 
 export function initSentry() {
-  // Temporarily disabled due to invalid/expired Sentry DSN
-  console.log('[Sentry] Disabled - DSN expired');
-  // TODO: Re-enable when Sentry DSN is renewed
-  // Remove the early return below and restore the full init code
-  return;
+  if (!SENTRY_DSN) {
+    // Sentry is optional - silently skip if not configured
+    console.log('[Sentry] Skipped - no DSN configured');
+    return;
+  }
+
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: ENVIRONMENT,
+    release: RELEASE,
+    
+    // Performance monitoring: sample 10% of transactions in production
+    tracesSampleRate: ENVIRONMENT === 'development' ? 1.0 : 0.1,
+    
+    // Capture user interaction breadcrumbs
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
+        // Session replay: capture 10% of sessions, 100% of error sessions
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
+    
+    // Session replay sampling
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    
+    // Ignore common non-actionable errors
+    ignoreErrors: [
+      'ResizeObserver loop limit exceeded',
+      'Non-Error promise rejection captured',
+      /^Loading chunk \d+ failed/, // Network errors during code-splitting
+    ],
+    
+    // Attach user context when available (set via Sentry.setUser elsewhere)
+    beforeSend(event) {
+      // Strip sensitive data from URLs/headers if needed
+      if (event.request?.url) {
+        event.request.url = event.request.url.replace(/([?&]token=)[^&]+/, '$1[REDACTED]');
+      }
+      return event;
+    },
+  });
+
+  console.log(`[Sentry] Initialized for ${ENVIRONMENT} (${RELEASE})`);
 }
 
 /**
