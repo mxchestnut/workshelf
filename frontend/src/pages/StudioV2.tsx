@@ -704,7 +704,7 @@ function FolderTreeView({
           <div
             key={`folder-${folder.id}`}
             className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent cursor-pointer group"
-            onDoubleClick={() => onNavigateToFolder(folder.id, folder.name)}
+            onClick={() => onNavigateToFolder(folder.id, folder.name)}
           >
             <Folder className="w-4 h-4 flex-shrink-0" style={{ color: folder.color || undefined }} />
             <span className="flex-1 truncate text-xs font-mono font-medium">{folder.name}</span>
