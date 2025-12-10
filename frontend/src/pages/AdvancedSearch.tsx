@@ -90,9 +90,14 @@ export function AdvancedSearch() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-3">
-          <Search className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold">Advanced Search</h1>
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Search className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl font-bold">Search</h1>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Search published works, books, and public content across WorkShelf
+          </p>
         </div>
 
         {/* Filters */}
@@ -106,7 +111,7 @@ export function AdvancedSearch() {
                   type="text"
                   value={q}
                   onChange={(e) => { setQ(e.target.value); setPage(1); }}
-                  placeholder="Search documents, users, or studios..."
+                  placeholder="Search published works, books, tags..."
                   className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg"
                 />
               </div>

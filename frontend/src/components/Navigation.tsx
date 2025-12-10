@@ -15,7 +15,9 @@ import {
   UserCircle,
   Settings,
   Shield,
-  UserRoundPen
+  UserRoundPen,
+  Library,
+  Search
 } from 'lucide-react'
 import { useState } from 'react'
 import { User } from '../services/auth'
@@ -126,6 +128,24 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   >
                     <Home className="w-5 h-5" />
                     <span>Home</span>
+                  </button>
+                  <button 
+                    onClick={() => navigateTo('/bookshelf')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      isActive('/bookshelf') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                    }`}
+                  >
+                    <Library className="w-5 h-5" />
+                    <span>Library</span>
+                  </button>
+                  <button 
+                    onClick={() => navigateTo('/advanced-search')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      isActive('/advanced-search') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                    }`}
+                  >
+                    <Search className="w-5 h-5" />
+                    <span>Search</span>
                   </button>
                 </div>
 

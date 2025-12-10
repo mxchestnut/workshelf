@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload
 from app.models.document import Document, DocumentTag, Tag
 from app.models.user import User
 from app.models.studio import Studio
+from app.models.store import StoreItem
 from app.schemas.search import SearchQuery, SearchResult
 
 
@@ -24,12 +25,14 @@ async def search_documents(
     require_all_tags: bool = False
 ) -> tuple[List[SearchResult], int]:
     """
-    Search user's documents with tag filtering.
+    Search published/public documents with tag filtering.
+    Only searches documents that are published, in beta access, or publicly shared.
+    Does NOT search private/draft documents to respect privacy.
     
     Args:
         db: Database session
         query: Search query string
-        user_id: User ID for filtering
+        user_id: Current user ID (for access control)
         skip: Pagination offset
         limit: Results per page
         include_tags: List of tag names to include (OR logic by default, AND if require_all_tags=True)
@@ -39,8 +42,13 @@ async def search_documents(
     
     search_pattern = f"%{query}%"
     
-    # Base query
-    stmt = select(Document).where(Document.owner_id == user_id)
+    # Base query - ONLY search published or beta documents (respect privacy)
+    stmt = select(Document).where(
+        or_(
+            Document.status == 'published',  # Published documents are public
+            Document.status == 'beta'  # Beta documents may be accessible
+        )
+    )
     
     # Add text search filters
     stmt = stmt.where(
@@ -111,7 +119,12 @@ async def search_documents(
     ]
     
     # Get total count with same filters
-    count_stmt = select(func.count(Document.id)).where(Document.owner_id == user_id)
+    count_stmt = select(func.count(Document.id)).where(
+        or_(
+            Document.status == 'published',
+            Document.status == 'beta'
+        )
+    )
     count_stmt = count_stmt.where(
         or_(
             Document.title.ilike(search_pattern),
@@ -160,15 +173,79 @@ async def search_documents(
     return results, total or 0
 
 
+async def search_store_items(
+    db: AsyncSession,
+    query: str,
+    skip: int = 0,
+    limit: int = 20
+) -> tuple[List[SearchResult], int]:
+    """
+    Search published store items (books in the marketplace).
+    Only searches items that are available for purchase/reading.
+    
+    Args:
+        db: Database session
+        query: Search query string
+        skip: Pagination offset
+        limit: Results per page
+    """
+    
+    search_pattern = f"%{query}%"
+    
+    # Search published store items
+    stmt = select(StoreItem).where(
+        and_(
+            StoreItem.is_published == True,
+            or_(
+                StoreItem.title.ilike(search_pattern),
+                StoreItem.description.ilike(search_pattern),
+                StoreItem.author_name.ilike(search_pattern)
+            )
+        )
+    ).offset(skip).limit(limit)
+    
+    result = await db.execute(stmt)
+    items = result.scalars().all()
+    
+    # Convert to search results
+    results = [
+        SearchResult(
+            id=item.id,
+            type="document",  # Keep as document type for compatibility
+            title=item.title,
+            description=item.description or f"By {item.author_name}",
+            url=f"/read/{item.id}",
+            relevance_score=1.0
+        )
+        for item in items
+    ]
+    
+    # Get total count
+    count_stmt = select(func.count(StoreItem.id)).where(
+        and_(
+            StoreItem.is_published == True,
+            or_(
+                StoreItem.title.ilike(search_pattern),
+                StoreItem.description.ilike(search_pattern),
+                StoreItem.author_name.ilike(search_pattern)
+            )
+        )
+    )
+    total = await db.scalar(count_stmt)
+    
+    return results, total or 0
+
+
 async def search_all(
     db: AsyncSession,
     search_query: SearchQuery,
     user_id: int
 ) -> tuple[List[SearchResult], int]:
-    """Search across all content types with tag filtering support"""
+    """Search across all content types - documents and store items"""
     
-    if search_query.type == "document" or search_query.type == "all":
-        skip = (search_query.page - 1) * search_query.page_size
+    skip = (search_query.page - 1) * search_query.page_size
+    
+    if search_query.type == "document":
         return await search_documents(
             db, 
             search_query.q, 
@@ -179,6 +256,31 @@ async def search_all(
             exclude_tags=search_query.exclude_tags,
             require_all_tags=search_query.require_all_tags
         )
+    elif search_query.type == "all":
+        # Search both documents and store items
+        doc_results, doc_total = await search_documents(
+            db, 
+            search_query.q, 
+            user_id, 
+            0,  # Get first page of each
+            search_query.page_size // 2,  # Split results
+            include_tags=search_query.include_tags,
+            exclude_tags=search_query.exclude_tags,
+            require_all_tags=search_query.require_all_tags
+        )
+        
+        store_results, store_total = await search_store_items(
+            db,
+            search_query.q,
+            0,
+            search_query.page_size // 2
+        )
+        
+        # Combine results
+        all_results = doc_results + store_results
+        total = doc_total + store_total
+        
+        return all_results, total
     
-    # For now, just return empty for other types
+    # For other types, just return empty for now
     return [], 0
