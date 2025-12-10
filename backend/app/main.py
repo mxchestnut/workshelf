@@ -47,7 +47,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 app = FastAPI(
     title="Work Shelf API",
     description="Social infrastructure platform for creators",
-    version="0.1.0",
+    version=settings.VERSION,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
@@ -100,7 +100,7 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "version": "0.1.0",
+        "version": settings.VERSION,
         "service": "work-shelf-api"
     }
 
