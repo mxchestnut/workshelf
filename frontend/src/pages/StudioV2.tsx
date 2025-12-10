@@ -4,6 +4,7 @@ import { Editor } from '../components/Editor'
 import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { BulkUploadModal } from '../components/BulkUploadModal'
+import PublishModal, { PublishData } from '../components/PublishModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -48,6 +49,7 @@ export default function StudioV2() {
   const [saving, setSaving] = useState(false)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false)
+  const [showPublishModal, setShowPublishModal] = useState(false)
   const [newProjectTitle, setNewProjectTitle] = useState('')
 
   useEffect(() => {
@@ -370,6 +372,13 @@ export default function StudioV2() {
   const handleStatusChange = async (newStatus: 'draft' | 'beta' | 'published') => {
     if (!selectedDocument) return
 
+    // If publishing, open the publish modal instead of direct status change
+    if (newStatus === 'published') {
+      setShowPublishModal(true)
+      return
+    }
+
+    // For draft/beta, update status directly
     try {
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/documents/${selectedDocument.id}`, {
@@ -393,6 +402,60 @@ export default function StudioV2() {
       }
     } catch (err) {
       console.error('Error updating document status:', err)
+    }
+  }
+
+  const handlePublish = async (publishData: PublishData) => {
+    if (!selectedDocument) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const params = new URLSearchParams({
+        price_usd: publishData.price_usd.toString()
+      })
+      
+      if (publishData.description) {
+        params.append('description', publishData.description)
+      }
+      
+      if (publishData.genres && publishData.genres.length > 0) {
+        publishData.genres.forEach(genre => params.append('genres', genre))
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/v1/documents/${selectedDocument.id}/publish?${params}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      if (response.ok) {
+        const result = await response.json()
+        
+        // Update document status
+        const updatedDoc = {
+          ...selectedDocument,
+          status: 'published'
+        }
+        setSelectedDocument(updatedDoc)
+        setDocuments(prev => prev.map(doc =>
+          doc.id === updatedDoc.id ? updatedDoc : doc
+        ))
+        
+        setShowPublishModal(false)
+        alert(`Published successfully! ${result.message}`)
+      } else {
+        const error = await response.json()
+        throw new Error(error.detail || 'Publishing failed')
+      }
+    } catch (err: any) {
+      console.error('Error publishing document:', err)
+      alert(`Publishing failed: ${err.message}`)
+      throw err
     }
   }
 
@@ -638,6 +701,15 @@ export default function StudioV2() {
             }
         }}
       />
+      )}
+
+      {/* Publish Modal */}
+      {showPublishModal && selectedDocument && (
+        <PublishModal
+          document={selectedDocument}
+          onClose={() => setShowPublishModal(false)}
+          onPublish={handlePublish}
+        />
       )}
       </div>
     </div>

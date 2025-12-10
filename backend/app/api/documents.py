@@ -305,3 +305,56 @@ async def change_document_mode(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     document = await document_service.change_document_mode(db, document_id, user.id, new_mode, change_summary)
     return document
+
+
+# ============================================================================
+# Document Publishing to Store
+# ============================================================================
+
+@router.post("/{document_id}/publish", response_model=Dict[str, Any])
+async def publish_document_to_store(
+    document_id: int,
+    price_usd: float = Query(..., ge=0, description="Price in USD (0 for free)"),
+    description: Optional[str] = Query(None, description="Store listing description"),
+    genres: Optional[List[str]] = Query(None, description="List of genres"),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Publish a document to the WorkShelf store
+    
+    Creates a StoreItem from the document and makes it available for readers.
+    The document will be converted to EPUB format and uploaded to blob storage.
+    
+    Requirements:
+    - Document must be owned by the user
+    - Document status will be changed to 'published'
+    - Minimum price is $0.00 (free) or $0.99 (paid)
+    
+    Returns:
+    - store_item_id: The ID of the created store item
+    - epub_url: URL to the published EPUB
+    - status: Publication status
+    """
+    from app.services.store_service import publish_document_to_store as publish_service
+    
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Validate price
+    if price_usd > 0 and price_usd < 0.99:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Minimum price is $0.99 for paid content"
+        )
+    
+    # Publish document
+    result = await publish_service(
+        db=db,
+        document_id=document_id,
+        user_id=user.id,
+        price_usd=price_usd,
+        description=description,
+        genres=genres
+    )
+    
+    return result
