@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Upload, X, FileText, Folder, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface UploadResult {
   success: boolean

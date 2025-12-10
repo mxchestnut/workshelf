@@ -5,7 +5,7 @@ import { authService, User } from '../services/auth'
 import { Navigation } from '../components/Navigation'
 import { BulkUploadModal } from '../components/BulkUploadModal'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface Project {
   id: number
