@@ -176,7 +176,6 @@ class FolderService:
         """
         Get complete folder tree for a project.
         Returns folders organized hierarchically with children nested.
-        Only includes folders that have documents in the specified project.
         """
         if project_id is None:
             # If no project specified, return all folders (legacy behavior)
@@ -186,57 +185,18 @@ class FolderService:
                     Folder.user_id == user_id
                 )
             ).order_by(Folder.name)
-            result = await db.execute(stmt)
-            folders = result.scalars().all()
         else:
-            # Get folder IDs that have documents in this project
-            folder_ids_stmt = select(Document.folder_id).where(
-                and_(
-                    Document.project_id == project_id,
-                    Document.folder_id.isnot(None)
-                )
-            ).distinct()
-            result = await db.execute(folder_ids_stmt)
-            folder_ids_with_docs = set(row[0] for row in result.fetchall())
-            
-            if not folder_ids_with_docs:
-                # No folders have documents in this project
-                return []
-            
-            # Get all folders in the tree path (including parent folders)
-            all_relevant_folder_ids = set(folder_ids_with_docs)
-            
-            # Query folders
+            # Get all folders that belong to this project
             stmt = select(Folder).where(
                 and_(
                     Folder.tenant_id == tenant_id,
                     Folder.user_id == user_id,
-                    Folder.id.in_(folder_ids_with_docs)
+                    Folder.project_id == project_id
                 )
             ).order_by(Folder.name)
-            result = await db.execute(stmt)
-            folders = result.scalars().all()
-            
-            # Recursively add parent folders to ensure complete tree
-            parent_ids = {f.parent_id for f in folders if f.parent_id}
-            while parent_ids:
-                parent_ids = parent_ids - all_relevant_folder_ids
-                if not parent_ids:
-                    break
-                    
-                parent_stmt = select(Folder).where(
-                    and_(
-                        Folder.tenant_id == tenant_id,
-                        Folder.user_id == user_id,
-                        Folder.id.in_(parent_ids)
-                    )
-                )
-                parent_result = await db.execute(parent_stmt)
-                parent_folders = parent_result.scalars().all()
-                folders = list(folders) + parent_folders
-                
-                all_relevant_folder_ids.update(parent_ids)
-                parent_ids = {f.parent_id for f in parent_folders if f.parent_id}
+        
+        result = await db.execute(stmt)
+        folders = result.scalars().all()
         
         # Build folder map with document counts
         folder_map: Dict[int, Dict[str, Any]] = {}
