@@ -248,6 +248,7 @@ async def list_user_documents(
     page: int = 1,
     page_size: int = 20,
     status_filter: Optional[DocumentStatus] = None,
+    project_id: Optional[int] = None,
     folder_id: Optional[int] = None
 ) -> Tuple[List[Document], int]:
     """
@@ -259,7 +260,8 @@ async def list_user_documents(
         page: Page number (1-indexed)
         page_size: Items per page
         status_filter: Optional status filter
-            folder_id: Optional folder ID filter (filters by project.folder_id)
+        project_id: Optional project ID filter
+        folder_id: Optional folder ID filter (filters by project.folder_id)
         
     Returns:
         Tuple of (documents list, total count)
@@ -272,6 +274,10 @@ async def list_user_documents(
         Document.owner_id == user_id,
         Document.is_deleted == False
     )
+    
+    # Apply project filter
+    if project_id is not None:
+        query = query.where(Document.project_id == project_id)
     
     # Apply folder filter (via project relationship)
     if folder_id is not None:
