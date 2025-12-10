@@ -76,11 +76,11 @@ import {
 interface EditorProps {
   content?: any // TipTap JSON content
   title: string
-  status?: 'draft' | 'alpha' | 'beta' | 'published'
+  status?: 'draft' | 'beta' | 'published'
   onTitleChange: (title: string) => void
   onContentChange: (content: any) => void
   onSave: () => Promise<void>
-  onStatusChange?: (status: 'draft' | 'alpha' | 'beta' | 'published') => Promise<void>
+  onStatusChange?: (status: 'draft' | 'beta' | 'published') => Promise<void>
   autoSave?: boolean
   placeholder?: string
 }
@@ -405,20 +405,6 @@ export function Editor({
 
                   <button
                     onClick={() => {
-                      onStatusChange?.('alpha')
-                      setStatusMenuOpen(false)
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
-                  >
-                    <Users className="w-4 h-4 flex-shrink-0" />
-                    <div>
-                      <div className="font-medium text-sm">Alpha</div>
-                      <div className="text-xs text-muted-foreground">Invite collaborators</div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => {
                       onStatusChange?.('beta')
                       setStatusMenuOpen(false)
                     }}
@@ -440,7 +426,7 @@ export function Editor({
                   >
                     <Globe className="w-4 h-4 flex-shrink-0" />
                     <div>
-                      <div className="font-medium text-sm">Publish</div>
+                      <div className="font-medium text-sm">Published</div>
                       <div className="text-xs text-muted-foreground">Make public (read-only)</div>
                     </div>
                   </button>
@@ -489,11 +475,10 @@ export function Editor({
             />
             {status !== 'draft' && (
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                status === 'alpha' ? 'bg-blue-100 text-blue-700' :
                 status === 'beta' ? 'bg-purple-100 text-purple-700' :
                 status === 'published' ? 'bg-green-100 text-green-700' : ''
               }`}>
-                {status === 'alpha' ? 'Alpha' : status === 'beta' ? 'Beta' : 'Published'}
+                {status === 'beta' ? 'Beta' : 'Published'}
               </span>
             )}
           </div>

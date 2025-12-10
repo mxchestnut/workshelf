@@ -367,7 +367,7 @@ export default function StudioV2() {
     }
   }
 
-  const handleStatusChange = async (newStatus: 'draft' | 'alpha' | 'beta' | 'published') => {
+  const handleStatusChange = async (newStatus: 'draft' | 'beta' | 'published') => {
     if (!selectedDocument) return
 
     try {
