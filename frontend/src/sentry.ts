@@ -9,6 +9,11 @@ const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'production';
 const RELEASE = import.meta.env.VITE_RELEASE || 'unknown';
 
 export function initSentry() {
+  // Temporarily disabled due to invalid/expired Sentry DSN
+  console.log('[Sentry] Disabled - DSN expired');
+  return;
+  
+  /* eslint-disable no-unreachable */
   if (!SENTRY_DSN) {
     // Sentry is optional - silently skip if not configured
     console.log('[Sentry] Skipped - no DSN configured');

@@ -67,12 +67,34 @@ def upgrade():
         CREATE INDEX IF NOT EXISTS ix_documents_studio_id 
         ON documents(studio_id);
     """)
+    
+    # Add soft delete columns to documents table
+    op.execute("""
+        ALTER TABLE documents 
+        ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL;
+    """)
+    
+    op.execute("""
+        ALTER TABLE documents 
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+    """)
+    
+    # Create index for is_deleted column
+    op.execute("""
+        CREATE INDEX IF NOT EXISTS ix_documents_is_deleted 
+        ON documents(is_deleted);
+    """)
 
 
 def downgrade():
     # Remove indexes
+    op.execute("DROP INDEX IF EXISTS ix_documents_is_deleted;")
     op.execute("DROP INDEX IF EXISTS ix_documents_studio_id;")
     op.execute("DROP INDEX IF EXISTS ix_documents_folder_id;")
+    
+    # Remove soft delete columns
+    op.execute("ALTER TABLE documents DROP COLUMN IF EXISTS deleted_at;")
+    op.execute("ALTER TABLE documents DROP COLUMN IF EXISTS is_deleted;")
     
     # Remove foreign key constraints
     op.execute("ALTER TABLE documents DROP CONSTRAINT IF EXISTS fk_documents_studio_id;")
