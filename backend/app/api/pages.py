@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.auth import get_current_user, get_optional_user
+from app.core.auth import get_current_user, get_optional_user_from_db
 from app.models.user import User
 from app.services.page_tracking import PageTrackingService
 from app.schemas.page_tracking import (
@@ -77,7 +77,7 @@ async def get_page_status(
 @router.post("/{page_path:path}/view", response_model=UserPageViewResponse)
 async def record_page_view(
     page_path: str,
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: Optional[User] = Depends(get_optional_user_from_db),
     db: Session = Depends(get_db)
 ):
     """

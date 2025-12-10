@@ -383,6 +383,32 @@ async def get_current_user_from_db(
     return user
 
 
+async def get_optional_user_from_db(
+    db: AsyncSession = Depends(get_db),
+    user_payload: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
+    """
+    Get the full User model from database if authenticated, None otherwise
+    
+    Returns:
+        User model instance or None
+    """
+    if not user_payload:
+        return None
+    
+    from app.models.user import User
+    from sqlalchemy import select
+    
+    keycloak_id = user_payload["sub"]
+    
+    result = await db.execute(
+        select(User).filter(User.keycloak_id == keycloak_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    return user
+
+
 async def require_staff(
     user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
