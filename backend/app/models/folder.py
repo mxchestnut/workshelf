@@ -15,6 +15,7 @@ class Folder(Base):
     
     name = Column(String(255), nullable=False)
     parent_id = Column(Integer, ForeignKey("folders.id"), nullable=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=True, index=True)
     color = Column(String(7), nullable=True)  # Hex color code
     icon = Column(String(50), nullable=True)
     
@@ -26,4 +27,5 @@ class Folder(Base):
     user = relationship("User", back_populates="folders")
     parent = relationship("Folder", remote_side=[id], back_populates="children")
     children = relationship("Folder", back_populates="parent")
+    project = relationship("Project", foreign_keys=[project_id], back_populates="folders")
     projects = relationship("Project", back_populates="folder")

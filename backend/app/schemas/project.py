@@ -27,6 +27,7 @@ class FolderCreate(BaseModel):
     """Request to create a folder."""
     name: str = Field(..., min_length=1, max_length=255)
     parent_id: Optional[int] = None
+    project_id: Optional[int] = None
     color: Optional[str] = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = None
 
@@ -44,6 +45,7 @@ class FolderResponse(BaseModel):
     id: int
     name: str
     parent_id: Optional[int]
+    project_id: Optional[int]
     color: Optional[str]
     icon: Optional[str]
     created_at: datetime
