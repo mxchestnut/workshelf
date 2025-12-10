@@ -1,6 +1,7 @@
 """
 API endpoints for page tracking and navigation
 """
+from datetime import datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -92,20 +93,20 @@ async def record_page_view(
             id=0,
             user_id=0,
             page_path=page_path if page_path.startswith('/') else f'/{page_path}',
-            first_viewed_at=None,
             last_viewed_at=None,
-            view_count=0,
-            marked_as_viewed=False
+            marked_as_viewed=False,
+            marked_at=None,
+            created_at=datetime.now()
         )
     
     return UserPageViewResponse(
         id=0,
         user_id=current_user.id,
         page_path=page_path if page_path.startswith('/') else f'/{page_path}',
-        first_viewed_at=None,
         last_viewed_at=None,
-        view_count=1,
-        marked_as_viewed=False
+        marked_as_viewed=False,
+        marked_at=None,
+        created_at=datetime.now()
     )
 
 
