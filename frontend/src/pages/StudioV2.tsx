@@ -209,7 +209,8 @@ export default function StudioV2() {
         },
         body: JSON.stringify({
           name,
-          parent_id: parentId
+          parent_id: parentId,
+          project_id: selectedProject.id
         })
       })
 
