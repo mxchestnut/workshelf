@@ -1,0 +1,141 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: workshelf-backend:latest
+    container_name: workshelf-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - workshelf
+    environment:
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+      STORAGE_DATABASE_URL: ${STORAGE_DATABASE_URL}
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      
+      # Keycloak
+      KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev
+      KEYCLOAK_INTERNAL_URL: http://workshelf-keycloak:8080
+      KEYCLOAK_REALM: workshelf
+      KEYCLOAK_CLIENT_ID: workshelf-api
+      
+      # Redis
+      REDIS_URL: redis://workshelf-redis:6379
+      
+      # MinIO
+      MINIO_ENDPOINT: workshelf-minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      
+      # Matrix
+      MATRIX_HOMESERVER: http://workshelf-synapse:8008
+      MATRIX_SERVER_NAME: workshelf.dev
+      MATRIX_PUBLIC_HOMESERVER: https://workshelf.dev
+      MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
+      
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN}
+      ENVIRONMENT: production
+      GIT_SHA: ${GIT_SHA:-unknown}
+    depends_on:
+      - keycloak
+      - redis
+      - minio
+    command: bash -c "pip install -q -r requirements.txt && bash start.sh"
+    working_dir: /app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: workshelf-keycloak
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - workshelf
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_SCHEMA: keycloak
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+    command: start-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: workshelf-redis
+    restart: unless-stopped
+    networks:
+      - workshelf
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: workshelf-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - workshelf
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: workshelf-synapse
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    networks:
+      - workshelf
+    environment:
+      SYNAPSE_SERVER_NAME: workshelf.dev
+      SYNAPSE_REPORT_STATS: "no"
+    volumes:
+      - synapse_data:/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        VITE_API_URL: https://workshelf.dev
+        VITE_KEYCLOAK_URL: https://keycloak.workshelf.dev
+        VITE_KEYCLOAK_REALM: workshelf
+        VITE_KEYCLOAK_CLIENT_ID: workshelf-frontend
+        VITE_ENVIRONMENT: production
+    image: workshelf-frontend:latest
+    container_name: workshelf-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    networks:
+      - workshelf
+
+networks:
+  workshelf:
+    name: workshelf_workshelf
+    driver: bridge
+
+volumes:
+  redis_data:
+  minio_data:
+  synapse_data:

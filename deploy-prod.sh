@@ -1,33 +1,53 @@
 #!/bin/bash
-# Simple production deployment script
+# Production Deployment Script
+# Deploys WorkShelf to production using docker-compose
 
 set -e
 
-echo "🚀 Deploying to production..."
+echo "🚀 WorkShelf Production Deployment"
+echo "=================================="
 
 # Production server details
 PROD_USER="ubuntu"
-PROD_HOST="workshelf.dev"
+PROD_HOST="34.239.176.138"
 PROD_PATH="/home/ubuntu/workshelf"
+KEY_PATH="$HOME/.ssh/workshelf-key.pem"
 
 echo "📡 Connecting to production server..."
 
-ssh "${PROD_USER}@${PROD_HOST}" << 'EOF'
+# Get current git SHA
+GIT_SHA=$(git rev-parse --short HEAD)
+echo "📦 Deploying commit: $GIT_SHA"
+
+# Deploy to production
+ssh -i "$KEY_PATH" "${PROD_USER}@${PROD_HOST}" << EOF
     set -e
-    cd /home/ubuntu/workshelf
+    cd ${PROD_PATH}
     
-    echo "📥 Pulling latest changes..."
+    echo "📥 Pulling latest code..."
     git pull origin main
     
-    echo "🏗️  Building and restarting services..."
-    sudo docker-compose up -d --build backend frontend
+    echo "🔨 Building Docker images..."
+    docker-compose -f docker-compose.prod.yml --env-file .env.prod build
     
-    echo "✅ Deployment complete!"
+    echo "▶️  Deploying containers..."
+    docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+    
+    echo "⏳ Waiting for backend to start..."
+    sleep 10
     
     echo "📊 Service status:"
-    sudo docker-compose ps
+    docker-compose -f docker-compose.prod.yml ps
+    
+    echo ""
+    echo "✅ Deployment complete!"
 EOF
 
 echo ""
 echo "✅ Deployment finished successfully!"
-echo "🌐 Your site should be updated at https://workshelf.dev"
+echo ""
+echo "🔗 Services:"
+echo "   - Frontend: https://workshelf.dev"
+echo "   - API: https://api.workshelf.dev"
+echo "   - Keycloak: https://keycloak.workshelf.dev"
+echo ""

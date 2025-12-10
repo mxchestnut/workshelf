@@ -266,11 +266,10 @@ async def list_user_documents(
     Returns:
         Tuple of (documents list, total count)
     """
-    # Base query - join with Project to filter by folder, eager load owner for display
+    # Base query - join with Project to filter by folder
     # EXCLUDE soft-deleted documents by default
-    query = select(Document).options(
-        joinedload(Document.owner)
-    ).where(
+    # Note: Removed joinedload(Document.owner) to avoid WITHIN GROUP error with ORDER BY
+    query = select(Document).where(
         Document.owner_id == user_id,
         Document.is_deleted == False
     )
