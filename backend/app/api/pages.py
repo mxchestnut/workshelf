@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_optional_user
 from app.models.user import User
 from app.services.page_tracking import PageTrackingService
 from app.schemas.page_tracking import (
@@ -76,7 +76,7 @@ async def get_page_status(
 @router.post("/{page_path:path}/view", response_model=UserPageViewResponse)
 async def record_page_view(
     page_path: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -85,6 +85,19 @@ async def record_page_view(
     """
     # Stub endpoint - return success without database operations
     # TODO: Implement proper async page tracking
+    
+    # If no user, just return a stub response
+    if not current_user:
+        return UserPageViewResponse(
+            id=0,
+            user_id=0,
+            page_path=page_path if page_path.startswith('/') else f'/{page_path}',
+            first_viewed_at=None,
+            last_viewed_at=None,
+            view_count=0,
+            marked_as_viewed=False
+        )
+    
     return UserPageViewResponse(
         id=0,
         user_id=current_user.id,
