@@ -200,8 +200,8 @@ export default function StudioV2() {
     try {
       const token = localStorage.getItem('access_token')
       console.log('[StudioV2] API_URL:', API_URL)
-      console.log('[StudioV2] Full URL:', `${API_URL}/api/v1/folders`)
-      const response = await fetch(`${API_URL}/api/v1/folders`, {
+      console.log('[StudioV2] Full URL:', `${API_URL}/api/v1/folders/`)
+      const response = await fetch(`${API_URL}/api/v1/folders/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
