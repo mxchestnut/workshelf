@@ -41,6 +41,7 @@ class StoreItemResponse(BaseModel):
     final_price: float  # After discount
     cover_url: Optional[str]
     sample_url: Optional[str]
+    epub_blob_url: Optional[str]  # For Readium reader access
     total_sales: int
     rating_average: Optional[float]
     rating_count: int
@@ -254,10 +255,7 @@ async def get_store_item(
 ):
     """
     Get detailed information about a specific store item
-    
-    **TEMPORARILY DISABLED** - Store is under maintenance.
     """
-    raise HTTPException(status_code=503, detail="Store temporarily disabled for maintenance")
     result = await db.execute(
         select(StoreItem).where(
             StoreItem.id == item_id,
@@ -308,6 +306,7 @@ async def get_store_item(
         final_price=round(final_price, 2),
         cover_url=item.cover_blob_url,
         sample_url=item.sample_blob_url,
+        epub_blob_url=item.epub_blob_url,  # For Readium reader
         total_sales=item.total_sales,
         rating_average=float(item.rating_average) if item.rating_average else None,
         rating_count=item.rating_count,
@@ -479,6 +478,74 @@ async def stripe_webhook(
     )
     
     return result
+
+
+# ============================================================================
+# Reading Access Check
+# ============================================================================
+
+@router.get("/{item_id}/access")
+async def check_reading_access(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Check if the current user has access to read this book
+    
+    Returns:
+        - has_access: boolean
+        - reason: "free" | "purchased" | "no_access"
+    """
+    from app.services import user_service
+    
+    # Get store item
+    result = await db.execute(
+        select(StoreItem).where(
+            StoreItem.id == item_id,
+            StoreItem.status == StoreItemStatus.ACTIVE
+        )
+    )
+    store_item = result.scalar_one_or_none()
+    
+    if not store_item:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    # Free books are accessible to everyone
+    if store_item.price_usd == 0:
+        return {
+            "has_access": True,
+            "reason": "free",
+            "epub_url": store_item.epub_blob_url
+        }
+    
+    # Get user
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    # Check if user has purchased this book
+    purchase_result = await db.execute(
+        select(Purchase).where(
+            and_(
+                Purchase.user_id == user.id,
+                Purchase.store_item_id == item_id,
+                Purchase.status == PurchaseStatus.COMPLETED
+            )
+        )
+    )
+    purchase = purchase_result.scalar_one_or_none()
+    
+    if purchase:
+        return {
+            "has_access": True,
+            "reason": "purchased",
+            "epub_url": store_item.epub_blob_url,
+            "purchase_date": purchase.completed_at.isoformat() if purchase.completed_at else None
+        }
+    
+    return {
+        "has_access": False,
+        "reason": "no_access"
+    }
 
 
 # ============================================================================

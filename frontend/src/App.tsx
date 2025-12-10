@@ -81,9 +81,10 @@ const Relationships = lazy(() => import('./pages/Relationships'))
 const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const StaffPanel = lazy(() => import('./pages/StaffPanel').then(module => ({ default: module.StaffPanel })))
+const ReadPage = lazy(() => import('./pages/ReadPage'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -242,6 +243,9 @@ function App() {
     } else if (path.startsWith('/book/')) {
       // Book detail page: /book/:id or /book/store-:id
       setCurrentPage('book-detail')
+    } else if (path.startsWith('/read/')) {
+      // Reading page: /read/:itemId
+      setCurrentPage('read')
     } else if (path.startsWith('/invite/')) {
       // Invitation page: /invite/:token
       setCurrentPage('invite')
@@ -507,6 +511,10 @@ function App() {
 
     if (currentPage === 'book-detail') {
       return <BookDetail />
+    }
+
+    if (currentPage === 'read') {
+      return <ReadPage />
     }
 
     if (currentPage === 'content-integrity') {
