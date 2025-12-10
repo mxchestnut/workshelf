@@ -9,7 +9,9 @@ import time
 import json
 import logging
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import Response, JSONResponse
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.api.v1 import api_router
