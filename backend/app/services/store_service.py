@@ -3,17 +3,19 @@ Store Service - Publishing documents to the WorkShelf marketplace
 """
 import json
 import os
+import boto3
+from botocore.exceptions import ClientError
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException
-from azure.storage.blob import BlobServiceClient, ContentSettings
 
 from app.models.document import Document, DocumentStatus
 from app.models.store import StoreItem, StoreItemStatus
 from app.models.user import User
 from app.services.epub_generation_service import EpubGenerationService
+from app.core.config import settings
 
 
 async def publish_document_to_store(
@@ -72,8 +74,8 @@ async def publish_document_to_store(
         language="en"
     )
     
-    # Upload EPUB to Azure Blob Storage
-    epub_blob_url = await _upload_epub_to_blob(
+    # Upload EPUB to AWS S3
+    epub_blob_url = await _upload_epub_to_s3(
         epub_path=epub_info["epub_path"],
         file_hash=epub_info["file_hash"]
     )
@@ -138,34 +140,51 @@ async def publish_document_to_store(
     }
 
 
-async def _upload_epub_to_blob(epub_path: str, file_hash: str) -> str:
-    """Upload generated EPUB to Azure Blob Storage"""
-    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    if not connection_string:
-        raise HTTPException(status_code=500, detail="Azure Storage not configured")
+async def _upload_epub_to_s3(epub_path: str, file_hash: str) -> str:
+    """Upload generated EPUB to AWS S3"""
+    if not settings.S3_ACCESS_KEY_ID_CLEAN or not settings.S3_SECRET_ACCESS_KEY_CLEAN:
+        raise HTTPException(status_code=500, detail="S3 storage not configured")
     
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    container_name = "published-books"
-    
-    # Ensure container exists
-    try:
-        container_client = blob_service_client.get_container_client(container_name)
-        container_client.create_container()
-    except:
-        pass  # Container already exists
-    
-    # Upload blob
-    blob_name = f"{file_hash}.epub"
-    blob_client = blob_service_client.get_blob_client(
-        container=container_name,
-        blob=blob_name
+    # Initialize S3 client
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=settings.S3_ENDPOINT_URL if settings.S3_ENDPOINT_URL else None,
+        aws_access_key_id=settings.S3_ACCESS_KEY_ID_CLEAN,
+        aws_secret_access_key=settings.S3_SECRET_ACCESS_KEY_CLEAN,
+        region_name=settings.S3_REGION
     )
     
+    bucket_name = settings.S3_BUCKET_NAME
+    
+    # Ensure bucket exists
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+    except ClientError:
+        try:
+            s3_client.create_bucket(Bucket=bucket_name)
+        except ClientError as e:
+            raise HTTPException(status_code=500, detail=f"Failed to create S3 bucket: {e}")
+    
+    # Upload to S3
+    object_key = f"published-books/{file_hash}.epub"
+    
     with open(epub_path, 'rb') as epub_file:
-        blob_client.upload_blob(
+        s3_client.upload_fileobj(
             epub_file,
-            overwrite=True,
-            content_settings=ContentSettings(content_type="application/epub+zip")
+            bucket_name,
+            object_key,
+            ExtraArgs={
+                'ContentType': 'application/epub+zip',
+                'ContentDisposition': 'inline'
+            }
         )
     
-    return blob_client.url
+    # Generate public URL
+    if settings.S3_ENDPOINT_URL:
+        # Custom endpoint (MinIO, etc.)
+        url = f"{settings.S3_ENDPOINT_URL}/{bucket_name}/{object_key}"
+    else:
+        # AWS S3
+        url = f"https://{bucket_name}.s3.{settings.S3_REGION}.amazonaws.com/{object_key}"
+    
+    return url

@@ -19,7 +19,9 @@ from app.models.epub_submission import EpubSubmission, VerificationLog, Submissi
 from app.models import User
 from app.services import user_service
 from app.services.content_verification import verification_service
-from azure.storage.blob import BlobServiceClient, ContentSettings
+from app.core.config import settings
+import boto3
+from botocore.exceptions import ClientError
 
 router = APIRouter(prefix="/epub-uploads", tags=["epub-uploads"])
 
@@ -185,9 +187,9 @@ async def upload_epub(
         except:
             genres_list = [g.strip() for g in genres.split(',') if g.strip()]
     
-    # Upload to Azure Blob Storage
+    # Upload to AWS S3
     try:
-        blob_url = await _upload_to_blob_storage(
+        blob_url = await _upload_to_s3_storage(
             content,
             file_hash,
             file.filename
@@ -473,41 +475,52 @@ async def moderate_submission(
 # Helper Functions
 # ============================================================================
 
-async def _upload_to_blob_storage(
+async def _upload_to_s3_storage(
     content: bytes,
     file_hash: str,
     filename: str
 ) -> str:
-    """Upload EPUB to Azure Blob Storage"""
-    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    if not connection_string:
-        raise Exception("Azure Storage not configured")
+    """Upload EPUB to AWS S3"""
+    if not settings.S3_ACCESS_KEY_ID_CLEAN or not settings.S3_SECRET_ACCESS_KEY_CLEAN:
+        raise Exception("S3 storage not configured")
     
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    container_name = "epub-submissions"
+    # Initialize S3 client
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=settings.S3_ENDPOINT_URL if settings.S3_ENDPOINT_URL else None,
+        aws_access_key_id=settings.S3_ACCESS_KEY_ID_CLEAN,
+        aws_secret_access_key=settings.S3_SECRET_ACCESS_KEY_CLEAN,
+        region_name=settings.S3_REGION
+    )
     
-    # Ensure container exists
+    bucket_name = settings.S3_BUCKET_NAME
+    
+    # Ensure bucket exists
     try:
-        container_client = blob_service_client.get_container_client(container_name)
-        if not await container_client.exists():
-            await container_client.create_container()
-    except:
-        pass
+        s3_client.head_bucket(Bucket=bucket_name)
+    except ClientError:
+        try:
+            s3_client.create_bucket(Bucket=bucket_name)
+        except ClientError as e:
+            raise Exception(f"Failed to create S3 bucket: {e}")
     
-    # Upload blob with hash as name
-    blob_name = f"{file_hash}.epub"
-    blob_client = blob_service_client.get_blob_client(
-        container=container_name,
-        blob=blob_name
+    # Upload to S3
+    object_key = f"epub-submissions/{file_hash}.epub"
+    
+    s3_client.put_object(
+        Bucket=bucket_name,
+        Key=object_key,
+        Body=content,
+        ContentType='application/epub+zip'
     )
     
-    await blob_client.upload_blob(
-        content,
-        overwrite=True,
-        content_settings=ContentSettings(content_type="application/epub+zip")
-    )
+    # Generate public URL
+    if settings.S3_ENDPOINT_URL:
+        url = f"{settings.S3_ENDPOINT_URL}/{bucket_name}/{object_key}"
+    else:
+        url = f"https://{bucket_name}.s3.{settings.S3_REGION}.amazonaws.com/{object_key}"
     
-    return blob_client.url
+    return url
 
 
 async def _run_verification(
