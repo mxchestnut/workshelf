@@ -1,0 +1,169 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: workshelf-backend:latest
+    container_name: workshelf-backend-local
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - workshelf-local
+    environment:
+      # Database - use local postgres
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@workshelf-postgres-local:5432/workshelf
+      STORAGE_DATABASE_URL: postgresql+asyncpg://postgres:postgres@workshelf-postgres-local:5432/workshelf_storage
+      
+      # Security
+      SECRET_KEY: local-development-secret-key-not-for-production
+      
+      # Keycloak
+      KEYCLOAK_SERVER_URL: http://localhost:8080
+      KEYCLOAK_INTERNAL_URL: http://workshelf-keycloak-local:8080
+      KEYCLOAK_REALM: workshelf
+      KEYCLOAK_CLIENT_ID: workshelf-api
+      
+      # Redis
+      REDIS_URL: redis://workshelf-redis-local:6379
+      
+      # MinIO
+      MINIO_ENDPOINT: workshelf-minio-local:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_NAME: workshelf
+      MINIO_USE_SSL: "false"
+      
+      # Matrix
+      MATRIX_SERVER_URL: http://workshelf-synapse-local:8008
+      MATRIX_ADMIN_ACCESS_TOKEN: local_dev_token
+      
+      # Monitoring
+      ENVIRONMENT: local
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    command: bash -c "pip install -q -r requirements.txt && bash start.sh"
+    working_dir: /app
+    volumes:
+      - ./backend:/app  # Mount code for hot reload
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: workshelf-postgres-local
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    networks:
+      - workshelf-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: workshelf
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: workshelf-keycloak-local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - workshelf-local
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://workshelf-postgres-local:5432/workshelf?currentSchema=keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_DB_SCHEMA: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: workshelf-redis-local
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - workshelf-local
+    volumes:
+      - redis_data_local:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: workshelf-minio-local
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - workshelf-local
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data_local:/data
+    command: server /data --console-address ":9001"
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: workshelf-synapse-local
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    networks:
+      - workshelf-local
+    environment:
+      SYNAPSE_SERVER_NAME: localhost
+      SYNAPSE_REPORT_STATS: "no"
+    volumes:
+      - synapse_data_local:/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_KEYCLOAK_URL: http://localhost:8080
+        VITE_KEYCLOAK_REALM: workshelf
+        VITE_KEYCLOAK_CLIENT_ID: workshelf-frontend
+        VITE_ENVIRONMENT: local
+    image: workshelf-frontend:latest
+    container_name: workshelf-frontend-local
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    networks:
+      - workshelf-local
+
+networks:
+  workshelf-local:
+    driver: bridge
+
+volumes:
+  postgres_data_local:
+  redis_data_local:
+  minio_data_local:
+  synapse_data_local:

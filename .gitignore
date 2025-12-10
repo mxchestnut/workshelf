@@ -5,6 +5,10 @@
 .env.local
 .env.prod
 .env.production
+
+# Backups
+backups/
+
 # IDEs
 # Local development
 # Node
