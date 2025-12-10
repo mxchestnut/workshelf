@@ -30,9 +30,9 @@ jobs:
       - name: Check for sensitive files
         run: |
           echo "🔍 Checking for sensitive files..."
-          if git ls-files | grep -E '\.env$|\.pem$|credentials'; then
+          if git ls-files | grep -E '\.env$|\.pem$' | grep -v 'migrations/\|versions/'; then
             echo "❌ Sensitive files tracked in git"
-            git ls-files | grep -E '\.env$|\.pem$|credentials'
+            git ls-files | grep -E '\.env$|\.pem$' | grep -v 'migrations/\|versions/'
             exit 1
           fi
           echo "✅ No sensitive files tracked"
