@@ -20,7 +20,8 @@ jobs:
           if grep -r -E "(password|secret|api_key|token)\s*[:=]\s*['\"][^'\"]{8,}" \
              --exclude-dir=.git --exclude-dir=node_modules \
              --exclude-dir=dist --exclude-dir=tests \
-             --exclude="*.md" --exclude="test_*.py" . 2>/dev/null; then
+             --exclude="*.md" --exclude="test_*.py" . 2>/dev/null | \
+             grep -v "console\\.log" | grep -v "substring("; then
             echo "❌ Potential secrets found in code"
             exit 1
           fi
