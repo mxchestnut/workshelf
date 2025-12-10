@@ -367,6 +367,35 @@ export default function StudioV2() {
     }
   }
 
+  const handleStatusChange = async (newStatus: 'draft' | 'alpha' | 'beta' | 'published') => {
+    if (!selectedDocument) return
+
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await fetch(`${API_URL}/api/v1/documents/${selectedDocument.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...selectedDocument,
+          status: newStatus
+        })
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        setSelectedDocument(updated)
+        setDocuments(prev => prev.map(doc =>
+          doc.id === updated.id ? updated : doc
+        ))
+      }
+    } catch (err) {
+      console.error('Error updating document status:', err)
+    }
+  }
+
   const saveDocument = async () => {
     if (!selectedDocument) return
 
@@ -537,9 +566,11 @@ export default function StudioV2() {
               <Editor
                 content={selectedDocument.content}
                 title={selectedDocument.title}
+                status={selectedDocument.status as 'draft' | 'alpha' | 'beta' | 'published'}
                 onTitleChange={(title) => setSelectedDocument({ ...selectedDocument, title })}
                 onContentChange={(content) => setSelectedDocument({ ...selectedDocument, content })}
                 onSave={saveDocument}
+                onStatusChange={handleStatusChange}
               />
             </div>
           </>

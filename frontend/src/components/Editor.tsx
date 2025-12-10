@@ -64,15 +64,23 @@ import {
   Minimize,
   Save,
   Check,
-  MessageSquare
+  MessageSquare,
+  ChevronDown,
+  FileEdit,
+  Users,
+  Radio,
+  Globe,
+  Send
 } from 'lucide-react'
 
 interface EditorProps {
   content?: any // TipTap JSON content
   title: string
+  status?: 'draft' | 'alpha' | 'beta' | 'published'
   onTitleChange: (title: string) => void
   onContentChange: (content: any) => void
   onSave: () => Promise<void>
+  onStatusChange?: (status: 'draft' | 'alpha' | 'beta' | 'published') => Promise<void>
   autoSave?: boolean
   placeholder?: string
 }
@@ -80,9 +88,11 @@ interface EditorProps {
 export function Editor({
   content,
   title,
+  status = 'draft',
   onTitleChange,
   onContentChange,
   onSave,
+  onStatusChange,
   autoSave = true,
   placeholder = "Start writing..."
 }: EditorProps) {
@@ -90,8 +100,10 @@ export function Editor({
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [saveTimeout, setSaveTimeout] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false)
 
   const editor = useEditor({
+    editable: status !== 'published',
     extensions: [
       StarterKit.configure({
         heading: {
@@ -342,7 +354,7 @@ export function Editor({
 
           <button
             onClick={handleManualSave}
-            disabled={isSaving}
+            disabled={isSaving || status === 'published'}
             className="flex items-center gap-2 px-3 py-1.5 rounded bg-primary text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
             title="Save now (Cmd+S)"
           >
@@ -363,6 +375,95 @@ export function Editor({
               </>
             )}
           </button>
+
+          {/* Status Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setStatusMenuOpen(!statusMenuOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors"
+            >
+              <span className="text-sm font-medium capitalize">{status}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {statusMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-56 bg-card border border-border rounded-lg shadow-lg z-50">
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      onStatusChange?.('draft')
+                      setStatusMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
+                  >
+                    <FileEdit className="w-4 h-4 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-sm">Draft</div>
+                      <div className="text-xs text-muted-foreground">Private editing mode</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onStatusChange?.('alpha')
+                      setStatusMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
+                  >
+                    <Users className="w-4 h-4 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-sm">Alpha</div>
+                      <div className="text-xs text-muted-foreground">Invite collaborators</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onStatusChange?.('beta')
+                      setStatusMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
+                  >
+                    <Radio className="w-4 h-4 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-sm">Beta</div>
+                      <div className="text-xs text-muted-foreground">Share with beta readers</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onStatusChange?.('published')
+                      setStatusMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
+                  >
+                    <Globe className="w-4 h-4 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-sm">Publish</div>
+                      <div className="text-xs text-muted-foreground">Make public (read-only)</div>
+                    </div>
+                  </button>
+
+                  <div className="border-t border-border my-1"></div>
+
+                  <button
+                    onClick={() => {
+                      // TODO: Implement send functionality
+                      setStatusMenuOpen(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
+                  >
+                    <Send className="w-4 h-4 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-sm">Send</div>
+                      <div className="text-xs text-muted-foreground">Send as message</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -374,16 +475,28 @@ export function Editor({
       
       <div className={`flex-1 overflow-y-auto ${immersiveMode ? 'flex items-center justify-center' : ''}`}>
         <div className={`${immersiveMode ? 'max-w-3xl w-full px-8' : 'max-w-4xl mx-auto'}`}>
-          {/* Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            placeholder="Untitled Document"
-            className={`w-full bg-transparent border-none outline-none font-bold text-neutral-darkest placeholder-neutral ${
-              immersiveMode ? 'text-5xl py-8' : 'text-4xl px-8 pt-8 pb-4'
-            }`}
-          />
+          {/* Title with status badge */}
+          <div className={`flex items-center gap-3 ${immersiveMode ? 'py-8' : 'px-8 pt-8 pb-4'}`}>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="Untitled Document"
+              readOnly={status === 'published'}
+              className={`flex-1 bg-transparent border-none outline-none font-bold text-neutral-darkest placeholder-neutral ${
+                immersiveMode ? 'text-5xl' : 'text-4xl'
+              } ${status === 'published' ? 'cursor-default' : ''}`}
+            />
+            {status !== 'draft' && (
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                status === 'alpha' ? 'bg-blue-100 text-blue-700' :
+                status === 'beta' ? 'bg-purple-100 text-purple-700' :
+                status === 'published' ? 'bg-green-100 text-green-700' : ''
+              }`}>
+                {status === 'alpha' ? 'Alpha' : status === 'beta' ? 'Beta' : 'Published'}
+              </span>
+            )}
+          </div>
 
           {/* Editor */}
           <EditorContent 
