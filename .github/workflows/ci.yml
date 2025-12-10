@@ -8,6 +8,49 @@ on:
 # PostHog integration requires VITE_POSTHOG_KEY secret
 
 jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Scan for secrets
+        run: |
+          echo "🔍 Scanning for secrets..."
+          if grep -r -E "(password|secret|api_key|token)\s*[:=]\s*['\"][^'\"]{8,}" \
+             --exclude-dir=.git --exclude-dir=node_modules \
+             --exclude-dir=dist --exclude="*.md" . 2>/dev/null; then
+            echo "❌ Potential secrets found in code"
+            exit 1
+          fi
+          echo "✅ No secrets found"
+      
+      - name: Check for sensitive files
+        run: |
+          echo "🔍 Checking for sensitive files..."
+          if git ls-files | grep -E '\.env$|\.pem$|credentials'; then
+            echo "❌ Sensitive files tracked in git"
+            git ls-files | grep -E '\.env$|\.pem$|credentials'
+            exit 1
+          fi
+          echo "✅ No sensitive files tracked"
+
+  validate-infrastructure:
+    name: Validate Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate docker-compose files
+        run: |
+          chmod +x scripts/validate-docker-compose.sh
+          ./scripts/validate-docker-compose.sh || echo "⚠️ Validation warnings (non-blocking)"
+      
+      - name: Validate environment variables
+        run: |
+          chmod +x scripts/validate-env-vars.sh
+          ./scripts/validate-env-vars.sh || echo "⚠️ Some env vars may be missing from template"
+
   frontend-check:
     name: Frontend Build & Validation
     runs-on: ubuntu-latest
