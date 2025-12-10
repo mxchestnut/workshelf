@@ -8,9 +8,34 @@ Always follow this workflow:
 
 ```
 1. Make code changes
-2. Test locally (docker-compose.local.yml)
-3. If tests pass, deploy to production (deploy-prod.sh)
+2. Git commit (security audit runs automatically)
+3. Test locally (docker-compose.local.yml)
+4. Run pre-deployment checklist
+5. Deploy to production (deploy-prod.sh)
 ```
+
+## Automated Safety Checks
+
+### Security Audit (runs on every commit)
+A pre-commit hook automatically scans for:
+- 🔒 Credentials, passwords, API keys
+- 🔒 `.env` files, `.pem` files
+- 🔒 Database connection strings
+- 🔒 Hardcoded tokens and secrets
+- 🔒 Previously exposed credentials
+
+**The commit will be BLOCKED if security issues are found.**
+
+### Pre-Deployment Checklist (run before deploying)
+```bash
+./scripts/pre-deploy-checklist.sh
+```
+This interactive checklist verifies:
+- ✅ All tests passed locally
+- ✅ No uncommitted changes
+- ✅ Backups created (if needed)
+- ✅ Environment variables updated
+- ✅ Rollback plan documented
 
 ---
 
@@ -68,21 +93,29 @@ cd backend && pytest tests/
 
 ### Pre-deployment Checklist
 
+**Run the automated checklist:**
+```bash
+./scripts/pre-deploy-checklist.sh
+```
+
+This will verify:
 - [ ] Changes tested locally with `docker-compose.local.yml`
 - [ ] All tests passing (`pytest tests/`)
 - [ ] Changes committed to git (`git commit`)
+- [ ] Security audit passed (automatic on commit)
 - [ ] Backup created (if touching Keycloak/database)
+- [ ] Environment variables updated (if new ones added)
+- [ ] Rollback plan documented
 
 ### Deploy to Production
 
-```bash
-# 1. Backup Keycloak (if making auth changes)
-./scripts/backup-keycloak.sh
+**After checklist passes:**
 
-# 2. Deploy
+```bash
+# Deploy
 ./deploy-prod.sh
 
-# 3. Verify deployment
+# Verify deployment
 curl https://workshelf.dev/health
 curl https://api.workshelf.dev/health
 ```
@@ -248,17 +281,20 @@ docker run -d --name workshelf-backend \
 
 1. **Always test locally first** - Use `docker-compose.local.yml`
 2. **Always backup before Keycloak changes** - Use `scripts/backup-keycloak.sh`
-3. **Never manually run docker commands in production** - Use `docker-compose`
-4. **Keep .env.prod secure** - Never commit to git
-5. **Document all environment changes** - Update `.env.prod.template`
-6. **Small, incremental changes** - Deploy one feature at a time
-7. **Monitor after deployment** - Check logs and Sentry
-
----
-
 ## Quick Reference
 
 ```bash
+# Local testing
+./scripts/test-local.sh
+
+# Pre-deployment checklist (ALWAYS RUN BEFORE DEPLOY)
+./scripts/pre-deploy-checklist.sh
+
+# Deploy to production
+./deploy-prod.sh
+
+# Backup Keycloak
+./scripts/backup-keycloak.sh
 # Local testing
 ./scripts/test-local.sh
 
