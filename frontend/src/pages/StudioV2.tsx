@@ -180,7 +180,8 @@ export default function StudioV2() {
       if (response.ok) {
         const newDoc = await response.json()
         console.log('[CREATE DOC] Created document:', newDoc.id, 'in folder:', newDoc.folder_id)
-        setDocuments(prev => [...prev, newDoc])
+        // Reload documents to ensure we have the latest data
+        await loadDocuments(selectedProject.id)
         setSelectedDocument(newDoc)
       } else {
         const error = await response.json()
