@@ -36,7 +36,8 @@ class Project(Base):
     # Relationships
     tenant = relationship("Tenant", back_populates="projects")
     user = relationship("User", back_populates="projects")
-    folder = relationship("Folder", back_populates="projects")
+    folder = relationship("Folder", foreign_keys=[folder_id], back_populates="projects_in_folder")  # Project is IN a folder
+    folders = relationship("Folder", foreign_keys="Folder.project_id", back_populates="project")  # Folders that belong TO this project
     documents = relationship("Document", back_populates="project")
     template = relationship("ProjectTemplate", foreign_keys=[template_id])
     ai_template = relationship("AIGeneratedTemplate", foreign_keys=[ai_template_id])

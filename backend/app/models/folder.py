@@ -28,4 +28,4 @@ class Folder(Base):
     parent = relationship("Folder", remote_side=[id], back_populates="children")
     children = relationship("Folder", back_populates="parent")
     project = relationship("Project", foreign_keys=[project_id], back_populates="folders")
-    projects = relationship("Project", back_populates="folder")
+    projects_in_folder = relationship("Project", foreign_keys="Project.folder_id", back_populates="folder")
