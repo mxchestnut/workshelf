@@ -67,7 +67,6 @@ import {
   MessageSquare,
   ChevronDown,
   FileEdit,
-  Users,
   Radio,
   Globe,
   Send

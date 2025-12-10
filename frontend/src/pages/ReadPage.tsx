@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Loader2, Lock } from 'lucide-react'
+import { ArrowLeft, Loader2, Lock, BookOpen } from 'lucide-react'
 import EpubReader from '../components/EpubReader'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -12,10 +12,11 @@ interface StoreItem {
   id: number
   title: string
   author_name: string
-  description: string
+  description?: string
   price_usd: number
-  epub_blob_url: string
+  epub_blob_url?: string
   cover_blob_url?: string
+  cover_url?: string
 }
 
 export default function ReadPage() {
@@ -124,7 +125,7 @@ export default function ReadPage() {
           author: storeItem.author_name,
           cover_url: storeItem.cover_url,
           epub_url: storeItem.epub_blob_url,
-          store_item_id: parseInt(itemId),
+          store_item_id: parseInt(itemId || '0'),
           status: 'want-to-read',
         }),
       })

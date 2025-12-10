@@ -629,7 +629,7 @@ export default function StudioV2() {
               <Editor
                 content={selectedDocument.content}
                 title={selectedDocument.title}
-                status={selectedDocument.status as 'draft' | 'alpha' | 'beta' | 'published'}
+                status={selectedDocument.status as 'draft' | 'beta' | 'published'}
                 onTitleChange={(title) => setSelectedDocument({ ...selectedDocument, title })}
                 onContentChange={(content) => setSelectedDocument({ ...selectedDocument, content })}
                 onSave={saveDocument}
