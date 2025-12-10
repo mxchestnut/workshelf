@@ -22,11 +22,18 @@ def upgrade():
         ADD COLUMN IF NOT EXISTS folder_id INTEGER;
     """)
     
-    # Add foreign key constraint
+    # Add foreign key constraint (check if it doesn't exist first)
     op.execute("""
-        ALTER TABLE documents 
-        ADD CONSTRAINT IF NOT EXISTS fk_documents_folder_id 
-        FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL;
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'fk_documents_folder_id'
+            ) THEN
+                ALTER TABLE documents 
+                ADD CONSTRAINT fk_documents_folder_id 
+                FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL;
+            END IF;
+        END $$;
     """)
     
     # Create index for folder_id column
@@ -41,11 +48,18 @@ def upgrade():
         ADD COLUMN IF NOT EXISTS studio_id INTEGER;
     """)
     
-    # Add foreign key constraint for studio_id
+    # Add foreign key constraint for studio_id (check if it doesn't exist first)
     op.execute("""
-        ALTER TABLE documents 
-        ADD CONSTRAINT IF NOT EXISTS fk_documents_studio_id 
-        FOREIGN KEY (studio_id) REFERENCES studios(id) ON DELETE SET NULL;
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'fk_documents_studio_id'
+            ) THEN
+                ALTER TABLE documents 
+                ADD CONSTRAINT fk_documents_studio_id 
+                FOREIGN KEY (studio_id) REFERENCES studios(id) ON DELETE SET NULL;
+            END IF;
+        END $$;
     """)
     
     # Create index for studio_id column
