@@ -85,6 +85,10 @@ class User(Base, TimestampMixin, TenantMixin):
     group_follows = relationship("GroupFollower", back_populates="user", cascade="all, delete-orphan")
     messages_sent = relationship("Message", back_populates="sender", cascade="all, delete-orphan")
     
+    # Writer-Reader relationships (alpha/beta readers)
+    my_readers = relationship("WriterReaderRelationship", foreign_keys="WriterReaderRelationship.writer_id", back_populates="writer", cascade="all, delete-orphan")
+    reading_for_writers = relationship("WriterReaderRelationship", foreign_keys="WriterReaderRelationship.reader_id", back_populates="reader", cascade="all, delete-orphan")
+    
     # Collections
     collections = relationship("Collection", back_populates="user", cascade="all, delete-orphan")
     

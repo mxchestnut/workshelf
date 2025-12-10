@@ -12,6 +12,61 @@ from app.models.base import Base, TimestampMixin
 
 
 # ============================================================================
+# Writer-Reader Relationships
+# ============================================================================
+
+class ReaderRole(str, enum.Enum):
+    """Reader roles for writer-reader relationships"""
+    ALPHA = "alpha"  # Early collaborators who help with drafts
+    BETA = "beta"    # Beta readers who review near-final work
+
+
+class WriterReaderRelationship(Base, TimestampMixin):
+    """
+    Relationship between writers and their alpha/beta readers.
+    Alpha readers: Early collaborators for drafts
+    Beta readers: Review near-final work for feedback
+    """
+    __tablename__ = "writer_reader_relationships"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Writer (document owner)
+    writer_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Reader (alpha or beta)
+    reader_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Role type
+    role = Column(SQLEnum(ReaderRole), nullable=False, index=True)
+    
+    # Status
+    is_active = Column(Boolean, default=True, nullable=False)
+    
+    # Optional: Custom label for this reader
+    custom_label = Column(String(100), nullable=True)  # e.g., "Primary Alpha", "Genre Expert"
+    
+    # Notes from writer about this reader
+    notes = Column(Text, nullable=True)
+    
+    # Stats
+    documents_shared = Column(Integer, default=0, nullable=False)
+    feedback_provided = Column(Integer, default=0, nullable=False)
+    
+    # Relationships
+    writer = relationship("User", foreign_keys=[writer_id], back_populates="my_readers")
+    reader = relationship("User", foreign_keys=[reader_id], back_populates="reading_for_writers")
+    
+    __table_args__ = (
+        Index('idx_writer_reader_role', 'writer_id', 'reader_id', 'role', unique=True),
+        Index('idx_reader_role_active', 'reader_id', 'role', 'is_active'),
+    )
+    
+    def __repr__(self):
+        return f"<WriterReaderRelationship(writer={self.writer_id}, reader={self.reader_id}, role={self.role})>"
+
+
+# ============================================================================
 # Comments & Reactions
 # ============================================================================
 

@@ -34,6 +34,7 @@ from app.api import (
     beta_reading,
     beta_appointments,  # Beta reader appointments and releases
     beta_profiles,  # Beta reader marketplace profiles
+    writer_readers,  # Writer-reader relationships (alpha/beta readers)
     groups,
     messaging,
     matrix,  # Matrix protocol integration
@@ -132,6 +133,7 @@ api_router.include_router(comments.router)
 api_router.include_router(beta_reading.router)
 api_router.include_router(beta_appointments.router)  # Beta reader appointments
 api_router.include_router(beta_profiles.router)  # Beta reader marketplace profiles
+api_router.include_router(writer_readers.router)  # Writer-reader relationships (alpha/beta)
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
 api_router.include_router(matrix.router)  # Matrix protocol integration
