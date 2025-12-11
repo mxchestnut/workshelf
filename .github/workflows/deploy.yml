@@ -71,6 +71,9 @@ jobs:
             set -e
             cd /opt/workshelf
             
+            echo "🔧 Fixing git permissions..."
+            sudo chown -R ubuntu:ubuntu /opt/workshelf/.git
+            
             echo "📥 Pulling latest code..."
             git fetch origin main
             git reset --hard origin/main
