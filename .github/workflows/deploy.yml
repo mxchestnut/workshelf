@@ -112,6 +112,10 @@ jobs:
             
             echo "🚀 Starting application services..."
             sudo docker-compose -f docker-compose.prod.yml up -d backend frontend
+            sleep 10
+            
+            echo "🗄️  Running database migrations..."
+            sudo docker-compose -f docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_bookshelf.py || echo "⚠️  Migration already applied or failed"
             
             echo "🔧 Fixing CORS configuration..."
             sudo bash fix-cors.sh || echo "⚠️  CORS fix script not available yet"
