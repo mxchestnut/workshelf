@@ -117,6 +117,10 @@ jobs:
             echo "🗄️  Running database migrations..."
             sudo docker-compose -f docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_bookshelf.py || echo "⚠️  Migration already applied or failed"
             
+            echo "♻️  Restarting backend to load schema changes..."
+            sudo docker-compose -f docker-compose.prod.yml restart backend
+            sleep 10
+            
             echo "🔧 Fixing CORS configuration..."
             sudo bash fix-cors.sh || echo "⚠️  CORS fix script not available yet"
             
