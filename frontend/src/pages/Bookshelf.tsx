@@ -657,10 +657,10 @@ export default function Bookshelf() {
 
                 {/* Book Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-1 line-clamp-2">
+                  <h3 className="font-semibold text-white mb-1 line-clamp-2">
                     {book.title || book.document_title}
                   </h3>
-                  <p className="text-sm text-gray-400 mb-3 line-clamp-1">
+                  <p className="text-sm text-gray-300 mb-3 line-clamp-1">
                     {book.author || 'Unknown Author'}
                   </p>
 
