@@ -77,7 +77,7 @@ class Document(Base, TimestampMixin, TenantMixin):
     
     # Status and workflow
     status = Column(SQLEnum(DocumentStatus), default=DocumentStatus.DRAFT, nullable=False, index=True)
-    mode = Column(SQLEnum(DocumentMode), default=DocumentMode.ALPHA, nullable=False, index=True)
+    mode = Column('mode', SQLEnum(DocumentMode), default=DocumentMode.ALPHA, nullable=False, index=True, quote=True)
     visibility = Column(SQLEnum(DocumentVisibility), default=DocumentVisibility.PRIVATE, nullable=False)
     
     # Publishing
