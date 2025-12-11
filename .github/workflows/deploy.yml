@@ -24,18 +24,30 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            // Get the latest commit on main branch
+            const { data: ref } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'heads/main'
+            });
+            const mainSha = ref.object.sha;
+            
+            // Check CI for that commit
             const runs = await github.rest.actions.listWorkflowRunsForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'ci.yml',
-              head_sha: context.sha,
+              head_sha: mainSha,
               status: 'completed',
             });
             
             const ciRun = runs.data.workflow_runs[0];
             if (!ciRun || ciRun.conclusion !== 'success') {
-              core.setFailed('CI workflow must pass before deploying');
+              core.setFailed(`CI workflow must pass before deploying. Latest main SHA: ${mainSha}, CI conclusion: ${ciRun?.conclusion || 'not found'}`);
             }
+            
+            core.info(`✅ CI passed for main branch commit ${mainSha}`);
+          
 
   deploy:
     name: Deploy to EC2
