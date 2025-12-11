@@ -512,7 +512,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
               )}
 
               {/* No Results - Show Suggest Book */}
-              {searchPerformed && searchResults.length === 0 && !searching && (
+              {searchPerformed && searchResults.length === 0 && !searching && !showRecommendations && (
                 <div className="mt-4 p-6 bg-orange-50 border-2 border-[#B34B0C]/30 rounded-lg">
                   <div className="text-center">
                     <BookOpen className="w-12 h-12 text-[#B34B0C] mx-auto mb-3" />
