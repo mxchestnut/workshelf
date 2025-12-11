@@ -389,9 +389,8 @@ async def get_my_bookshelf(
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
-    # Eager load documents with their owners for efficient fetching
-    query = select(BookshelfItem).where(BookshelfItem.user_id == user.id) \
-        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
+    # Load bookshelf items without joins to avoid PostgreSQL reserved word issues
+    query = select(BookshelfItem).where(BookshelfItem.user_id == user.id)
     
     if status:
         query = query.where(BookshelfItem.status == status)
@@ -402,7 +401,16 @@ async def get_my_bookshelf(
     query = query.order_by(BookshelfItem.added_at.desc())
     
     result = await db.execute(query)
-    items = result.scalars().unique().all()  # unique() needed with joinedload
+    items = result.scalars().all()
+    
+    # Manually load documents to avoid problematic joins with reserved keywords
+    doc_ids = [item.document_id for item in items if item.document_id]
+    documents_map = {}
+    if doc_ids:
+        doc_query = select(Document).where(Document.id.in_(doc_ids))
+        doc_result = await db.execute(doc_query)
+        docs = doc_result.scalars().all()
+        documents_map = {doc.id: doc for doc in docs}
     
     return [
         BookshelfItemResponse(
@@ -410,8 +418,8 @@ async def get_my_bookshelf(
             user_id=item.user_id,
             item_type=item.item_type,
             document_id=item.document_id,
-            document_title=item.document.title if item.document else None,
-            document_author=item.document.owner.display_name if item.document and item.document.owner else None,
+            document_title=documents_map.get(item.document_id).title if item.document_id and item.document_id in documents_map else None,
+            document_author=None,  # Skip author for now to avoid more joins
             store_item_id=item.store_item_id,
             isbn=item.isbn,
             title=item.title,
