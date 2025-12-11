@@ -2,7 +2,6 @@
  * Read Page - Readium-powered reading experience for published works
  */
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Loader2, Lock, BookOpen } from 'lucide-react'
 import EpubReader from '../components/EpubReader'
 
@@ -20,8 +19,8 @@ interface StoreItem {
 }
 
 export default function ReadPage() {
-  const { itemId } = useParams<{ itemId: string }>()
-  const navigate = useNavigate()
+  // Get itemId from URL path: /read/:itemId
+  const itemId = window.location.pathname.split('/read/')[1]
   const [storeItem, setStoreItem] = useState<StoreItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -183,7 +182,10 @@ export default function ReadPage() {
           <h2 className="text-2xl font-bold text-foreground mb-4">Book Not Found</h2>
           <p className="text-muted-foreground mb-6">{error || 'The book you\'re looking for doesn\'t exist.'}</p>
           <button
-            onClick={() => navigate('/store')}
+            onClick={() => {
+              window.history.pushState({}, '', '/store')
+              window.dispatchEvent(new PopStateEvent('popstate'))
+            }}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
           >
             Browse Store
@@ -212,7 +214,7 @@ export default function ReadPage() {
       <div className="bg-card border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => window.history.back()}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />

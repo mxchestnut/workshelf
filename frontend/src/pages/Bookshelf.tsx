@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List } from 'lucide-react'
 import { authService } from '../services/auth'
 import { Navigation } from '../components/Navigation'
@@ -69,7 +68,6 @@ interface ReadingList {
 }
 
 export default function Bookshelf() {
-  const navigate = useNavigate()
   const [books, setBooks] = useState<BookshelfItem[]>([])
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
   const [stats, setStats] = useState<BookshelfStats | null>(null)
@@ -699,9 +697,11 @@ export default function Bookshelf() {
                       onClick={(e) => {
                         e.stopPropagation()
                         if (book.store_item_id) {
-                          navigate(`/read/${book.store_item_id}`)
+                          window.history.pushState({}, '', `/read/${book.store_item_id}`)
+                          window.dispatchEvent(new PopStateEvent('popstate'))
                         } else if (book.epub_url) {
-                          navigate(`/read/epub?url=${encodeURIComponent(book.epub_url)}`)
+                          window.history.pushState({}, '', `/read/epub?url=${encodeURIComponent(book.epub_url)}`)
+                          window.dispatchEvent(new PopStateEvent('popstate'))
                         }
                       }}
                       className="mt-3 w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
