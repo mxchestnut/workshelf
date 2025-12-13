@@ -85,12 +85,13 @@ const ReadPage = lazy(() => import('./pages/ReadPage'))
 
 // Roleplay Studio pages
 const RoleplaysList = lazy(() => import('./pages/roleplay/RoleplaysList').then(module => ({ default: module.RoleplaysList })))
+const CreateRoleplay = lazy(() => import('./pages/roleplay/CreateRoleplay').then(module => ({ default: module.CreateRoleplay })))
 const RoleplayProject = lazy(() => import('./pages/roleplay/RoleplayProject').then(module => ({ default: module.RoleplayProject })))
 const CharacterSheet = lazy(() => import('./pages/roleplay/CharacterSheet').then(module => ({ default: module.CharacterSheet })))
 const LoreWiki = lazy(() => import('./pages/roleplay/LoreWiki').then(module => ({ default: module.LoreWiki })))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash' | 'roleplays' | 'roleplay-project' | 'roleplay-character' | 'roleplay-lore'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash' | 'roleplays' | 'roleplay-new' | 'roleplay-project' | 'roleplay-character' | 'roleplay-lore'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -192,6 +193,8 @@ function App() {
       setCurrentPage('projects')
     } else if (path === '/roleplays') {
       setCurrentPage('roleplays')
+    } else if (path === '/roleplay/new') {
+      setCurrentPage('roleplay-new')
     } else if (path.startsWith('/roleplay/') && path.includes('/lore')) {
       // Lore wiki: /roleplay/:projectId/lore
       setCurrentPage('roleplay-lore')
@@ -428,6 +431,10 @@ function App() {
     
     if (currentPage === 'roleplays') {
       return <RoleplaysList />
+    }
+    
+    if (currentPage === 'roleplay-new') {
+      return <CreateRoleplay />
     }
     
     if (currentPage === 'roleplay-project') {
