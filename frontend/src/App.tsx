@@ -83,8 +83,14 @@ const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const StaffPanel = lazy(() => import('./pages/StaffPanel').then(module => ({ default: module.StaffPanel })))
 const ReadPage = lazy(() => import('./pages/ReadPage'))
 
+// Roleplay Studio pages
+const RoleplaysList = lazy(() => import('./pages/roleplay/RoleplaysList'))
+const RoleplayProject = lazy(() => import('./pages/roleplay/RoleplayProject'))
+const CharacterSheet = lazy(() => import('./pages/roleplay/CharacterSheet'))
+const LoreWiki = lazy(() => import('./pages/roleplay/LoreWiki'))
+
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash'>('home')
+  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash' | 'roleplays' | 'roleplay-project' | 'roleplay-character' | 'roleplay-lore'>('home')
 
   useEffect(() => {
     // Check authentication and route
@@ -184,6 +190,17 @@ function App() {
       setCurrentPage('project-detail')
     } else if (path === '/projects') {
       setCurrentPage('projects')
+    } else if (path === '/roleplays') {
+      setCurrentPage('roleplays')
+    } else if (path.startsWith('/roleplay/') && path.includes('/lore')) {
+      // Lore wiki: /roleplay/:projectId/lore
+      setCurrentPage('roleplay-lore')
+    } else if (path.startsWith('/roleplay/') && path.includes('/characters/')) {
+      // Character sheet: /roleplay/:projectId/characters/:characterId
+      setCurrentPage('roleplay-character')
+    } else if (path.startsWith('/roleplay/')) {
+      // Roleplay project: /roleplay/:projectId
+      setCurrentPage('roleplay-project')
     } else if (path === '/dashboard') {
       setCurrentPage('dashboard')
     } else if (path === '/admin') {
@@ -407,6 +424,22 @@ function App() {
     
     if (currentPage === 'projects') {
       return <Projects />
+    }
+    
+    if (currentPage === 'roleplays') {
+      return <RoleplaysList />
+    }
+    
+    if (currentPage === 'roleplay-project') {
+      return <RoleplayProject />
+    }
+    
+    if (currentPage === 'roleplay-character') {
+      return <CharacterSheet />
+    }
+    
+    if (currentPage === 'roleplay-lore') {
+      return <LoreWiki />
     }
     
     if (currentPage === 'dashboard') {
