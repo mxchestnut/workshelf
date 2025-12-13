@@ -65,7 +65,20 @@ async def list_roleplay_projects(
     """
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     projects = await RoleplayService.list_roleplay_projects(db, user.id)
-    return projects
+    
+    # Enrich with project details
+    enriched = []
+    for rp in projects:
+        rp_dict = {
+            **rp.__dict__,
+            "title": rp.project.title if rp.project else None,
+            "description": rp.project.description if rp.project else None,
+            "owner_id": rp.project.user_id if rp.project else None,
+            "is_active": rp.project.is_active if rp.project else True,
+        }
+        enriched.append(rp_dict)
+    
+    return enriched
 
 
 @router.get("/projects/{project_id}", response_model=RoleplayProjectResponse)

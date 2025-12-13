@@ -93,6 +93,12 @@ class RoleplayProjectResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
+    # Project fields (from joined Project table)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    owner_id: Optional[int] = None
+    is_active: Optional[bool] = None
+    
     # Computed fields (can be added by API layer)
     character_count: Optional[int] = None
     passage_count: Optional[int] = None

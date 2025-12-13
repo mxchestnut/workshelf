@@ -14,6 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
 interface RoleplayProject {
   id: number
+  project_id: number
   title: string
   description?: string
   genre: string
@@ -222,7 +223,7 @@ export function RoleplaysList() {
             {filteredProjects.map(project => (
               <a
                 key={project.id}
-                href={`/roleplay/${project.id}`}
+                href={`/roleplay/${project.project_id}`}
                 className="group"
               >
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden h-full border border-gray-200 dark:border-gray-700">
