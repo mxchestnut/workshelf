@@ -54,6 +54,9 @@ from app.models.page_tracking import (
 from app.models.collection import (
     Collection, CollectionItem, CollectionItemType
 )
+from app.models.tags import (
+    ContentTag, PostTag
+)
 from app.models.roleplay import (
     RoleplayProject, RoleplayCharacter, RoleplayPassage, RoleplayScene,
     LoreEntry, PassageReaction, DiceRoll,
@@ -159,6 +162,9 @@ __all__ = [
     "AIGeneratedTemplate",
     "TemplateInterestMapping",
     "AIGenerationLog",
+    # Tags
+    "ContentTag",
+    "PostTag",
     # Roleplay Studio
     "RoleplayProject",
     "RoleplayCharacter",
