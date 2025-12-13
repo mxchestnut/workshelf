@@ -18,7 +18,7 @@ export function CreateRoleplay() {
     title: '',
     description: '',
     genre: 'fantasy',
-    rating: 'pg-13',
+    rating: 'PG-13',
     posting_order: 'free-form',
     dice_system: 'none',
     min_post_length: ''
@@ -49,13 +49,15 @@ export function CreateRoleplay() {
         body: JSON.stringify({
           title: form.title,
           description: form.description || null,
-          content: 'Roleplay project',
-          is_public: false
+          project_type: 'blank',
+          target_word_count: null,
+          folder_id: null
         })
       })
 
       if (!projectResponse.ok) {
-        throw new Error('Failed to create project')
+        const errorData = await projectResponse.json().catch(() => ({}))
+        throw new Error(errorData.detail || `Failed to create project (${projectResponse.status})`)
       }
 
       const project = await projectResponse.json()
@@ -82,7 +84,8 @@ export function CreateRoleplay() {
       })
 
       if (!roleplayResponse.ok) {
-        throw new Error('Failed to create roleplay settings')
+        const errorData = await roleplayResponse.json().catch(() => ({}))
+        throw new Error(errorData.detail || `Failed to create roleplay settings (${roleplayResponse.status})`)
       }
 
       const roleplay = await roleplayResponse.json()
@@ -176,7 +179,10 @@ export function CreateRoleplay() {
                 <option value="historical">Historical</option>
                 <option value="horror">Horror</option>
                 <option value="romance">Romance</option>
-                <option value="slice-of-life">Slice of Life</option>
+                <option value="mystery">Mystery</option>
+                <option value="post-apocalyptic">Post-Apocalyptic</option>
+                <option value="cyberpunk">Cyberpunk</option>
+                <option value="supernatural">Supernatural</option>
                 <option value="other">Other</option>
               </select>
             </div>
@@ -192,11 +198,11 @@ export function CreateRoleplay() {
                 onChange={(e) => setForm({ ...form, rating: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
               >
-                <option value="g">G - General Audiences</option>
-                <option value="pg">PG - Parental Guidance</option>
-                <option value="pg-13">PG-13 - Teens</option>
-                <option value="r">R - Mature (17+)</option>
-                <option value="nc-17">NC-17 - Adults Only (18+)</option>
+                <option value="G">G - General Audiences</option>
+                <option value="PG">PG - Parental Guidance</option>
+                <option value="PG-13">PG-13 - Teens</option>
+                <option value="R">R - Mature (17+)</option>
+                <option value="mature">Mature - Adults Only (18+)</option>
               </select>
             </div>
 
@@ -212,8 +218,8 @@ export function CreateRoleplay() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="free-form">Free Form</option>
-                <option value="strict">Strict Turn Order</option>
-                <option value="flexible">Flexible Order</option>
+                <option value="turn-based">Turn Based</option>
+                <option value="round-robin">Round Robin</option>
               </select>
             </div>
 
@@ -229,8 +235,9 @@ export function CreateRoleplay() {
               >
                 <option value="none">None</option>
                 <option value="d20">D20 System</option>
-                <option value="d6">D6 Pool</option>
+                <option value="d6-pool">D6 Pool</option>
                 <option value="fate">Fate Dice</option>
+                <option value="percentile">Percentile (D100)</option>
                 <option value="custom">Custom</option>
               </select>
             </div>
