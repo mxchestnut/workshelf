@@ -54,6 +54,11 @@ from app.models.page_tracking import (
 from app.models.collection import (
     Collection, CollectionItem, CollectionItemType
 )
+from app.models.roleplay import (
+    RoleplayProject, RoleplayCharacter, RoleplayPassage, RoleplayScene,
+    LoreEntry, PassageReaction, DiceRoll,
+    RoleplayGenre, RoleplayRating, PostingOrder, DiceSystem
+)
 
 __all__ = [
     "Base",
@@ -154,4 +159,16 @@ __all__ = [
     "AIGeneratedTemplate",
     "TemplateInterestMapping",
     "AIGenerationLog",
+    # Roleplay Studio
+    "RoleplayProject",
+    "RoleplayCharacter",
+    "RoleplayPassage",
+    "RoleplayScene",
+    "LoreEntry",
+    "PassageReaction",
+    "DiceRoll",
+    "RoleplayGenre",
+    "RoleplayRating",
+    "PostingOrder",
+    "DiceSystem",
 ]

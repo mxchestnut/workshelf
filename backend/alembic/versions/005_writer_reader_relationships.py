@@ -9,7 +9,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers
 revision = '005_writer_reader_relationships'
-down_revision = '2025_12_10_1040_add_folder_id_to_documents'
+down_revision = 'add_folder_id_documents'
 branch_labels = None
 depends_on = None
 
