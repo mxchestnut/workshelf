@@ -56,7 +56,8 @@ from app.api import (
     account_deletion,  # Account deletion with username freezing
     trash,  # Trash bin for soft-deleted documents/projects
     collections,  # Universal bookmarking system
-    pages  # Page tracking and navigation
+    pages,  # Page tracking and navigation
+    roleplay  # Roleplay Studio - collaborative literate roleplay
 )
 
 api_router = APIRouter()
@@ -177,3 +178,6 @@ api_router.include_router(trash.router)
 
 # Page tracking and navigation system
 api_router.include_router(pages.router)
+
+# Roleplay Studio - collaborative literate roleplay
+api_router.include_router(roleplay.router)
