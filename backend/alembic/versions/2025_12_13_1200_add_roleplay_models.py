@@ -69,20 +69,24 @@ def upgrade():
             'fantasy', 'sci-fi', 'modern', 'historical', 'horror', 
             'romance', 'mystery', 'post-apocalyptic', 'cyberpunk', 
             'supernatural', 'other',
-            name='roleplaygenre'
+            name='roleplaygenre',
+            create_type=False
         ), nullable=False, server_default='fantasy'),
         sa.Column('rating', sa.Enum(
             'G', 'PG', 'PG-13', 'R', 'mature',
-            name='roleplayrating'
+            name='roleplayrating',
+            create_type=False
         ), nullable=False, server_default='PG-13'),
         sa.Column('posting_order', sa.Enum(
             'free-form', 'turn-based', 'round-robin',
-            name='postingorder'
+            name='postingorder',
+            create_type=False
         ), nullable=False, server_default='free-form'),
         sa.Column('min_post_length', sa.Integer(), nullable=True),
         sa.Column('dice_system', sa.Enum(
             'd20', 'd6-pool', 'fate', 'percentile', 'custom', 'none',
-            name='dicesystem'
+            name='dicesystem',
+            create_type=False
         ), nullable=False, server_default='none'),
         sa.Column('dice_enabled', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('has_lore_wiki', sa.Boolean(), nullable=False, server_default='true'),
