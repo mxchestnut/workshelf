@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import BetaBanner from './components/BetaBanner'
 import ChatBar from './components/ChatBar'
-import Navigation from './components/Navigation'
 import './App.css'
 import { authService } from './services/auth'
 import { trackPageView } from './matomo'
@@ -131,8 +130,6 @@ function App() {
       <BetaBanner />
       
       <div className="min-h-screen bg-background">
-        <Navigation />
-        
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
