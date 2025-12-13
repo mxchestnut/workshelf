@@ -8,15 +8,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    fs: {
-      // Prevent Vite from processing non-source files
-      strict: true,
-    },
-    watch: {
-      ignored: ['**/Dockerfile', '**/*.md', '**/docker-compose*.yml', '**/node_modules/**']
-    }
-  },
   build: {
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
@@ -44,6 +35,13 @@ export default defineConfig({
       'localhost',
       '127.0.0.1'
     ],
+    fs: {
+      // Prevent Vite from processing non-source files
+      strict: true,
+    },
+    watch: {
+      ignored: ['**/Dockerfile', '**/*.md', '**/docker-compose*.yml', '**/node_modules/**']
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

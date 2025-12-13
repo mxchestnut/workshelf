@@ -20,6 +20,7 @@ import {
   Search
 } from 'lucide-react'
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { User } from '../services/auth'
 import NotificationBell from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
@@ -34,16 +35,10 @@ interface NavigationProps {
 
 export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true) // Default to open
-
-  const navigateTo = (path: string) => {
-    // Use pushState to navigate without full page reload
-    window.history.pushState({}, '', path)
-    // Trigger popstate event so App.tsx picks up the route change
-    window.dispatchEvent(new PopStateEvent('popstate'))
-  }
+  const location = useLocation()
 
   const isActive = (path: string) => {
-    return window.location.pathname === path || currentPage === path
+    return location.pathname === path || currentPage === path
   }
 
   return (
@@ -120,126 +115,126 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {/* Main Pages */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Main</h3>
-                  <button 
-                    onClick={() => navigateTo('/')}
+                  <Link 
+                    to="/"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Home className="w-5 h-5" />
                     <span>Home</span>
-                  </button>
-                  <button 
-                    onClick={() => navigateTo('/bookshelf')}
+                  </Link>
+                  <Link 
+                    to="/bookshelf"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/bookshelf') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Library className="w-5 h-5" />
                     <span>Library</span>
-                  </button>
-                  <button 
-                    onClick={() => navigateTo('/advanced-search')}
+                  </Link>
+                  <Link 
+                    to="/advanced-search"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/advanced-search') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Search className="w-5 h-5" />
                     <span>Search</span>
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Creation */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Create</h3>
-                  <button 
-                    onClick={() => navigateTo('/studio')}
+                  <Link 
+                    to="/studio"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/studio') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <PenTool className="w-5 h-5" />
                     <span>Studio</span>
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Social */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Social</h3>
-                  <button 
-                    onClick={() => navigateTo('/groups')}
+                  <Link 
+                    to="/groups"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/groups') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Users className="w-5 h-5" />
                     <span>Groups</span>
-                  </button>
-                  <button 
-                    onClick={() => navigateTo('/messages')}
+                  </Link>
+                  <Link 
+                    to="/messages"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/messages') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <MessageCircle className="w-5 h-5" />
                     <span>Messages</span>
-                  </button>
-                  <button 
-                    onClick={() => navigateTo('/roleplays')}
+                  </Link>
+                  <Link 
+                    to="/roleplays"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/roleplays') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <UserRoundPen className="w-5 h-5" />
                     <span>Roleplay</span>
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Account */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</h3>
-                  <button 
-                    onClick={() => navigateTo('/profile')}
+                  <Link 
+                    to="/profile"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/profile') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <UserCircle className="w-5 h-5" />
                     <span>Profile</span>
-                  </button>
-                  <button 
-                    onClick={() => navigateTo('/dashboard')}
+                  </Link>
+                  <Link 
+                    to="/dashboard"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/dashboard') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Settings className="w-5 h-5" />
                     <span>Dashboard</span>
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Staff Only */}
                 {user.is_staff && (
                   <div className="mb-4">
                     <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Staff</h3>
-                    <button 
-                      onClick={() => navigateTo('/staff')}
+                    <Link 
+                      to="/staff"
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive('/staff') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                       }`}
                     >
                       <Shield className="w-5 h-5" />
                       <span>Staff Panel</span>
-                    </button>
-                    <button 
-                      onClick={() => navigateTo('/admin')}
+                    </Link>
+                    <Link 
+                      to="/admin"
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive('/admin') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                       }`}
                     >
                       <Shield className="w-5 h-5" />
                       <span>Admin Dashboard</span>
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>
