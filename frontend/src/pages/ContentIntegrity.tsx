@@ -3,7 +3,7 @@
  * Provides tools for checking content authenticity and originality
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ReactElement } from 'react'
 import { Navigation } from '../components/Navigation'
 import { authService } from '../services/auth'
 import { 
@@ -200,7 +200,7 @@ export function ContentIntegrity() {
   }
 
   const getStatusBadge = (status: string) => {
-    const statusStyles: Record<string, {bg: string, text: string, icon: JSX.Element}> = {
+    const statusStyles: Record<string, {bg: string, text: string, icon: ReactElement}> = {
       pending: { 
         bg: 'bg-gray-100 dark:bg-gray-800', 
         text: 'text-gray-700 dark:text-gray-300',

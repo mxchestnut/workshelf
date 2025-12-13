@@ -4,14 +4,27 @@ services:
   redis:
     image: redis:7-alpine
     platform: linux/amd64
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
     networks:
       - workshelf
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0
+    image: quay.io/keycloak/keycloak:26.4.7
     platform: linux/amd64
-    command: start-dev
+    command: start
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -20,13 +33,26 @@ services:
       KC_DB_USERNAME: ${DATABASE_USER}
       KC_DB_PASSWORD: ${DATABASE_PASSWORD}
       KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME: keycloak.workshelf.dev
       KC_HTTP_ENABLED: true
-      KC_PROXY: edge
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: false
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     networks:
       - workshelf
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   minio:
     image: minio/minio:latest
@@ -38,11 +64,21 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     networks:
       - workshelf
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
@@ -76,6 +112,8 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-workshelf}
+      # Uvicorn workers (2 cores = 2 workers for memory efficiency)
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
     depends_on:
       - redis
       - keycloak
@@ -83,6 +121,16 @@ services:
     networks:
       - workshelf
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: '1.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     # Build and run the production nginx image (multi-stage Dockerfile inside ../frontend)
@@ -106,6 +154,16 @@ services:
     networks:
       - workshelf
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   workshelf:
@@ -113,3 +171,4 @@ networks:
 
 volumes:
   minio_data:
+  redis_data:

@@ -56,3 +56,8 @@ venv/
 wheels/
 yarn-debug.log*
 yarn-error.log*
+backup.env
+
+# Production secrets backup
+production-secrets*.txt
+*.secrets
