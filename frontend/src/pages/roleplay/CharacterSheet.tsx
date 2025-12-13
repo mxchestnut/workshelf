@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
 import { 
   Save, 
   ArrowLeft, 
@@ -26,8 +25,10 @@ interface Character {
 }
 
 export function CharacterSheet() {
-  const { projectId, characterId } = useParams<{ projectId: string; characterId: string }>()
-  const navigate = useNavigate()
+  // Extract IDs from URL: /roleplay/:projectId/characters/:characterId
+  const pathParts = window.location.pathname.split('/')
+  const projectId = pathParts[2]
+  const characterId = pathParts[4]
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,6 +50,7 @@ export function CharacterSheet() {
     if (characterId && characterId !== 'new') {
       loadCharacter()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [characterId])
 
   const loadCharacter = async () => {
@@ -110,7 +112,7 @@ export function CharacterSheet() {
       }
 
       await response.json()
-      navigate(`/roleplay/${projectId}`)
+      window.location.href = `/roleplay/${projectId}`
     } catch (err: any) {
       console.error('Error saving character:', err)
       setError(err.message || 'Failed to save character')
@@ -153,13 +155,13 @@ export function CharacterSheet() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
-          <Link
-            to={`/roleplay/${projectId}`}
+          <a
+            href={`/roleplay/${projectId}`}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Roleplay
-          </Link>
+          </a>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {characterId === 'new' ? 'Create Character' : 'Edit Character'}
           </h1>
@@ -373,12 +375,12 @@ export function CharacterSheet() {
 
           {/* Submit Buttons */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <Link
-              to={`/roleplay/${projectId}`}
+            <a
+              href={`/roleplay/${projectId}`}
               className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Cancel
-            </Link>
+            </a>
             <button
               type="submit"
               disabled={saving}
