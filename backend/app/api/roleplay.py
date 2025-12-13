@@ -53,6 +53,21 @@ async def create_roleplay_project(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/projects", response_model=List[RoleplayProjectResponse])
+async def list_roleplay_projects(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    List all roleplay projects accessible to the current user.
+    
+    Returns roleplay projects owned by or shared with the user.
+    """
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    projects = await RoleplayService.list_roleplay_projects(db, user.id)
+    return projects
+
+
 @router.get("/projects/{project_id}", response_model=RoleplayProjectResponse)
 async def get_roleplay_project(
     project_id: int,

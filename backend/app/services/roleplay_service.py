@@ -78,6 +78,26 @@ class RoleplayService:
         return roleplay_project
     
     @staticmethod
+    async def list_roleplay_projects(
+        db: AsyncSession,
+        user_id: int
+    ) -> List[RoleplayProject]:
+        """List all roleplay projects accessible to the user."""
+        query = (
+            select(RoleplayProject)
+            .join(Project)
+            .where(Project.user_id == user_id)
+            .options(
+                selectinload(RoleplayProject.project),
+                selectinload(RoleplayProject.characters),
+                selectinload(RoleplayProject.scenes)
+            )
+        )
+        
+        result = await db.execute(query)
+        return list(result.scalars().all())
+    
+    @staticmethod
     async def get_roleplay_project(
         db: AsyncSession,
         project_id: int,
