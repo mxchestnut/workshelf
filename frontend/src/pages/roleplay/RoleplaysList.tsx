@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { 
   BookOpen, 
   Plus, 
@@ -150,13 +149,13 @@ export function RoleplaysList() {
                 Create and manage your roleplays
               </p>
             </div>
-            <Link
-              to="/roleplay/new"
+            <a
+              href="/roleplay/new"
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
             >
               <Plus className="w-5 h-5" />
               New Roleplay
-            </Link>
+            </a>
           </div>
 
           {/* Search and Filters */}
@@ -210,20 +209,20 @@ export function RoleplaysList() {
                 ? 'Try adjusting your filters'
                 : 'Create your first roleplay to get started!'}
             </p>
-            <Link
-              to="/roleplay/new"
+            <a
+              href="/roleplay/new"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
               <Plus className="w-5 h-5" />
               Create Roleplay
-            </Link>
+            </a>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map(project => (
-              <Link
+              <a
                 key={project.id}
-                to={`/roleplay/${project.id}`}
+                href={`/roleplay/${project.id}`}
                 className="group"
               >
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden h-full border border-gray-200 dark:border-gray-700">
@@ -278,7 +277,7 @@ export function RoleplaysList() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         )}
