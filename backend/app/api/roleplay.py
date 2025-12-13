@@ -74,7 +74,7 @@ async def list_roleplay_projects(
             "title": rp.project.title if rp.project else None,
             "description": rp.project.description if rp.project else None,
             "owner_id": rp.project.user_id if rp.project else None,
-            "is_active": rp.project.is_active if rp.project else True,
+            "is_active": not rp.project.is_deleted if rp.project else True,
         }
         enriched.append(rp_dict)
     
