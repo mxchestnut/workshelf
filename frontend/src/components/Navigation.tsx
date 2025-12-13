@@ -185,9 +185,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <span>Messages</span>
                   </button>
                   <button 
-                    onClick={() => navigateTo('/roleplay')}
+                    onClick={() => navigateTo('/roleplays')}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive('/roleplay') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                      isActive('/roleplays') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <UserRoundPen className="w-5 h-5" />
