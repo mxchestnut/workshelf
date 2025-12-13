@@ -154,7 +154,7 @@ export function LoreWiki() {
             >
               <option value="">All Categories</option>
               {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category || 'uncategorized'} value={category || ''}>{category}</option>
               ))}
             </select>
           </div>

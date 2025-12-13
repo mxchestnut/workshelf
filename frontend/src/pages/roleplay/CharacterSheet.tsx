@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { 
   Save, 
   ArrowLeft, 
-  Upload, 
   Loader2,
   AlertCircle,
   X,
@@ -110,7 +109,7 @@ export function CharacterSheet() {
         throw new Error(errorData.detail || 'Failed to save character')
       }
 
-      const savedCharacter = await response.json()
+      await response.json()
       navigate(`/roleplay/${projectId}`)
     } catch (err: any) {
       console.error('Error saving character:', err)

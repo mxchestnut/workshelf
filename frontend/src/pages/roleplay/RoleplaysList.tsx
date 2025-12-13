@@ -8,8 +8,7 @@ import {
   Clock,
   Loader2,
   AlertCircle,
-  Search,
-  Filter
+  Search
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'

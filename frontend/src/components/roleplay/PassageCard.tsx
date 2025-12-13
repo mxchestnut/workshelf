@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Heart, MessageSquare, Eye, Calendar, Dices } from 'lucide-react'
+import { MessageSquare, Eye, Calendar, Dices } from 'lucide-react'
 import { CharacterAvatar } from './CharacterAvatar'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
