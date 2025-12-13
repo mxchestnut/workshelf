@@ -1,13 +1,14 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import BetaBanner from './components/BetaBanner'
 import ChatBar from './components/ChatBar'
+import Navigation from './components/Navigation'
 import './App.css'
 import { authService } from './services/auth'
 import { trackPageView } from './matomo'
 
-// Cache bust: 2025-11-09 14:00
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen bg-background">
@@ -18,7 +19,7 @@ const PageLoader = () => (
   </div>
 )
 
-// Lazy load ALL pages for optimal code splitting
+// Lazy load ALL pages
 const Home = lazy(() => import('./pages/Home'))
 const Feed = lazy(() => import('./pages/Feed').then(module => ({ default: module.Feed })))
 const Discover = lazy(() => import('./pages/Discover').then(module => ({ default: module.Discover })))
@@ -90,532 +91,159 @@ const RoleplayProject = lazy(() => import('./pages/roleplay/RoleplayProject').th
 const CharacterSheet = lazy(() => import('./pages/roleplay/CharacterSheet').then(module => ({ default: module.CharacterSheet })))
 const LoreWiki = lazy(() => import('./pages/roleplay/LoreWiki').then(module => ({ default: module.LoreWiki })))
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'feed' | 'discover' | 'groups' | 'group-detail' | 'post-detail' | 'group-settings' | 'group-roles' | 'profile' | 'studio' | 'studio-settings' | 'projects' | 'project-detail' | 'dashboard' | 'admin' | 'staff' | 'staff-users' | 'staff-groups' | 'staff-moderation' | 'staff-settings' | 'staff-store' | 'documents' | 'document' | 'bookshelf' | 'authors' | 'author-profile' | 'free-books' | 'upload-book' | 'store' | 'store-success' | 'book-detail' | 'read' | 'auth-callback' | 'onboarding' | 'terms' | 'privacy' | 'rules' | 'public-profile' | 'admin-moderation' | 'group-admin' | 'beta-feed' | 'beta-profile' | 'beta-request' | 'my-beta-profile' | 'my-beta-requests' | 'beta-marketplace' | 'sitemap' | 'tags' | 'invite' | 'pending-approval' | 'content-integrity' | 'ai-assistance' | 'export-center' | 'accessibility' | 'advanced-search' | 'book-suggestions' | 'ai-policy' | 'messages' | 'relationships' | 'creator-earnings' | 'reading-lists-browse' | 'delete-account' | 'trash' | 'roleplays' | 'roleplay-new' | 'roleplay-project' | 'roleplay-character' | 'roleplay-lore'>('home')
-
-  useEffect(() => {
-    // Check authentication and route
-    const checkRoute = () => {
-      const path = window.location.pathname
-      const hostname = window.location.hostname
-      const isAuthenticated = authService.isAuthenticated()
-
-      // Check if we're on admin subdomain
-      const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
-
-      // If on admin subdomain and at root, redirect to /staff or /admin
-      if (isAdminSubdomain && path === '/') {
-        if (isAuthenticated) {
-          // Check if user is staff - for now just redirect to admin dashboard
-          window.location.href = '/admin'
-          return
-        } else {
-          // Not authenticated on admin subdomain - redirect to main site
-          window.location.href = 'https://workshelf.dev/'
-          return
-        }
-      }
-
-      // Public pages that don't require authentication
-      const publicPaths = new Set<string>([
-        '/', 
-        '', 
-        '/legal/terms', 
-        '/legal/rules',
-        '/sitemap',
-        '/overview',
-        '/pending-approval',
-        '/updates'  // Work Shelf group redirect
-      ])
-      
-      // Always allowed (even when not authenticated)
-      const alwaysAllowed = new Set<string>(['/callback'])
-
-      // Check if current path or any parent path is public
-      const isPublicPath = publicPaths.has(path) || 
-                          path.startsWith('/invite/') ||
-                          path.startsWith('/groups/') ||  // Allow public group access
-                          alwaysAllowed.has(path)
-
-      if (!isAuthenticated && !isPublicPath) {
-        // Redirect unauthenticated users to home for private routes
-        if (path !== '/') {
-          window.history.replaceState({}, '', '/')
-        }
-        setCurrentPage('home')
-        return
-      }
-      
-      // Removed approval redirect - unapproved users can browse public content
-      // Staff approval is still required but doesn't block viewing
-    
-    if (path === '/callback') {
-      setCurrentPage('auth-callback')
-    } else if (path === '/onboarding') {
-      setCurrentPage('onboarding')
-    } else if (path === '/legal/terms') {
-      setCurrentPage('terms')
-    } else if (path === '/legal/rules') {
-      setCurrentPage('rules')
-    } else if (path === '/sitemap' || path === '/overview') {
-      setCurrentPage('sitemap')
-    } else if (path === '/tags') {
-      setCurrentPage('tags')
-    } else if (path === '/feed') {
-      setCurrentPage('feed')
-    } else if (path === '/discover') {
-      setCurrentPage('discover')
-    } else if (path === '/groups') {
-      setCurrentPage('groups')
-    } else if (path.startsWith('/groups/') && path.includes('/posts/')) {
-      // Individual post page: /groups/:slug/posts/:id
-      setCurrentPage('post-detail')
-    } else if (path.startsWith('/groups/') && !path.includes('/roles') && !path.includes('/settings')) {
-      // Individual group page: /groups/:slug
-      setCurrentPage('group-detail')
-    } else if (path === '/group') {
-      setCurrentPage('group-detail')
-    } else if (path === '/group-settings') {
-      setCurrentPage('group-settings')
-    } else if (path.startsWith('/groups/') && path.includes('/roles')) {
-      setCurrentPage('group-roles')
-    } else if (path === '/me') {
-      setCurrentPage('profile')
-    } else if (path === '/profile') {
-      setCurrentPage('profile')
-    } else if (path === '/studio') {
-      setCurrentPage('studio')
-    } else if (path.startsWith('/studio/') && path.includes('/settings')) {
-      setCurrentPage('studio-settings')
-    } else if (path.startsWith('/project/')) {
-      setCurrentPage('project-detail')
-    } else if (path === '/projects') {
-      setCurrentPage('projects')
-    } else if (path === '/roleplays') {
-      setCurrentPage('roleplays')
-    } else if (path === '/roleplay/new') {
-      setCurrentPage('roleplay-new')
-    } else if (path.startsWith('/roleplay/') && path.includes('/lore')) {
-      // Lore wiki: /roleplay/:projectId/lore
-      setCurrentPage('roleplay-lore')
-    } else if (path.startsWith('/roleplay/') && path.includes('/characters/')) {
-      // Character sheet: /roleplay/:projectId/characters/:characterId
-      setCurrentPage('roleplay-character')
-    } else if (path.startsWith('/roleplay/')) {
-      // Roleplay project: /roleplay/:projectId
-      setCurrentPage('roleplay-project')
-    } else if (path === '/dashboard') {
-      setCurrentPage('dashboard')
-    } else if (path === '/admin') {
-      setCurrentPage('admin')
-    } else if (path === '/staff') {
-      setCurrentPage('staff')
-    } else if (path === '/staff/users') {
-      setCurrentPage('staff-users')
-    } else if (path === '/staff/groups') {
-      setCurrentPage('staff-groups')
-    } else if (path === '/staff/moderation') {
-      setCurrentPage('staff-moderation')
-    } else if (path === '/staff/settings') {
-      setCurrentPage('staff-settings')
-    } else if (path === '/staff/store') {
-      setCurrentPage('staff-store')
-    } else if (path === '/documents') {
-      setCurrentPage('documents')
-    } else if (path.startsWith('/document/')) {
-      // Document editor page: /document/:id
-      setCurrentPage('document')
-    } else if (path === '/document') {
-      setCurrentPage('document')
-    } else if (path === '/bookshelf') {
-      setCurrentPage('bookshelf')
-    } else if (path === '/authors') {
-      setCurrentPage('authors')
-    } else if (path.startsWith('/authors/')) {
-      // Author profile page: /authors/:id
-      setCurrentPage('author-profile')
-    } else if (path === '/admin/moderation') {
-      setCurrentPage('admin-moderation')
-    } else if (path.match(/^\/group\/[^/]+\/admin$/)) {
-      // Group admin page: /group/:slug/admin
-      setCurrentPage('group-admin')
-    } else if (path === '/beta-feed') {
-      setCurrentPage('beta-feed')
-    } else if (path === '/my-beta-profile') {
-      setCurrentPage('my-beta-profile')
-    } else if (path === '/beta-marketplace') {
-      setCurrentPage('beta-marketplace')
-    } else if (path.match(/^\/profile\/\d+$/)) {
-      // Beta profile viewer: /profile/:userId
-      setCurrentPage('beta-profile')
-    } else if (path.startsWith('/beta-request')) {
-      setCurrentPage('beta-request')
-    } else if (path === '/my-beta-requests') {
-      setCurrentPage('my-beta-requests')
-    } else if (path === '/free-books') {
-      setCurrentPage('free-books')
-    } else if (path === '/upload-book') {
-      setCurrentPage('upload-book')
-    } else if (path === '/store/success' || path === '/store/success/') {
-      setCurrentPage('store-success')
-    } else if (path === '/store' || path === '/store/') {
-      setCurrentPage('store')
-    } else if (path.startsWith('/book/')) {
-      // Book detail page: /book/:id or /book/store-:id
-      setCurrentPage('book-detail')
-    } else if (path.startsWith('/read/')) {
-      // Reading page: /read/:itemId
-      setCurrentPage('read')
-    } else if (path.startsWith('/invite/')) {
-      // Invitation page: /invite/:token
-      setCurrentPage('invite')
-    } else if (path === '/pending-approval') {
-      // Pending approval page
-      setCurrentPage('pending-approval')
-    } else if (path === '/content-integrity') {
-      // Content integrity checking page
-      setCurrentPage('content-integrity')
-    } else if (path === '/ai-assistance') {
-      // AI writing prompts and brainstorming tools
-      setCurrentPage('ai-assistance')
-    } else if (path === '/export-center') {
-      // Export center for documents and data
-      setCurrentPage('export-center')
-    } else if (path === '/accessibility') {
-      // Accessibility settings and WCAG checker
-      setCurrentPage('accessibility')
-    } else if (path === '/advanced-search') {
-      // Advanced search page
-      setCurrentPage('advanced-search')
-    } else if (path === '/book-suggestions') {
-      // Book suggestions page
-      setCurrentPage('book-suggestions')
-    } else if (path === '/ai-policy') {
-      // AI Policy and ethical use guidelines
-      setCurrentPage('ai-policy')
-    } else if (path === '/messages') {
-      // Messages page
-      setCurrentPage('messages')
-    } else if (path === '/relationships') {
-      setCurrentPage('relationships')
-    } else if (path === '/creator-earnings') {
-      setCurrentPage('creator-earnings')
-    } else if (path === '/reading-lists/browse') {
-      setCurrentPage('reading-lists-browse')
-    } else if (path === '/delete-account') {
-      // Account deletion
-      setCurrentPage('delete-account')
-    } else if (path === '/trash') {
-      // Trash bin
-      setCurrentPage('trash')
-    } else if (path === '/updates') {
-      // Redirect to Work Shelf group (slug: updates)
-      window.location.href = '/groups/updates'
-      return
-    } else if (path.startsWith('/users/')) {
-      // Public profile: /users/:username
-      setCurrentPage('public-profile')
-    } else if (path === '/' || path === '') {
-      setCurrentPage('home')
-    } else {
-      // Unknown route - redirect to home
-      window.location.href = '/'
-    }
-    }
-    
-    // Run on mount
-    checkRoute()
-    
-    // Listen for navigation events (back/forward buttons)
-    window.addEventListener('popstate', checkRoute)
-    
-    return () => {
-      window.removeEventListener('popstate', checkRoute)
-    }
-  }, [])
-
-  // Track page views when currentPage changes
-  useEffect(() => {
-    trackPageView(currentPage)
-  }, [currentPage])
-
-  const renderContent = () => {
-    // Handle special pages
-    if (currentPage === 'auth-callback') {
-      return <AuthCallback />
-    }
-    
-    if (currentPage === 'onboarding') {
-      return <Onboarding />
-    }
-    
-    if (currentPage === 'terms') {
-      return <TermsOfService />
-    }
-    
-    if (currentPage === 'privacy') {
-      return <PrivacyPolicy />
-    }
-    
-    if (currentPage === 'rules') {
-      return <HouseRules />
-    }
-    
-    if (currentPage === 'sitemap') {
-      return <Sitemap />
-    }
-    
-    if (currentPage === 'tags') {
-      return <TagDiscovery />
-    }
-    
-    if (currentPage === 'invite') {
-      return <Invite />
-    }
-    
-    if (currentPage === 'pending-approval') {
-      return <PendingApproval />
-    }
-    
-    if (currentPage === 'feed') {
-      return <Feed />
-    }
-    
-    if (currentPage === 'discover') {
-      return <Discover />
-    }
-    
-    if (currentPage === 'groups') {
-      return <Groups />
-    }
-    
-    if (currentPage === 'group-detail') {
-      return <GroupDetail />
-    }
-    
-    if (currentPage === 'post-detail') {
-      return <PostDetail />
-    }
-    
-    if (currentPage === 'group-settings') {
-      return <GroupSettings />
-    }
-    
-    if (currentPage === 'group-roles') {
-      return <GroupRoles />
-    }
-    
-    if (currentPage === 'profile') {
-      return <Profile />
-    }
-    
-    if (currentPage === 'public-profile') {
-      return <PublicProfile />
-    }
-    
-    if (currentPage === 'studio') {
-      return <Studio />
-    }
-    
-    if (currentPage === 'studio-settings') {
-      return <StudioSettings />
-    }
-    
-    if (currentPage === 'project-detail') {
-      return <ProjectDetail />
-    }
-    
-    if (currentPage === 'projects') {
-      return <Projects />
-    }
-    
-    if (currentPage === 'roleplays') {
-      return <RoleplaysList />
-    }
-    
-    if (currentPage === 'roleplay-new') {
-      return <CreateRoleplay />
-    }
-    
-    if (currentPage === 'roleplay-project') {
-      return <RoleplayProject />
-    }
-    
-    if (currentPage === 'roleplay-character') {
-      return <CharacterSheet />
-    }
-    
-    if (currentPage === 'roleplay-lore') {
-      return <LoreWiki />
-    }
-    
-    if (currentPage === 'dashboard') {
-      return <Dashboard />
-    }
-    
-    if (currentPage === 'admin') {
-      return <AdminDashboard />
-    }
-    
-    if (currentPage === 'staff') {
-      return <StaffPanel />
-    }
-    
-    if (currentPage === 'staff-users') {
-      return <ManageUsers />
-    }
-    
-    if (currentPage === 'staff-groups') {
-      return <ViewAllGroups />
-    }
-    
-    if (currentPage === 'staff-moderation') {
-      return <GlobalModeration />
-    }
-    
-    if (currentPage === 'staff-settings') {
-      return <SystemSettings />
-    }
-    
-    if (currentPage === 'staff-store') {
-      return <StoreAnalytics />
-    }
-    
-    if (currentPage === 'documents') {
-      return <Documents />
-    }
-    
-    if (currentPage === 'document') {
-      return <Document />
-    }
-    
-    if (currentPage === 'bookshelf') {
-      return <Bookshelf />
-    }
-
-    if (currentPage === 'authors') {
-      return <Authors />
-    }
-
-    if (currentPage === 'author-profile') {
-      return <Author />
-    }
-
-    if (currentPage === 'admin-moderation') {
-      return <AdminModeration />
-    }
-
-    if (currentPage === 'group-admin') {
-      return <GroupAdmin />
-    }
-
-    if (currentPage === 'beta-feed') {
-      return <BetaFeed />
-    }
-
-    if (currentPage === 'my-beta-profile') {
-      return <MyBetaProfile />
-    }
-
-    if (currentPage === 'beta-marketplace') {
-      return <BetaMarketplace />
-    }
-    
-    if (currentPage === 'beta-profile') {
-      return <BetaProfileView />
-    }
-    
-    if (currentPage === 'beta-request') {
-      return <BetaRequest />
-    }
-    
-    if (currentPage === 'my-beta-requests') {
-      return <MyBetaRequests />
-    }
-
-    if (currentPage === 'free-books') {
-      return <FreeBooks />
-    }
-
-    if (currentPage === 'upload-book') {
-      return <UploadBook />
-    }
-
-    if (currentPage === 'store') {
-      return <Store />
-    }
-
-    if (currentPage === 'store-success') {
-      return <StoreSuccess />
-    }
-
-    if (currentPage === 'book-detail') {
-      return <BookDetail />
-    }
-
-    if (currentPage === 'read') {
-      return <ReadPage />
-    }
-
-    if (currentPage === 'content-integrity') {
-      return <ContentIntegrity />
-    }
-
-    if (currentPage === 'ai-assistance') {
-      return <AIAssistance />
-    }
-
-    if (currentPage === 'export-center') {
-      return <ExportCenter />
-    }
-
-    if (currentPage === 'accessibility') {
-      return <AccessibilitySettings />
-    }
-
-    if (currentPage === 'advanced-search') {
-      return <AdvancedSearch />
-    }
-
-    if (currentPage === 'book-suggestions') {
-      return <BookSuggestions />
-    }
-    // Matrix Messages removed
-    if (currentPage === 'relationships') {
-      return <Relationships />
-    }
-    if (currentPage === 'ai-policy') {
-      return <AIPolicy />
-    }
-    if (currentPage === 'messages') {
-      return <Messages />
-    }
-    if (currentPage === 'creator-earnings') {
-      return <CreatorEarnings />
-    }
-    if (currentPage === 'reading-lists-browse') {
-      return <ReadingListsBrowse />
-    }
-    if (currentPage === 'delete-account') {
-      return <DeleteAccount />
-    }
-    if (currentPage === 'trash') {
-      return <Trash />
-    }
-
-    // Home page - new dedicated landing page
-    return <Home />
+// Protected route wrapper
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = authService.isAuthenticated()
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />
   }
+  
+  return <>{children}</>
+}
 
-  // All pages now have their own Navigation component
-  // Wrap everything in Suspense for lazy loading
+function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    // Track page views
+    trackPageView(location.pathname)
+  }, [location.pathname])
+
+  // Check admin subdomain redirects
+  useEffect(() => {
+    const hostname = window.location.hostname
+    const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
+    const isAuthenticated = authService.isAuthenticated()
+
+    if (isAdminSubdomain && location.pathname === '/') {
+      if (isAuthenticated) {
+        window.location.href = '/admin'
+      } else {
+        window.location.href = 'https://workshelf.dev/'
+      }
+    }
+  }, [location.pathname])
+
   return (
     <>
-      <Suspense fallback={<PageLoader />}>
-        {renderContent()}
-      </Suspense>
       <ToastContainer />
       <BetaBanner />
+      
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/callback" element={<AuthCallback />} />
+            <Route path="/legal/terms" element={<TermsOfService />} />
+            <Route path="/legal/rules" element={<HouseRules />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/overview" element={<Sitemap />} />
+            <Route path="/pending-approval" element={<PendingApproval />} />
+            
+            {/* Groups - partially public */}
+            <Route path="/groups" element={<Groups />} />
+            <Route path="/groups/:slug" element={<GroupDetail />} />
+            <Route path="/groups/:slug/posts/:postId" element={<PostDetail />} />
+            <Route path="/groups/:slug/roles" element={<ProtectedRoute><GroupRoles /></ProtectedRoute>} />
+            <Route path="/group/:slug/admin" element={<ProtectedRoute><GroupAdmin /></ProtectedRoute>} />
+            
+            {/* Invites */}
+            <Route path="/invite/:code" element={<Invite />} />
+            
+            {/* Protected routes */}
+            <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/tags" element={<ProtectedRoute><TagDiscovery /></ProtectedRoute>} />
+            
+            {/* Group management */}
+            <Route path="/group-settings" element={<ProtectedRoute><GroupSettings /></ProtectedRoute>} />
+            
+            {/* Profile */}
+            <Route path="/me" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/:userId" element={<BetaProfileView />} />
+            <Route path="/users/:username" element={<PublicProfile />} />
+            
+            {/* Studio */}
+            <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+            <Route path="/studio/:projectId/settings" element={<ProtectedRoute><StudioSettings /></ProtectedRoute>} />
+            
+            {/* Projects */}
+            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+            <Route path="/project/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+            
+            {/* Roleplays */}
+            <Route path="/roleplays" element={<ProtectedRoute><RoleplaysList /></ProtectedRoute>} />
+            <Route path="/roleplay/new" element={<ProtectedRoute><CreateRoleplay /></ProtectedRoute>} />
+            <Route path="/roleplay/:projectId" element={<ProtectedRoute><RoleplayProject /></ProtectedRoute>} />
+            <Route path="/roleplay/:projectId/characters/:characterId" element={<ProtectedRoute><CharacterSheet /></ProtectedRoute>} />
+            <Route path="/roleplay/:projectId/lore" element={<ProtectedRoute><LoreWiki /></ProtectedRoute>} />
+            
+            {/* Dashboard */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            
+            {/* Admin/Staff */}
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+            <Route path="/staff" element={<ProtectedRoute><StaffPanel /></ProtectedRoute>} />
+            <Route path="/staff/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+            <Route path="/staff/groups" element={<ProtectedRoute><ViewAllGroups /></ProtectedRoute>} />
+            <Route path="/staff/moderation" element={<ProtectedRoute><GlobalModeration /></ProtectedRoute>} />
+            <Route path="/staff/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+            <Route path="/staff/store" element={<ProtectedRoute><StoreAnalytics /></ProtectedRoute>} />
+            
+            {/* Documents */}
+            <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+            <Route path="/document/:documentId" element={<ProtectedRoute><Document /></ProtectedRoute>} />
+            <Route path="/document" element={<ProtectedRoute><Document /></ProtectedRoute>} />
+            
+            {/* Books/Store */}
+            <Route path="/bookshelf" element={<ProtectedRoute><Bookshelf /></ProtectedRoute>} />
+            <Route path="/authors" element={<Authors />} />
+            <Route path="/authors/:authorId" element={<Author />} />
+            <Route path="/free-books" element={<FreeBooks />} />
+            <Route path="/upload-book" element={<ProtectedRoute><UploadBook /></ProtectedRoute>} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/store/success" element={<ProtectedRoute><StoreSuccess /></ProtectedRoute>} />
+            <Route path="/book/:bookId" element={<BookDetail />} />
+            <Route path="/read/:bookId" element={<ProtectedRoute><ReadPage /></ProtectedRoute>} />
+            
+            {/* Beta */}
+            <Route path="/beta-feed" element={<ProtectedRoute><BetaFeed /></ProtectedRoute>} />
+            <Route path="/my-beta-profile" element={<ProtectedRoute><MyBetaProfile /></ProtectedRoute>} />
+            <Route path="/beta-marketplace" element={<ProtectedRoute><BetaMarketplace /></ProtectedRoute>} />
+            <Route path="/beta-request/:requestId" element={<ProtectedRoute><BetaRequest /></ProtectedRoute>} />
+            <Route path="/my-beta-requests" element={<ProtectedRoute><MyBetaRequests /></ProtectedRoute>} />
+            
+            {/* Settings/Utilities */}
+            <Route path="/content-integrity" element={<ProtectedRoute><ContentIntegrity /></ProtectedRoute>} />
+            <Route path="/ai-assistance" element={<ProtectedRoute><AIAssistance /></ProtectedRoute>} />
+            <Route path="/export-center" element={<ProtectedRoute><ExportCenter /></ProtectedRoute>} />
+            <Route path="/accessibility" element={<ProtectedRoute><AccessibilitySettings /></ProtectedRoute>} />
+            <Route path="/advanced-search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
+            <Route path="/book-suggestions" element={<ProtectedRoute><BookSuggestions /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/relationships" element={<ProtectedRoute><Relationships /></ProtectedRoute>} />
+            <Route path="/creator-earnings" element={<ProtectedRoute><CreatorEarnings /></ProtectedRoute>} />
+            <Route path="/reading-lists" element={<ProtectedRoute><ReadingListsBrowse /></ProtectedRoute>} />
+            <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
+            <Route path="/trash" element={<ProtectedRoute><Trash /></ProtectedRoute>} />
+            
+            {/* Legal */}
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/ai-policy" element={<AIPolicy />} />
+            
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </div>
+      
       <ChatBar />
     </>
   )

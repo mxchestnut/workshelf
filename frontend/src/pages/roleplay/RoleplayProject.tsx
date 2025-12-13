@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { 
   BookOpen, 
   Users, 
@@ -63,8 +64,7 @@ interface Passage {
 }
 
 export function RoleplayProject() {
-  // Extract project ID from URL path
-  const projectId = window.location.pathname.split('/')[2]
+  const { projectId } = useParams<{ projectId: string }>()
   
   const [project, setProject] = useState<RoleplayProject | null>(null)
   const [passages, setPassages] = useState<Passage[]>([])
@@ -189,12 +189,12 @@ export function RoleplayProject() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
             {error || 'Project not found'}
           </h2>
-          <a
-            href="/roleplays"
+          <Link
+            to="/roleplays"
             className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
           >
             Back to Roleplays
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -222,26 +222,26 @@ export function RoleplayProject() {
               </div>
               
               <div className="flex items-center gap-2">
-                <a
-                  href={`/roleplay/${projectId}/characters`}
+                <Link
+                  to={`/roleplay/${projectId}/characters`}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <Users className="w-4 h-4" />
                   <span>Characters</span>
-                </a>
-                <a
-                  href={`/roleplay/${projectId}/lore`}
+                </Link>
+                <Link
+                  to={`/roleplay/${projectId}/lore`}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Lore</span>
-                </a>
-                <a
-                  href={`/roleplay/${projectId}/settings`}
+                </Link>
+                <Link
+                  to={`/roleplay/${projectId}/settings`}
                   className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <Settings className="w-4 h-4" />
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -338,13 +338,13 @@ export function RoleplayProject() {
                     </span>
                   </div>
                 ))}
-                <a
-                  href={`/roleplay/${projectId}/characters/new`}
+                <Link
+                  to={`/roleplay/${projectId}/characters/new`}
                   className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg border border-dashed border-blue-300 dark:border-blue-700 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   New Character
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -362,13 +362,13 @@ export function RoleplayProject() {
             )}
 
             {/* New Passage Button */}
-            <a
-              href={`/roleplay/${projectId}/passages/new`}
+            <Link
+              to={`/roleplay/${projectId}/passages/new`}
               className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
             >
               <MessageSquare className="w-5 h-5" />
               <span className="font-medium">Write a New Passage</span>
-            </a>
+            </Link>
 
             {/* Passages Feed */}
             {filteredPassages.length === 0 ? (
@@ -380,13 +380,13 @@ export function RoleplayProject() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Be the first to write in this roleplay!
                 </p>
-                <a
-                  href={`/roleplay/${projectId}/passages/new`}
+                <Link
+                  to={`/roleplay/${projectId}/passages/new`}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Write First Passage
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="space-y-4">
