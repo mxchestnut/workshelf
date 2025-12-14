@@ -3,6 +3,13 @@
 CI Script: Create database schema for testing
 Creates all tables from SQLAlchemy models
 """
+import sys
+from pathlib import Path
+
+# Add backend directory to Python path
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
+
 import asyncio
 from app.core.database import get_db_engine
 from app.models.base import Base
