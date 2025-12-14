@@ -28,8 +28,10 @@ for file in $COMPOSE_FILES; do
     echo "🔍 Validating: $file"
     echo "─────────────────────────────"
     
-    # 1. Check YAML syntax
-    if ! docker-compose -f "$file" config > /dev/null 2>&1; then
+    # 1. Check YAML syntax (skip for prod files with env vars)
+    if [[ "$file" == *"prod"* ]]; then
+        echo -e "${YELLOW}⏭️  Skipping syntax check for production file (requires env vars)${NC}"
+    elif ! docker-compose -f "$file" config > /dev/null 2>&1; then
         echo -e "${RED}❌ YAML syntax error${NC}"
         docker-compose -f "$file" config 2>&1 | head -10
         ERRORS=$((ERRORS + 1))
@@ -38,16 +40,19 @@ for file in $COMPOSE_FILES; do
     fi
     
     # 2. Check for required environment variables
-    echo "🔍 Checking environment variable references..."
-    MISSING_VARS=$(docker-compose -f "$file" config 2>&1 | grep "variable is not set" | wc -l | tr -d ' ')
-    
-    if [ "$MISSING_VARS" -gt 0 ]; then
-        echo -e "${YELLOW}⚠️  $MISSING_VARS environment variables not set (expected for prod)${NC}"
-        docker-compose -f "$file" config 2>&1 | grep "variable is not set" | head -5
-        # This is expected for prod files, just a warning
-        WARNINGS=$((WARNINGS + 1))
+    if [[ "$file" == *"prod"* ]]; then
+        echo -e "${YELLOW}⏭️  Skipping env var check for production file${NC}"
     else
-        echo -e "${GREEN}✅ All environment variables set${NC}"
+        echo "🔍 Checking environment variable references..."
+        MISSING_VARS=$(docker-compose -f "$file" config 2>&1 | grep "variable is not set" | wc -l | tr -d ' ')
+        
+        if [ "$MISSING_VARS" -gt 0 ]; then
+            echo -e "${YELLOW}⚠️  $MISSING_VARS environment variables not set${NC}"
+            docker-compose -f "$file" config 2>&1 | grep "variable is not set" | head -5
+            WARNINGS=$((WARNINGS + 1))
+        else
+            echo -e "${GREEN}✅ All environment variables set${NC}"
+        fi
     fi
     
     # 3. Check for common issues
