@@ -88,7 +88,7 @@ const RoleplaysList = lazy(() => import('./pages/roleplay/RoleplaysList').then(m
 const CreateRoleplay = lazy(() => import('./pages/roleplay/CreateRoleplay').then(module => ({ default: module.CreateRoleplay })))
 const RoleplayProject = lazy(() => import('./pages/roleplay/RoleplayProject').then(module => ({ default: module.RoleplayProject })))
 const CharacterSheet = lazy(() => import('./pages/roleplay/CharacterSheet').then(module => ({ default: module.CharacterSheet })))
-const LoreWiki = lazy(() => import('./pages/roleplay/LoreWiki').then(module => ({ default: module.LoreWiki })))
+const RoleplayLore = lazy(() => import('./pages/roleplay/RoleplayLore').then(module => ({ default: module.RoleplayLore })))
 
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -179,7 +179,7 @@ function App() {
             <Route path="/roleplay/new" element={<ProtectedRoute><CreateRoleplay /></ProtectedRoute>} />
             <Route path="/roleplay/:projectId" element={<ProtectedRoute><RoleplayProject /></ProtectedRoute>} />
             <Route path="/roleplay/:projectId/characters/:characterId" element={<ProtectedRoute><CharacterSheet /></ProtectedRoute>} />
-            <Route path="/roleplay/:projectId/lore" element={<ProtectedRoute><LoreWiki /></ProtectedRoute>} />
+            <Route path="/roleplay/:projectId/lore" element={<ProtectedRoute><RoleplayLore /></ProtectedRoute>} />
             
             {/* Dashboard */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
