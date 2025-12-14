@@ -60,8 +60,8 @@ git push -u origin cyarika-main
 Create a new worktree in a separate directory:
 
 ```bash
-cd ~/Code
-git worktree add ../cyarika cyarika-main
+cd ~/Code/workshelf
+git worktree add ~/Code/cyarika cyarika-main
 ```
 
 This creates a new directory at `~/Code/cyarika` with the `cyarika-main` branch checked out.
@@ -158,7 +158,7 @@ docker-compose up
 **Terminal 2 (Cyarika):**
 ```bash
 cd ~/Code/cyarika
-# Edit docker-compose.yml to use different ports
+# Create and edit Cyarika-specific compose file (see Cyarika-Specific Setup section)
 docker-compose -f docker-compose.cyarika.yml up
 # Access at http://localhost:5174
 ```
@@ -180,8 +180,8 @@ git push -u origin feature/character-sheets
 **Create a worktree for a specific feature:**
 ```bash
 cd ~/Code/workshelf
-git worktree add ../cyarika-feature feature/character-sheets
-cd ../cyarika-feature
+git worktree add ~/Code/cyarika-feature feature/character-sheets
+cd ~/Code/cyarika-feature
 # Work on isolated feature
 ```
 
@@ -420,18 +420,24 @@ KEYCLOAK_PORT=8081
 DOMAIN=cyarika.com
 EOF
 
-# 2. Update docker-compose.yml ports
-sed -i 's/8000:8000/8001:8000/g' docker-compose.yml
-sed -i 's/5173:5173/5174:5173/g' docker-compose.yml
-sed -i 's/8080:8080/8081:8080/g' docker-compose.yml
+# 2. Create Cyarika-specific Docker Compose file
+cp docker-compose.yml docker-compose.cyarika.yml
 
-# 3. Start Cyarika services
-docker-compose up -d
+# 3. Update ports in docker-compose.cyarika.yml
+# Edit the file manually to change:
+#   - Backend: 8000:8000 -> 8001:8000
+#   - Frontend: 5173:5173 -> 5174:5173
+#   - Keycloak: 8080:8080 -> 8081:8080
+#   - PostgreSQL: 5432:5432 -> 5433:5432
+#   - Redis: 6379:6379 -> 6380:6379
 
-# 4. Initialize Cyarika database
-docker-compose exec backend alembic upgrade head
+# 4. Start Cyarika services
+docker-compose -f docker-compose.cyarika.yml up -d
 
-# 5. Set up Keycloak realm
+# 5. Initialize Cyarika database
+docker-compose -f docker-compose.cyarika.yml exec backend alembic upgrade head
+
+# 6. Set up Keycloak realm
 ./setup-keycloak.sh cyarika
 ```
 
