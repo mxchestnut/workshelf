@@ -196,11 +196,20 @@ async def setup_test_user_in_db():
 
             if not tenant:
                 # Create test tenant with all required fields
+                # (including those with defaults since raw SQL doesn't use model defaults)
                 await session.execute(
                     text(
                         """
-                        INSERT INTO tenants (name, slug, type, is_active, is_verified, plan, max_users, max_storage_gb)
-                        VALUES ('Test Workspace', 'test-workspace', 'standard', true, false, 'free', 5, 1)
+                        INSERT INTO tenants (
+                            name, slug, type, is_active, is_verified,
+                            plan, max_users, max_storage_gb,
+                            created_at, updated_at
+                        )
+                        VALUES (
+                            'Test Workspace', 'test-workspace', 'standard', true, false,
+                            'free', 5, 1,
+                            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                        )
                         ON CONFLICT (slug) DO NOTHING
                     """
                     )
