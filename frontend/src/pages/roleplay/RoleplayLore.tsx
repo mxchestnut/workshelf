@@ -255,7 +255,6 @@ export function RoleplayLore() {
         {showCreateForm && (
           <div className="mb-8">
             <CreateLoreEntry
-              projectId={projectId!}
               onSubmit={handleCreateLoreEntry}
               onCancel={() => setShowCreateForm(false)}
             />

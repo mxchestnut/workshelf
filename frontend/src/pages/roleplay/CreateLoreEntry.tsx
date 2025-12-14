@@ -3,15 +3,14 @@ import { PassageEditor } from '../../components/PassageEditor'
 import { BookOpen, Tag, Lock, Globe, X } from 'lucide-react'
 
 interface CreateLoreEntryProps {
-  projectId: string
-  onSubmit: (data: {
+  readonly onSubmit: (data: {
     title: string
     content: any
     category: string
     tags: string[]
     is_public: boolean
   }) => Promise<void>
-  onCancel: () => void
+  readonly onCancel: () => void
 }
 
 const LORE_CATEGORIES = [
@@ -25,7 +24,7 @@ const LORE_CATEGORIES = [
   { value: 'other', label: 'Other', icon: '📝' },
 ]
 
-export function CreateLoreEntry({ projectId, onSubmit, onCancel }: CreateLoreEntryProps) {
+export function CreateLoreEntry({ onSubmit, onCancel }: CreateLoreEntryProps) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState<any>(null)
   const [category, setCategory] = useState<string>('other')

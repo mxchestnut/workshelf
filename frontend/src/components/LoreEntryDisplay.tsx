@@ -1,10 +1,9 @@
-import React from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Typography from '@tiptap/extension-typography'
 import Highlight from '@tiptap/extension-highlight'
 import TextAlign from '@tiptap/extension-text-align'
-import { BookOpen, Tag, Lock, Globe, Edit2, Trash2, Calendar } from 'lucide-react'
+import { BookOpen, Tag, Lock, Edit2, Trash2, Calendar } from 'lucide-react'
 
 interface LoreEntry {
   id: number
@@ -22,10 +21,10 @@ interface LoreEntry {
 }
 
 interface LoreEntryDisplayProps {
-  entry: LoreEntry
-  currentUserId?: number
-  onEdit?: (entry: LoreEntry) => void
-  onDelete?: (entryId: number) => void
+  readonly entry: LoreEntry
+  readonly currentUserId?: number
+  readonly onEdit?: (entry: LoreEntry) => void
+  readonly onDelete?: (entryId: number) => void
 }
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
@@ -70,7 +69,7 @@ export function LoreEntryDisplay({ entry, currentUserId, onEdit, onDelete }: Lor
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+      year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
     })
   }
 
