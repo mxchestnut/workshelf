@@ -104,10 +104,11 @@ export function CreateLoreEntry({ onSubmit, onCancel }: CreateLoreEntryProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="lore-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Title *
           </label>
           <input
+            id="lore-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}

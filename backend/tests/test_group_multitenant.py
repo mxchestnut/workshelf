@@ -887,8 +887,8 @@ async def test_follower_to_member_workflow(follower_auth, test_group):
 async def test_analytics_reflect_followers(owner_auth, follower_auth, test_group):
     """Test analytics reflect new followers"""
     async with AsyncClient(app=app, base_url="http://test") as client:
-        # Get initial analytics
-        initial_response = await client.get(
+        # Get initial analytics (baseline check)
+        await client.get(
             f"/api/v1/groups/{test_group['id']}/analytics",
             headers=owner_auth
         )

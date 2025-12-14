@@ -12,7 +12,7 @@ interface Message {
 }
 
 interface AIChatProps {
-  initialContext?: string // Text sent from TipTap
+  readonly initialContext?: string // Text sent from TipTap
 }
 
 export default function AIChat({ initialContext }: AIChatProps) {
@@ -111,7 +111,7 @@ export default function AIChat({ initialContext }: AIChatProps) {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -135,9 +135,9 @@ export default function AIChat({ initialContext }: AIChatProps) {
             <p className="text-lg font-semibold mb-2">AI Writing Assistant</p>
             <p className="text-sm mb-4">Ask me anything about your writing!</p>
             <div className="space-y-2">
-              {quickPrompts.map((prompt, idx) => (
+              {quickPrompts.map((prompt) => (
                 <button
-                  key={idx}
+                  key={prompt}
                   onClick={() => sendMessage(prompt)}
                   className="block w-full text-left px-3 py-2 text-sm rounded border border-border hover:bg-accent transition-colors"
                 >
@@ -147,9 +147,9 @@ export default function AIChat({ initialContext }: AIChatProps) {
             </div>
           </div>
         ) : (
-          messages.map((msg, idx) => (
+          messages.map((msg) => (
             <div
-              key={idx}
+              key={`${msg.role}-${msg.timestamp.getTime()}`}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -184,7 +184,7 @@ export default function AIChat({ initialContext }: AIChatProps) {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Ask me anything about your writing..."
             className="flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             rows={2}

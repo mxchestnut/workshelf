@@ -52,15 +52,15 @@ export function StoreAnalytics() {
   const checkAccess = async () => {
     try {
       const currentUser = await authService.getCurrentUser()
-      if (!currentUser || !currentUser.is_staff) {
-        window.location.href = '/'
+      if (!currentUser?.is_staff) {
+        globalThis.location.href = '/'
         return
       }
       setUser(currentUser)
       await loadStoreData()
     } catch (error) {
       console.error('Access check failed:', error)
-      window.location.href = '/'
+      globalThis.location.href = '/'
     }
   }
 
@@ -229,7 +229,7 @@ export function StoreAnalytics() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => window.location.href = '/staff/settings'}
+              onClick={() => globalThis.location.href = '/staff/settings'}
               className="p-2 rounded hover:bg-card transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-foreground" />

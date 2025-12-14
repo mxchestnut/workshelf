@@ -12,9 +12,9 @@ interface DiceRoll {
 }
 
 interface DiceRollerProps {
-  projectId: number
-  passageId?: number
-  onRollComplete?: (roll: DiceRoll) => void
+  readonly projectId: number
+  readonly passageId?: number
+  readonly onRollComplete?: (roll: DiceRoll) => void
 }
 
 const presetDice = [
@@ -93,7 +93,7 @@ export function DiceRoller({ projectId, passageId, onRollComplete }: DiceRollerP
     setError(null)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       rollDice()
@@ -122,15 +122,16 @@ export function DiceRoller({ projectId, passageId, onRollComplete }: DiceRollerP
       <div className="p-4 space-y-4">
         {/* Dice Expression Input */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="dice-expression" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Dice Expression
           </label>
           <div className="flex gap-2">
             <input
+              id="dice-expression"
               type="text"
               value={expression}
               onChange={(e) => setExpression(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               placeholder="e.g., 2d6+3 or 4d6kh3"
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 font-mono"
             />
@@ -240,9 +241,9 @@ export function DiceRoller({ projectId, passageId, onRollComplete }: DiceRollerP
               Roll History
             </h4>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {history.map((roll, index) => (
+              {history.map((roll) => (
                 <div
-                  key={index}
+                  key={roll.id}
                   className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">

@@ -17,11 +17,11 @@ interface Collection {
 }
 
 interface SaveToCollectionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  itemType: 'post' | 'document' | 'ebook' | 'author' | 'group' | 'user' | 'article'
-  itemId: number
-  itemTitle?: string
+  readonly isOpen: boolean
+  readonly onClose: () => void
+  readonly itemType: 'post' | 'document' | 'ebook' | 'author' | 'group' | 'user' | 'article'
+  readonly itemId: number
+  readonly itemTitle?: string
 }
 
 export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemTitle }: SaveToCollectionModalProps) {

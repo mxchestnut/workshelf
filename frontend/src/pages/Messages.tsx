@@ -316,7 +316,7 @@ export default function Messages() {
     }
     
     // Convert user.id to number for comparison
-    const userId = user ? parseInt(user.id, 10) : null
+    const userId = user ? Number.parseInt(user.id, 10) : null
     
     // For DM, show other participant's name
     const otherParticipants = conversation.participants.filter(p => p.id !== userId)
@@ -475,7 +475,7 @@ export default function Messages() {
                   </div>
                 ) : (
                   messages.map((message) => {
-                    const userId = user ? parseInt(user.id, 10) : null
+                    const userId = user ? Number.parseInt(user.id, 10) : null
                     const isOwn = message.sender_id === userId
                     return (
                       <div
@@ -706,10 +706,11 @@ export default function Messages() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="matrix-username" className="block text-sm font-medium text-foreground mb-2">
                   Matrix Username
                 </label>
                 <input
+                  id="matrix-username"
                   type="text"
                   value={matrixUsername}
                   onChange={(e) => setMatrixUsername(e.target.value)}
@@ -722,10 +723,11 @@ export default function Messages() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="matrix-homeserver" className="block text-sm font-medium text-foreground mb-2">
                   Homeserver
                 </label>
                 <input
+                  id="matrix-homeserver"
                   type="text"
                   value={matrixHomeserver}
                   onChange={(e) => setMatrixHomeserver(e.target.value)}
