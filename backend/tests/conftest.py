@@ -195,12 +195,12 @@ async def setup_test_user_in_db():
             tenant = result.first()
 
             if not tenant:
-                # Create test tenant
+                # Create test tenant with all required fields
                 await session.execute(
                     text(
                         """
-                        INSERT INTO tenants (name, slug)
-                        VALUES ('Test Workspace', 'test-workspace')
+                        INSERT INTO tenants (name, slug, type, is_active, is_verified, plan, max_users, max_storage_gb)
+                        VALUES ('Test Workspace', 'test-workspace', 'standard', true, false, 'free', 5, 1)
                         ON CONFLICT (slug) DO NOTHING
                     """
                     )
