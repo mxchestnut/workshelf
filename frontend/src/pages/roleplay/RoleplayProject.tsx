@@ -12,7 +12,8 @@ import {
   Filter,
   List
 } from 'lucide-react'
-import { PassageCard } from '../../components/roleplay/PassageCard'
+import { CreatePassage } from './CreatePassage'
+import { PassageDisplay } from '../../components/PassageDisplay'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
@@ -50,15 +51,18 @@ interface Scene {
 
 interface Passage {
   id: number
+  roleplay_id: number
+  scene_id?: number | null
+  user_id: number
   character_id: number
   character?: Character
   content: any
-  word_count?: number
-  scene_id?: number | null
-  sequence_order: number
-  is_ooc: boolean
-  dice_rolls?: any[]
-  reactions?: any[]
+  word_count: number
+  sequence_number: number
+  parent_passage_id?: number | null
+  dice_rolls?: any
+  is_edited: boolean
+  reaction_count: number
   created_at: string
   updated_at: string
 }
@@ -75,6 +79,7 @@ export function RoleplayProject() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
   const [activeSceneId, setActiveSceneId] = useState<number | null>(null)
   const [showOOC, setShowOOC] = useState(true)
+  const [showCreateForm, setShowCreateForm] = useState(false)
 
   useEffect(() => {
     loadProjectData()
@@ -161,15 +166,64 @@ export function RoleplayProject() {
     }
   }
 
-  const handleReaction = (passageId: number, reactionType: string) => {
-    // Optimistically update UI
-    console.log('Reacted to passage', passageId, 'with', reactionType)
+  const handleCreatePassage = async (data: {
+    content: any
+    character_id: number
+    scene_id?: number
+  }) => {
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    const response = await fetch(
+      `${API_URL}/api/v1/roleplay/projects/${projectId}/passages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to create passage')
+    }
+
+    const newPassage = await response.json()
+    setPassages([...passages, newPassage])
+    setShowCreateForm(false)
+  }
+
+  const handleReaction = async (passageId: number, emoji: string) => {
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/roleplay/passages/${passageId}/reactions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ emoji })
+        }
+      )
+
+      if (response.ok) {
+        // Reload passages to get updated reaction counts
+        loadProjectData()
+      }
+    } catch (err) {
+      console.error('Failed to react to passage:', err)
+    }
   }
 
   const filteredPassages = passages
-    .filter(p => showOOC || !p.is_ooc)
     .filter(p => !activeSceneId || p.scene_id === activeSceneId)
-    .sort((a, b) => a.sequence_order - b.sequence_order)
+    .sort((a, b) => a.sequence_number - b.sequence_number)
 
   const activeScene = scenes.find(s => s.id === activeSceneId)
 
@@ -361,14 +415,24 @@ export function RoleplayProject() {
               </div>
             )}
 
-            {/* New Passage Button */}
-            <Link
-              to={`/roleplay/${projectId}/passages/new`}
-              className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span className="font-medium">Write a New Passage</span>
-            </Link>
+            {/* New Passage Form or Button */}
+            {showCreateForm ? (
+              <CreatePassage
+                projectId={projectId!}
+                characters={characters}
+                scenes={scenes}
+                onSubmit={handleCreatePassage}
+                onCancel={() => setShowCreateForm(false)}
+              />
+            ) : (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span className="font-medium">Write a New Passage</span>
+              </button>
+            )}
 
             {/* Passages Feed */}
             {filteredPassages.length === 0 ? (
@@ -380,22 +444,39 @@ export function RoleplayProject() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Be the first to write in this roleplay!
                 </p>
-                <Link
-                  to={`/roleplay/${projectId}/passages/new`}
+                <button
+                  onClick={() => setShowCreateForm(true)}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Write First Passage
-                </Link>
+                </button>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredPassages.map((passage) => (
-                  <PassageCard
+                  <PassageDisplay
                     key={passage.id}
-                    passage={passage}
-                    onReact={handleReaction}
+                    passage={{
+                      id: passage.id,
+                      content: passage.content,
+                      character: {
+                        id: passage.character_id,
+                        name: passage.character?.name || 'Unknown',
+                        avatar_url: passage.character?.avatar_url || undefined
+                      },
+                      author: {
+                        id: passage.user_id || 0,
+                        username: (passage as any).user?.username || 'Unknown'
+                      },
+                      created_at: passage.created_at,
+                      updated_at: passage.updated_at,
+                      word_count: passage.word_count,
+                      reaction_count: (passage as any).reaction_count || 0,
+                      user_reaction: null
+                    }}
                     currentUserId={currentUserId || undefined}
+                    onReact={handleReaction}
                   />
                 ))}
               </div>
