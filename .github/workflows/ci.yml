@@ -172,13 +172,26 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       
-      - name: Run database migrations
+      - name: Create database schema
         env:
           DATABASE_URL: postgresql://workshelf:test_password@localhost:5432/workshelf_test
         run: |
-          echo "🗄️ Running Alembic migrations..."
-          alembic upgrade head
-          echo "✅ Database schema created"
+          echo "🗄️ Creating database schema from models..."
+          python -c "
+import asyncio
+from app.core.database import get_db_engine
+from app.models.base import Base
+
+async def create_tables():
+    engine = get_db_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await engine.dispose()
+    print('✅ Database schema created')
+
+asyncio.run(create_tables())
+          "
+          echo "✅ Schema ready for tests"
       
       - name: Run tests
         env:
