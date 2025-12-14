@@ -172,6 +172,14 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://workshelf:test_password@localhost:5432/workshelf_test
+        run: |
+          echo "🗄️ Running Alembic migrations..."
+          alembic upgrade head
+          echo "✅ Database schema created"
+      
       - name: Run tests
         env:
           DATABASE_URL: postgresql://workshelf:test_password@localhost:5432/workshelf_test

@@ -232,8 +232,15 @@ async def setup_test_user_in_db():
                 )
                 await session.commit()
         except Exception as e:
-            # Skip if tenants table doesn't exist (expected in CI without DB)
-            pass
+            # If tables don't exist, fail fast with clear error message
+            print(f"❌ Database setup failed: {e}")
+            print("💡 Hint: Run 'alembic upgrade head' before tests")
+            await engine.dispose()
+            raise RuntimeError(
+                f"Test database setup failed. Tables may not exist. "
+                f"Error: {e}\n"
+                f"Solution: Ensure database migrations are run before tests."
+            ) from e
     
     await engine.dispose()
     yield
