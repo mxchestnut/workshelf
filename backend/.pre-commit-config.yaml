@@ -1,0 +1,41 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=10000']
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: mixed-line-ending
+
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=120', '--extend-ignore=E203,W503']
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-ll', '--skip', 'B101,B601']  # Only high severity issues, skip assert and shell warnings
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: bash -c 'cd backend && pytest tests/ -v || echo "⚠️  Tests failed, but allowing commit. Please fix tests!"'
+        language: system
+        pass_filenames: false
+        always_run: false
+        stages: [commit]

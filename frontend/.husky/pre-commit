@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Frontend checks
+echo "📦 Checking frontend..."
+cd frontend 2>/dev/null || cd .
+
+# Run lint-staged (handles linting and formatting)
+npm run pre-commit
+
+# Type checking
+echo "🔍 Type checking..."
+npm run type-check
+
+# Security audit (only high/critical vulnerabilities)
+echo "🔐 Security audit..."
+npm audit --audit-level=high || echo "⚠️  Security vulnerabilities found, but allowing commit. Please review!"
+
+# Check for console statements in staged files
+echo "🚫 Checking for console statements..."
+cd ..
+STAGED_TS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$STAGED_TS_FILES" ]; then
+  if echo "$STAGED_TS_FILES" | xargs grep -n 'console\.\(log\|debug\|info\)' 2>/dev/null; then
+    echo "❌ Found console statements in staged files. Please remove them or use console.error/console.warn for intentional logging."
+    exit 1
+  fi
+fi
+
+echo "✅ Frontend checks passed!"

@@ -1,0 +1,67 @@
+title = "Workshelf Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "workshelf-api-key"
+description = "Workshelf API Key"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?token)['"]?\s*[:=]\s*['"]?[0-9a-zA-Z\-_]{32,}'''
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook"
+regex = '''https://hooks\.slack\.com/services/[A-Za-z0-9+/]{44,}'''
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key"
+regex = '''AKIA[0-9A-Z]{16}'''
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Key"
+regex = '''(?i)aws_secret_access_key['"]?\s*[:=]\s*['"]?[0-9a-zA-Z/+=]{40}'''
+
+[[rules]]
+id = "stripe-key"
+description = "Stripe API Key"
+regex = '''(sk|pk|rk)_(test|live)_[0-9a-zA-Z]{24,}'''
+
+[[rules]]
+id = "github-token"
+description = "GitHub Token"
+regex = '''(ghp|gho|ghu|ghs|ghr)_[0-9a-zA-Z]{36,}'''
+
+[[rules]]
+id = "postgres-connection"
+description = "PostgreSQL Connection String"
+regex = '''postgres(ql)?://[a-zA-Z0-9_-]+:[^@\s]+@[a-zA-Z0-9._-]+(:\d+)?/[a-zA-Z0-9_-]+'''
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT Secret"
+regex = '''(?i)(jwt[_-]?secret|secret[_-]?key)['"]?\s*[:=]\s*['"]?[0-9a-zA-Z\-_/+=]{32,}'''
+
+[[rules]]
+id = "keycloak-secret"
+description = "Keycloak Client Secret"
+regex = '''(?i)(keycloak[_-]?secret|client[_-]?secret)['"]?\s*[:=]\s*['"]?[0-9a-zA-Z\-_]{32,}'''
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+    '''^Kit's Docs/''',
+    '''README\.md$''',
+    '''\.md$''',
+    '''\.gitleaks\.toml$''',
+]
+
+regexes = [
+    '''example-api-key-12345''',
+    '''your-api-key-here''',
+    '''placeholder''',
+    '''REPLACE_ME''',
+]
