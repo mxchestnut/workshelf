@@ -45,14 +45,13 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy ModSecurity custom rules
-COPY modsecurity.conf /etc/nginx/modsecurity/workshelf-rules.conf
+# Copy ModSecurity custom rules to the CRS rules directory
+COPY modsecurity.conf /etc/modsecurity.d/owasp-crs/rules/WORKSHELF-RULES.conf
 
-# Include custom rules in ModSecurity config
-RUN echo "Include /etc/nginx/modsecurity/workshelf-rules.conf" >> /etc/nginx/modsecurity/modsecurity.conf
-
-# Enable ModSecurity
-RUN sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsecurity/modsecurity.conf
+# Enable ModSecurity - the owasp/modsecurity-crs image handles includes automatically
+RUN sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/g' /etc/modsecurity.d/modsecurity.conf || \
+    sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/g' /etc/nginx/modsecurity/modsecurity.conf || \
+    true
 
 EXPOSE 80
 
