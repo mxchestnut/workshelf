@@ -42,13 +42,13 @@ FROM owasp/modsecurity-crs:nginx-alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx config as template (OWASP image uses template system)
+COPY nginx.conf /etc/nginx/templates/conf.d/default.conf.template
 
 # Copy ModSecurity custom rules to the CRS rules directory
 COPY modsecurity.conf /etc/modsecurity.d/owasp-crs/rules/WORKSHELF-RULES.conf
 
-# Enable ModSecurity - the owasp/modsecurity-crs image handles includes automatically
+# Enable ModSecurity
 RUN sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/g' /etc/modsecurity.d/modsecurity.conf || \
     sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/g' /etc/nginx/modsecurity/modsecurity.conf || \
     true
