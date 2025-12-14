@@ -202,6 +202,28 @@ services:
     networks:
     - workshelf
     restart: unless-stopped
+  vault:
+    image: hashicorp/vault:latest
+    container_name: workshelf-vault
+    cap_add:
+    - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:-workshelf-dev-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+    - "127.0.0.1:8200:8200"
+    volumes:
+    - vault_data:/vault/data
+    - vault_logs:/vault/logs
+    command: server -dev -dev-root-token-id=${VAULT_ROOT_TOKEN:-workshelf-dev-token}
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+    - workshelf
+    restart: unless-stopped
 volumes:
   postgres_data: null
   synapse_data: null
@@ -209,6 +231,8 @@ volumes:
   redis_data: null
   prometheus_data: null
   grafana_data: null
+  vault_data: null
+  vault_logs: null
 networks:
   workshelf:
     driver: bridge

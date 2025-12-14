@@ -36,14 +36,23 @@ RUN rm -f .env* || true
 
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Production stage with ModSecurity
+FROM owasp/modsecurity-crs:nginx-alpine
 
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy ModSecurity custom rules
+COPY modsecurity.conf /etc/nginx/modsecurity/workshelf-rules.conf
+
+# Include custom rules in ModSecurity config
+RUN echo "Include /etc/nginx/modsecurity/workshelf-rules.conf" >> /etc/nginx/modsecurity/modsecurity.conf
+
+# Enable ModSecurity
+RUN sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsecurity/modsecurity.conf
 
 EXPOSE 80
 
