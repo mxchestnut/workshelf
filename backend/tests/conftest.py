@@ -233,12 +233,24 @@ async def setup_test_user_in_db():
             user = result.first()
 
             if not user:
-                # Create test user
+                # Create test user with all required NOT NULL columns
                 await session.execute(
                     text(
                         """
-                        INSERT INTO users (keycloak_id, email, username, tenant_id, is_active, is_verified)
-                        VALUES ('test-keycloak-id-123', 'testuser@example.com', 'testuser', :tenant_id, true, true)
+                        INSERT INTO users (
+                            keycloak_id, email, username, tenant_id,
+                            newsletter_opt_in, sms_opt_in, house_rules_accepted,
+                            is_active, is_verified, is_staff, is_approved,
+                            reading_score, beta_score, writer_score,
+                            created_at, updated_at
+                        )
+                        VALUES (
+                            'test-keycloak-id-123', 'testuser@example.com', 'testuser', :tenant_id,
+                            false, false, false,
+                            true, true, false, false,
+                            0, 0, 0,
+                            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                        )
                         ON CONFLICT (keycloak_id) DO NOTHING
                     """
                     ),
