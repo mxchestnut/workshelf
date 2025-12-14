@@ -1,0 +1,67 @@
+name: Backup Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "backup" to confirm'
+        required: true
+  schedule:
+    # Daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  backup:
+    name: Create Database Backup
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'backup' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
+          chmod 600 ~/.ssh/workshelf-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Create Backup
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+        run: |
+          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'BACKUP'
+            set -e
+            cd /home/ubuntu/workshelf
+            
+            echo "📦 Creating database backup..."
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            BACKUP_FILE="backup_${TIMESTAMP}.sql"
+            
+            # Create backup directory if it doesn't exist
+            mkdir -p backups
+            
+            # Get PostgreSQL container name
+            PG_CONTAINER=$(sudo docker ps --filter "name=postgres" --format "{{.Names}}" | head -1)
+            
+            if [ -z "$PG_CONTAINER" ]; then
+              echo "❌ PostgreSQL container not found"
+              exit 1
+            fi
+            
+            # Create backup
+            sudo docker exec $PG_CONTAINER pg_dump -U workshelf workshelf > "backups/$BACKUP_FILE"
+            
+            # Compress backup
+            gzip "backups/$BACKUP_FILE"
+            
+            echo "✅ Backup created: backups/${BACKUP_FILE}.gz"
+            
+            # Keep only last 7 days of backups
+            find backups/ -name "backup_*.sql.gz" -mtime +7 -delete
+            
+            # Show backup size and count
+            echo "📊 Current backups:"
+            ls -lh backups/ | tail -10
+          BACKUP

@@ -81,27 +81,26 @@ jobs:
         run: |
           ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
             set -e
-            cd /opt/workshelf
+            cd /home/ubuntu/workshelf
             
             echo "🔧 Fixing git permissions..."
-            sudo chown -R ubuntu:ubuntu /opt/workshelf/.git
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/workshelf/.git
             
             echo "📥 Pulling latest code..."
             git fetch origin main
             git reset --hard origin/main
             
             echo "🔧 Setting release tracking..."
-            echo "GIT_SHA=${{ github.sha }}" >> deploy/.env.tmp
-            grep -v "^GIT_SHA=" deploy/.env > deploy/.env.old || true
-            cat deploy/.env.old deploy/.env.tmp > deploy/.env
-            rm deploy/.env.tmp deploy/.env.old
+            echo "GIT_SHA=${{ github.sha }}" >> .env.tmp
+            grep -v "^GIT_SHA=" .env > .env.old || true
+            cat .env.old .env.tmp > .env
+            rm .env.tmp .env.old
             
             echo "🏗️ Rebuilding services..."
-            cd deploy
-            sudo docker-compose -f docker-compose.prod.yml build --no-cache backend frontend
+            sudo docker-compose -f deploy/docker-compose.prod.yml build --no-cache backend frontend
             
             echo "♻️  Restarting all services..."
-            sudo docker-compose -f docker-compose.prod.yml down
+            sudo docker-compose -f deploy/docker-compose.prod.yml down
             
             # Clean up ALL docker resources
             echo "🧹 Cleaning up Docker..."
@@ -119,22 +118,23 @@ jobs:
             
             # Start services one at a time to avoid race conditions
             echo "🚀 Starting infrastructure services..."
-            sudo docker-compose -f docker-compose.prod.yml up -d postgres redis minio keycloak
+            sudo docker-compose -f deploy/docker-compose.prod.yml up -d postgres redis minio keycloak
             sleep 15
             
             echo "🚀 Starting application services..."
-            sudo docker-compose -f docker-compose.prod.yml up -d backend frontend
+            sudo docker-compose -f deploy/docker-compose.prod.yml up -d backend frontend
             sleep 10
             
             echo "🗄️  Running database migrations..."
-            sudo docker-compose -f docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_bookshelf.py || echo "⚠️  Migration already applied or failed"
+            sudo docker-compose -f deploy/docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_bookshelf.py || echo "⚠️  Migration already applied or failed"
             
             echo "♻️  Restarting backend to load schema changes..."
-            sudo docker-compose -f docker-compose.prod.yml restart backend
+            sudo docker-compose -f deploy/docker-compose.prod.yml restart backend
             sleep 10
             
             echo "🔧 Fixing CORS configuration..."
-            sudo bash fix-cors.sh || echo "⚠️  CORS fix script not available yet"
+            cd deploy && sudo bash fix-cors.sh || echo "⚠️  CORS fix script not available"
+            cd /home/ubuntu/workshelf
             
             echo "⏳ Waiting for services to stabilize..."
             sleep 30

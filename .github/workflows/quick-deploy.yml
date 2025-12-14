@@ -1,0 +1,77 @@
+name: Quick Deploy (Frontend/Backend Only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - frontend
+          - backend
+          - both
+      confirm:
+        description: 'Type "deploy" to confirm'
+        required: true
+
+jobs:
+  quick-deploy:
+    name: Quick Deploy ${{ inputs.service }}
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'deploy'
+    environment:
+      name: production
+      url: https://workshelf.dev
+    
+    steps:
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
+          chmod 600 ~/.ssh/workshelf-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy Service
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+          SERVICE: ${{ inputs.service }}
+        run: |
+          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
+            set -e
+            cd /home/ubuntu/workshelf
+            
+            echo "📥 Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            case "${{ inputs.service }}" in
+              frontend)
+                echo "🏗️ Rebuilding frontend..."
+                sudo docker-compose -f deploy/docker-compose.prod.yml build --no-cache frontend
+                sudo docker-compose -f deploy/docker-compose.prod.yml up -d frontend
+                ;;
+              backend)
+                echo "🏗️ Rebuilding backend..."
+                sudo docker-compose -f deploy/docker-compose.prod.yml build --no-cache backend
+                sudo docker-compose -f deploy/docker-compose.prod.yml up -d backend
+                ;;
+              both)
+                echo "🏗️ Rebuilding both services..."
+                sudo docker-compose -f deploy/docker-compose.prod.yml build --no-cache backend frontend
+                sudo docker-compose -f deploy/docker-compose.prod.yml up -d backend frontend
+                ;;
+            esac
+            
+            echo "⏳ Waiting for service to stabilize..."
+            sleep 15
+            
+            echo "🏥 Health check..."
+            curl -f https://workshelf.dev/health || echo "⚠️  Frontend health check failed"
+            curl -f https://api.workshelf.dev/health || echo "⚠️  Backend health check failed"
+            
+            echo "✅ Deployment complete!"
+          DEPLOY
