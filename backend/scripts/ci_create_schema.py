@@ -17,7 +17,7 @@ from app.models.base import Base
 
 
 async def create_tables():
-    """Create all database tables from models"""
+    """Create all database tables from models and run migrations"""
     engine = get_db_engine()
     async with engine.begin() as conn:
         # Create enum types that have create_type=False
@@ -28,9 +28,17 @@ async def create_tables():
                 WHEN duplicate_object THEN null;
             END $$;
         """))
-        # Create all tables
+        # Create all tables (base schema)
         await conn.run_sync(Base.metadata.create_all)
     await engine.dispose()
+    
+    # Run Alembic migrations to bring schema up to date
+    print('🔄 Running Alembic migrations...')
+    import subprocess
+    result = subprocess.run(['alembic', 'upgrade', 'head'], capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f'⚠️  Alembic warning: {result.stderr}')
+    
     print('✅ Database schema created successfully')
 
 
