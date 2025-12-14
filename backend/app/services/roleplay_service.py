@@ -655,6 +655,30 @@ class RoleplayService:
         await db.refresh(lore_entry)
         return lore_entry
     
+    @staticmethod
+    async def delete_lore_entry(
+        db: AsyncSession,
+        lore_id: int,
+        user_id: int
+    ) -> bool:
+        """Delete a lore entry (author only)."""
+        result = await db.execute(
+            select(LoreEntry).where(
+                and_(
+                    LoreEntry.id == lore_id,
+                    LoreEntry.author_id == user_id
+                )
+            )
+        )
+        lore_entry = result.scalar_one_or_none()
+        
+        if not lore_entry:
+            return False
+        
+        await db.delete(lore_entry)
+        await db.commit()
+        return True
+    
     # ============================================================================
     # Dice Roll Operations
     # ============================================================================

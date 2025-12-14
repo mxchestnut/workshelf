@@ -432,6 +432,23 @@ async def update_lore_entry(
     return lore_entry
 
 
+@router.delete("/lore/{lore_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_lore_entry(
+    lore_id: int,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a lore entry (author only)."""
+    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+    
+    deleted = await RoleplayService.delete_lore_entry(db, lore_id, user.id)
+    
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Lore entry not found or access denied")
+    
+    return None
+
+
 # ============================================================================
 # Dice Roll Endpoints
 # ============================================================================
