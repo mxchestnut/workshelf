@@ -495,13 +495,13 @@ git branch --show-current
 
 ```bash
 # Start Cyarika
-alias cyarika-start='cd ~/Code/cyarika && docker-compose up'
+alias cyarika-start='cd ~/Code/cyarika && docker-compose -f docker-compose.cyarika.yml up'
 
 # Stop Cyarika
-alias cyarika-stop='cd ~/Code/cyarika && docker-compose down'
+alias cyarika-stop='cd ~/Code/cyarika && docker-compose -f docker-compose.cyarika.yml down'
 
 # Cyarika logs
-alias cyarika-logs='cd ~/Code/cyarika && docker-compose logs -f'
+alias cyarika-logs='cd ~/Code/cyarika && docker-compose -f docker-compose.cyarika.yml logs -f'
 
 # Switch to Cyarika
 alias cyarika='cd ~/Code/cyarika'
