@@ -27,6 +27,12 @@ def upgrade():
     """
     )
 
+    # Check if table already exists (from Base.metadata.create_all)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "writer_reader_relationships" in inspector.get_table_names():
+        return
+
     # Create writer_reader_relationships table
     op.create_table(
         "writer_reader_relationships",
