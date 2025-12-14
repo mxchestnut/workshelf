@@ -242,6 +242,7 @@ async def setup_test_user_in_db():
                             newsletter_opt_in, sms_opt_in, house_rules_accepted,
                             is_active, is_verified, is_staff, is_approved,
                             reading_score, beta_score, writer_score,
+                            matrix_onboarding_seen,
                             created_at, updated_at
                         )
                         VALUES (
@@ -249,6 +250,7 @@ async def setup_test_user_in_db():
                             false, false, false,
                             true, true, false, false,
                             0, 0, 0,
+                            false,
                             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                         )
                         ON CONFLICT (keycloak_id) DO NOTHING
