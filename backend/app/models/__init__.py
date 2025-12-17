@@ -1,180 +1,341 @@
 """
 Database models for Work Shelf
-Multi-tenant architecture with Row-Level Security
+AUTO-GENERATED from existing model files
 """
+
 from app.models.base import Base
-from app.models.tenant import Tenant, TenantSettings
-from app.models.user import User, UserProfile, UserBadge, BetaReaderReview, BetaReaderProfile
-from app.models.role import Role, Permission, RolePermission, UserRole
-from app.models.document import Document, DocumentVersion, DocumentCollaborator, Tag, DocumentTag, DocumentMode, DocumentStatus, DocumentVisibility
-from app.models.studio import Studio, StudioMember
-from app.models.project import Project
-from app.models.folder import Folder
-from app.models.social import UserFollow, ShareLink, Notification, ActivityEvent
-from app.models.reading import Bookmark, ReadingList, ReadingListItem, ReadingProgress, Category
-from app.models.bookshelf import BookshelfItem  # Personal bookshelf (Goodreads-style)
-from app.models.book_suggestion import BookSuggestion, SuggestionStatus  # User book suggestions
-from app.models.author import Author, AuthorEdit, UserFollowsAuthor  # Wiki-style author profiles
-from app.models.epub_submission import EpubSubmission, VerificationLog, SubmissionStatus  # EPUB uploads
-from app.models.store import StoreItem, Purchase, AuthorEarnings, StoreItemStatus, PurchaseStatus  # WorkShelf Store
-from app.models.collaboration import (
-    Comment, CommentReaction,
-    BetaRequest, BetaFeedback, BetaRequestStatus,
-    Group, GroupMember, GroupMemberRole, GroupPrivacyType, GroupFollower,
-    GroupPost, GroupPostReaction,
-    GroupCustomDomain, ScholarshipRequest,
-    MessageThread, MessageThreadParticipant, Message, MessageThreadType,
-    GroupInvitation, GroupInvitationStatus
-)
-from app.models.group_customization import GroupTheme
-from app.models.group_analytics import GroupAnalytics
-from app.models.studio_customization import (
-    StudioTheme, StudioCustomDomain,
-    DocumentView, StudioAnalytics
-)
-from app.models.monetization import (
-    SubscriptionTier, SubscriptionTierType, BillingInterval,
-    Subscription, SubscriptionStatus,
-    Payment, PaymentStatus,
-    CreatorEarnings, Payout, PayoutStatus
-)
+
 from app.models.advanced import (
-    IntegrityCheck, IntegrityCheckType, IntegrityCheckStatus,
-    ExportJob, ExportFormat, ExportStatus, ExportType
-)
-from app.models.templates import (
-    ProjectTemplate, TemplateSection, TemplateSearch
+    IntegrityCheckType,
+    IntegrityCheckStatus,
+    IntegrityCheck,
+    ExportFormat,
+    ExportStatus,
+    ExportType,
+    ExportJob,
 )
 from app.models.ai_templates import (
-    AIGeneratedTemplate, TemplateInterestMapping, AIGenerationLog
+    AIGeneratedTemplate,
+    TemplateInterestMapping,
+    AIGenerationLog,
 )
-from app.models.page_tracking import (
-    PageStatus, PageVersion, UserPageView
+from app.models.author import (
+    Author,
+    AuthorEdit,
+    UserFollowsAuthor,
+)
+from app.models.author_follows import (
+    AuthorFollowStatus,
+    AuthorFollow,
+)
+from app.models.book_suggestion import (
+    SuggestionStatus,
+    BookSuggestion,
+)
+from app.models.bookshelf import (
+    BookshelfItemType,
+    BookshelfStatus,
+    BookshelfItem,
+)
+from app.models.collaboration import (
+    ReaderRole,
+    WriterReaderRelationship,
+    Comment,
+    CommentReaction,
+    ModerationActionType,
+    ModerationAction,
+    BetaRequestStatus,
+    BetaRequest,
+    BetaFeedback,
+    BetaReaderAppointment,
+    BetaRelease,
+    GroupPrivacyType,
+    GroupMemberRole,
+    PrivacyLevel,
+    Group,
+    GroupFollower,
+    GroupMember,
+    GroupPost,
+    GroupPostReaction,
+    GroupRole,
+    GroupMemberCustomRole,
+    MessageThreadType,
+    MessageThread,
+    MessageThreadParticipant,
+    Message,
+    GroupCustomDomain,
+    ScholarshipRequest,
+    GroupInvitationStatus,
+    GroupInvitation,
 )
 from app.models.collection import (
-    Collection, CollectionItem, CollectionItemType
+    CollectionItemType,
+    Collection,
+    CollectionItem,
 )
-from app.models.tags import (
-    ContentTag, PostTag
+from app.models.document import (
+    DocumentStatus,
+    DocumentMode,
+    DocumentVisibility,
+    CollaboratorRole,
+    Document,
+    DocumentVersion,
+    DocumentCollaborator,
+    Tag,
+    DocumentTag,
+)
+from app.models.epub_submission import (
+    SubmissionStatus,
+    EpubSubmission,
+    VerificationLog,
+)
+from app.models.folder import (
+    Folder,
+)
+from app.models.frozen_username import (
+    FrozenUsername,
+)
+from app.models.group_analytics import (
+    GroupAnalytics,
+)
+from app.models.group_customization import (
+    GroupTheme,
+)
+from app.models.invitation import (
+    InvitationStatus,
+    Invitation,
+)
+from app.models.monetization import (
+    SubscriptionTierType,
+    BillingInterval,
+    SubscriptionTier,
+    SubscriptionStatus,
+    Subscription,
+    PaymentStatus,
+    Payment,
+    CreatorEarnings,
+    PayoutStatus,
+    Payout,
+)
+from app.models.page_tracking import (
+    PageStatus,
+    PageVersion,
+    UserPageView,
+)
+from app.models.project import (
+    Project,
+)
+from app.models.reading import (
+    Bookmark,
+    ReadingList,
+    ReadingListItem,
+    ReadingProgress,
+    Category,
+)
+from app.models.role import (
+    Permission,
+    Role,
+    RolePermission,
+    UserRole,
 )
 from app.models.roleplay import (
-    RoleplayProject, RoleplayCharacter, RoleplayPassage, RoleplayScene,
-    LoreEntry, PassageReaction, DiceRoll,
-    RoleplayGenre, RoleplayRating, PostingOrder, DiceSystem
+    RoleplayGenre,
+    RoleplayRating,
+    PostingOrder,
+    DiceSystem,
+    RoleplayProject,
+    RoleplayCharacter,
+    RoleplayScene,
+    RoleplayPassage,
+    LoreEntry,
+    PassageReaction,
+    DiceRoll,
+)
+from app.models.social import (
+    UserFollow,
+    ShareLink,
+    NotificationType,
+    Notification,
+    ActivityEventType,
+    ActivityEvent,
+)
+from app.models.store import (
+    StoreItemStatus,
+    PurchaseStatus,
+    StoreItem,
+    Purchase,
+    AuthorEarnings,
+    AudiobookSubmissionStatus,
+    AudiobookSubmission,
+)
+from app.models.studio import (
+    StudioMemberRole,
+    Studio,
+    StudioMember,
+)
+from app.models.studio_customization import (
+    StudioTheme,
+    StudioCustomDomain,
+    DocumentView,
+    StudioAnalytics,
+)
+from app.models.tags import (
+    ContentTag,
+    PostTag,
+)
+from app.models.templates import (
+    ProjectTemplate,
+    TemplateSection,
+    TemplateSearch,
+)
+from app.models.tenant import (
+    Tenant,
+    TenantSettings,
+)
+from app.models.user import (
+    User,
+    UserProfile,
+    UserBadge,
+    BetaReaderReview,
+    BetaReaderProfile,
 )
 
 __all__ = [
-    "Base",
-    "Tenant",
-    "TenantSettings",
-    "User",
-    "UserProfile",
-    "Role",
-    "Permission",
-    "RolePermission",
-    "UserRole",
-    "Document",
-    "DocumentVersion",
-    "DocumentCollaborator",
-    "Tag",
-    "DocumentTag",
-    "Studio",
-    "StudioMember",
-    "Project",
-    "Folder",
-    # Phase 2: Social
-    "UserFollow",
-    "ShareLink",
-    "Notification",
+    "AIGeneratedTemplate",
+    "AIGenerationLog",
     "ActivityEvent",
-    # Phase 3: Reading & Discovery
+    "ActivityEventType",
+    "AudiobookSubmission",
+    "AudiobookSubmissionStatus",
+    "Author",
+    "AuthorEarnings",
+    "AuthorEdit",
+    "AuthorFollow",
+    "AuthorFollowStatus",
+    "Base",
+    "BetaFeedback",
+    "BetaReaderAppointment",
+    "BetaReaderProfile",
+    "BetaReaderReview",
+    "BetaRelease",
+    "BetaRequest",
+    "BetaRequestStatus",
+    "BillingInterval",
+    "BookSuggestion",
     "Bookmark",
+    "BookshelfItem",
+    "BookshelfItemType",
+    "BookshelfStatus",
+    "Category",
+    "CollaboratorRole",
+    "Collection",
+    "CollectionItem",
+    "CollectionItemType",
+    "Comment",
+    "CommentReaction",
+    "ContentTag",
+    "CreatorEarnings",
+    "DiceRoll",
+    "DiceSystem",
+    "Document",
+    "DocumentCollaborator",
+    "DocumentMode",
+    "DocumentStatus",
+    "DocumentTag",
+    "DocumentVersion",
+    "DocumentView",
+    "DocumentVisibility",
+    "EpubSubmission",
+    "ExportFormat",
+    "ExportJob",
+    "ExportStatus",
+    "ExportType",
+    "Folder",
+    "FrozenUsername",
+    "Group",
+    "GroupAnalytics",
+    "GroupCustomDomain",
+    "GroupFollower",
+    "GroupInvitation",
+    "GroupInvitationStatus",
+    "GroupMember",
+    "GroupMemberCustomRole",
+    "GroupMemberRole",
+    "GroupPost",
+    "GroupPostReaction",
+    "GroupPrivacyType",
+    "GroupRole",
+    "GroupTheme",
+    "IntegrityCheck",
+    "IntegrityCheckStatus",
+    "IntegrityCheckType",
+    "Invitation",
+    "InvitationStatus",
+    "LoreEntry",
+    "Message",
+    "MessageThread",
+    "MessageThreadParticipant",
+    "MessageThreadType",
+    "ModerationAction",
+    "ModerationActionType",
+    "Notification",
+    "NotificationType",
+    "PageStatus",
+    "PageVersion",
+    "PassageReaction",
+    "Payment",
+    "PaymentStatus",
+    "Payout",
+    "PayoutStatus",
+    "Permission",
+    "PostTag",
+    "PostingOrder",
+    "PrivacyLevel",
+    "Project",
+    "ProjectTemplate",
+    "Purchase",
+    "PurchaseStatus",
+    "ReaderRole",
     "ReadingList",
     "ReadingListItem",
     "ReadingProgress",
-    "Category",
-    "BookshelfItem",
-    "BookSuggestion",
-    "SuggestionStatus",
-    "Author",
-    "AuthorEdit",
-    "UserFollowsAuthor",
-    "EpubSubmission",
-    "VerificationLog",
-    "SubmissionStatus",
-    "StoreItem",
-    "Purchase",
-    "AuthorEarnings",
-    "StoreItemStatus",
-    "PurchaseStatus",
-    # Phase 4: Collaboration
-    "Comment",
-    "CommentReaction",
-    "BetaRequest",
-    "BetaFeedback",
-    "BetaRequestStatus",
-    "Group",
-    "GroupMember",
-    "GroupMemberRole",
-    "GroupPrivacyType",
-    "GroupFollower",
-    "GroupPost",
-    "GroupPostReaction",
-    "GroupCustomDomain",
+    "Role",
+    "RolePermission",
+    "RoleplayCharacter",
+    "RoleplayGenre",
+    "RoleplayPassage",
+    "RoleplayProject",
+    "RoleplayRating",
+    "RoleplayScene",
     "ScholarshipRequest",
-    "GroupInvitation",
-    "GroupInvitationStatus",
-    "MessageThread",
-    "MessageThreadParticipant",
-    "Message",
-    "MessageThreadType",
-    # Phase 5: Studio Customization & Group Customization
-    "GroupTheme",
-    "GroupAnalytics",
-    "StudioTheme",
-    "StudioCustomDomain",
-    "DocumentView",
+    "ShareLink",
+    "StoreItem",
+    "StoreItemStatus",
+    "Studio",
     "StudioAnalytics",
-    # Phase 6: Monetization
-    "SubscriptionTier",
-    "SubscriptionTierType",
-    "BillingInterval",
+    "StudioCustomDomain",
+    "StudioMember",
+    "StudioMemberRole",
+    "StudioTheme",
+    "SubmissionStatus",
     "Subscription",
     "SubscriptionStatus",
-    "Payment",
-    "PaymentStatus",
-    "CreatorEarnings",
-    "Payout",
-    "PayoutStatus",
-    # Phase 7: Advanced Features
-    "IntegrityCheck",
-    "IntegrityCheckType",
-    "IntegrityCheckStatus",
-    "ExportJob",
-    "ExportFormat",
-    "ExportStatus",
-    "ExportType",
-    # Templates
-    "ProjectTemplate",
-    "TemplateSection",
-    "TemplateSearch",
-    # AI Templates
-    "AIGeneratedTemplate",
+    "SubscriptionTier",
+    "SubscriptionTierType",
+    "SuggestionStatus",
+    "Tag",
     "TemplateInterestMapping",
-    "AIGenerationLog",
-    # Tags
-    "ContentTag",
-    "PostTag",
-    # Roleplay Studio
-    "RoleplayProject",
-    "RoleplayCharacter",
-    "RoleplayPassage",
-    "RoleplayScene",
-    "LoreEntry",
-    "PassageReaction",
-    "DiceRoll",
-    "RoleplayGenre",
-    "RoleplayRating",
-    "PostingOrder",
-    "DiceSystem",
+    "TemplateSearch",
+    "TemplateSection",
+    "Tenant",
+    "TenantSettings",
+    "User",
+    "UserBadge",
+    "UserFollow",
+    "UserFollowsAuthor",
+    "UserPageView",
+    "UserProfile",
+    "UserRole",
+    "VerificationLog",
+    "WriterReaderRelationship",
 ]

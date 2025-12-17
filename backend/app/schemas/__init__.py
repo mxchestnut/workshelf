@@ -1,113 +1,43 @@
 """
-Schemas package
-Pydantic models for API validation
+Schemas package - Pydantic models for API validation
+AUTO-GENERATED imports from all schema files
 """
-from app.schemas.document import (
-    DocumentCreate,
-    DocumentUpdate,
-    DocumentResponse,
-    DocumentListResponse,
-    DocumentDetail,
-    DocumentStatus,
-    DocumentVisibility
-)
-from app.schemas.monetization import (
-    # Subscription Tier Schemas
-    SubscriptionTierBase,
-    SubscriptionTierResponse,
-    # Subscription Schemas
-    SubscriptionCreate,
-    SubscriptionUpdateTier,
-    SubscriptionCancel,
-    SubscriptionResponse,
-    # Payment Schemas
-    PaymentResponse,
-    # Creator Earnings Schemas
-    CreatorEarningsResponse,
-    # Payout Schemas
-    PayoutRequest,
-    PayoutResponse,
-    # Stripe Webhook Schemas
-    StripeWebhookEvent
-)
-from app.schemas.roleplay import (
-    # Roleplay Project Schemas
-    RoleplayProjectCreate,
-    RoleplayProjectUpdate,
-    RoleplayProjectResponse,
-    # Character Schemas
-    CharacterCreate,
-    CharacterUpdate,
-    CharacterResponse,
-    # Scene Schemas
-    SceneCreate,
-    SceneUpdate,
-    SceneResponse,
-    # Passage Schemas
-    PassageCreate,
-    PassageUpdate,
-    PassageResponse,
-    PassageReactionCreate,
-    PassageReactionResponse,
-    # Lore Schemas
-    LoreEntryCreate,
-    LoreEntryUpdate,
-    LoreEntryResponse,
-    # Dice Roll Schemas
-    DiceRollRequest,
-    DiceRollResponse,
-    # Compile Schemas
-    CompileRequest,
-    CompileResponse,
-    # List/Filter Params
-    PassageListParams,
-    CharacterListParams,
-    LoreEntryListParams
-)
 
-__all__ = [
-    "DocumentCreate",
-    "DocumentUpdate",
-    "DocumentResponse",
-    "DocumentListResponse",
-    "DocumentDetail",
-    "DocumentStatus",
-    "DocumentVisibility",
-    # Phase 6: Monetization
-    "SubscriptionTierBase",
-    "SubscriptionTierResponse",
-    "SubscriptionCreate",
-    "SubscriptionUpdateTier",
-    "SubscriptionCancel",
-    "SubscriptionResponse",
-    "PaymentResponse",
-    "CreatorEarningsResponse",
-    "PayoutRequest",
-    "PayoutResponse",
-    "StripeWebhookEvent",
-    # Roleplay Studio
-    "RoleplayProjectCreate",
-    "RoleplayProjectUpdate",
-    "RoleplayProjectResponse",
-    "CharacterCreate",
-    "CharacterUpdate",
-    "CharacterResponse",
-    "SceneCreate",
-    "SceneUpdate",
-    "SceneResponse",
-    "PassageCreate",
-    "PassageUpdate",
-    "PassageResponse",
-    "PassageReactionCreate",
-    "PassageReactionResponse",
-    "LoreEntryCreate",
-    "LoreEntryUpdate",
-    "LoreEntryResponse",
-    "DiceRollRequest",
-    "DiceRollResponse",
-    "CompileRequest",
-    "CompileResponse",
-    "PassageListParams",
-    "CharacterListParams",
-    "LoreEntryListParams"
-]
+# Import all schemas with wildcard to avoid import errors
+from app.schemas.accessibility import *  # noqa: F401, F403
+from app.schemas.activity import *  # noqa: F401, F403
+from app.schemas.beta_appointment import *  # noqa: F401, F403
+from app.schemas.beta_profile import *  # noqa: F401, F403
+from app.schemas.beta_reading import *  # noqa: F401, F403
+from app.schemas.collaboration import *  # noqa: F401, F403
+from app.schemas.comment import *  # noqa: F401, F403
+from app.schemas.content_integrity import *  # noqa: F401, F403
+from app.schemas.dashboard import *  # noqa: F401, F403
+from app.schemas.discovery import *  # noqa: F401, F403
+from app.schemas.document import *  # noqa: F401, F403
+from app.schemas.editor import *  # noqa: F401, F403
+from app.schemas.export import *  # noqa: F401, F403
+from app.schemas.group import *  # noqa: F401, F403
+from app.schemas.group_customization import *  # noqa: F401, F403
+from app.schemas.innovative import *  # noqa: F401, F403
+from app.schemas.messaging import *  # noqa: F401, F403
+from app.schemas.monetization import *  # noqa: F401, F403
+from app.schemas.notification import *  # noqa: F401, F403
+from app.schemas.page_tracking import *  # noqa: F401, F403
+from app.schemas.project import *  # noqa: F401, F403
+from app.schemas.reading import *  # noqa: F401, F403
+from app.schemas.reading_list import *  # noqa: F401, F403
+from app.schemas.relationships import *  # noqa: F401, F403
+from app.schemas.roleplay import *  # noqa: F401, F403
+from app.schemas.search import *  # noqa: F401, F403
+from app.schemas.sharing import *  # noqa: F401, F403
+from app.schemas.social import *  # noqa: F401, F403
+from app.schemas.studio import *  # noqa: F401, F403
+from app.schemas.studio_analytics import *  # noqa: F401, F403
+from app.schemas.studio_customization import *  # noqa: F401, F403
+from app.schemas.subscription import *  # noqa: F401, F403
+from app.schemas.tag import *  # noqa: F401, F403
+from app.schemas.user import *  # noqa: F401, F403
+from app.schemas.user_profile import *  # noqa: F401, F403
+from app.schemas.user_settings import *  # noqa: F401, F403
+from app.schemas.writer_reader import *  # noqa: F401, F403
