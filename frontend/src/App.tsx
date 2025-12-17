@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
@@ -103,20 +103,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const location = useLocation()
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated())
 
   useEffect(() => {
     // Track page views
     trackPageView(location.pathname)
   }, [location.pathname])
 
+  // Check authentication status on location change
+  useEffect(() => {
+    setIsAuthenticated(authService.isAuthenticated())
+  }, [location.pathname])
+
   // Check admin subdomain redirects
   useEffect(() => {
     const hostname = window.location.hostname
     const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
-    const isAuthenticated = authService.isAuthenticated()
+    const isAuthenticatedNow = authService.isAuthenticated()
 
     if (isAdminSubdomain && location.pathname === '/') {
-      if (isAuthenticated) {
+      if (isAuthenticatedNow) {
         window.location.href = '/admin'
       } else {
         window.location.href = 'https://workshelf.dev/'
@@ -241,7 +247,8 @@ function App() {
         </Suspense>
       </div>
       
-      <ChatBar />
+      {/* Only show ChatBar when user is authenticated */}
+      {isAuthenticated && <ChatBar />}
     </>
   )
 }

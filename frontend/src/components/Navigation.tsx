@@ -62,7 +62,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
               {sidebarOpen && (
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-7 h-7" />
-                  <h2 className="text-xl font-bold font-mono">Work Shelf</h2>
+                  <h2 className="text-xl font-bold font-mono">Workshelf</h2>
                 </div>
               )}
               <button 
