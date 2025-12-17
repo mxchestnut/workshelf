@@ -171,14 +171,21 @@ async def setup_test_user_in_db():
     Auto-create test user and tenant in database for each test function.
     This runs automatically before each test.
     
-    Note: Uses NullPool (no connection pooling) in tests to prevent
-    "Event loop is closed" errors during cleanup.
+    Note: Creates a fresh engine with NullPool for each test to avoid
+    event loop conflicts with function-scoped loops.
     """
-    from app.core.database import get_db_engine
+    from app.core.config import settings
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+    from sqlalchemy.pool import NullPool
 
-    engine = get_db_engine()  # NullPool engine in test mode
+    # Create fresh engine for this test's event loop
+    engine = create_async_engine(
+        settings.DATABASE_URL_CLEAN,
+        poolclass=NullPool,
+        echo=False
+    )
+    
     async_session = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -267,8 +274,11 @@ async def setup_test_user_in_db():
                 f"Solution: Ensure database migrations are run before tests."
             ) from e
 
-    # NullPool engines don't need disposal - connections are closed immediately
+    # Yield control to the test
     yield
+    
+    # Clean up: dispose of the engine after test completes
+    await engine.dispose()
 
 
 @pytest.fixture
