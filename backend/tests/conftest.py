@@ -171,20 +171,15 @@ async def setup_test_user_in_db():
     Auto-create test user and tenant in database for each test function.
     This runs automatically before each test.
     
-    Note: Creates a fresh engine with NullPool for each test to avoid
-    event loop conflicts with function-scoped loops.
+    Note: Uses get_db_engine() which creates fresh engines in test mode
+    to avoid event loop conflicts with function-scoped loops.
     """
-    from app.core.config import settings
+    from app.core.database import get_db_engine
     from sqlalchemy import text
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-    from sqlalchemy.pool import NullPool
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    # Create fresh engine for this test's event loop
-    engine = create_async_engine(
-        settings.DATABASE_URL_CLEAN,
-        poolclass=NullPool,
-        echo=False
-    )
+    # Get fresh engine for this test (NullPool in test mode)
+    engine = get_db_engine()
     
     async_session = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False

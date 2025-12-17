@@ -2,42 +2,91 @@
 Database connection and session management
 """
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 from app.core.config import settings
+from typing import Optional
 
 # Detect if we're in test mode
 IS_TEST = os.getenv("PYTEST_CURRENT_TEST") is not None
 
-# Main database (groups, posts, users, etc.)
-# Use NullPool in tests to prevent connection pooling issues with event loop cleanup
-engine = create_async_engine(
-    settings.DATABASE_URL_CLEAN,
-    echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
-    pool_pre_ping=True if not IS_TEST else False,
-    poolclass=NullPool if IS_TEST else None,
-    pool_size=5 if not IS_TEST else None,
-    max_overflow=10 if not IS_TEST else None,
-)
+# Module-level engine cache - only used in production
+_engine_cache: Optional[AsyncEngine] = None
+
+def get_db_engine() -> AsyncEngine:
+    """Get or create the database engine.
+    
+    In tests: Creates a new engine with NullPool for each call (no caching).
+    In production: Returns cached engine with connection pooling.
+    """
+    global _engine_cache
+    
+    if IS_TEST:
+        # In tests: create fresh engine each time to avoid event loop issues
+        return create_async_engine(
+            settings.DATABASE_URL_CLEAN,
+            echo=False,
+            poolclass=NullPool,
+        )
+    
+    # In production: use cached engine with connection pooling
+    if _engine_cache is None:
+        _engine_cache = create_async_engine(
+            settings.DATABASE_URL_CLEAN,
+            echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=10,
+        )
+    return _engine_cache
+
+# For backwards compatibility - but prefer using get_db_engine()
+engine = get_db_engine()
 
 # Storage database (user documents only - permanent storage)
 STORAGE_DATABASE_URL = os.getenv(
     "STORAGE_DATABASE_URL",
     settings.DATABASE_URL_CLEAN  # Fallback to main DB if not set
 )
-storage_engine = create_async_engine(
-    STORAGE_DATABASE_URL,
-    echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
-    pool_pre_ping=True if not IS_TEST else False,
-    poolclass=NullPool if IS_TEST else None,
-    pool_size=5 if not IS_TEST else None,
-    max_overflow=10 if not IS_TEST else None,
-)
 
-# Main database session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
+_storage_engine_cache: Optional[AsyncEngine] = None
+
+def get_storage_engine() -> AsyncEngine:
+    """Get or create the storage database engine."""
+    global _storage_engine_cache
+    
+    if IS_TEST:
+        return create_async_engine(
+            STORAGE_DATABASE_URL,
+            echo=False,
+            poolclass=NullPool,
+        )
+    
+    if _storage_engine_cache is None:
+        _storage_engine_cache = create_async_engine(
+            STORAGE_DATABASE_URL,
+            echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=10,
+        )
+    return _storage_engine_cache
+
+# For backwards compatibility
+storage_engine = get_storage_engine()
+
+# Main database session factory - recreated on each access in tests
+def get_async_session_local():
+    """Get session factory for main database."""
+    return async_sessionmaker(
+        get_db_engine(),
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+
+# For backwards compatibility
+AsyncSessionLocal = get_async_session_local()
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
