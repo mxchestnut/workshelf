@@ -13,7 +13,7 @@ from app.models import User
 from app.services.accessibility_service import AccessibilityService
 
 
-router = APIRouter(prefix="/api/accessibility", tags=["Accessibility"])
+router = APIRouter(prefix="/accessibility", tags=["Accessibility"])
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -40,9 +40,12 @@ async def get_accessibility_settings(
     
     Returns all settings with defaults for any not set.
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await AccessibilityService.get_user_settings(
         db=db,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     if "error" in result:
@@ -78,9 +81,12 @@ async def update_accessibility_settings(
     # Convert to dict, excluding None values
     settings = request.dict(exclude_none=True)
     
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await AccessibilityService.update_user_settings(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         settings=settings
     )
     
@@ -111,10 +117,13 @@ async def check_document_accessibility(
     - List of issues with severity and suggestions
     - Reading level analysis
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await AccessibilityService.check_document_accessibility(
         db=db,
         document_id=document_id,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     if "error" in result:
@@ -137,9 +146,12 @@ async def get_accessibility_report(
     - Total issues found
     - Per-document scores and WCAG levels
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await AccessibilityService.generate_accessibility_report(
         db=db,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     return result

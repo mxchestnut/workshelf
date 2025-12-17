@@ -13,7 +13,7 @@ from app.models import User
 from app.services.export_service import ExportService
 
 
-router = APIRouter(prefix="/api/export", tags=["Export"])
+router = APIRouter(prefix="/export", tags=["Export"])
 
 
 class ExportDocumentRequest(BaseModel):
@@ -49,9 +49,12 @@ async def export_document(
     - txt: Plain text
     - json: JSON with metadata
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await ExportService.create_export_job(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         export_type="document",
         export_format=request.export_format,
         document_id=document_id,
@@ -76,9 +79,12 @@ async def export_studio(
     """
     Export all documents in a studio as a ZIP archive
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await ExportService.create_export_job(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         export_type="studio",
         export_format=request.export_format,
         studio_id=studio_id,
@@ -110,9 +116,12 @@ async def export_gdpr_data(
     
     Files are available for 7 days.
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await ExportService.create_export_job(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         export_type="gdpr_data",
         export_format="json"
     )
@@ -133,9 +142,12 @@ async def get_export_jobs(
     """
     Get all export jobs for the current user
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     jobs = await ExportService.get_user_export_jobs(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         skip=skip,
         limit=limit
     )
@@ -152,10 +164,13 @@ async def get_export_job(
     """
     Get details of a specific export job
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     job = await ExportService.get_export_job(
         db=db,
         job_id=job_id,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     if not job:
@@ -176,10 +191,13 @@ async def download_export(
     Returns the file URL if the export is complete.
     Files expire after 7 days.
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     job = await ExportService.get_export_job(
         db=db,
         job_id=job_id,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     if not job:

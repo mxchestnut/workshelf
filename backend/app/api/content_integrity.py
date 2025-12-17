@@ -202,9 +202,13 @@ async def create_integrity_check(
         )
     
     return {
-        "check_id": check.id,
-        "status": check.status.value,
-        "check_type": check.check_type.value,
+        "check": {
+            "id": check.id,
+            "document_id": check.document_id,
+            "check_type": check.check_type.value,
+            "status": check.status.value,
+            "created_at": check.created_at.isoformat() if check.created_at else None
+        },
         "message": "Integrity check started. Results will be available shortly."
     }
 
