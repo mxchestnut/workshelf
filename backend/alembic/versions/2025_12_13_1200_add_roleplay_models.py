@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 # revision identifiers, used by Alembic.
 revision = "add_roleplay_models"
-down_revision = "006"
+down_revision = "007_phase7"
 branch_labels = None
 depends_on = None
 
