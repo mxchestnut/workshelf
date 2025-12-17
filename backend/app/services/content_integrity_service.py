@@ -23,7 +23,7 @@ class ContentIntegrityService:
     # Placeholder API keys (set in environment)
     COPYSCAPE_USERNAME = os.getenv("COPYSCAPE_USERNAME", "")
     COPYSCAPE_API_KEY = os.getenv("COPYSCAPE_API_KEY", "")
-    GPTZERO_API_KEY = os.getenv("GPTZERO_API_KEY", "")
+    HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", "")
     
     # Thresholds for automatic enforcement
     MAX_PLAGIARISM_SCORE = 25.0  # Max 25% similarity allowed
@@ -168,7 +168,7 @@ class ContentIntegrityService:
         
         This is a placeholder that simulates the process.
         In production, this would:
-        1. Call external APIs (Copyscape, GPTZero, etc.)
+        1. Call external APIs (Copyscape, HuggingFace, etc.)
         2. Parse results
         3. Update the check record
         """
@@ -311,12 +311,12 @@ class ContentIntegrityService:
         check_id: int
     ) -> Dict[str, Any]:
         """
-        Run AI content detection using GPTZero
+        Run AI content detection using HuggingFace
         
-        Integrates with GPTZero API to detect AI-generated content.
+        Integrates with HuggingFace Inference API to detect AI-generated content.
         Returns AI probability score, confidence, and detailed analysis.
         
-        Minimum text length: 250 words recommended for accurate results
+        Minimum text length: 50 words recommended for accurate results
         """
         try:
             # Get check
@@ -332,65 +332,68 @@ class ContentIntegrityService:
             check.processing_started_at = datetime.now(timezone.utc)
             await db.commit()
             
-            # Check if GPTZero API key is configured
-            if not ContentIntegrityService.GPTZERO_API_KEY:
-                raise ValueError("GPTZero API key not configured. Set GPTZERO_API_KEY environment variable.")
+            # Check if HuggingFace API key is configured
+            if not ContentIntegrityService.HUGGINGFACE_API_KEY:
+                raise ValueError("HuggingFace API key not configured. Set HUGGINGFACE_API_KEY environment variable.")
             
             # Check minimum text length
             word_count = len(check.content_snapshot.split())
             if word_count < 50:
                 raise ValueError(f"Text too short for reliable AI detection. Minimum 50 words, got {word_count}.")
             
-            # Call GPTZero API
-            url = "https://api.gptzero.me/v2/predict/text"
+            # Call HuggingFace Inference API
+            url = "https://api-inference.huggingface.co/models/roberta-base-openai-detector"
             headers = {
-                "X-Api-Key": ContentIntegrityService.GPTZERO_API_KEY,
+                "Authorization": f"Bearer {ContentIntegrityService.HUGGINGFACE_API_KEY}",
                 "Content-Type": "application/json"
             }
             payload = {
-                "document": check.content_snapshot,
-                "version": "2025-10-30-base"  # Latest GPTZero model version
+                "inputs": check.content_snapshot
             }
             
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(url, json=payload, headers=headers)
                 
                 if response.status_code != 200:
-                    error_msg = f"GPTZero API error: {response.status_code} - {response.text}"
+                    error_msg = f"HuggingFace API error: {response.status_code} - {response.text}"
                     raise ValueError(error_msg)
                 
                 result_data = response.json()
             
-            # Parse GPTZero response
-            if not result_data.get("documents"):
-                raise ValueError("Invalid GPTZero API response: no documents")
+            # Parse HuggingFace response
+            # Format: [[{"label": "Real/Fake", "score": 0.XX}, ...]]
+            if not result_data or not isinstance(result_data, list) or len(result_data[0]) == 0:
+                raise ValueError("Invalid HuggingFace API response")
             
-            doc_result = result_data["documents"][0]
+            predictions = result_data[0]
             
-            # Extract key metrics from updated API format
-            predicted_class = doc_result.get("predicted_class", "unknown")
-            confidence_score = doc_result.get("confidence_score", 0.0)
-            completely_generated = doc_result.get("completely_generated_prob", 0.0)
-            burstiness = doc_result.get("overall_burstiness", 0.0)
-            
-            # Get classification probabilities
-            class_probs = doc_result.get("class_probabilities", {})
-            ai_class_prob = class_probs.get("ai", 0.0)
-            human_class_prob = class_probs.get("human", 0.0)
-            mixed_class_prob = class_probs.get("mixed", 0.0)
+            # Find the "Fake" (AI-generated) score
+            ai_class_prob = next((p["score"] for p in predictions if "Fake" in p["label"]), 0.5)
+            human_class_prob = next((p["score"] for p in predictions if "Real" in p["label"]), 0.5)
             
             # AI score is the AI probability as percentage
             ai_score = round(ai_class_prob * 100, 2)
             
-            # Confidence is from the API's confidence_score
+            # Confidence is the maximum score
+            confidence_score = max(p["score"] for p in predictions)
             ai_confidence = round(confidence_score * 100, 2)
+            
+            # Determine classification
+            if ai_score < 30:
+                predicted_class = "human"
+                mixed_class_prob = 0.0
+            elif ai_score < 70:
+                predicted_class = "mixed"
+                mixed_class_prob = 1.0 - abs(ai_class_prob - human_class_prob)
+            else:
+                predicted_class = "ai"
+                mixed_class_prob = 0.0
             
             # Build detailed analysis
             ai_details = {
                 "classification": predicted_class,
                 "confidence_score": confidence_score,
-                "completely_generated_prob": completely_generated,
-                "overall_burstiness": burstiness,
+                "model": "roberta-base-openai-detector",
                 "class_probabilities": {
                     "ai": ai_class_prob,
                     "human": human_class_prob,
@@ -398,24 +401,11 @@ class ContentIntegrityService:
                 },
                 "word_count": word_count,
                 "interpretation": ContentIntegrityService._interpret_ai_score(ai_score),
-                "result_message": doc_result.get("result_message", "")
+                "result_message": "Analyzed using HuggingFace roberta-base-openai-detector model"
             }
             
-            # Add sentence-level analysis if available
-            if "sentences" in doc_result:
-                sentences = doc_result["sentences"][:10]  # Limit to first 10 for storage
-                ai_details["sentence_analysis"] = [
-                    {
-                        "text": s.get("sentence", "")[:100],  # Truncate long sentences
-                        "generated_prob": s.get("generated_prob", 0.0),
-                        "perplexity": s.get("perplexity", 0.0)
-                    }
-                    for s in sentences
-                ]
-            
-            # Calculate cost (estimated based on word count)
-            # GPTZero pricing: ~$0.01 per 1000 words on Starter plan
-            cost_cents = max(1, round(word_count / 1000 * 1))  # Minimum $0.01
+            # Calculate cost - HuggingFace Inference API is free for basic usage
+            cost_cents = 0  # Free!
             
             # Update check with results
             check.ai_score = ai_score

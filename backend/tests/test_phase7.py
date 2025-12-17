@@ -30,7 +30,7 @@ async def test_create_plagiarism_check():
         test_document = await create_test_document(client)
         
         response = await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
@@ -51,7 +51,7 @@ async def test_create_ai_detection_check():
         test_document = await create_test_document(client)
         
         response = await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "ai_detection"
@@ -70,7 +70,7 @@ async def test_create_combined_check():
         test_document = await create_test_document(client)
         
         response = await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "combined"
@@ -90,7 +90,7 @@ async def test_get_check_results():
         
         # Create check
         create_response = await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
@@ -100,7 +100,7 @@ async def test_get_check_results():
         
         # Get results
         response = await client.get(
-            f"/api/v1/integrity/check/{check_id}"
+            f"/api/v1/content/check/{check_id}"
         )
         
         assert response.status_code == 200
@@ -116,14 +116,14 @@ async def test_get_document_checks():
         
         # Create multiple checks
         await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "plagiarism"
             }
         )
         await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "ai_detection"
@@ -132,7 +132,7 @@ async def test_get_document_checks():
         
         # Get all checks
         response = await client.get(
-            f"/api/v1/integrity/document/{test_document['id']}/checks"
+            f"/api/v1/content/document/{test_document['id']}/checks"
         )
         
         assert response.status_code == 200
@@ -148,7 +148,7 @@ async def test_get_my_checks():
         await create_test_document(client)
         
         response = await client.get(
-            "/api/v1/integrity/my-checks"
+            "/api/v1/content/my-checks"
         )
         
         assert response.status_code == 200
@@ -396,7 +396,7 @@ async def test_full_workflow():
         
         # 1. Check content integrity
         integrity_response = await client.post(
-            "/api/v1/integrity/check",
+            "/api/v1/content/check",
             json={
                 "document_id": test_document["id"],
                 "check_type": "combined"

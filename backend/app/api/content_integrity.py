@@ -33,7 +33,7 @@ class AICheckResponse(BaseModel):
     ai_confidence: float = Field(..., description="Confidence in the detection (0-100)")
     classification: str = Field(..., description="Predicted class: human, ai, or mixed")
     interpretation: str = Field(..., description="Human-readable interpretation")
-    result_message: str = Field(..., description="Detailed result message from GPTZero")
+    result_message: str = Field(..., description="Detailed result message from AI detection")
     word_count: int
 
 
@@ -49,7 +49,7 @@ async def quick_ai_check(
     
     Requires:
     - Minimum 50 words for reliable detection
-    - Pro or Premium subscription (uses GPTZero API credits)
+    - Free HuggingFace API (no credits needed for basic usage)
     
     Returns:
     - AI probability score (0-100%)
@@ -68,8 +68,8 @@ async def quick_ai_check(
             detail=f"Text too short for reliable AI detection. Minimum 50 words required, got {word_count}."
         )
     
-    # Check if GPTZero API key is configured
-    api_key = os.getenv("GPTZERO_API_KEY")
+    # Check if HuggingFace API key is configured
+    api_key = os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:
         raise HTTPException(
             status_code=503,
@@ -77,15 +77,15 @@ async def quick_ai_check(
         )
     
     try:
-        # Call GPTZero API
-        url = "https://api.gptzero.me/v2/predict/text"
+        # Call HuggingFace Inference API
+        # Using roberta-base-openai-detector for AI text detection
+        url = "https://api-inference.huggingface.co/models/roberta-base-openai-detector"
         headers = {
-            "X-Api-Key": api_key,
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         payload = {
-            "document": request.text,
-            "version": "2025-10-30-base"
+            "inputs": request.text
         }
         
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -99,16 +99,25 @@ async def quick_ai_check(
             
             result = response.json()
         
-        # Parse response
-        doc = result["documents"][0]
-        predicted_class = doc.get("predicted_class", "unknown")
-        confidence_score = doc.get("confidence_score", 0.0)
+        # Parse HuggingFace response
+        # Result format: [[{"label": "Real/Fake", "score": 0.XX}, ...]]
+        if not result or not isinstance(result, list) or len(result[0]) == 0:
+            raise HTTPException(status_code=500, detail="Invalid response from AI detection service")
         
-        class_probs = doc.get("class_probabilities", {})
-        ai_prob = class_probs.get("ai", 0.0)
+        predictions = result[0]
+        # Find the "Fake" (AI-generated) score
+        ai_prob = next((p["score"] for p in predictions if "Fake" in p["label"]), 0.5)
         
         ai_score = round(ai_prob * 100, 2)
-        ai_confidence = round(confidence_score * 100, 2)
+        ai_confidence = round(max(p["score"] for p in predictions) * 100, 2)
+        
+        # Determine classification
+        if ai_score < 30:
+            predicted_class = "human"
+        elif ai_score < 70:
+            predicted_class = "mixed"
+        else:
+            predicted_class = "ai"
         
         # Generate interpretation
         if ai_score < 30:
@@ -123,7 +132,7 @@ async def quick_ai_check(
             ai_confidence=ai_confidence,
             classification=predicted_class,
             interpretation=interpretation,
-            result_message=doc.get("result_message", ""),
+            result_message=f"Analyzed using HuggingFace roberta-base-openai-detector model",
             word_count=word_count
         )
     
@@ -145,7 +154,7 @@ async def create_integrity_check(
     Processing happens asynchronously.
     
     Check types:
-    - ai_detection: Check for AI-generated content using GPTZero
+    - ai_detection: Check for AI-generated content using HuggingFace
     - plagiarism: Check for plagiarized content (requires Copyscape - coming soon)
     - combined: Run both checks
     
