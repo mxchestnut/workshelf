@@ -1,33 +1,21 @@
 """
 Test Phase 5: Studio Customization & Analytics (Simple version)
 """
-import asyncio
-import sys
-import os
-
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-try:
-    from httpx import AsyncClient
-except ImportError:
-    print("❌ httpx not installed. Installing...")
-    os.system("pip3 install httpx")
-    from httpx import AsyncClient
-
-
-BASE_URL = "http://localhost:8000/api/v1"
+import pytest
+from httpx import AsyncClient, ASGITransport
+from app.main import app
 STUDIO_ID = 1
 DOCUMENT_ID = 1
 
 
+@pytest.mark.anyio
 async def test_phase5_theme():
     """Test theme customization."""
     print("\n" + "=" * 60)
     print("TEST: Theme Customization")
     print("=" * 60)
     
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
         # Create theme
         theme_data = {
             "primary_color": "#4F46E5",
@@ -50,13 +38,14 @@ async def test_phase5_theme():
             print(f"  Primary color: {theme.get('primary_color')}")
 
 
+@pytest.mark.anyio
 async def test_phase5_domains():
     """Test custom domains."""
     print("\n" + "=" * 60)
     print("TEST: Custom Domains")
     print("=" * 60)
     
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
         # Create domain
         domain_data = {
             "domain": "docs.example.com"
@@ -87,13 +76,14 @@ async def test_phase5_domains():
                     print(f"  Status: {domain.get('status')}")
 
 
+@pytest.mark.anyio
 async def test_phase5_views():
     """Test view tracking."""
     print("\n" + "=" * 60)
     print("TEST: View Tracking")
     print("=" * 60)
     
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
         # Record views
         view_data = {
             "session_id": "test-session-123",
@@ -115,13 +105,14 @@ async def test_phase5_views():
             print(f"  Is unique: {result.get('is_unique')}")
 
 
+@pytest.mark.anyio
 async def test_phase5_analytics():
     """Test analytics."""
     print("\n" + "=" * 60)
     print("TEST: Analytics")
     print("=" * 60)
     
-    async with AsyncClient(base_url=BASE_URL) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
         # Studio analytics
         response = await client.get(
             f"/studios/{STUDIO_ID}/analytics",
