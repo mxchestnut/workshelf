@@ -70,7 +70,8 @@ class AuthorFollow(Base, TimestampMixin):
     added_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     
     # Relationships
-    user = relationship("User", back_populates="author_follows")
+    # NOTE: User model no longer has author_follows relationship (consolidated into Author system)
+    user = relationship("User")
     
     # Constraints and indexes
     __table_args__ = (
