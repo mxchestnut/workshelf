@@ -2,6 +2,7 @@
 Application configuration using Pydantic Settings
 Loads from environment variables and .env file
 """
+import os
 from pydantic_settings import BaseSettings
 from typing import List
 
@@ -31,11 +32,20 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://workshelf:password@localhost:5432/workshelf"
+    DATABASE_URL_STAGING: str = ""  # Optional staging database for tests
+    
+    @property
+    def _effective_database_url(self) -> str:
+        """Get the effective database URL - uses staging for tests if available"""
+        is_test = os.getenv("PYTEST_CURRENT_TEST") is not None
+        if is_test and self.DATABASE_URL_STAGING:
+            return self.DATABASE_URL_STAGING
+        return self.DATABASE_URL
     
     @property
     def DATABASE_URL_CLEAN(self) -> str:
-        """Clean DATABASE_URL for asyncpg compatibility"""
-        url = self.DATABASE_URL
+        """Clean DATABASE_URL for asyncpg compatibility - uses staging DB for tests"""
+        url = self._effective_database_url
         # Replace postgresql:// with postgresql+asyncpg:// for async driver
         if url.startswith('postgresql://'):
             url = url.replace('postgresql://', 'postgresql+asyncpg://', 1)
