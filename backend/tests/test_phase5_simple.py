@@ -2,14 +2,16 @@
 Test Phase 5: Studio Customization & Analytics (Simple version)
 """
 import pytest
+import uuid
 from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
 async def create_test_studio(client: AsyncClient) -> int:
     """Create a test studio and return its ID."""
+    unique_id = str(uuid.uuid4())[:8]
     studio_data = {
-        "name": "Test Studio",
+        "name": f"Test Studio {unique_id}",
         "description": "A test studio for Phase 5"
     }
     response = await client.post("/studios", json=studio_data)
