@@ -21,12 +21,6 @@ from app.main import app
 TEST_DATABASE_URL = "postgresql+asyncpg://workshelf:workshelf@postgres/workshelf_test"
 
 
-@pytest.fixture(scope="function")
-def anyio_backend():
-    """Configure anyio to use asyncio backend"""
-    return "asyncio"
-
-
 # ============================================================================
 # Keycloak Authentication Mocking
 # ============================================================================

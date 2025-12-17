@@ -8,7 +8,7 @@ STUDIO_ID = 1
 DOCUMENT_ID = 1
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_phase5_theme():
     """Test theme customization."""
     print("\n" + "=" * 60)
@@ -38,7 +38,7 @@ async def test_phase5_theme():
             print(f"  Primary color: {theme.get('primary_color')}")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_phase5_domains():
     """Test custom domains."""
     print("\n" + "=" * 60)
@@ -76,7 +76,7 @@ async def test_phase5_domains():
                     print(f"  Status: {domain.get('status')}")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_phase5_views():
     """Test view tracking."""
     print("\n" + "=" * 60)
@@ -105,7 +105,7 @@ async def test_phase5_views():
             print(f"  Is unique: {result.get('is_unique')}")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_phase5_analytics():
     """Test analytics."""
     print("\n" + "=" * 60)

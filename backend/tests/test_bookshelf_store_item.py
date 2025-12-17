@@ -6,7 +6,7 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_bookshelf_empty():
     """Test bookshelf endpoint returns empty list for new user"""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -17,7 +17,7 @@ async def test_bookshelf_empty():
         print(f"✓ Bookshelf endpoint returned: {data}")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_bookshelf_add_book():
     """Test adding a book to bookshelf"""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -49,7 +49,7 @@ async def test_bookshelf_add_book():
         return data['id']
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_bookshelf_get_items():
     """Test getting bookshelf items includes store_item_id"""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -86,7 +86,7 @@ async def test_bookshelf_get_items():
         print(f"✓ store_item_id field is present in response")
 
 
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_bookshelf_with_store_item():
     """Test adding a book with a store_item_id"""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
