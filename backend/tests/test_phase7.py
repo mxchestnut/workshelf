@@ -26,7 +26,7 @@ async def create_test_document(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_create_plagiarism_check():
     """Test creating a plagiarism check"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -47,7 +47,7 @@ async def test_create_plagiarism_check():
 @pytest.mark.asyncio
 async def test_create_ai_detection_check():
     """Test creating an AI detection check"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -66,7 +66,7 @@ async def test_create_ai_detection_check():
 @pytest.mark.asyncio
 async def test_create_combined_check():
     """Test creating a combined plagiarism + AI check"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -85,7 +85,7 @@ async def test_create_combined_check():
 @pytest.mark.asyncio
 async def test_get_check_results():
     """Test retrieving check results"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         # Create check
@@ -111,7 +111,7 @@ async def test_get_check_results():
 @pytest.mark.asyncio
 async def test_get_document_checks():
     """Test getting all checks for a document"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         # Create multiple checks
@@ -144,7 +144,7 @@ async def test_get_document_checks():
 @pytest.mark.asyncio
 async def test_get_my_checks():
     """Test getting all checks for current user"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         await create_test_document(client)
         
         response = await client.get(
@@ -161,7 +161,7 @@ async def test_get_my_checks():
 @pytest.mark.asyncio
 async def test_export_document_markdown():
     """Test exporting a document as Markdown"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -182,7 +182,7 @@ async def test_export_document_markdown():
 @pytest.mark.asyncio
 async def test_export_document_html():
     """Test exporting a document as HTML"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -202,7 +202,7 @@ async def test_export_document_html():
 @pytest.mark.asyncio
 async def test_export_document_json():
     """Test exporting a document as JSON"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -221,7 +221,7 @@ async def test_export_document_json():
 @pytest.mark.asyncio
 async def test_export_document_txt():
     """Test exporting a document as plain text"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -239,7 +239,7 @@ async def test_export_document_txt():
 @pytest.mark.asyncio
 async def test_export_gdpr_data():
     """Test GDPR data export"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         response = await client.post(
             "/api/v1/export/gdpr"
         )
@@ -253,7 +253,7 @@ async def test_export_gdpr_data():
 @pytest.mark.asyncio
 async def test_get_export_jobs():
     """Test getting all export jobs"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         # Create an export
@@ -276,7 +276,7 @@ async def test_get_export_jobs():
 @pytest.mark.asyncio
 async def test_get_export_job_detail():
     """Test getting export job details"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         # Create export
@@ -301,7 +301,7 @@ async def test_get_export_job_detail():
 @pytest.mark.asyncio
 async def test_get_accessibility_settings():
     """Test getting default accessibility settings"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         response = await client.get(
             "/api/v1/accessibility/settings"
         )
@@ -316,7 +316,7 @@ async def test_get_accessibility_settings():
 @pytest.mark.asyncio
 async def test_update_accessibility_settings():
     """Test updating accessibility settings"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         response = await client.put(
             "/api/v1/accessibility/settings",
             json={
@@ -336,7 +336,7 @@ async def test_update_accessibility_settings():
 @pytest.mark.asyncio
 async def test_update_color_blind_mode():
     """Test setting color blind mode"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         response = await client.put(
             "/api/v1/accessibility/settings",
             json={"color_blind_mode": "protanopia"}
@@ -350,7 +350,7 @@ async def test_update_color_blind_mode():
 @pytest.mark.asyncio
 async def test_check_document_accessibility():
     """Test running WCAG compliance check"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         response = await client.post(
@@ -371,7 +371,7 @@ async def test_check_document_accessibility():
 @pytest.mark.asyncio
 async def test_accessibility_report():
     """Test generating accessibility report"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         await create_test_document(client)
         
         response = await client.get(
@@ -391,7 +391,7 @@ async def test_accessibility_report():
 @pytest.mark.asyncio
 async def test_full_workflow():
     """Test full Phase 7 workflow"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         test_document = await create_test_document(client)
         
         # 1. Check content integrity

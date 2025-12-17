@@ -9,7 +9,7 @@ from app.main import app
 @pytest.mark.asyncio
 async def test_bookshelf_empty():
     """Test bookshelf endpoint returns empty list for new user"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         response = await client.get("/api/v1/bookshelf/")
         assert response.status_code == 200
         data = response.json()
@@ -20,7 +20,7 @@ async def test_bookshelf_empty():
 @pytest.mark.asyncio
 async def test_bookshelf_add_book():
     """Test adding a book to bookshelf"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         book_data = {
             "item_type": "book",
             "title": "Test Book for store_item_id",
@@ -52,7 +52,7 @@ async def test_bookshelf_add_book():
 @pytest.mark.asyncio
 async def test_bookshelf_get_items():
     """Test getting bookshelf items includes store_item_id"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         # First add a book
         book_data = {
             "item_type": "book",
@@ -89,7 +89,7 @@ async def test_bookshelf_get_items():
 @pytest.mark.asyncio
 async def test_bookshelf_with_store_item():
     """Test adding a book with a store_item_id"""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True) as client:
         book_data = {
             "item_type": "book",
             "title": "Published Work Shelf Book",

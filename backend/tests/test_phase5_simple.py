@@ -15,7 +15,7 @@ async def test_phase5_theme():
     print("TEST: Theme Customization")
     print("=" * 60)
     
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
         # Create theme
         theme_data = {
             "primary_color": "#4F46E5",
@@ -45,7 +45,7 @@ async def test_phase5_domains():
     print("TEST: Custom Domains")
     print("=" * 60)
     
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
         # Create domain
         domain_data = {
             "domain": "docs.example.com"
@@ -83,7 +83,7 @@ async def test_phase5_views():
     print("TEST: View Tracking")
     print("=" * 60)
     
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
         # Record views
         view_data = {
             "session_id": "test-session-123",
@@ -112,7 +112,7 @@ async def test_phase5_analytics():
     print("TEST: Analytics")
     print("=" * 60)
     
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
         # Studio analytics
         response = await client.get(
             f"/studios/{STUDIO_ID}/analytics",
