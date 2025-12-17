@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSON
 
 # revision identifiers
 revision = '007_phase7'
-down_revision = '006_add_store_item_to_bookshelf'
+down_revision = '006'
 branch_labels = None
 depends_on = None
 
