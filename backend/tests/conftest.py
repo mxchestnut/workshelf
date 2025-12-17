@@ -171,19 +171,27 @@ def custom_user_override():
 # ============================================================================
 
 
+@pytest.fixture(scope="session")
+async def test_engine():
+    """Create a session-scoped database engine for all tests"""
+    from app.core.database import get_db_engine
+    engine = get_db_engine()
+    yield engine
+    # Dispose at the end of the test session, before event loop closes
+    await engine.dispose()
+
+
 @pytest.fixture(scope="function", autouse=True)
-async def setup_test_user_in_db():
+async def setup_test_user_in_db(test_engine):
     """
     Auto-create test user and tenant in database for each test function.
     This runs automatically before each test.
     """
-    from app.core.database import get_db_engine
     from sqlalchemy import text
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    engine = get_db_engine()
     async_session = async_sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
+        test_engine, class_=AsyncSession, expire_on_commit=False
     )
 
     async with async_session() as session:
@@ -270,33 +278,26 @@ async def setup_test_user_in_db():
                 f"Solution: Ensure database migrations are run before tests."
             ) from e
 
-    await engine.dispose()
+    # Don't dispose engine here - it's session-scoped and will be disposed by test_engine fixture
     yield
 
 
 @pytest.fixture
-async def test_db_session():
+async def test_db_session(test_engine):
     """
     Create a test database session (optional - use only for integration tests)
 
     Note: Most tests use the real database with the standard get_db dependency.
     This fixture is for tests that need isolated database state.
     """
-    # Create test engine
-    engine = create_async_engine(
-        TEST_DATABASE_URL, poolclass=NullPool, echo=False  # Disable pooling for tests
-    )
-
-    # Create session
+    # Create session using the shared session-scoped engine
     async_session = async_sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
+        test_engine, class_=AsyncSession, expire_on_commit=False
     )
 
-    try:
-        async with async_session() as session:
-            yield session
-    finally:
-        await engine.dispose()
+    async with async_session() as session:
+        yield session
+    # Engine disposal is handled by test_engine fixture
 
 
 # ============================================================================
@@ -308,13 +309,7 @@ async def test_db_session():
 async def cleanup_test_data():
     """
     Auto-cleanup fixture that runs after each test
-    Ensures database connections are properly closed
+    Note: Engine cleanup is handled by the session-scoped test_engine fixture
     """
     yield
-    # Cleanup database connections to prevent "Event loop is closed" errors
-    from app.core.database import get_db_engine
-    try:
-        engine = get_db_engine()
-        await engine.dispose()
-    except Exception:
-        pass  # Ignore errors during cleanup
+    # No engine disposal here - it's managed by session-scoped fixture
