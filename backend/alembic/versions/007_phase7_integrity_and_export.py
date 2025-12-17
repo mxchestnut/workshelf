@@ -17,26 +17,46 @@ depends_on = None
 
 
 def upgrade():
-    # Create enums for integrity checks
+    # Create enums for integrity checks (only if they don't exist)
     op.execute("""
-        CREATE TYPE integritychecktype AS ENUM ('plagiarism', 'ai_detection', 'combined');
+        DO $$ BEGIN
+            CREATE TYPE integritychecktype AS ENUM ('plagiarism', 'ai_detection', 'combined');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
     op.execute("""
-        CREATE TYPE integritycheckstatus AS ENUM ('pending', 'processing', 'completed', 'failed');
+        DO $$ BEGIN
+            CREATE TYPE integritycheckstatus AS ENUM ('pending', 'processing', 'completed', 'failed');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
-    # Create enums for export jobs
+    # Create enums for export jobs (only if they don't exist)
     op.execute("""
-        CREATE TYPE exporttype AS ENUM ('document', 'studio', 'gdpr_data', 'backup');
+        DO $$ BEGIN
+            CREATE TYPE exporttype AS ENUM ('document', 'studio', 'gdpr_data', 'backup');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
     op.execute("""
-        CREATE TYPE exportformat AS ENUM ('pdf', 'docx', 'markdown', 'html', 'epub', 'txt', 'json');
+        DO $$ BEGIN
+            CREATE TYPE exportformat AS ENUM ('pdf', 'docx', 'markdown', 'html', 'epub', 'txt', 'json');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
     op.execute("""
-        CREATE TYPE exportstatus AS ENUM ('pending', 'processing', 'completed', 'failed', 'expired');
+        DO $$ BEGIN
+            CREATE TYPE exportstatus AS ENUM ('pending', 'processing', 'completed', 'failed', 'expired');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
     """)
     
     # Create integrity_checks table
