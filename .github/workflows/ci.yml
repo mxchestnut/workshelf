@@ -11,6 +11,9 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # Required to upload security scan results
     steps:
       - uses: actions/checkout@v4
       
