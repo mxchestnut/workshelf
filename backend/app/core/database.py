@@ -82,16 +82,13 @@ def get_async_session_local():
     return async_sessionmaker(
         get_db_engine(),
         class_=AsyncSession,
-        expire_on_commit=False
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
     )
 
 # For backwards compatibility
 AsyncSessionLocal = get_async_session_local()
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False,
-)
 
 # Storage database session factory
 StorageSessionLocal = async_sessionmaker(
