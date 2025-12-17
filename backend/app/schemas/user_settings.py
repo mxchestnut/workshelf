@@ -3,7 +3,7 @@ User Settings/Preferences schemas
 """
 
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserSettingsUpdate(BaseModel):
