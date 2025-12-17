@@ -4,15 +4,21 @@ Database connection and session management
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 from app.core.config import settings
 
+# Detect if we're in test mode
+IS_TEST = os.getenv("PYTEST_CURRENT_TEST") is not None
+
 # Main database (groups, posts, users, etc.)
+# Use NullPool in tests to prevent connection pooling issues with event loop cleanup
 engine = create_async_engine(
     settings.DATABASE_URL_CLEAN,
     echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
+    pool_pre_ping=True if not IS_TEST else False,
+    poolclass=NullPool if IS_TEST else None,
+    pool_size=5 if not IS_TEST else None,
+    max_overflow=10 if not IS_TEST else None,
 )
 
 # Storage database (user documents only - permanent storage)
@@ -23,9 +29,10 @@ STORAGE_DATABASE_URL = os.getenv(
 storage_engine = create_async_engine(
     STORAGE_DATABASE_URL,
     echo=settings.DEBUG if hasattr(settings, 'DEBUG') else False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
+    pool_pre_ping=True if not IS_TEST else False,
+    poolclass=NullPool if IS_TEST else None,
+    pool_size=5 if not IS_TEST else None,
+    max_overflow=10 if not IS_TEST else None,
 )
 
 # Main database session factory
