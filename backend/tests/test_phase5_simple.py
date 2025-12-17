@@ -4,8 +4,30 @@ Test Phase 5: Studio Customization & Analytics (Simple version)
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
-STUDIO_ID = 1
-DOCUMENT_ID = 1
+
+
+async def create_test_studio(client: AsyncClient) -> int:
+    """Create a test studio and return its ID."""
+    studio_data = {
+        "name": "Test Studio",
+        "description": "A test studio for Phase 5"
+    }
+    response = await client.post("/studios", json=studio_data)
+    if response.status_code in (200, 201):
+        return response.json().get("id", 1)
+    return 1
+
+
+async def create_test_document(client: AsyncClient) -> int:
+    """Create a test document and return its ID."""
+    doc_data = {
+        "title": "Test Document",
+        "content": "This is a test document for Phase 5."
+    }
+    response = await client.post("/documents", json=doc_data)
+    if response.status_code in (200, 201):
+        return response.json().get("id", 1)
+    return 1
 
 
 @pytest.mark.asyncio

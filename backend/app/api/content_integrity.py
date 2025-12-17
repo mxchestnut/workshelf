@@ -160,10 +160,13 @@ async def create_integrity_check(
     
     Returns immediately with check_id. Use GET /check/{check_id} to get results.
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     result = await ContentIntegrityService.create_integrity_check(
         db=db,
         document_id=request.document_id,
-        user_id=current_user.id,
+        user_id=user_id,
         check_type=request.check_type
     )
     
@@ -222,10 +225,13 @@ async def get_check_results(
     - Processing time and cost
     - Detailed analysis
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     check = await ContentIntegrityService.get_check_results(
         db=db,
         check_id=check_id,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     if not check:
@@ -261,10 +267,13 @@ async def get_document_checks(
     """
     Get all integrity checks for a document
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     checks = await ContentIntegrityService.get_document_checks(
         db=db,
         document_id=document_id,
-        user_id=current_user.id
+        user_id=user_id
     )
     
     return {"checks": checks}
@@ -280,9 +289,12 @@ async def get_my_checks(
     """
     Get all integrity checks for the current user
     """
+    # Handle both dict and object style current_user
+    user_id = current_user.get("id") if isinstance(current_user, dict) else current_user.id
+    
     checks = await ContentIntegrityService.get_user_checks(
         db=db,
-        user_id=current_user.id,
+        user_id=user_id,
         skip=skip,
         limit=limit
     )
