@@ -308,8 +308,13 @@ async def test_db_session():
 async def cleanup_test_data():
     """
     Auto-cleanup fixture that runs after each test
-    You can extend this to clean up specific test data if needed
+    Ensures database connections are properly closed
     """
     yield
-    # Cleanup code here if needed
-    pass
+    # Cleanup database connections to prevent "Event loop is closed" errors
+    from app.core.database import get_db_engine
+    try:
+        engine = get_db_engine()
+        await engine.dispose()
+    except Exception:
+        pass  # Ignore errors during cleanup
