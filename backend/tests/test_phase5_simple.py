@@ -16,6 +16,9 @@ async def test_phase5_theme():
     print("=" * 60)
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
+        # Create studio first
+        studio_id = await create_test_studio(client)
+        
         # Create theme
         theme_data = {
             "primary_color": "#4F46E5",
@@ -23,7 +26,7 @@ async def test_phase5_theme():
             "heading_font": "Inter"
         }
         
-        response = await client.post(f"/studios/{STUDIO_ID}/theme", json=theme_data)
+        response = await client.post(f"/studios/{studio_id}/theme", json=theme_data)
         print(f"✓ Create theme: {response.status_code}")
         if response.status_code == 200:
             theme = response.json()
@@ -31,7 +34,7 @@ async def test_phase5_theme():
             print(f"  Primary color: {theme.get('primary_color')}")
         
         # Get theme
-        response = await client.get(f"/studios/{STUDIO_ID}/theme")
+        response = await client.get(f"/studios/{studio_id}/theme")
         print(f"✓ Get theme: {response.status_code}")
         if response.status_code == 200:
             theme = response.json()
@@ -46,12 +49,15 @@ async def test_phase5_domains():
     print("=" * 60)
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
+        # Create studio first
+        studio_id = await create_test_studio(client)
+        
         # Create domain
         domain_data = {
             "domain": "docs.example.com"
         }
         
-        response = await client.post(f"/studios/{STUDIO_ID}/custom-domains", json=domain_data)
+        response = await client.post(f"/studios/{studio_id}/custom-domains", json=domain_data)
         print(f"✓ Create domain: {response.status_code}")
         if response.status_code == 200:
             domain = response.json()
@@ -61,7 +67,7 @@ async def test_phase5_domains():
             print(f"  Verification token: {domain.get('verification_token', '')[:20]}...")
             
             # List domains
-            response = await client.get(f"/studios/{STUDIO_ID}/custom-domains")
+            response = await client.get(f"/studios/{studio_id}/custom-domains")
             print(f"✓ List domains: {response.status_code}")
             if response.status_code == 200:
                 domains = response.json()
@@ -69,7 +75,7 @@ async def test_phase5_domains():
             
             # Verify domain
             if domain_id:
-                response = await client.post(f"/studios/{STUDIO_ID}/custom-domains/{domain_id}/verify")
+                response = await client.post(f"/studios/{studio_id}/custom-domains/{domain_id}/verify")
                 print(f"✓ Verify domain: {response.status_code}")
                 if response.status_code == 200:
                     domain = response.json()
@@ -84,6 +90,9 @@ async def test_phase5_views():
     print("=" * 60)
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
+        # Create document first
+        document_id = await create_test_document(client)
+        
         # Record views
         view_data = {
             "session_id": "test-session-123",
@@ -92,13 +101,13 @@ async def test_phase5_views():
             "scroll_depth": 75
         }
         
-        response = await client.post(f"/studios/documents/{DOCUMENT_ID}/views", json=view_data)
+        response = await client.post(f"/studios/documents/{document_id}/views", json=view_data)
         print(f"✓ Record view #1: {response.status_code}")
         if response.status_code == 200:
             result = response.json()
             print(f"  Is unique: {result.get('is_unique')}")
         
-        response = await client.post(f"/studios/documents/{DOCUMENT_ID}/views", json=view_data)
+        response = await client.post(f"/studios/documents/{document_id}/views", json=view_data)
         print(f"✓ Record view #2 (same session): {response.status_code}")
         if response.status_code == 200:
             result = response.json()
@@ -113,9 +122,13 @@ async def test_phase5_analytics():
     print("=" * 60)
     
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test/api/v1", follow_redirects=True) as client:
+        # Create studio and document first
+        studio_id = await create_test_studio(client)
+        document_id = await create_test_document(client)
+        
         # Studio analytics
         response = await client.get(
-            f"/studios/{STUDIO_ID}/analytics",
+            f"/studios/{studio_id}/analytics",
             params={"start_date": "2024-01-01", "end_date": "2024-12-31"}
         )
         print(f"✓ Studio analytics: {response.status_code}")
@@ -126,7 +139,7 @@ async def test_phase5_analytics():
         
         # Time series
         response = await client.get(
-            f"/studios/{STUDIO_ID}/analytics/time-series",
+            f"/studios/{studio_id}/analytics/time-series",
             params={
                 "metric": "views",
                 "period": "daily",
@@ -142,7 +155,7 @@ async def test_phase5_analytics():
         
         # Document analytics
         response = await client.get(
-            f"/studios/documents/{DOCUMENT_ID}/analytics",
+            f"/studios/documents/{document_id}/analytics",
             params={"start_date": "2024-01-01", "end_date": "2024-12-31"}
         )
         print(f"✓ Document analytics: {response.status_code}")
