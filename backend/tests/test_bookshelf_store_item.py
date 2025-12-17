@@ -10,7 +10,7 @@ client = TestClient(app)
 
 def test_bookshelf_empty():
     """Test bookshelf endpoint returns empty list for new user"""
-    response = client.get("/api/v1/bookshelf")
+    response = client.get("/api/v1/bookshelf/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -30,7 +30,7 @@ def test_bookshelf_add_book():
         "review_public": True
     }
     
-    response = client.post("/api/v1/bookshelf", json=book_data)
+    response = client.post("/api/v1/bookshelf/", json=book_data)
     assert response.status_code == 200 or response.status_code == 201
     data = response.json()
     
@@ -60,11 +60,11 @@ def test_bookshelf_get_items():
         "review_public": True
     }
     
-    create_response = client.post("/api/v1/bookshelf", json=book_data)
+    create_response = client.post("/api/v1/bookshelf/", json=book_data)
     assert create_response.status_code == 200 or create_response.status_code == 201
     
     # Now get all bookshelf items
-    response = client.get("/api/v1/bookshelf")
+    response = client.get("/api/v1/bookshelf/")
     assert response.status_code == 200
     data = response.json()
     
@@ -95,7 +95,7 @@ def test_bookshelf_with_store_item():
         "review_public": True
     }
     
-    response = client.post("/api/v1/bookshelf", json=book_data)
+    response = client.post("/api/v1/bookshelf/", json=book_data)
     # This might fail due to FK constraint if store_item doesn't exist
     # But at least we can see if the field is processed
     
