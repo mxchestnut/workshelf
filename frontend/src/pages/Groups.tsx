@@ -26,7 +26,7 @@ interface Group {
 }
 
 export default function Groups() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [myGroups, setMyGroups] = useState<Group[]>([])
   const [discoveredGroups, setDiscoveredGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)

@@ -28,7 +28,7 @@ export default function FreeBooks() {
   const [searching, setSearching] = useState(false)
   const [addingBook, setAddingBook] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'popular' | 'search'>('popular')
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
 
   useEffect(() => {
     loadUser()

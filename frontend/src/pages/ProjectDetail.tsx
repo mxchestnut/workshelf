@@ -147,7 +147,7 @@ export function ProjectDetail() {
   const pathParts = window.location.pathname.split('/')
   const projectId = pathParts[pathParts.length - 1]
   
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [project, setProject] = useState<Project | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)

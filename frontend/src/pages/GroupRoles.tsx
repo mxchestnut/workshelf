@@ -119,7 +119,7 @@ export default function GroupRoles() {
     ? parseInt(pathParts[groupIdIndex])
     : null
 
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

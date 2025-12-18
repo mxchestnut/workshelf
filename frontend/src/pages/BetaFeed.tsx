@@ -28,7 +28,7 @@ interface BetaRelease {
 }
 
 export default function BetaFeed() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [releases, setReleases] = useState<BetaRelease[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread' | 'reading' | 'completed'>('all')

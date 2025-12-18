@@ -7,7 +7,7 @@ import { toast } from '../services/toast'
 export default function BetaRequest() {
   const params = new URLSearchParams(window.location.search)
   const targetUserId = params.get('user_id')
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [form, setForm] = useState({

@@ -9,6 +9,12 @@ import { X, Plus, Folder, Check } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
 
+// Hook to get auth token
+const useAccessToken = () => {
+  const { getAccessToken } = useAuth()
+  return getAccessToken
+}
+
 interface Collection {
   id: number
   name: string
@@ -25,6 +31,7 @@ interface SaveToCollectionModalProps {
 }
 
 export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemTitle }: SaveToCollectionModalProps) {
+  const getAccessToken = useAccessToken()
   const [collections, setCollections] = useState<Collection[]>([])
   const [savedCollections, setSavedCollections] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
@@ -34,7 +41,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
 
   const checkSavedStatus = useCallback(async () => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections/check/${itemType}/${itemId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -46,11 +53,11 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
     } catch (error) {
       console.error('Failed to check saved status:', error)
     }
-  }, [itemType, itemId])
+  }, [itemType, itemId, getAccessToken])
 
   const loadCollections = async () => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -78,7 +85,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
     
     setLoading(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections`, {
         method: 'POST',
         headers: {
@@ -112,7 +119,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
   const saveToCollection = async (collectionId: number) => {
     setLoading(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections/${collectionId}/items`, {
         method: 'POST',
         headers: {
@@ -146,7 +153,7 @@ export function SaveToCollectionModal({ isOpen, onClose, itemType, itemId, itemT
   const removeFromCollection = async (collectionId: number, itemId: number) => {
     setLoading(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/collections/${collectionId}/items/${itemId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }

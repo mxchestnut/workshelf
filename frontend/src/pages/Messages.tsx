@@ -123,7 +123,7 @@ export default function Messages() {
     }
 
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/users/me/profile`, {
         method: 'PUT',
         headers: {
@@ -158,7 +158,7 @@ export default function Messages() {
   const loadMessages = async (conversationId: number) => {
     try {
       setLoadingMessages(true)
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(
         `${API_URL}/api/v1/messaging/conversations/${conversationId}/messages?limit=100`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -181,7 +181,7 @@ export default function Messages() {
 
   const markConversationRead = async (conversationId: number) => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       await fetch(`${API_URL}/api/v1/messaging/conversations/${conversationId}/read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -202,7 +202,7 @@ export default function Messages() {
 
     setSending(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(
         `${API_URL}/api/v1/messaging/conversations/${selectedConversation.id}/messages`,
         {
@@ -247,7 +247,7 @@ export default function Messages() {
 
     setSearching(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(
         `${API_URL}/api/v1/search/users?q=${encodeURIComponent(searchQuery)}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -266,7 +266,7 @@ export default function Messages() {
 
   const startConversationWithUser = async (otherUser: SearchUser) => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/messaging/conversations`, {
         method: 'POST',
         headers: {

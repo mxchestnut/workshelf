@@ -39,7 +39,7 @@ interface WorkStats {
 }
 
 export function Dashboard() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalViews: 0,

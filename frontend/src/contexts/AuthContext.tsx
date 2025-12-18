@@ -3,13 +3,20 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { InteractionStatus, AccountInfo } from '@azure/msal-browser';
 import { apiRequest } from '../config/authConfig';
 
-// Export User type for components that need it
-export type User = AccountInfo;
+// Extended user type that combines MSAL AccountInfo with backend properties
+export interface User extends AccountInfo {
+  // Backend properties (optional for compatibility)
+  id?: number;
+  display_name?: string;
+  email?: string;
+  is_staff?: boolean;
+  groups?: any[];
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: AccountInfo | null;
+  user: User | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getAccessToken: () => Promise<string>;

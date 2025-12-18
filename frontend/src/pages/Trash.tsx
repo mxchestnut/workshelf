@@ -62,7 +62,7 @@ interface TrashStats {
 type Tab = 'documents' | 'projects'
 
 export default function Trash() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('documents')
   const [documents, setDocuments] = useState<TrashedDocument[]>([])
   const [projects, setProjects] = useState<TrashedProject[]>([])

@@ -53,7 +53,7 @@ type ActiveTab = 'quick' | 'document' | 'history'
 type CheckType = 'ai_detection' | 'plagiarism' | 'combined'
 
 export function ContentIntegrity() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activeTab, setActiveTab] = useState<ActiveTab>('quick')
   const [quickCheckText, setQuickCheckText] = useState('')
   const [quickCheckLoading, setQuickCheckLoading] = useState(false)

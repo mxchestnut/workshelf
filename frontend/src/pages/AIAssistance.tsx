@@ -30,7 +30,7 @@ interface PromptResult {
 }
 
 export function AIAssistance() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activeTab, setActiveTab] = useState<AssistanceTab>('prompts')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<PromptResult | null>(null)

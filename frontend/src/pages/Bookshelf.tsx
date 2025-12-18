@@ -77,7 +77,7 @@ export default function Bookshelf() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
 
   // Reading Lists state
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])

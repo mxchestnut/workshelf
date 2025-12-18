@@ -74,7 +74,7 @@ export default function Author() {
   const [isEditing, setIsEditing] = useState(false)
   const [showRevisions, setShowRevisions] = useState(false)
   const [editSummary, setEditSummary] = useState('')
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
 
   // Load user
   useEffect(() => {

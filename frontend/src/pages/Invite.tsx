@@ -27,7 +27,7 @@ export function Invite() {
   const [invitationType, setInvitationType] = useState<'platform' | 'group' | null>(null)
   const [groupInvitation, setGroupInvitation] = useState<GroupInvitation | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
 
   useEffect(() => {
     const loadUser = async () => {
@@ -109,7 +109,7 @@ export function Invite() {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${authService.getAccessToken()}`
+          'Authorization': `Bearer ${getAccessToken()}`
         }
       })
 

@@ -37,7 +37,7 @@ interface Document {
 }
 
 export default function StudioV2() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [folders, setFolders] = useState<TreeFolder[]>([])

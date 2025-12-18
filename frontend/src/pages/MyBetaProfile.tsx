@@ -44,7 +44,7 @@ const SPECIALTY_OPTIONS = [
 ]
 
 export default function MyBetaProfile() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [profile, setProfile] = useState<BetaProfile>({
     availability: 'available',
     bio: '',
@@ -71,7 +71,7 @@ export default function MyBetaProfile() {
     try {
 
       const response = await fetch('/api/v1/beta-profiles/my-profile', {
-        headers: { 'Authorization': `Bearer ${await authService.getAccessToken()}` }
+        headers: { 'Authorization': `Bearer ${await getAccessToken()}` }
       })
 
       if (response.ok) {
@@ -108,7 +108,7 @@ export default function MyBetaProfile() {
       const response = await fetch('/api/v1/beta-profiles/my-profile', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${await authService.getAccessToken()}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(profile)

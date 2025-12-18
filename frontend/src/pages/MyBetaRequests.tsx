@@ -16,7 +16,7 @@ interface BetaRequestItem {
 }
 
 export default function MyBetaRequests() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [sent, setSent] = useState<BetaRequestItem[]>([])
   const [received, setReceived] = useState<BetaRequestItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,7 +28,7 @@ export default function MyBetaRequests() {
   const load = async () => {
     setLoading(true)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const s = await fetch('/api/v1/beta-requests/sent', { headers: { 'Authorization': `Bearer ${token}` } })
       if (s.ok) {
         const sd = await s.json()
@@ -59,7 +59,7 @@ export default function MyBetaRequests() {
 
   const updateStatus = async (id: number, status: 'accepted' | 'declined') => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const resp = await fetch(`/api/v1/beta-requests/${id}`, {
         method: 'PATCH',
         headers: {
@@ -81,7 +81,7 @@ export default function MyBetaRequests() {
 
   const cancelRequest = async (id: number) => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const resp = await fetch(`/api/v1/beta-requests/${id}`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -100,7 +100,7 @@ export default function MyBetaRequests() {
 
   const markCompleted = async (id: number) => {
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const resp = await fetch(`/api/v1/beta-requests/${id}`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },

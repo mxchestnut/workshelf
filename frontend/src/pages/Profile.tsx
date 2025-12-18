@@ -39,6 +39,7 @@ const DEFAULT_INTERESTS = [
 ]
 
 export function Profile() {
+  const { user, login, logout } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)

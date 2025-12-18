@@ -61,7 +61,7 @@ export default function Store() {
   const [sortBy, setSortBy] = useState('published_at')
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all')
 
   // Load user

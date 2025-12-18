@@ -18,7 +18,7 @@ interface ContentTag {
 }
 
 export function TagDiscovery() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [tags, setTags] = useState<ContentTag[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

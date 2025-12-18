@@ -27,7 +27,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [importing, setImporting] = useState(false)
   const [importProgress, setImportProgress] = useState<string>('')
   const [showImportModal, setShowImportModal] = useState(false)

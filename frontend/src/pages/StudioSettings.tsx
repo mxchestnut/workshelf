@@ -63,14 +63,13 @@ interface StudioTheme {
 type TabType = 'general' | 'theme' | 'domains' | 'analytics'
 
 export default function StudioSettings() {
+  const { user, login, logout, getAccessToken } = useAuth()
   // Extract studioId from URL path like /studio/123/settings
   const pathParts = window.location.pathname.split('/')
   const studioIdIndex = pathParts.indexOf('studio') + 1
   const studioId = studioIdIndex > 0 && studioIdIndex < pathParts.length 
     ? pathParts[studioIdIndex] 
     : null
-  
-  const [user] = useState<User | null>(null)
   const [studio, setStudio] = useState<Studio | null>(null)
   const [theme, setTheme] = useState<StudioTheme | null>(null)
   const [customDomains, setCustomDomains] = useState<CustomDomain[]>([])
@@ -112,7 +111,7 @@ export default function StudioSettings() {
 
   const loadStudio = async () => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/studios/${studioId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -134,7 +133,7 @@ export default function StudioSettings() {
 
   const loadCustomDomains = async () => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/studios/${studioId}/custom-domains`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -150,7 +149,7 @@ export default function StudioSettings() {
 
   const loadTheme = async () => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/studios/${studioId}/theme`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -188,7 +187,7 @@ export default function StudioSettings() {
     }
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/studios/${studioId}/custom-domains`, {
         method: 'POST',
         headers: {
@@ -218,7 +217,7 @@ export default function StudioSettings() {
 
   const verifyDomain = async (domainId: number) => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(
         `${API_URL}/api/v1/studios/${studioId}/custom-domains/${domainId}/verify`,
         {
@@ -249,7 +248,7 @@ export default function StudioSettings() {
     if (!confirm('Are you sure you want to remove this domain?')) return
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(
         `${API_URL}/api/v1/studios/${studioId}/custom-domains/${domainId}`,
         {
@@ -275,7 +274,7 @@ export default function StudioSettings() {
   const saveTheme = async () => {
     setSaving(true)
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/studios/${studioId}/theme`, {
         method: 'POST',
         headers: {

@@ -27,6 +27,7 @@ interface FieldError {
 }
 
 export default function Onboarding() {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError[]>([]);

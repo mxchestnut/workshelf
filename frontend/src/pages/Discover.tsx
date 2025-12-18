@@ -35,7 +35,7 @@ interface FeedPost {
 }
 
 export function Discover() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
 

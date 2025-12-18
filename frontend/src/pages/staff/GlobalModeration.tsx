@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext"
 import { Flag, ArrowLeft, Shield } from 'lucide-react'
 
 export function GlobalModeration() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

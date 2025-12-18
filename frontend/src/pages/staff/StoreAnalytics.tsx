@@ -32,7 +32,7 @@ interface SalesStats {
 }
 
 export function StoreAnalytics() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<SalesStats>({
     total_revenue: 0,

@@ -40,7 +40,7 @@ const GENRE_OPTIONS = [
 ]
 
 export default function BetaMarketplace() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [profiles, setProfiles] = useState<BetaProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)

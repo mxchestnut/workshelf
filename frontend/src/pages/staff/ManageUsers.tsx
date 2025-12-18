@@ -21,7 +21,7 @@ interface UserAccount {
 }
 
 export function ManageUsers() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState<UserAccount[]>([])
   const [searchQuery, setSearchQuery] = useState('')

@@ -49,7 +49,7 @@ interface ExportJob {
 }
 
 export function ExportCenter() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [activeTab, setActiveTab] = useState<ExportTab>('documents')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

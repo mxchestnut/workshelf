@@ -102,7 +102,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [managedGroups, setManagedGroups] = useState<Group[]>([])

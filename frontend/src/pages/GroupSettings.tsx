@@ -20,7 +20,7 @@ interface GroupMember {
 }
 
 export default function GroupSettings() {
-  const { user, login, logout, getAccessToken } = useAuth();
+  const { user, login, logout } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);

@@ -159,7 +159,7 @@ export default function GroupAdmin() {
   const loadGroupData = async () => {
     setLoading(true)
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       
       // Load group settings
       const settingsRes = await fetch(`${API_URL}/api/v1/groups/${groupSlug}`, {
@@ -253,7 +253,7 @@ export default function GroupAdmin() {
     if (!groupId) return
     
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations`, {
         credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -273,7 +273,7 @@ export default function GroupAdmin() {
     
     setLoadingAnalytics(true)
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupId}/analytics`, {
         credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -308,7 +308,7 @@ export default function GroupAdmin() {
 
   const updateMemberStatus = async (memberId: number, action: 'approve' | 'reject' | 'ban' | 'make-moderator' | 'remove-moderator') => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}/${action}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -329,7 +329,7 @@ export default function GroupAdmin() {
     if (!confirm('Are you sure you want to remove this member?')) return
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -350,7 +350,7 @@ export default function GroupAdmin() {
     if (!confirm('Are you sure you want to revoke this invitation?')) return
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations/${invitationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -369,7 +369,7 @@ export default function GroupAdmin() {
 
   const updateGroupSettings = async (updates: Partial<GroupSettings>) => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}`, {
         method: 'PATCH',
         headers: {
@@ -392,7 +392,7 @@ export default function GroupAdmin() {
 
   const updatePublicationStatus = async (pubId: number, status: 'published' | 'rejected') => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/publications/${pubId}/status`, {
         method: 'PATCH',
         headers: {
@@ -415,7 +415,7 @@ export default function GroupAdmin() {
 
   const createOrUpdateRole = async (roleData: Partial<GroupRole>) => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const isEditing = editingRole !== null
       const url = isEditing
         ? `${API_URL}/api/v1/groups/${groupSlug}/roles/${editingRole.id}`
@@ -447,7 +447,7 @@ export default function GroupAdmin() {
     if (!confirm('Are you sure you want to delete this role? Members with this role will lose its permissions.')) return
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/roles/${roleId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -466,7 +466,7 @@ export default function GroupAdmin() {
 
   const assignRoleToMember = async (memberId: number, roleId: number) => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}/roles/${roleId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -485,7 +485,7 @@ export default function GroupAdmin() {
 
   const removeRoleFromMember = async (memberId: number, roleId: number) => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/members/${memberId}/roles/${roleId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -509,7 +509,7 @@ export default function GroupAdmin() {
     }
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const memberUserId = members.find(m => m.id === memberId)?.user_id
       if (!memberUserId) {
         setError('Member not found')
@@ -540,7 +540,7 @@ export default function GroupAdmin() {
     }
 
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const memberUserId = members.find(m => m.id === memberId)?.user_id
       if (!memberUserId) {
         setError('Member not found')
@@ -862,7 +862,7 @@ export default function GroupAdmin() {
                           <button
                             onClick={async () => {
                               try {
-                                const token = authService.getAccessToken()
+                                const token = getAccessToken()
                                 const res = await fetch(`${API_URL}/api/v1/group-admin/groups/${groupId}/invitations/${invite.id}`, {
                                   method: 'DELETE',
                                   headers: { 'Authorization': `Bearer ${token}` }
@@ -1090,7 +1090,7 @@ export default function GroupAdmin() {
                       }
 
                       try {
-                        const token = authService.getAccessToken()
+                        const token = getAccessToken()
                         
                         const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains`, {
                           method: 'POST',
@@ -1172,7 +1172,7 @@ export default function GroupAdmin() {
                             if (!confirm(`Remove domain ${domain.domain_name}?`)) return
 
                             try {
-                              const token = authService.getAccessToken()
+                              const token = getAccessToken()
 
                               const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains/${domain.id}`, {
                                 method: 'DELETE',
@@ -1245,7 +1245,7 @@ export default function GroupAdmin() {
                           <button
                             onClick={async () => {
                               try {
-                                const token = authService.getAccessToken()
+                                const token = getAccessToken()
 
                                 const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/custom-domains/${domain.id}/verify`, {
                                   method: 'POST',
@@ -1570,7 +1570,7 @@ export default function GroupAdmin() {
                 <button
                   onClick={async () => {
                     try {
-                      const token = authService.getAccessToken()
+                      const token = getAccessToken()
                       const method = groupTheme.id ? 'PUT' : 'POST'
                       
                       const response = await fetch(`${API_URL}/api/v1/groups/${groupSlug}/theme`, {

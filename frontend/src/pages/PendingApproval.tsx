@@ -3,6 +3,7 @@ import { Navigation } from '../components/Navigation'
 import { useAuth } from "../contexts/AuthContext"
 
 export default function PendingApproval() {
+  const { login, logout } = useAuth()
   const handleLogout = () => {
     logout()
     window.location.href = '/'

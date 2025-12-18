@@ -8,7 +8,7 @@ import { useAuth } from "../../contexts/AuthContext"
 import { Users, ArrowLeft } from 'lucide-react'
 
 export function ViewAllGroups() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

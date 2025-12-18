@@ -20,7 +20,7 @@ interface DeletionInfo {
 }
 
 export default function DeleteAccount() {
-  const { user, login, logout, getAccessToken } = useAuth()
+  const { user, login, logout } = useAuth()
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

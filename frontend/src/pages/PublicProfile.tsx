@@ -57,11 +57,11 @@ interface FollowUser {
 }
 
 export default function PublicProfile() {
+  const { user: currentUser, login, logout } = useAuth()
   const [profile, setProfile] = useState<PublicProfileData | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [bookshelf, setBookshelf] = useState<BookshelfItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentUser, setCurrentUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'documents' | 'bookshelf'>('documents')
   const [showFollowersModal, setShowFollowersModal] = useState(false)
   const [showFollowingModal, setShowFollowingModal] = useState(false)
@@ -70,14 +70,11 @@ export default function PublicProfile() {
   const [loadingFollowers, setLoadingFollowers] = useState(false)
 
   useEffect(() => {
-    loadCurrentUser()
     loadProfile()
   }, [])
 
-  const loadCurrentUser = async () => {
+  const loadProfile = async () => {
     try {
-      const user = await getUser()
-      setCurrentUser(user)
     } catch (err) {
       console.error('Error loading current user:', err)
     }

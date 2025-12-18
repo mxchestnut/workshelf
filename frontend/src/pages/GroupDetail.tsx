@@ -56,7 +56,7 @@ interface GroupPost {
 }
 
 export default function GroupDetail() {
-  const { user, login, logout, getAccessToken } = useAuth();
+  const { user, login, logout } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [posts, setPosts] = useState<GroupPost[]>([]);
