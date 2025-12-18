@@ -212,6 +212,59 @@ async def get_current_user_id(
     return current_user.id
 
 
+async def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    """
+    Optional user dependency - returns None if no auth token provided
+    """
+    if not credentials:
+        return None
+    
+    try:
+        token = credentials.credentials
+        token_payload = await entra_auth.verify_token(token)
+        user = await entra_auth.get_or_create_user(token_payload, db)
+        return user if user.is_active else None
+    except Exception:
+        return None
+
+
+async def get_current_user_from_db(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """
+    Same as get_current_user but ensures database session is provided
+    """
+    return await get_current_user(credentials, db)
+
+
+async def get_optional_user_from_db(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    """
+    Same as get_optional_user but ensures database session is provided
+    """
+    return await get_optional_user(credentials, db)
+
+
+async def require_staff(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Dependency that requires the user to be staff
+    """
+    if not current_user.is_staff:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Staff access required"
+        )
+    return current_user
+
+
 async def get_current_admin_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
