@@ -82,8 +82,8 @@ services:
       WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
     depends_on:
       - redis
-      - keycloak
-      - orks:
+      - minio
+    networks:
       - workshelf
     restart: unless-stopped
     deploy:
