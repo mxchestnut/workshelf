@@ -23,6 +23,8 @@
     ]
   },
   "dependencies": {
+    "@azure/msal-browser": "^3.30.0",
+    "@azure/msal-react": "^2.2.0",
     "@sentry/react": "^10.30.0",
     "@tiptap/core": "^3.13.0",
     "@tiptap/extension-bubble-menu": "^3.13.0",
@@ -58,6 +60,7 @@
     "@tiptap/pm": "^3.13.0",
     "@tiptap/react": "^3.13.0",
     "@tiptap/starter-kit": "^3.13.0",
+    "@tiptap/suggestion": "^3.13.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "epubjs": "^0.3.93",

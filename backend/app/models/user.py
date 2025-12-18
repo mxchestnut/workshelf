@@ -16,8 +16,9 @@ class User(Base, TimestampMixin, TenantMixin):
     
     id = Column(Integer, primary_key=True, index=True)
     
-    # Keycloak integration
-    keycloak_id = Column(String(255), unique=True, index=True, nullable=False)
+    # Authentication integration (supporting both Keycloak and Azure AD during migration)
+    keycloak_id = Column(String(255), unique=True, index=True, nullable=True)  # Legacy Keycloak ID
+    azure_object_id = Column(String(255), unique=True, index=True, nullable=True)  # Microsoft Entra ID object ID
     
     # Basic info
     email = Column(String(255), nullable=False, index=True)

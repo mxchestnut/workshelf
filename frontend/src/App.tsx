@@ -1,11 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { ToastContainer } from './components/Toast'
 import BetaBanner from './components/BetaBanner'
 import ChatBar from './components/ChatBar'
 import './App.css'
-import { authService } from './services/auth'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { trackPageView } from './matomo'
 
 // Loading component
@@ -92,7 +92,11 @@ const RoleplayLore = lazy(() => import('./pages/roleplay/RoleplayLore').then(mod
 
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = authService.isAuthenticated()
+  const { isAuthenticated, isLoading } = useAuth()
+  
+  if (isLoading) {
+    return <PageLoader />
+  }
   
   if (!isAuthenticated) {
     return <Navigate to="/" replace />
@@ -101,34 +105,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function App() {
+function AppContent() {
   const location = useLocation()
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated())
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     // Track page views
     trackPageView(location.pathname)
   }, [location.pathname])
 
-  // Check authentication status on location change
-  useEffect(() => {
-    setIsAuthenticated(authService.isAuthenticated())
-  }, [location.pathname])
-
   // Check admin subdomain redirects
   useEffect(() => {
     const hostname = window.location.hostname
     const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
-    const isAuthenticatedNow = authService.isAuthenticated()
 
     if (isAdminSubdomain && location.pathname === '/') {
-      if (isAuthenticatedNow) {
+      if (isAuthenticated) {
         window.location.href = '/admin'
       } else {
         window.location.href = 'https://workshelf.dev/'
       }
     }
-  }, [location.pathname])
+  }, [location.pathname, isAuthenticated])
 
   return (
     <>
@@ -250,6 +248,14 @@ function App() {
       {/* Only show ChatBar when user is authenticated */}
       {isAuthenticated && <ChatBar />}
     </>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
 
