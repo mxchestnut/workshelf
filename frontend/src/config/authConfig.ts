@@ -2,7 +2,7 @@ import { Configuration, PopupRequest } from '@azure/msal-browser';
 
 /**
  * Microsoft Entra ID (Azure AD) Configuration
- * 
+ *
  * Your Azure AD App Registration:
  * - Client ID: 44e80fc4-db05-4e6b-8732-7779311cb2c3
  * - Tenant ID: 05b0173d-5c39-4799-889a-d522d3cbf86d
@@ -14,7 +14,7 @@ export const msalConfig: Configuration = {
   auth: {
     clientId: import.meta.env.VITE_AZURE_CLIENT_ID || '44e80fc4-db05-4e6b-8732-7779311cb2c3',
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT || '05b0173d-5c39-4799-889a-d522d3cbf86d'}`,
-    redirectUri: window.location.origin + '/auth/callback',
+    redirectUri: window.location.origin + '/callback',
     postLogoutRedirectUri: window.location.origin,
   },
   cache: {
