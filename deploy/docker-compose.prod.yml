@@ -104,7 +104,6 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
-        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
         VITE_AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
         VITE_AZURE_TENANT: ${AZURE_TENANT}
         VITE_ENVIRONMENT: ${ENVIRONMENT:-production}

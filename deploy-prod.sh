@@ -23,22 +23,22 @@ echo "📦 Deploying commit: $GIT_SHA"
 ssh -i "$KEY_PATH" "${PROD_USER}@${PROD_HOST}" << EOF
     set -e
     cd ${PROD_PATH}
-    
+
     echo "📥 Pulling latest code..."
     git pull origin main
-    
+
     echo "🔨 Building Docker images..."
     docker-compose -f docker-compose.prod.yml --env-file .env.prod build
-    
+
     echo "▶️  Deploying containers..."
     docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
-    
+
     echo "⏳ Waiting for backend to start..."
     sleep 10
-    
+
     echo "📊 Service status:"
     docker-compose -f docker-compose.prod.yml ps
-    
+
     echo ""
     echo "✅ Deployment complete!"
 EOF
