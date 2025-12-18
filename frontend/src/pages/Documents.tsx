@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { WritingStreakWidget } from '../components/WritingStreakWidget'
 import { FolderTree } from '../components/FolderTree'
@@ -27,7 +27,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null)
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [importing, setImporting] = useState(false)
   const [importProgress, setImportProgress] = useState<string>('')
   const [showImportModal, setShowImportModal] = useState(false)
@@ -42,8 +42,6 @@ export default function Documents() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -194,7 +192,7 @@ export default function Documents() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="documents" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading documents...</div>
@@ -206,7 +204,7 @@ export default function Documents() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="documents" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="documents" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
 
       <div className="flex h-screen pt-16">

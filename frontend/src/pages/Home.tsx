@@ -11,7 +11,7 @@ import {
   MessagesSquare
 } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from '../contexts/AuthContext'
 
 interface PlatformStats {
   totalBooks: number
@@ -30,7 +30,7 @@ interface Book {
 }
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [stats, setStats] = useState<PlatformStats>({
     totalBooks: 0,
     totalAuthors: 0,
@@ -49,10 +49,6 @@ export default function Home() {
 
   const loadData = async () => {
     try {
-      // Load user
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
-
       // Load platform stats (we'll create a simple aggregation)
       await loadStats()
 
@@ -69,7 +65,7 @@ export default function Home() {
     try {
       // Try to get some basic stats
       // These endpoints exist but might need auth tokens
-      const token = localStorage.getItem('access_token')
+      const token = user ? await getAccessToken() : null
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
       }
@@ -106,7 +102,7 @@ export default function Home() {
 
   const loadFeaturedBooks = async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = user ? await getAccessToken() : null
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
       }
@@ -133,11 +129,11 @@ export default function Home() {
   }
 
   const handleLogin = () => {
-    authService.login()
+    login()
   }
 
   const handleLogout = () => {
-    authService.logout()
+    logout()
   }
 
   if (loading) {

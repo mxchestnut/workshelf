@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { 
   Download, FileText, Package, Shield, Clock, CheckCircle, 
   XCircle, AlertCircle, RefreshCw, Trash2
@@ -49,7 +49,7 @@ interface ExportJob {
 }
 
 export function ExportCenter() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [activeTab, setActiveTab] = useState<ExportTab>('documents')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -71,8 +71,6 @@ export function ExportCenter() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     }
     fetchUser()
     loadDocuments()
@@ -322,8 +320,8 @@ export function ExportCenter() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()}
+        onLogin={() => login()} 
+        onLogout={() => logout()}
         currentPage="export-center" 
       />
       <div className="ml-0 md:ml-80 transition-all duration-300">

@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Tag, Search, TrendingUp, Hash } from 'lucide-react'
 import { toast } from '../services/toast'
 
@@ -18,7 +18,7 @@ interface ContentTag {
 }
 
 export function TagDiscovery() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [tags, setTags] = useState<ContentTag[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -26,8 +26,6 @@ export function TagDiscovery() {
 
   useEffect(() => {
     const loadData = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
       await fetchTags()
     }
     loadData()
@@ -36,7 +34,7 @@ export function TagDiscovery() {
   const fetchTags = async () => {
     try {
       setLoading(true)
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       const response = await fetch(`${API_URL}/api/v1/content-tags/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -91,8 +89,8 @@ export function TagDiscovery() {
     <div className="min-h-screen" style={{ backgroundColor: '#1A1918' }}>
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()} 
+        onLogin={() => login()} 
+        onLogout={() => logout()} 
         currentPage="tags" 
       />
       <div className="ml-0 md:ml-80 transition-all duration-300">

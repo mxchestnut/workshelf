@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { BookOpen } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -54,7 +54,7 @@ export function AuthCallback() {
       console.log('[AuthCallback] Processing authorization code...')
 
       try {
-        const user = await authService.handleCallback(code)
+        const user = await handleOAuthCallback(code)
         
         console.log('[AuthCallback] Successfully authenticated user:', user.email)
         

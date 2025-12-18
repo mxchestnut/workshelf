@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { ConfirmationModal } from '../components/AccessibleModal'
 import { 
@@ -62,7 +62,7 @@ interface TrashStats {
 type Tab = 'documents' | 'projects'
 
 export default function Trash() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('documents')
   const [documents, setDocuments] = useState<TrashedDocument[]>([])
   const [projects, setProjects] = useState<TrashedProject[]>([])
@@ -80,8 +80,6 @@ export default function Trash() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -312,7 +310,7 @@ export default function Trash() {
   if (loading && !stats) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
           <div className="flex items-center justify-center h-screen">
             <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading trash...</div>
@@ -326,7 +324,7 @@ export default function Trash() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="" />
 
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { Navigation } from '../components/Navigation'
-import { User, authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { MessageCircle, Send, Search, User as UserIcon, Loader2, X } from 'lucide-react'
 import { toast } from '../services/toast'
 
@@ -52,7 +52,7 @@ interface SearchUser {
 }
 
 export default function Messages() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -98,11 +98,9 @@ export default function Messages() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (error) {
       console.error('Failed to load user:', error)
-      authService.login()
+      login()
     }
   }
 
@@ -334,7 +332,7 @@ export default function Messages() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
           <div className="max-w-7xl mx-auto px-6 py-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-foreground" />
@@ -347,7 +345,7 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

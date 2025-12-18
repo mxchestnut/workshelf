@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { WritingStreakWidget } from '../components/WritingStreakWidget'
 import { 
@@ -39,7 +39,7 @@ interface WorkStats {
 }
 
 export function Dashboard() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalViews: 0,
@@ -63,8 +63,6 @@ export function Dashboard() {
 
   const loadData = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
       await loadAnalytics()
       await loadTopWorks()
     } catch (error) {
@@ -76,7 +74,7 @@ export function Dashboard() {
 
   const loadAnalytics = async () => {
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       const response = await fetch(`${API_URL}/api/v1/analytics/dashboard?range=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -109,7 +107,7 @@ export function Dashboard() {
 
   const loadTopWorks = async () => {
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       const response = await fetch(`${API_URL}/api/v1/analytics/top-works?range=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -145,7 +143,7 @@ export function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="studio" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -160,7 +158,7 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="studio" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}

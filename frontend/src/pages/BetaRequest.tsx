@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { User, authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Send, FileText, Calendar, Users } from 'lucide-react'
 import { toast } from '../services/toast'
 
 export default function BetaRequest() {
   const params = new URLSearchParams(window.location.search)
   const targetUserId = params.get('user_id')
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [form, setForm] = useState({
@@ -18,7 +18,7 @@ export default function BetaRequest() {
   })
 
   useEffect(() => {
-    authService.getCurrentUser().then(setUser)
+    getUser().then(setUser)
   }, [])
 
   const submit = async () => {
@@ -64,7 +64,7 @@ export default function BetaRequest() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       <div className="max-w-3xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold text-foreground mb-4">Request a Beta Read</h1>

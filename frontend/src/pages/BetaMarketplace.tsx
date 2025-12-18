@@ -3,7 +3,7 @@
  * Browse and discover beta readers with filters
  */
 import { useEffect, useState } from 'react'
-import { User, authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { BookOpen, Star, Clock, DollarSign, Users, Filter, Search, Award, CheckCircle } from 'lucide-react'
 import { toast } from '../services/toast'
@@ -40,7 +40,7 @@ const GENRE_OPTIONS = [
 ]
 
 export default function BetaMarketplace() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [profiles, setProfiles] = useState<BetaProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
@@ -66,8 +66,6 @@ export default function BetaMarketplace() {
   }, [page, selectedGenres, selectedSpecialties, availability, minBetaScore, onlyFree, searchQuery, sortBy])
 
   const loadUser = async () => {
-    const currentUser = await authService.getCurrentUser()
-    setUser(currentUser)
   }
 
   const loadProfiles = async () => {
@@ -150,7 +148,7 @@ export default function BetaMarketplace() {
   if (loading && profiles.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="max-w-7xl mx-auto px-6 py-8 text-center text-foreground">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
           <p className="mt-4">Loading marketplace...</p>
@@ -161,7 +159,7 @@ export default function BetaMarketplace() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

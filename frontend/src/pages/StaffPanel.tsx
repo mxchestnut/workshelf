@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
 import PageVersion from '../components/PageVersion'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { 
   Users, 
   Shield,
@@ -46,7 +46,7 @@ interface PendingUser {
 }
 
 export function StaffPanel() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -67,23 +67,21 @@ export function StaffPanel() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
       
-      if (!currentUser) {
-        setTimeout(() => authService.login(), 100)
+      if (!user) {
+        setTimeout(() => login(), 100)
         return
       }
 
-      if (!currentUser.is_staff) {
+      if (!user.is_staff) {
         window.location.href = '/'
         return
       }
 
-      setUser(currentUser)
       loadInitialData()
     } catch (err) {
       console.error('[StaffPanel] Error loading user:', err)
-      setTimeout(() => authService.login(), 100)
+      setTimeout(() => login(), 100)
     }
   }
 
@@ -263,9 +261,9 @@ export function StaffPanel() {
     }
   }
 
-  const startEditingUsername = (userId: number, currentUsername: string) => {
+  const startEditingUsername = (userId: number, username: string) => {
     setEditingUserId(userId)
-    setEditUsername(currentUsername || '')
+    setEditUsername(username || '')
   }
 
   const cancelEditingUsername = () => {
@@ -315,7 +313,7 @@ export function StaffPanel() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="staff" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="staff" />
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse text-muted-foreground">Loading staff panel...</div>
         </div>
@@ -325,7 +323,7 @@ export function StaffPanel() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="staff" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="staff" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

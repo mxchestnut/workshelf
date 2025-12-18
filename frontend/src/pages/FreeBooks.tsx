@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Search, Download, Plus, Loader2, BookMarked, TrendingUp } from 'lucide-react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -28,7 +28,7 @@ export default function FreeBooks() {
   const [searching, setSearching] = useState(false)
   const [addingBook, setAddingBook] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'popular' | 'search'>('popular')
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
 
   useEffect(() => {
     loadUser()
@@ -37,8 +37,6 @@ export default function FreeBooks() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -131,7 +129,7 @@ export default function FreeBooks() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="free-books" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="free-books" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}

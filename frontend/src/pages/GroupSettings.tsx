@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
-import { authService, User } from '../services/auth';
+import { useAuth } from "../contexts/AuthContext";
 import { Settings, Users, Lock, Shield, Globe, ArrowLeft, Save } from 'lucide-react';
 
 interface Group {
@@ -20,7 +20,7 @@ interface GroupMember {
 }
 
 export default function GroupSettings() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, login, logout, getAccessToken } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,9 +46,7 @@ export default function GroupSettings() {
   }, [groupId]);
 
   const loadUser = async () => {
-    const currentUser = await authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
+    if (user) {
     }
   };
 
@@ -173,7 +171,7 @@ export default function GroupSettings() {
       <div className="min-h-screen bg-gray-50">
         <Navigation 
           user={user}
-          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          onLogin={() => login()} onLogout={() => logout()}
          
           currentPage="groups"
         />
@@ -191,7 +189,7 @@ export default function GroupSettings() {
       <div className="min-h-screen bg-gray-50">
         <Navigation 
           user={user}
-          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          onLogin={() => login()} onLogout={() => logout()}
          
           currentPage="groups"
         />
@@ -216,7 +214,7 @@ export default function GroupSettings() {
     <div className="min-h-screen bg-gray-50">
       <Navigation 
         user={user}
-        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+        onLogin={() => login()} onLogout={() => logout()}
        
         currentPage="groups"
       />

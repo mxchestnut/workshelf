@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { Users, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
 import PageVersion from '../components/PageVersion'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -26,7 +26,7 @@ interface Group {
 }
 
 export default function Groups() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [myGroups, setMyGroups] = useState<Group[]>([])
   const [discoveredGroups, setDiscoveredGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,9 +42,7 @@ export default function Groups() {
   }, [])
 
   const loadUser = async () => {
-    const currentUser = await authService.getCurrentUser()
-    if (currentUser) {
-      setUser(currentUser)
+    if (user) {
     }
   }
 
@@ -106,7 +104,6 @@ export default function Groups() {
         setNewGroupDescription('')
         // Refresh user data to update navigation
         const updatedUser = await authService.fetchUserInfo()
-        setUser(updatedUser)
         // Refresh lists
         loadGroups()
         // Optionally navigate to the new group
@@ -127,7 +124,7 @@ export default function Groups() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+        onLogin={() => login()} onLogout={() => logout()}
        
         currentPage="groups"
       />

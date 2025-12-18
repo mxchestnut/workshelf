@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FileText, Folder, Plus, ChevronRight, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
 import { Editor } from '../components/Editor'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { BulkUploadModal } from '../components/BulkUploadModal'
 import PublishModal, { PublishData } from '../components/PublishModal'
@@ -37,7 +37,7 @@ interface Document {
 }
 
 export default function StudioV2() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [folders, setFolders] = useState<TreeFolder[]>([])
@@ -65,9 +65,7 @@ export default function StudioV2() {
   }, [selectedProject])
 
   const loadUser = async () => {
-    const currentUser = await authService.getCurrentUser()
-    if (currentUser) {
-      setUser(currentUser)
+    if (user) {
     }
   }
 
@@ -75,7 +73,7 @@ export default function StudioV2() {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
-        authService.login()
+        login()
         return
       }
 
@@ -512,7 +510,7 @@ export default function StudioV2() {
     <div className="flex flex-col h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} onLogout={() => authService.logout()} 
+        onLogin={() => login()} onLogout={() => logout()} 
         
         currentPage="studio" 
       />

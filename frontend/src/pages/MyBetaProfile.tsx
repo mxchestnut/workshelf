@@ -3,7 +3,7 @@
  * Settings page for beta readers to set up their marketplace profile
  */
 import { useEffect, useState } from 'react'
-import { User, authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { BookOpen, DollarSign, Clock, Users, Plus, Trash2, Save } from 'lucide-react'
 
@@ -44,7 +44,7 @@ const SPECIALTY_OPTIONS = [
 ]
 
 export default function MyBetaProfile() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [profile, setProfile] = useState<BetaProfile>({
     availability: 'available',
     bio: '',
@@ -69,8 +69,6 @@ export default function MyBetaProfile() {
 
   const loadProfile = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
 
       const response = await fetch('/api/v1/beta-profiles/my-profile', {
         headers: { 'Authorization': `Bearer ${await authService.getAccessToken()}` }
@@ -174,7 +172,7 @@ export default function MyBetaProfile() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-6 py-8 text-center text-white">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -187,7 +185,7 @@ export default function MyBetaProfile() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-4xl mx-auto px-6 py-8">

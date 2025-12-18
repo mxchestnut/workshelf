@@ -3,6 +3,9 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { InteractionStatus, AccountInfo } from '@azure/msal-browser';
 import { apiRequest } from '../config/authConfig';
 
+// Export User type for components that need it
+export type User = AccountInfo;
+
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;

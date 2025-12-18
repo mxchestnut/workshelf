@@ -15,7 +15,7 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -74,7 +74,7 @@ export default function Author() {
   const [isEditing, setIsEditing] = useState(false)
   const [showRevisions, setShowRevisions] = useState(false)
   const [editSummary, setEditSummary] = useState('')
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
 
   // Load user
   useEffect(() => {
@@ -83,8 +83,6 @@ export default function Author() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -317,7 +315,7 @@ export default function Author() {
   if (!author) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="authors" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -332,7 +330,7 @@ export default function Author() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="authors" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="authors" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

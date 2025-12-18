@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { X, Plus, Folder, Check } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'

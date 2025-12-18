@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { User, Edit2, Save, X, ArrowLeft, ExternalLink, BookOpen, DollarSign, Lock, Users as UsersIcon, UserMinus, Loader2, Download, Shield, Settings, UserCircle } from 'lucide-react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
 type ProfileTab = 'settings' | 'profile' | 'writer' | 'beta' | 'reader'
@@ -128,7 +128,7 @@ export function Profile() {
 
   const checkMatrixConnection = async () => {
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) return
       
       const response = await fetch(`${API_URL}/api/v1/matrix/connection-status`, {
@@ -167,7 +167,7 @@ export function Profile() {
       setLoading(true)
       setError(null)
 
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) {
         setError('Not authenticated')
         return
@@ -317,7 +317,7 @@ export function Profile() {
         formData.twitter_handle = handle
       }
 
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) {
         setError('Not authenticated')
         return
@@ -424,7 +424,7 @@ export function Profile() {
   const loadConnections = async () => {
     setConnectionsLoading(true)
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) return
 
       // Load followers
@@ -456,7 +456,7 @@ export function Profile() {
   const unfollowUser = async (userId: number) => {
     setUnfollowingId(userId)
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) return
 
       const response = await fetch(`${API_URL}/api/v1/relationships/unfollow/${userId}`, {
@@ -481,7 +481,7 @@ export function Profile() {
     setExportMessage(null)
     
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) {
         setExportMessage({ type: 'error', text: 'Not authenticated' })
         return
@@ -535,7 +535,7 @@ export function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
+        <Navigation user={null} onLogin={() => login()} onLogout={() => logout()} currentPage="me" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
           <div className="max-w-4xl mx-auto p-6">
             <div className="text-center py-12">
@@ -551,7 +551,7 @@ export function Profile() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={null} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
+        <Navigation user={null} onLogin={() => login()} onLogout={() => logout()} currentPage="me" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
           <div className="max-w-4xl mx-auto p-6">
             <div className="text-center py-12">
@@ -565,7 +565,7 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={profile as any} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="me" />
+      <Navigation user={profile as any} onLogin={() => login()} onLogout={() => logout()} currentPage="me" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-4xl mx-auto p-6">
         {/* Navigation Bar */}
@@ -823,7 +823,7 @@ export function Profile() {
                   if (!confirm('Are you sure you want to disconnect your Matrix account?')) return
                   try {
                     setMatrixPwLoading(true)
-                    const token = authService.getToken()
+                    const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                     if (!token) return
                     
                     const response = await fetch(`${API_URL}/api/v1/matrix/disconnect-account`, {
@@ -921,7 +921,7 @@ export function Profile() {
                         }
                         try {
                           setMatrixConnectionLoading(true)
-                          const token = authService.getToken()
+                          const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                           if (!token) return
                           
                           const response = await fetch(`${API_URL}/api/v1/matrix/login-and-connect`, {
@@ -1025,7 +1025,7 @@ export function Profile() {
                       }
                       try {
                         setMatrixConnectionLoading(true)
-                        const token = authService.getToken()
+                        const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                         if (!token) return
                         
                         const response = await fetch(`${API_URL}/api/v1/matrix/connect-account`, {

@@ -5,7 +5,7 @@
  */
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Users, Settings, Lock, FileText, CheckCircle, XCircle, UserPlus, Shield, Globe, Plus, Trash2, Copy, AlertCircle, Palette, Upload, Eye, ShieldAlert, Mail, TrendingUp } from 'lucide-react'
 import { RoleEditor } from '../components/RoleEditor'
 import { MemberRoleManager } from '../components/MemberRoleManager'
@@ -112,13 +112,11 @@ interface GroupTheme {
 }
 
 export default function GroupAdmin() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
     const loadUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     }
     loadUser()
   }, [])
@@ -243,12 +241,11 @@ export default function GroupAdmin() {
   }
 
   const handleLogin = () => {
-    authService.login()
+    login()
   }
 
   const handleLogout = async () => {
-    await authService.logout()
-    setUser(null)
+    await logout()
     window.location.href = '/'
   }
 

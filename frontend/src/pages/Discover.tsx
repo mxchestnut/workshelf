@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { BookOpen, Pin, Clock } from 'lucide-react'
 
@@ -35,15 +35,13 @@ interface FeedPost {
 }
 
 export function Discover() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const currentUser = await authService.getCurrentUser()
-        setUser(currentUser)
         
         await loadDiscoverFeed()
       } catch (error) {
@@ -58,7 +56,7 @@ export function Discover() {
 
   const loadDiscoverFeed = async () => {
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       const endpoint = '/api/v1/feed/discover'
       
       const response = await fetch(`${API_URL}${endpoint}`, {
@@ -96,7 +94,7 @@ export function Discover() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="discover" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="discover" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -111,7 +109,7 @@ export function Discover() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="discover" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="discover" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Feed Content */}

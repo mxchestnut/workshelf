@@ -4,11 +4,11 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../../components/Navigation'
-import { authService, User } from '../../services/auth'
+import { useAuth } from "../../contexts/AuthContext"
 import { Users, ArrowLeft } from 'lucide-react'
 
 export function ViewAllGroups() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,12 +17,10 @@ export function ViewAllGroups() {
 
   const checkAccess = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      if (!currentUser || !currentUser.is_staff) {
+      if (!user || !user.is_staff) {
         window.location.href = '/'
         return
       }
-      setUser(currentUser)
       setLoading(false)
     } catch (error) {
       console.error('Access check failed:', error)
@@ -33,7 +31,7 @@ export function ViewAllGroups() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -45,7 +43,7 @@ export function ViewAllGroups() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="border-b bg-card border-border">

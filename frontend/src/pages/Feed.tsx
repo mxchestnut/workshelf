@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { SaveToCollectionModal } from '../components/SaveToCollectionModal'
 import PageVersion from '../components/PageVersion'
@@ -52,7 +52,7 @@ interface FeedPost {
 }
 
 export function Feed() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<FeedTab>('personal')
@@ -67,7 +67,7 @@ export function Feed() {
   // Define loadFeed before it's used in useEffect
   const loadFeed = useCallback(async (tab: FeedTab, sort: string = sortBy) => {
     try {
-      const token = authService.getToken()
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       
       // If tag filters are active, use the filter API
       if (includeTags.length > 0 || excludeTags.length > 0) {
@@ -168,22 +168,19 @@ export function Feed() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('[Feed] Loading user...')
-        const currentUser = await authService.getCurrentUser()
-        console.log('[Feed] User loaded:', currentUser)
-        setUser(currentUser)
+        console.log('[Feed] Loading feed...')
         
         // Only load feed if we have a user
-        if (currentUser) {
+        if (user) {
           await loadFeed(activeTab)
         } else {
           console.warn('[Feed] No user found, redirecting to login')
-          authService.login()
+          login()
         }
       } catch (error) {
-        console.error('[Feed] Failed to load user:', error)
+        console.error('[Feed] Failed to load feed:', error)
         // Redirect to login if user fetch fails
-        authService.login()
+        login()
       } finally {
         setLoading(false)
       }
@@ -223,7 +220,7 @@ export function Feed() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="feed" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <BookOpen className="w-16 h-16 mx-auto mb-4 animate-pulse text-foreground" />
@@ -236,7 +233,7 @@ export function Feed() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="feed" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="feed" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

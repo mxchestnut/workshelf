@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Star, Heart, Search, Plus, BookMarked, Clock, ThumbsDown, TrendingUp, Sparkles, List } from 'lucide-react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import AddBookModal from '../components/AddBookModal'
 import BookDetail from './BookDetail'
@@ -77,7 +77,7 @@ export default function Bookshelf() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
 
   // Reading Lists state
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])
@@ -100,8 +100,6 @@ export default function Bookshelf() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -286,7 +284,7 @@ export default function Bookshelf() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="bookshelf" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-lg text-foreground">Loading bookshelf...</div>
         </div>
@@ -306,7 +304,7 @@ export default function Bookshelf() {
         />
       ) : (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="bookshelf" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="bookshelf" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

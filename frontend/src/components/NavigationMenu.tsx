@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Construction, StarHalf, Star, MoonStar, Filter, X } from 'lucide-react';
-import { authService } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
+
+// Define helper to get auth token (component-level)
+const useAuthToken = () => {
+  const { getAccessToken } = useAuth();
+  return getAccessToken;
+};
 
 interface NavigationItem {
   page_path: string;
@@ -39,7 +45,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, pagePath
     
     setSending(true);
     try {
-      const token = authService.getToken();
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
       // Send feedback message (you can customize this endpoint)
       const response = await fetch(`${API_URL}/api/v1/messaging/send`, {
         method: 'POST',
@@ -132,7 +138,7 @@ const NavigationMenu: React.FC = () => {
   const fetchNavigation = async (filterBy?: string) => {
     setLoading(true);
     try {
-      const token = authService.getToken();
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
       const url = filterBy 
         ? `${API_URL}/api/v1/pages/navigation?filter_by=${filterBy}`
         : `${API_URL}/api/v1/pages/navigation`;
@@ -169,7 +175,7 @@ const NavigationMenu: React.FC = () => {
     
     // Record the view
     const apiPath = item.page_path === '/' ? 'landing' : item.page_path.substring(1);
-    const token = authService.getToken();
+    const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
     fetch(`${API_URL}/api/v1/pages/${apiPath}/view`, {
       method: 'POST',
       headers: {
@@ -186,7 +192,7 @@ const NavigationMenu: React.FC = () => {
     
     try {
       const apiPath = item.page_path === '/' ? 'landing' : item.page_path.substring(1);
-      const token = authService.getToken();
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
       const response = await fetch(`${API_URL}/api/v1/pages/${apiPath}/mark-viewed`, {
         method: 'POST',
         headers: {

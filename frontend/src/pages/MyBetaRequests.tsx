@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { User, authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
 import { toast } from '../services/toast'
 
@@ -16,7 +16,7 @@ interface BetaRequestItem {
 }
 
 export default function MyBetaRequests() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [sent, setSent] = useState<BetaRequestItem[]>([])
   const [received, setReceived] = useState<BetaRequestItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,8 +27,6 @@ export default function MyBetaRequests() {
 
   const load = async () => {
     setLoading(true)
-    const currentUser = await authService.getCurrentUser()
-    setUser(currentUser)
     try {
       const token = await authService.getAccessToken()
       const s = await fetch('/api/v1/beta-requests/sent', { headers: { 'Authorization': `Bearer ${token}` } })
@@ -122,7 +120,7 @@ export default function MyBetaRequests() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-foreground">Loading requests...</div>
         </div> {/* Close ml-0 md:ml-80 wrapper */}
@@ -132,7 +130,7 @@ export default function MyBetaRequests() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       <div className="max-w-6xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold text-foreground mb-6">My Beta Requests</h1>

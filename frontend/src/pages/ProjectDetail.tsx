@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { 
   ArrowLeft, FileText, User, MapPin, Clock,
@@ -147,7 +147,7 @@ export function ProjectDetail() {
   const pathParts = window.location.pathname.split('/')
   const projectId = pathParts[pathParts.length - 1]
   
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [project, setProject] = useState<Project | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -163,15 +163,13 @@ export function ProjectDetail() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
       
       if (!currentUser) {
-        authService.login()
+        login()
       }
     } catch (err) {
       console.error('[ProjectDetail] Error loading user:', err)
-      authService.login()
+      login()
     }
   }
 
@@ -179,7 +177,7 @@ export function ProjectDetail() {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
-        authService.login()
+        login()
         return
       }
 
@@ -228,7 +226,7 @@ export function ProjectDetail() {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
-        authService.login()
+        login()
         return
       }
 
@@ -359,7 +357,7 @@ export function ProjectDetail() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading project...</div>
@@ -372,7 +370,7 @@ export function ProjectDetail() {
   if (!project) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div style={{ color: '#B3B2B0' }}>Project not found</div>
@@ -390,7 +388,7 @@ export function ProjectDetail() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="studio" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="studio" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       {/* Header */}

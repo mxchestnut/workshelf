@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../../components/Navigation'
-import { authService, User } from '../../services/auth'
+import { useAuth } from "../../contexts/AuthContext"
 import { 
   TrendingUp, DollarSign, ShoppingBag, Package,
   ArrowLeft, Plus, Search, Edit, Trash2, Sparkles
@@ -32,7 +32,7 @@ interface SalesStats {
 }
 
 export function StoreAnalytics() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<SalesStats>({
     total_revenue: 0,
@@ -51,12 +51,10 @@ export function StoreAnalytics() {
 
   const checkAccess = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      if (!currentUser?.is_staff) {
+      if (!user?.is_staff) {
         globalThis.location.href = '/'
         return
       }
-      setUser(currentUser)
       await loadStoreData()
     } catch (error) {
       console.error('Access check failed:', error)
@@ -207,7 +205,7 @@ export function StoreAnalytics() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -221,7 +219,7 @@ export function StoreAnalytics() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">

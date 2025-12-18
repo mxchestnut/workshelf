@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { toast } from '../services/toast'
 import {
   User, MapPin, Calendar, ExternalLink, Globe, Twitter,
@@ -76,7 +76,7 @@ export default function PublicProfile() {
 
   const loadCurrentUser = async () => {
     try {
-      const user = await authService.getCurrentUser()
+      const user = await getUser()
       setCurrentUser(user)
     } catch (err) {
       console.error('Error loading current user:', err)
@@ -300,7 +300,7 @@ export default function PublicProfile() {
   if (loading) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={currentUser} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div className="animate-pulse" style={{ color: '#B3B2B0' }}>Loading profile...</div>
@@ -313,7 +313,7 @@ export default function PublicProfile() {
   if (!profile) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-        <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+        <Navigation user={currentUser} onLogin={() => login()} onLogout={() => logout()} />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
           <div style={{ color: '#B3B2B0' }}>Profile not found</div>
@@ -325,7 +325,7 @@ export default function PublicProfile() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={currentUser} onLogin={() => authService.login()} onLogout={() => authService.logout()} />
+      <Navigation user={currentUser} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
 
       <div className="max-w-5xl mx-auto px-6 py-24">

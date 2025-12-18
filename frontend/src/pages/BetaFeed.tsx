@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { BookOpen, Clock, CheckCircle, MessageSquare, Calendar } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -28,7 +28,7 @@ interface BetaRelease {
 }
 
 export default function BetaFeed() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [releases, setReleases] = useState<BetaRelease[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread' | 'reading' | 'completed'>('all')
@@ -36,9 +36,7 @@ export default function BetaFeed() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
-      if (currentUser) {
+      if (user) {
         loadReleases()
       } else {
         setLoading(false)
@@ -82,12 +80,11 @@ export default function BetaFeed() {
   }, [filter])
 
   const handleLogin = () => {
-    authService.login()
+    login()
   }
 
   const handleLogout = async () => {
-    await authService.logout()
-    setUser(null)
+    await logout()
     window.location.href = '/'
   }
 

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService, User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { AlertTriangle, X, Trash2 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -20,7 +20,7 @@ interface DeletionInfo {
 }
 
 export default function DeleteAccount() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,8 +43,6 @@ export default function DeleteAccount() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -123,7 +121,7 @@ export default function DeleteAccount() {
       
       // Clear local storage and redirect after a delay
       setTimeout(() => {
-        authService.logout()
+        logout()
         window.location.href = '/'
       }, 5000)
       
@@ -138,7 +136,7 @@ export default function DeleteAccount() {
   if (deleted && deletionResult) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -179,7 +177,7 @@ export default function DeleteAccount() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -196,7 +194,7 @@ export default function DeleteAccount() {
   if (!deletionInfo) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -211,7 +209,7 @@ export default function DeleteAccount() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="delete-account" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

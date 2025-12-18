@@ -5,7 +5,7 @@
 
 import { useEffect, useState, ReactElement } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { 
   Shield, AlertTriangle, CheckCircle, Clock, FileText, 
   Zap, TrendingUp, Search, RefreshCw, AlertCircle 
@@ -53,7 +53,7 @@ type ActiveTab = 'quick' | 'document' | 'history'
 type CheckType = 'ai_detection' | 'plagiarism' | 'combined'
 
 export function ContentIntegrity() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [activeTab, setActiveTab] = useState<ActiveTab>('quick')
   const [quickCheckText, setQuickCheckText] = useState('')
   const [quickCheckLoading, setQuickCheckLoading] = useState(false)
@@ -72,8 +72,6 @@ export function ContentIntegrity() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     }
     fetchUser()
     loadDocuments()
@@ -247,7 +245,7 @@ export function ContentIntegrity() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} onLogout={() => authService.logout()} 
+        onLogin={() => login()} onLogout={() => logout()} 
         
         currentPage="content-integrity" 
       />

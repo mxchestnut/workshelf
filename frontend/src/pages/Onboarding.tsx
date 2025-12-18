@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authService } from '../services/auth';
+import { useAuth } from "../contexts/AuthContext";
 
 // Use same fallback pattern as auth.ts
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
@@ -200,7 +200,7 @@ export default function Onboarding() {
     setErrors([]);
 
     try {
-      const token = authService.getToken();
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
       const cleanPhone = formData.phoneNumber.trim() ? formData.phoneNumber.replace(/[\s()-]/g, '') : null;
 
       const response = await fetch(`${API_URL}/v1/auth/complete-onboarding`, {

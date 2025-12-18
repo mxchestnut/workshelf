@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles, Library, ExternalLink } from 'lucide-react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
@@ -61,7 +61,7 @@ export default function Store() {
   const [sortBy, setSortBy] = useState('published_at')
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [activeTab, setActiveTab] = useState<'all' | 'free' | 'paid'>('all')
 
   // Load user
@@ -71,8 +71,6 @@ export default function Store() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     } catch (err) {
       console.error('Error loading user:', err)
     }
@@ -184,7 +182,7 @@ export default function Store() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="store" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="store" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

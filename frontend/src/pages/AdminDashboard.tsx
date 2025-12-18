@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { 
   Users, 
   Shield, 
@@ -102,7 +102,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [managedGroups, setManagedGroups] = useState<Group[]>([])
@@ -132,21 +132,19 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   const loadUser = async () => {
     try {
       console.log('[AdminDashboard] Loading user...')
-      const currentUser = await authService.getCurrentUser()
-      console.log('[AdminDashboard] User loaded:', currentUser)
+      console.log('[AdminDashboard] User loaded:', user)
       
-      if (!currentUser) {
+      if (!user) {
         console.warn('[AdminDashboard] No user found, redirecting to login')
         setTimeout(() => {
-          authService.login()
+          login()
         }, 100)
         return
       }
 
-      setUser(currentUser)
 
       // Check if user is staff or group admin
-      const staffUser = currentUser.is_staff || false
+      const staffUser = user.is_staff || false
       setIsStaff(staffUser)
 
       // If staff user and accessing via /staff route, default to site-admin tab
@@ -155,7 +153,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
       }
 
       // Check if user is a group admin
-      if (!staffUser && (!currentUser.groups || currentUser.groups.length === 0)) {
+      if (!staffUser && (!user.groups || user.groups.length === 0)) {
         console.warn('[AdminDashboard] User is not a group admin or staff')
         // Redirect to home or show error
         window.location.href = '/'
@@ -166,7 +164,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
     } catch (err) {
       console.error('[AdminDashboard] Error loading user:', err)
       setTimeout(() => {
-        authService.login()
+        login()
       }, 100)
     }
   }
@@ -548,7 +546,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
     return (
       <div className="min-h-screen bg-background">
         {!embedded && (
-          <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+          <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="admin" />
         )}
         <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="flex items-center justify-center h-screen">
@@ -562,7 +560,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
   return (
     <div className="min-h-screen bg-background">
       {!embedded && (
-        <Navigation user={user} onLogin={() => authService.login()} onLogout={() => authService.logout()} currentPage="admin" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="admin" />
       )}
       <div className="ml-0 md:ml-80 transition-all duration-300">
       

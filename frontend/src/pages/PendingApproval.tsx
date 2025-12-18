@@ -1,16 +1,16 @@
 import { Clock } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 
 export default function PendingApproval() {
   const handleLogout = () => {
-    authService.logout()
+    logout()
     window.location.href = '/'
   }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
-      <Navigation user={null} onLogin={() => authService.login()} onLogout={handleLogout} />
+      <Navigation user={null} onLogin={() => login()} onLogout={handleLogout} />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">

@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from 'react'
 import { Navigation } from '../components/Navigation'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { 
   Sparkles, Lightbulb, Users, TrendingUp, BookOpen, 
   List, Type, RefreshCw, AlertCircle, Zap, HelpCircle
@@ -30,7 +30,7 @@ interface PromptResult {
 }
 
 export function AIAssistance() {
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
   const [activeTab, setActiveTab] = useState<AssistanceTab>('prompts')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<PromptResult | null>(null)
@@ -52,8 +52,6 @@ export function AIAssistance() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     }
     fetchUser()
   }, [])
@@ -152,8 +150,8 @@ export function AIAssistance() {
     <div className="min-h-screen bg-background">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} 
-        onLogout={() => authService.logout()}
+        onLogin={() => login()} 
+        onLogout={() => logout()}
         currentPage="ai-assistance" 
       />
       <div className="ml-0 md:ml-80 transition-all duration-300">

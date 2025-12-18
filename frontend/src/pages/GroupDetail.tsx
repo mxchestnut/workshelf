@@ -4,7 +4,7 @@ import { Navigation } from '../components/Navigation';
 import { GroupActionButtons } from '../components/GroupActionButtons';
 import { PostModerationActions } from '../components/PostModerationActions';
 import TagInput from '../components/TagInput';
-import { authService, User } from '../services/auth';
+import { useAuth } from "../contexts/AuthContext";
 
 interface Group {
   id: number;
@@ -56,7 +56,7 @@ interface GroupPost {
 }
 
 export default function GroupDetail() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, login, logout, getAccessToken } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [posts, setPosts] = useState<GroupPost[]>([]);
@@ -98,9 +98,7 @@ export default function GroupDetail() {
   }, [groupSlug]);
 
   const loadUser = async () => {
-    const currentUser = await authService.getCurrentUser();
     if (currentUser) {
-      setUser(currentUser);
     }
   };
 
@@ -536,7 +534,7 @@ export default function GroupDetail() {
     <div className="min-h-screen bg-gray-50">
       <Navigation 
         user={user}
-        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+        onLogin={() => login()} onLogout={() => logout()}
        
         currentPage="groups"
       />

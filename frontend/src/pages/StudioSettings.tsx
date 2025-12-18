@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, Copy, Loader2, ArrowLeft, Trash2
 } from 'lucide-react'
 import { Navigation } from '../components/Navigation'
-import { authService, type User } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
@@ -318,7 +318,7 @@ export default function StudioSettings() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Navigation 
           user={user} 
-          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          onLogin={() => login()} onLogout={() => logout()}
           
         />
         <div className="ml-0 md:ml-80 transition-all duration-300">
@@ -335,7 +335,7 @@ export default function StudioSettings() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Navigation 
           user={user} 
-          onLogin={() => authService.login()} onLogout={() => authService.logout()}
+          onLogin={() => login()} onLogout={() => logout()}
           
         />
         <div className="ml-0 md:ml-80 transition-all duration-300">
@@ -360,7 +360,7 @@ export default function StudioSettings() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
       <Navigation 
         user={user} 
-        onLogin={() => authService.login()} onLogout={() => authService.logout()}
+        onLogin={() => login()} onLogout={() => logout()}
         
       />
       <div className="ml-0 md:ml-80 transition-all duration-300">

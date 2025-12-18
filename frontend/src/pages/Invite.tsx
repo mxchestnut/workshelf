@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Loader2, CheckCircle, XCircle, Users } from 'lucide-react'
-import { authService } from '../services/auth'
+import { useAuth } from "../contexts/AuthContext"
 import { toast } from '../services/toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
@@ -27,12 +27,10 @@ export function Invite() {
   const [invitationType, setInvitationType] = useState<'platform' | 'group' | null>(null)
   const [groupInvitation, setGroupInvitation] = useState<GroupInvitation | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const { user, login, logout, getAccessToken } = useAuth()
 
   useEffect(() => {
     const loadUser = async () => {
-      const currentUser = await authService.getCurrentUser()
-      setUser(currentUser)
     }
     loadUser()
   }, [])
@@ -85,7 +83,7 @@ export function Invite() {
         localStorage.setItem('invitation_email', data.email)
         // Redirect to login/signup after a brief delay
         setTimeout(() => {
-          authService.login()
+          login()
         }, 2000)
       } else {
         setStatus('invalid')
@@ -196,7 +194,7 @@ export function Invite() {
                   Please sign in to accept this invitation
                 </p>
                 <button
-                  onClick={() => authService.login()}
+                  onClick={() => login()}
                   className="w-full px-6 py-3 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#B34B0C' }}
                 >
@@ -213,8 +211,8 @@ export function Invite() {
                 </p>
                 <button
                   onClick={async () => {
-                    await authService.logout()
-                    authService.login()
+                    await logout()
+                    login()
                   }}
                   className="w-full px-6 py-3 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#B34B0C' }}

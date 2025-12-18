@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { User } from '../services/auth'
+import { User } from "../contexts/AuthContext"
 import NotificationBell from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
 import { SkipLink } from './SkipLink'
