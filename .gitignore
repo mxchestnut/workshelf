@@ -61,3 +61,6 @@ backup.env
 # Production secrets backup
 production-secrets*.txt
 *.secrets
+
+# Kit's personal notes (do not sync)
+Kit's Notes/

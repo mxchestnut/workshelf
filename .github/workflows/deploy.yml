@@ -118,7 +118,7 @@ jobs:
             
             # Start services one at a time to avoid race conditions
             echo "🚀 Starting infrastructure services..."
-            sudo docker-compose -f deploy/docker-compose.prod.yml up -d postgres redis minio keycloak
+            sudo docker-compose -f deploy/docker-compose.prod.yml up -d redis minio vault
             sleep 15
             
             echo "🚀 Starting application services..."

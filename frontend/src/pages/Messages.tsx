@@ -107,22 +107,10 @@ export default function Messages() {
   }
 
   const checkMatrixStatus = async () => {
-    try {
-      const token = await authService.getAccessToken()
-      const response = await fetch(`${API_URL}/api/v1/users/me/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.matrix_username) {
-          setHasMatrixAccount(true)
-          setMatrixUsername(data.matrix_username)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check Matrix status:', error)
-    }
+    // Matrix is optional - messaging works without it
+    // Just hide the Matrix prompts for now
+    setHasMatrixAccount(true)
+    return
   }
 
   const initializeMatrix = () => {
