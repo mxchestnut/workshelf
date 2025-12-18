@@ -1,5 +1,6 @@
 # Core Framework
-fastapi==0.124.4
+# Pin to a published FastAPI release; 0.124.x does not exist on PyPI and breaks container start.
+fastapi==0.115.6
 uvicorn[standard]==0.38.0
 pydantic==2.12.5
 pydantic-settings==2.12.0
