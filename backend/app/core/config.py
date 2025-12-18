@@ -85,7 +85,12 @@ class Settings(BaseSettings):
         """Return S3 secret key, fallback to AWS key"""
         return self.S3_SECRET_ACCESS_KEY or self.AWS_SECRET_ACCESS_KEY
     
-    # Keycloak
+    # Microsoft Entra ID (Azure AD) Authentication
+    AZURE_TENANT: str = ""
+    AZURE_CLIENT_ID: str = ""
+    AZURE_CLIENT_SECRET: str = ""
+    
+    # Keycloak (Legacy - keeping for backward compatibility during migration)
     # Public issuer URL should match Keycloak's external hostname for token "iss"
     KEYCLOAK_SERVER_URL: str = "https://keycloak.workshelf.dev"
     # Internal URL used by the backend to fetch JWKS via Docker network
