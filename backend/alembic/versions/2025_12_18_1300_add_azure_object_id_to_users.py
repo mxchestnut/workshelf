@@ -1,7 +1,7 @@
 """add azure_object_id to users
 
-Revision ID: 2025_12_18_1300
-Revises: 2025_12_13_1200
+Revision ID: add_azure_object_id
+Revises: add_roleplay_models
 Create Date: 2025-12-18 13:00:00.000000
 
 """
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2025_12_18_1300'
-down_revision: Union[str, None] = '2025_12_13_1200'
+revision: str = 'add_azure_object_id'
+down_revision: Union[str, None] = 'add_roleplay_models'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
