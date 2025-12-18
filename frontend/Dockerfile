@@ -3,7 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Accept build args with secure defaults
-ARG VITE_API_URL=https://api.workshelf.dev
+ARG VITE_API_URL=https://workshelf.dev
 ARG VITE_AZURE_CLIENT_ID
 ARG VITE_AZURE_TENANT
 ARG VITE_SENTRY_DSN
