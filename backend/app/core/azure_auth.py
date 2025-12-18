@@ -198,6 +198,20 @@ async def get_current_active_user(
     return current_user
 
 
+async def get_current_user_id(
+    current_user: User = Depends(get_current_user)
+) -> int:
+    """
+    Dependency to get just the current user's ID
+    
+    Usage:
+        @app.get("/api/v1/something")
+        async def something(user_id: int = Depends(get_current_user_id)):
+            ...
+    """
+    return current_user.id
+
+
 async def get_current_admin_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
