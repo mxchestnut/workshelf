@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 from datetime import datetime, timezone
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.services import user_service
 from app.models.collaboration import BetaReaderAppointment, BetaRelease
 from app.models.document import Document

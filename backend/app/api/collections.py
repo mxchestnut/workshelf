@@ -10,7 +10,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.models import Collection, CollectionItem, CollectionItemType
 from app.services.user_service import get_or_create_user_from_keycloak
 

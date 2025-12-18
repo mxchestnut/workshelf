@@ -12,7 +12,7 @@ from pydantic import BaseModel, EmailStr
 import secrets
 
 from app.core.database import get_db
-from app.core.auth import get_current_user, get_current_user_from_db
+from app.core.azure_auth import get_current_user, get_current_user_from_db
 from app.models.collaboration import (
     Group, GroupMember, GroupPost, GroupMemberRole, 
     ModerationAction, ModerationActionType,

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Dict, Any
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.services.folder_service import FolderService
 from app.services import user_service
 from app.schemas.project import FolderCreate, FolderUpdate, FolderResponse

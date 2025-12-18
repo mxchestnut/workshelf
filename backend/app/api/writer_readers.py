@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
 from typing import List, Optional
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.services import user_service
 from app.models.collaboration import WriterReaderRelationship, ReaderRole
 from app.models.user import User, BetaReaderProfile

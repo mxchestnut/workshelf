@@ -8,7 +8,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from app.core.auth import get_current_user, get_current_user_id
+from app.core.azure_auth import get_current_user, get_current_user_id
 from app.core.database import get_db
 from app.models import User, Group, GroupMember, Tenant
 

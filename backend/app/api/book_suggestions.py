@@ -8,7 +8,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.models import User, BookSuggestion, SuggestionStatus
 from pydantic import BaseModel
 

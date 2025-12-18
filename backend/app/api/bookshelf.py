@@ -14,7 +14,7 @@ import os
 from anthropic import Anthropic
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.azure_auth import get_current_user
 from app.models.bookshelf import BookshelfItem, BookshelfItemType, BookshelfStatus
 from app.models.author import Author, UserFollowsAuthor
 from app.models.document import Document

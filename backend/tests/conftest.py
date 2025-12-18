@@ -13,7 +13,7 @@ import pytest
 from typing import Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
-from app.core.auth import get_current_user, get_current_user_id
+from app.core.azure_auth import get_current_user, get_current_user_id
 from app.main import app
 
 

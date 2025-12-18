@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.auth import get_current_user, get_optional_user
+from app.core.azure_auth import get_current_user, get_optional_user
 from app.services import document_service, user_service
 from app.services.content_integrity_service import ContentIntegrityService
 from app.models.document import DocumentStatus, DocumentMode
