@@ -28,7 +28,7 @@ interface BetaRelease {
 }
 
 export default function BetaFeed() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [releases, setReleases] = useState<BetaRelease[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread' | 'reading' | 'completed'>('all')
@@ -49,11 +49,11 @@ export default function BetaFeed() {
   const loadReleases = async () => {
     setLoading(true)
     try {
-      const token = authService.getAccessToken()
-      const url = filter === 'all' 
+      const token = getAccessToken()
+      const url = filter === 'all'
         ? `${API_URL}/api/v1/beta-appointments/my-feed`
         : `${API_URL}/api/v1/beta-appointments/my-feed?status_filter=${filter}`
-      
+
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -90,7 +90,7 @@ export default function BetaFeed() {
 
   const updateReleaseStatus = async (releaseId: number, newStatus: 'reading' | 'completed') => {
     try {
-      const token = authService.getAccessToken()
+      const token = getAccessToken()
       const res = await fetch(`${API_URL}/api/v1/beta-appointments/releases/${releaseId}`, {
         method: 'PATCH',
         headers: {
@@ -145,7 +145,7 @@ export default function BetaFeed() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="/beta-feed" />
-      
+
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
         <div className="max-w-5xl mx-auto px-6 py-8">
@@ -195,7 +195,7 @@ export default function BetaFeed() {
             <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#B34B0C' }} />
             <h2 className="text-xl font-bold text-white mb-2">No releases yet</h2>
             <p className="text-gray-400">
-              {filter === 'all' 
+              {filter === 'all'
                 ? "You haven't been appointed as a beta reader yet, or no documents have been released to you."
                 : `No ${filter} documents.`}
             </p>
@@ -266,7 +266,7 @@ export default function BetaFeed() {
                     <BookOpen className="w-4 h-4 inline mr-2" />
                     Read Document
                   </button>
-                  
+
                   {release.status === 'unread' && (
                     <button
                       onClick={() => updateReleaseStatus(release.id, 'reading')}
@@ -276,7 +276,7 @@ export default function BetaFeed() {
                       Mark as Reading
                     </button>
                   )}
-                  
+
                   {release.status === 'reading' && (
                     <button
                       onClick={() => updateReleaseStatus(release.id, 'completed')}
@@ -287,7 +287,7 @@ export default function BetaFeed() {
                       Mark Complete
                     </button>
                   )}
-                  
+
                   {release.status === 'completed' && !release.feedback_submitted && (
                     <button
                       onClick={() => window.location.href = `/documents/${release.document_id}#feedback`}

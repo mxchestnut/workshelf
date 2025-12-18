@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
-import { 
+import {
   ArrowLeft, FileText, User, MapPin, Clock,
   Users, Book, Scroll, Trash2
 } from 'lucide-react'
@@ -146,7 +146,7 @@ export function ProjectDetail() {
   // Extract projectId from URL path
   const pathParts = window.location.pathname.split('/')
   const projectId = pathParts[pathParts.length - 1]
-  
+
   const { user, login, logout } = useAuth()
   const [project, setProject] = useState<Project | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
@@ -163,8 +163,7 @@ export function ProjectDetail() {
 
   const loadUser = async () => {
     try {
-      
-      if (!currentUser) {
+      if (!user) {
         login()
       }
     } catch (err) {
@@ -242,7 +241,7 @@ export function ProjectDetail() {
 
       // Fixed: Remove trailing slash to avoid FastAPI redirect
       const url = `${API_URL}/api/v1/documents`
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -286,7 +285,7 @@ export function ProjectDetail() {
         `⚠️ WARNING: This will permanently delete the project AND all ${documents.length} documents inside it.\n\n` +
         `Type "delete all" to confirm:`
       )
-      
+
       if (confirmation !== 'delete all') {
         if (confirmation !== null) {
           alert('Project deletion cancelled. You must type "delete all" exactly.')
@@ -302,7 +301,7 @@ export function ProjectDetail() {
 
     try {
       const token = localStorage.getItem('access_token')
-      
+
       // If deleting documents, delete them first
       if (deleteDocuments) {
         console.log('[ProjectDetail] Deleting all documents in project...')
@@ -317,7 +316,7 @@ export function ProjectDetail() {
           }
         }
       }
-      
+
       // Now delete the project
       const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
         method: 'DELETE',
@@ -380,7 +379,7 @@ export function ProjectDetail() {
     )
   }
 
-  const progress = project.target_word_count 
+  const progress = project.target_word_count
     ? Math.min(100, Math.round((project.current_word_count / project.target_word_count) * 100))
     : 0
 
@@ -390,11 +389,11 @@ export function ProjectDetail() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="studio" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
-      
+
       {/* Header */}
       <div className="border-b" style={{ backgroundColor: '#524944', borderColor: '#6C6A68' }}>
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <a 
+          <a
             href="/studio"
             className="inline-flex items-center gap-2 mb-4 hover:opacity-80 transition-opacity"
             style={{ color: '#B34B0C' }}
@@ -402,7 +401,7 @@ export function ProjectDetail() {
             <ArrowLeft className="w-4 h-4" />
             Back to Studio
           </a>
-          
+
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2" style={{ color: 'white' }}>{project.title}</h1>
@@ -430,7 +429,7 @@ export function ProjectDetail() {
               <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#37322E' }}>
                 <div
                   className="h-full transition-all"
-                  style={{ 
+                  style={{
                     backgroundColor: '#B34B0C',
                     width: `${progress}%`
                   }}
@@ -449,7 +448,7 @@ export function ProjectDetail() {
               <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: '#B3B2B0' }}>
                 Documents
               </h2>
-              
+
               {documents.length > 0 ? (
                 <div className="space-y-1">
                   {documents.map(doc => (
@@ -502,7 +501,7 @@ export function ProjectDetail() {
                           <h3 className="font-semibold" style={{ color: 'white' }}>
                             {template.title}
                           </h3>
-                          <span className="text-xs px-2 py-1 rounded ml-2 flex-shrink-0" 
+                          <span className="text-xs px-2 py-1 rounded ml-2 flex-shrink-0"
                                 style={{ backgroundColor: '#37322E', color: '#6C6A68' }}>
                             {template.category}
                           </span>

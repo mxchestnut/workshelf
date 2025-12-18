@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { BookOpen, Plus, Loader2, CheckCircle, XCircle, Clock, Save } from 'lucide-react'
-import { useAuth } from "../contexts/AuthContext"
 
 interface Suggestion {
   id: number
@@ -40,7 +39,8 @@ export function BookSuggestions() {
     try {
       setLoading(true)
       setError(null)
-      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null || localStorage.getItem('access_token')
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`);
+      const token = (authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null) || localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/book-suggestions`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
@@ -59,7 +59,8 @@ export function BookSuggestions() {
     try {
       setSaving(true)
       setError(null)
-      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null || localStorage.getItem('access_token')
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`);
+      const token = (authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null) || localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/book-suggestions`, {
         method: 'POST',
         headers: {

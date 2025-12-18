@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from "../contexts/AuthContext";
 
 // Use same fallback pattern as auth.ts
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
@@ -27,14 +26,13 @@ interface FieldError {
 }
 
 export default function Onboarding() {
-  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS);
-  
+
   console.log('[Onboarding] Component loaded, API_URL:', API_URL);
-  
+
   // Load available interests on mount
   useEffect(() => {
     loadAvailableInterests();
@@ -53,13 +51,13 @@ export default function Onboarding() {
       // Keep using DEFAULT_INTERESTS
     }
   };
-  
+
   // Manual navigation function (same pattern as rest of app)
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path);
     window.location.href = path;
   };
-  
+
   const [formData, setFormData] = useState<OnboardingFormData>({
     username: '',
     phoneNumber: '',
@@ -82,7 +80,7 @@ export default function Onboarding() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -107,7 +105,7 @@ export default function Onboarding() {
       try {
         const response = await fetch(`${API_URL}/v1/auth/check-availability`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           },
@@ -135,7 +133,7 @@ export default function Onboarding() {
           const cleanPhone = formData.phoneNumber.replace(/[\s()-]/g, '');
           const response = await fetch(`${API_URL}/v1/auth/check-availability`, {
             method: 'POST',
-            headers: { 
+            headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
@@ -195,7 +193,7 @@ export default function Onboarding() {
     if (!validateStep2()) {
       return;
     }
-    
+
     // Step 2 completes the onboarding
     setLoading(true);
     setErrors([]);
@@ -236,7 +234,7 @@ export default function Onboarding() {
           throw new Error(`Server error (${response.status}): Could not parse response`);
         }
         console.error('[Onboarding] API error response:', error);
-        
+
         // Handle validation errors
         if (error.detail && Array.isArray(error.detail)) {
           // Pydantic validation errors - map snake_case to camelCase
@@ -247,7 +245,7 @@ export default function Onboarding() {
             'newsletter_opt_in': 'newsletterOptIn',
             'sms_opt_in': 'smsOptIn'
           };
-          
+
           const validationErrors = error.detail.map((err: any) => {
             const apiField = err.loc ? err.loc[err.loc.length - 1] : 'general';
             const frontendField = fieldMapping[apiField] || apiField;
@@ -259,7 +257,7 @@ export default function Onboarding() {
           setErrors(validationErrors);
           return;
         }
-        
+
         throw new Error(error.detail || 'Failed to complete onboarding');
       }
 
@@ -300,7 +298,7 @@ export default function Onboarding() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Work Shelf! 🎉</h1>
           <p className="text-gray-600">Let's set up your account</p>
-          
+
           {/* Progress indicator */}
           <div className="flex items-center justify-center mt-6 space-x-2">
             <div className={`h-2 w-16 rounded-full ${step >= 1 ? 'bg-[#B34B0C]' : 'bg-gray-200'}`} />
@@ -436,7 +434,7 @@ export default function Onboarding() {
               {/* Communication Preferences */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-3">Communication Preferences</h3>
-                
+
                 <div className="space-y-3">
                   <label className="flex items-start cursor-pointer">
                     <input

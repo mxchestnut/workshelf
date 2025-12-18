@@ -43,9 +43,9 @@ interface Review {
 }
 
 export default function BetaProfileView() {
+  const { user: viewer, login, logout, getAccessToken } = useAuth()
   const params = new URLSearchParams(window.location.search)
   const userId = params.get('userId')
-  const [viewer, setViewer] = useState<User | null>(null)
   const [profile, setProfile] = useState<BetaProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [reviews, setReviews] = useState<Review[]>([])
@@ -61,7 +61,6 @@ export default function BetaProfileView() {
 
   const load = async () => {
     setLoading(true)
-    setViewer(currentUser)
     try {
       const response = await fetch(`/api/v1/beta-profiles/${userId}`)
       if (response.ok) {
@@ -98,7 +97,7 @@ export default function BetaProfileView() {
     setSubmittingReview(true)
     setReviewMessage(null)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const resp = await fetch(`/api/v1/beta-profiles/${userId}/reviews`, {
         method: 'POST',
         headers: {

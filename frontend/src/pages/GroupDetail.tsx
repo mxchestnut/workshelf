@@ -71,13 +71,13 @@ export default function GroupDetail() {
     can_delete_posts?: boolean;
     can_lock_threads?: boolean;
   }>({});
-  
+
   // New post form
   const [showNewPost, setShowNewPost] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostTags, setNewPostTags] = useState<Array<{id: number, name: string, slug: string, usage_count: number}>>([]);
-  
+
   // Create room modal
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
@@ -98,7 +98,8 @@ export default function GroupDetail() {
   }, [groupSlug]);
 
   const loadUser = async () => {
-    if (currentUser) {
+    if (user) {
+      setCurrentUserId((user as any).id || null);
     }
   };
 
@@ -124,12 +125,12 @@ export default function GroupDetail() {
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
       };
-      
+
       // Add auth header if we have a token (for member status)
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/slug/${groupSlug}`, {
         headers
       });
@@ -199,7 +200,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/is-following`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,7 +221,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/groups/${group.id}/followers`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -252,10 +253,10 @@ export default function GroupDetail() {
           content: newPostContent
         })
       });
-      
+
       if (response.ok) {
         const newPost = await response.json();
-        
+
         // Add tags to the post if any were selected
         if (newPostTags.length > 0) {
           for (const tag of newPostTags) {
@@ -272,7 +273,7 @@ export default function GroupDetail() {
             }
           }
         }
-        
+
         setShowNewPost(false);
         setNewPostTitle('');
         setNewPostContent('');
@@ -292,7 +293,7 @@ export default function GroupDetail() {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -310,7 +311,7 @@ export default function GroupDetail() {
 
   const calculateUserPermissions = () => {
     if (!members || !currentUserId) return;
-    
+
     const currentMember = members.find(m => m.user_id === currentUserId);
     if (!currentMember) return;
 
@@ -338,7 +339,7 @@ export default function GroupDetail() {
           }
         }
       );
-      
+
       if (response.ok) {
         loadPosts(); // Reload to show updated pin status
       } else {
@@ -364,7 +365,7 @@ export default function GroupDetail() {
           }
         }
       );
-      
+
       if (response.ok) {
         loadPosts(); // Reload to show updated lock status
       } else {
@@ -391,7 +392,7 @@ export default function GroupDetail() {
           body: JSON.stringify({ feeds })
         }
       );
-      
+
       if (response.ok) {
         loadPosts(); // Reload to show updated pin status
       } else {
@@ -464,7 +465,7 @@ export default function GroupDetail() {
           }
         }
       );
-      
+
       if (response.ok) {
         loadPosts(); // Reload to remove deleted post
       } else {
@@ -532,13 +533,13 @@ export default function GroupDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation 
+      <Navigation
         user={user}
         onLogin={() => login()} onLogout={() => logout()}
-       
+
         currentPage="groups"
       />
-      
+
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
         {/* Header */}
@@ -572,7 +573,7 @@ export default function GroupDetail() {
                 )}
               </div>
               <p className="mt-1 text-sm text-gray-500">{group.description || 'No description'}</p>
-              
+
               {/* Matrix Space Badge */}
               {group.matrix_space_id && (
                 <div className="mt-2 flex items-center gap-2">
@@ -599,7 +600,7 @@ export default function GroupDetail() {
                   )}
                 </div>
               )}
-              
+
               <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
                 <span className="flex items-center">
                   <Users className="h-4 w-4 mr-1" />
@@ -671,9 +672,9 @@ export default function GroupDetail() {
                    'Secret Group'}
                 </h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  {group.privacy_level === 'guarded' ? 
+                  {group.privacy_level === 'guarded' ?
                     'This group is visible to logged-in users only.' :
-                   group.privacy_level === 'private' ? 
+                   group.privacy_level === 'private' ?
                     'Only members can view posts and member lists. The group name is searchable.' :
                     'This group is not searchable. Access is by invitation only.'}
                 </p>
@@ -750,7 +751,7 @@ export default function GroupDetail() {
                     </span>
                     <span>{formatDate(post.created_at)}</span>
                   </div>
-                  
+
                   <PostModerationActions
                     isPinned={post.is_pinned}
                     isLocked={post.is_locked}
@@ -804,7 +805,7 @@ export default function GroupDetail() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Create Post</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

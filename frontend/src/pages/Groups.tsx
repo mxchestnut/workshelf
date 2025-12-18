@@ -49,7 +49,7 @@ export default function Groups() {
   const loadGroups = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      
+
       // Load user's groups
       const myResponse = await fetch(`${API_URL}/api/v1/groups/my-groups`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -102,8 +102,6 @@ export default function Groups() {
         setNewGroupDescription('')
         setNewGroupPrivacyLevel('guarded')
         setNewGroupDescription('')
-        // Refresh user data to update navigation
-        const updatedUser = await authService.fetchUserInfo()
         // Refresh lists
         loadGroups()
         // Optionally navigate to the new group
@@ -122,10 +120,10 @@ export default function Groups() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation 
-        user={user} 
+      <Navigation
+        user={user}
         onLogin={() => login()} onLogout={() => logout()}
-       
+
         currentPage="groups"
       />
 

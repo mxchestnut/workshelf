@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Search, Filter, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useAuth } from "../contexts/AuthContext"
 
 interface SearchResult {
   id: number
@@ -49,7 +48,8 @@ export function AdvancedSearch() {
       setLoading(true)
       setError(null)
 
-      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null || localStorage.getItem('access_token')
+      const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`);
+      const token = (authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null) || localStorage.getItem('access_token')
       const body = {
         q,
         type,

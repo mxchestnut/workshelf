@@ -68,14 +68,14 @@ export function Feed() {
   const loadFeed = useCallback(async (tab: FeedTab, sort: string = sortBy) => {
     try {
       const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
-      
+
       // If tag filters are active, use the filter API
       if (includeTags.length > 0 || excludeTags.length > 0) {
         // First, get filtered post IDs
         const filterParams = new URLSearchParams()
         includeTags.forEach(tagId => filterParams.append('include', tagId.toString()))
         excludeTags.forEach(tagId => filterParams.append('exclude', tagId.toString()))
-        
+
         const filterResponse = await fetch(`${API_URL}/api/v1/content-tags/filter/posts?${filterParams}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -84,20 +84,20 @@ export function Feed() {
           credentials: 'include',
           mode: 'cors'
         })
-        
+
         if (!filterResponse.ok) {
           console.error('Failed to filter posts:', filterResponse.status)
           setPosts([])
           return
         }
-        
+
         const filteredPostIds: number[] = await filterResponse.json()
-        
+
         if (filteredPostIds.length === 0) {
           setPosts([])
           return
         }
-        
+
         // Then fetch the full post data
         const endpointMap: Record<FeedTab, string> = {
           'personal': '/api/v1/feed',
@@ -107,10 +107,10 @@ export function Feed() {
           'global': '/api/v1/feed/global',
           'discover': '/api/v1/feed/discover'
         }
-        
+
         const endpoint = endpointMap[tab] || '/api/v1/feed'
         const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
-        
+
         const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -119,11 +119,11 @@ export function Feed() {
           credentials: 'include',
           mode: 'cors'
         })
-        
+
         if (response.ok) {
           const allPosts = await response.json()
           // Filter to only include posts in the filtered list
-          const filteredPosts = allPosts.filter((post: FeedPost) => 
+          const filteredPosts = allPosts.filter((post: FeedPost) =>
             filteredPostIds.includes(post.id)
           )
           setPosts(filteredPosts)
@@ -140,10 +140,10 @@ export function Feed() {
           'global': '/api/v1/feed/global',
           'discover': '/api/v1/feed/discover'
         }
-        
+
         const endpoint = endpointMap[tab] || '/api/v1/feed'
         const sortParam = sort !== 'newest' ? `?sort=${sort}` : ''
-        
+
         const response = await fetch(`${API_URL}${endpoint}${sortParam}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -169,7 +169,7 @@ export function Feed() {
     const loadData = async () => {
       try {
         console.log('[Feed] Loading feed...')
-        
+
         // Only load feed if we have a user
         if (user) {
           await loadFeed(activeTab)
@@ -209,7 +209,7 @@ export function Feed() {
     const date = new Date(dateString)
     const now = new Date()
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-    
+
     if (seconds < 60) return 'just now'
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
@@ -234,7 +234,7 @@ export function Feed() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="feed" />
-      
+
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
         {/* Feed Tabs */}
@@ -244,11 +244,11 @@ export function Feed() {
               <button
                 onClick={() => setActiveTab('personal')}
                 className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === 'personal' 
-                    ? 'text-foreground' 
+                  activeTab === 'personal'
+                    ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                style={{ 
+                style={{
                   borderColor: activeTab === 'personal' ? 'hsl(var(--primary))' : 'transparent'
                 }}
               >
@@ -257,11 +257,11 @@ export function Feed() {
             <button
               onClick={() => setActiveTab('updates')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'updates' 
-                  ? 'text-foreground' 
+                activeTab === 'updates'
+                  ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ 
+              style={{
                 borderColor: activeTab === 'updates' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
@@ -272,11 +272,11 @@ export function Feed() {
               <button
                 onClick={() => setActiveTab('beta-feed')}
                 className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === 'beta-feed' 
-                    ? 'text-foreground' 
+                  activeTab === 'beta-feed'
+                    ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                style={{ 
+                style={{
                   borderColor: activeTab === 'beta-feed' ? 'hsl(var(--primary))' : 'transparent'
                 }}
               >
@@ -286,11 +286,11 @@ export function Feed() {
             <button
               onClick={() => setActiveTab('groups')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'groups' 
-                  ? 'text-foreground' 
+                activeTab === 'groups'
+                  ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ 
+              style={{
                 borderColor: activeTab === 'groups' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
@@ -300,11 +300,11 @@ export function Feed() {
             <button
               onClick={() => setActiveTab('global')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'global' 
-                  ? 'text-foreground' 
+                activeTab === 'global'
+                  ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ 
+              style={{
                 borderColor: activeTab === 'global' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
@@ -314,11 +314,11 @@ export function Feed() {
             <button
               onClick={() => setActiveTab('discover')}
               className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'discover' 
-                  ? 'text-foreground' 
+                activeTab === 'discover'
+                  ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
-              style={{ 
+              style={{
                 borderColor: activeTab === 'discover' ? 'hsl(var(--primary))' : 'transparent'
               }}
             >
@@ -345,20 +345,20 @@ export function Feed() {
                 <option value="controversial">Controversial</option>
               </select>
             </div>
-            
+
             <button
               onClick={() => setShowTagFilter(!showTagFilter)}
               className="text-sm font-medium text-foreground hover:text-blue-600 flex items-center gap-1"
             >
               🏷️ Filter by tags
               <span className="text-xs">
-                {includeTags.length > 0 || excludeTags.length > 0 ? 
-                  `(${includeTags.length} include, ${excludeTags.length} exclude)` : 
+                {includeTags.length > 0 || excludeTags.length > 0 ?
+                  `(${includeTags.length} include, ${excludeTags.length} exclude)` :
                   ''}
               </span>
             </button>
           </div>
-          
+
           {(includeTags.length > 0 || excludeTags.length > 0) && (
             <button
               onClick={() => {
@@ -490,7 +490,7 @@ export function Feed() {
               {activeTab === 'discover' && 'Personalized recommendations based on your interests.'}
             </p>
             {(activeTab === 'groups' || activeTab === 'discover') && (
-              <button 
+              <button
                 onClick={() => window.location.href = '/groups'}
                 className="bg-primary text-foreground px-6 py-3 rounded-lg transition-colors hover:opacity-90"
               >
@@ -501,7 +501,7 @@ export function Feed() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <article 
+              <article
                 key={post.id}
                 className="rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow bg-muted border-border"
               >
@@ -524,7 +524,7 @@ export function Feed() {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>in</span>
-                        <a 
+                        <a
                           href={`/groups/${post.group.slug}`}
                           className="font-medium hover:underline cursor-pointer text-foreground"
                         >
@@ -548,7 +548,7 @@ export function Feed() {
 
                 {/* Post Content */}
                 <h3 className="text-xl font-bold text-foreground mb-2">
-                  <a 
+                  <a
                     href={`/groups/${post.group.slug}/posts/${post.id}`}
                     className="hover:underline"
                   >
@@ -556,8 +556,8 @@ export function Feed() {
                   </a>
                 </h3>
                 <p className="whitespace-pre-wrap mb-4 text-muted-foreground">
-                  {post.content.length > 300 
-                    ? post.content.substring(0, 300) + '...' 
+                  {post.content.length > 300
+                    ? post.content.substring(0, 300) + '...'
                     : post.content}
                 </p>
 
@@ -583,10 +583,10 @@ export function Feed() {
                 <div className="flex items-center gap-4 pt-4 border-t border-border">
                   {/* Upvote/Downvote */}
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       onClick={async () => {
                         try {
-                          const token = await authService.getAccessToken()
+                          const token = await getAccessToken()
                           await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/vote?vote_type=upvote`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${token}` }
@@ -603,10 +603,10 @@ export function Feed() {
                       </svg>
                     </button>
                     <span className="text-sm font-medium text-gray-900">{post.score}</span>
-                    <button 
+                    <button
                       onClick={async () => {
                         try {
-                          const token = await authService.getAccessToken()
+                          const token = await getAccessToken()
                           await fetch(`${API_URL}/api/v1/groups/${post.group.id}/posts/${post.id}/vote?vote_type=downvote`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${token}` }
@@ -623,14 +623,14 @@ export function Feed() {
                       </svg>
                     </button>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={() => window.location.href = `/groups/${post.group.slug}/posts/${post.id}`}
                     className="text-sm font-medium text-gray-700 hover:text-indigo-600 hover:underline transition-colors"
                   >
                     Reply
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       setSelectedPost({ id: post.id, title: post.title })
                       setSaveModalOpen(true)
@@ -639,24 +639,24 @@ export function Feed() {
                   >
                     Save
                   </button>
-                  
+
                   {/* Pin button (staff only) */}
                   {user?.is_staff && (
-                    <button 
+                    <button
                       onClick={async () => {
                         try {
-                          const token = await authService.getAccessToken()
+                          const token = await getAccessToken()
                           const feedName = activeTab === 'global' ? 'global' : activeTab === 'discover' ? 'discover' : 'personal'
-                          
+
                           // Use pin-to-feeds endpoint to manage feed-specific pinning
                           const currentFeeds = post.pinned_feeds || []
                           const newFeeds = currentFeeds.includes(feedName)
                             ? currentFeeds.filter(f => f !== feedName) // Remove from this feed
                             : [...currentFeeds, feedName] // Add to this feed
-                          
+
                           await fetch(`${API_URL}/api/v1/group-admin/groups/${post.group.id}/posts/${post.id}/pin-to-feeds`, {
                             method: 'PUT',
-                            headers: { 
+                            headers: {
                               'Authorization': `Bearer ${token}`,
                               'Content-Type': 'application/json'
                             },
@@ -691,7 +691,7 @@ export function Feed() {
         {/* Page Version */}
         <PageVersion path="/feed" />
       </div>
-      
+
       {/* Save to Collection Modal */}
       {selectedPost && (
         <SaveToCollectionModal

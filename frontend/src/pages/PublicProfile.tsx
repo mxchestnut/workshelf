@@ -75,16 +75,9 @@ export default function PublicProfile() {
 
   const loadProfile = async () => {
     try {
-    } catch (err) {
-      console.error('Error loading current user:', err)
-    }
-  }
-
-  const loadProfile = async () => {
-    try {
       const params = new URLSearchParams(window.location.search)
       const username = params.get('username')
-      
+
       if (!username) {
         throw new Error('No username provided')
       }
@@ -181,16 +174,16 @@ export default function PublicProfile() {
 
   const openFollowers = async () => {
     if (!profile) return
-    
+
     setShowFollowersModal(true)
     setLoadingFollowers(true)
-    
+
     try {
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/relationships/followers?user_id=${profile.user_id}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setFollowers(data.followers || [])
@@ -207,16 +200,16 @@ export default function PublicProfile() {
 
   const openFollowing = async () => {
     if (!profile) return
-    
+
     setShowFollowingModal(true)
     setLoadingFollowers(true)
-    
+
     try {
       const token = localStorage.getItem('access_token')
       const response = await fetch(`${API_URL}/api/v1/relationships/following?user_id=${profile.user_id}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setFollowing(data.following || [])

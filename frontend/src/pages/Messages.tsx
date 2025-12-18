@@ -60,20 +60,20 @@ export default function Messages() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
-  
+
   // New conversation modal
   const [showNewConversation, setShowNewConversation] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchUser[]>([])
   const [searching, setSearching] = useState(false)
-  
+
   // Matrix integration
   const [hasMatrixAccount, setHasMatrixAccount] = useState(false)
   const [showMatrixPrompt, setShowMatrixPrompt] = useState(false)
   const [showMatrixSetup, setShowMatrixSetup] = useState(false)
   const [matrixUsername, setMatrixUsername] = useState('')
   const [matrixHomeserver, setMatrixHomeserver] = useState('matrix.org')
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -167,7 +167,7 @@ export default function Messages() {
       if (response.ok) {
         const data = await response.json()
         setMessages(data.reverse()) // Reverse to show oldest first
-        
+
         // Mark conversation as read
         await markConversationRead(conversationId)
       }
@@ -186,9 +186,9 @@ export default function Messages() {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      
+
       // Update unread count in UI
-      setConversations(prev => prev.map(conv => 
+      setConversations(prev => prev.map(conv =>
         conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
       ))
     } catch (error) {
@@ -220,7 +220,7 @@ export default function Messages() {
         setMessages(prev => [...prev, newMessage])
         setMessageInput('')
         messageInputRef.current?.focus()
-        
+
         // Update conversation list
         await loadConversations()
       } else {
@@ -300,16 +300,16 @@ export default function Messages() {
     if (!conversation.participants || conversation.participants.length === 0) {
       return 'Conversation'
     }
-    
+
     // Convert user.id to number for comparison
-    const userId = user ? Number.parseInt(user.id, 10) : null
-    
+    const userId = user ? Number.parseInt((user as any).id, 10) : null
+
     // For DM, show other participant's name
     const otherParticipants = conversation.participants.filter(p => p.id !== userId)
     if (otherParticipants.length === 1) {
       return otherParticipants[0].display_name || otherParticipants[0].username
     }
-    
+
     // For groups, show all participant names
     return otherParticipants.map(p => p.display_name || p.username).join(', ')
   }
@@ -346,7 +346,7 @@ export default function Messages() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
-      
+
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
         {/* Matrix Upgrade Banner */}
@@ -369,7 +369,7 @@ export default function Messages() {
           </div>
         </div>
       )}
-      
+
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Conversation List */}
         <div className="w-80 border-r border-border flex flex-col bg-card">
@@ -461,7 +461,7 @@ export default function Messages() {
                   </div>
                 ) : (
                   messages.map((message) => {
-                    const userId = user ? Number.parseInt(user.id, 10) : null
+                    const userId = user ? Number.parseInt((user as any).id, 10) : null
                     const isOwn = message.sender_id === userId
                     return (
                       <div
@@ -520,7 +520,7 @@ export default function Messages() {
                 <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg mb-2">Select a conversation to start messaging</p>
                 <p className="text-sm mb-4">or click "New" to start a new conversation</p>
-                
+
                 {hasMatrixAccount ? (
                   <div className="mt-6 p-4 bg-muted rounded-lg text-left">
                     <p className="text-sm font-semibold text-foreground mb-2">Matrix Connected</p>
@@ -630,7 +630,7 @@ export default function Messages() {
               <p className="text-foreground">
                 Connect your Matrix account to enable real-time messaging with Element or any Matrix client.
               </p>
-              
+
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>

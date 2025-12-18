@@ -7,7 +7,7 @@ import { toast } from '../services/toast'
 export default function BetaRequest() {
   const params = new URLSearchParams(window.location.search)
   const targetUserId = params.get('user_id')
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [form, setForm] = useState({
@@ -18,7 +18,7 @@ export default function BetaRequest() {
   })
 
   useEffect(() => {
-    getUser().then(setUser)
+    // User already available from useAuth hook
   }, [])
 
   const submit = async () => {
@@ -29,7 +29,7 @@ export default function BetaRequest() {
     setSaving(true)
     setMessage(null)
     try {
-      const token = await authService.getAccessToken()
+      const token = await getAccessToken()
       const resp = await fetch('/api/v1/beta-requests', {
         method: 'POST',
         headers: {

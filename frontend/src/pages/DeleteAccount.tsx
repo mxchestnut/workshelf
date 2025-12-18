@@ -20,19 +20,19 @@ interface DeletionInfo {
 }
 
 export default function DeleteAccount() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [deletionInfo, setDeletionInfo] = useState<DeletionInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  
+
   // Form state
   const [confirmationPhrase, setConfirmationPhrase] = useState('')
   const [understandPermanent, setUnderstandPermanent] = useState(false)
   const [understandUsernameFrozen, setUnderstandUsernameFrozen] = useState(false)
   const [understandContentDeleted, setUnderstandContentDeleted] = useState(false)
-  
+
   const [deleted, setDeleted] = useState(false)
   const [deletionResult, setDeletionResult] = useState<any>(null)
 
@@ -51,11 +51,11 @@ export default function DeleteAccount() {
   const fetchDeletionInfo = async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
       const response = await fetch(`${API_URL}/account/deletion-info`, {
         headers: {
-          'Authorization': `Bearer ${authService.getAccessToken()}`
+          'Authorization': `Bearer ${getAccessToken()}`
         }
       })
 
@@ -79,27 +79,27 @@ export default function DeleteAccount() {
 
   const handleDeleteAccount = async () => {
     if (!deletionInfo) return
-    
+
     // Validate confirmation phrase
     if (confirmationPhrase !== deletionInfo.confirmation_required) {
       setError(`You must type "${deletionInfo.confirmation_required}" exactly to confirm deletion`)
       return
     }
-    
+
     // Validate all checkboxes
     if (!understandPermanent || !understandUsernameFrozen || !understandContentDeleted) {
       setError('You must check all confirmation boxes to proceed')
       return
     }
-    
+
     setDeleting(true)
     setError(null)
-    
+
     try {
       const response = await fetch(`${API_URL}/account/delete`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authService.getAccessToken()}`,
+          'Authorization': `Bearer ${getAccessToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -118,13 +118,13 @@ export default function DeleteAccount() {
       const result = await response.json()
       setDeletionResult(result)
       setDeleted(true)
-      
+
       // Clear local storage and redirect after a delay
       setTimeout(() => {
         logout()
         window.location.href = '/'
       }, 5000)
-      
+
     } catch (err: any) {
       console.error('Error deleting account:', err)
       setError(err.message || 'Failed to delete account')
@@ -138,7 +138,7 @@ export default function DeleteAccount() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
-        
+
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -146,15 +146,15 @@ export default function DeleteAccount() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            
+
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Account Deleted Successfully
             </h1>
-            
+
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               Your account has been permanently deleted.
             </p>
-            
+
             {deletionResult.username && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                 <p className="text-sm text-blue-900 dark:text-blue-200">
@@ -163,7 +163,7 @@ export default function DeleteAccount() {
                 </p>
               </div>
             )}
-            
+
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Redirecting you to the home page in 5 seconds...
             </p>
@@ -179,7 +179,7 @@ export default function DeleteAccount() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
-        
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -196,7 +196,7 @@ export default function DeleteAccount() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
         <div className="ml-0 md:ml-80 transition-all duration-300">
-        
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <p className="text-red-900 dark:text-red-200">Failed to load account information</p>
@@ -211,7 +211,7 @@ export default function DeleteAccount() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="delete-account" />
       <div className="ml-0 md:ml-80 transition-all duration-300">
-      
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Warning Header */}
         <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 dark:border-red-600 rounded-lg p-6 mb-8">

@@ -32,14 +32,14 @@ interface UserProfile {
 
 // Default interests if no groups exist yet
 const DEFAULT_INTERESTS = [
-  'fiction', 'non-fiction', 'poetry', 
-  'sci-fi', 'fantasy', 'romance', 
-  'mystery', 'thriller', 'horror', 
+  'fiction', 'non-fiction', 'poetry',
+  'sci-fi', 'fantasy', 'romance',
+  'mystery', 'thriller', 'horror',
   'memoir', 'creative-writing', 'screenwriting'
 ]
 
 export function Profile() {
-  const { user, login, logout } = useAuth()
+  const { login, logout } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -48,24 +48,24 @@ export function Profile() {
   const [success, setSuccess] = useState(false)
   const [matrixPwMessage, setMatrixPwMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   const [matrixPwLoading, setMatrixPwLoading] = useState(false)
-  
+
   // Matrix connection state
   const [matrixConnected, setMatrixConnected] = useState(false)
   const [matrixUserId, setMatrixUserId] = useState('')
   const [matrixHomeserver, setMatrixHomeserver] = useState('')
   const [matrixConnectionLoading, setMatrixConnectionLoading] = useState(false)
   const [showManualConnect, setShowManualConnect] = useState(false)
-  
+
   // Manual connection form
   const [manualUserId, setManualUserId] = useState('')
   const [manualAccessToken, setManualAccessToken] = useState('')
   const [manualHomeserver, setManualHomeserver] = useState('https://matrix.org')
-  
+
   // Login connection form
   const [loginUsername, setLoginUsername] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [loginHomeserver, setLoginHomeserver] = useState('https://matrix.org')
-  
+
   const [availableInterests, setAvailableInterests] = useState<string[]>(DEFAULT_INTERESTS)
   const [activeTab, setActiveTab] = useState<ProfileTab>('profile')
 
@@ -131,11 +131,11 @@ export function Profile() {
     try {
       const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) return
-      
+
       const response = await fetch(`${API_URL}/api/v1/matrix/connection-status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setMatrixConnected(data.connected)
@@ -200,7 +200,7 @@ export function Profile() {
           language: 'en',
           theme: 'system'
         }
-        
+
         setProfile(mockProfile)
         setFormData({
           username: mockProfile.username,
@@ -238,7 +238,7 @@ export function Profile() {
 
       const data = await response.json()
       setProfile(data)
-      
+
       // Initialize form data
       setFormData({
         username: data.username || '',
@@ -480,7 +480,7 @@ export function Profile() {
   const exportGDPRData = async () => {
     setExportLoading(true)
     setExportMessage(null)
-    
+
     try {
       const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
       if (!token) {
@@ -502,25 +502,25 @@ export function Profile() {
       }
 
       const result = await response.json()
-      
+
       if (result.status === 'completed' && result.file_url) {
         // Download immediately if available
         window.open(result.file_url, '_blank')
-        setExportMessage({ 
-          type: 'success', 
+        setExportMessage({
+          type: 'success',
           text: 'Your data export is ready! Download started automatically.'
         })
       } else {
         // Export job created, will be processed
-        setExportMessage({ 
-          type: 'success', 
+        setExportMessage({
+          type: 'success',
           text: 'Your data export has been requested. You will receive an email when it\'s ready (usually within a few minutes).'
         })
       }
     } catch (error: any) {
       console.error('Failed to export GDPR data:', error)
-      setExportMessage({ 
-        type: 'error', 
+      setExportMessage({
+        type: 'error',
         text: error.message || 'Failed to request data export. Please try again.'
       })
     } finally {
@@ -578,7 +578,7 @@ export function Profile() {
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
         </button>
-        
+
         <button
           onClick={() => window.location.href = `/users/${profile.username}`}
           className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all hover:opacity-80 text-muted-foreground"
@@ -636,11 +636,11 @@ export function Profile() {
           <button
             onClick={() => setActiveTab('settings')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'settings' 
-                ? 'text-foreground' 
+              activeTab === 'settings'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            style={{ 
+            style={{
               borderColor: activeTab === 'settings' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
@@ -650,11 +650,11 @@ export function Profile() {
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'profile' 
-                ? 'text-foreground' 
+              activeTab === 'profile'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            style={{ 
+            style={{
               borderColor: activeTab === 'profile' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
@@ -664,11 +664,11 @@ export function Profile() {
           <button
             onClick={() => setActiveTab('writer')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'writer' 
-                ? 'text-foreground' 
+              activeTab === 'writer'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            style={{ 
+            style={{
               borderColor: activeTab === 'writer' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
@@ -678,11 +678,11 @@ export function Profile() {
           <button
             onClick={() => setActiveTab('beta')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'beta' 
-                ? 'text-foreground' 
+              activeTab === 'beta'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            style={{ 
+            style={{
               borderColor: activeTab === 'beta' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
@@ -692,11 +692,11 @@ export function Profile() {
           <button
             onClick={() => setActiveTab('reader')}
             className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === 'reader' 
-                ? 'text-foreground' 
+              activeTab === 'reader'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:text-white'
             }`}
-            style={{ 
+            style={{
               borderColor: activeTab === 'reader' ? 'hsl(var(--primary))' : 'transparent'
             }}
           >
@@ -727,7 +727,7 @@ export function Profile() {
         {/* Account Information */}
         <div className="rounded-lg p-6 border bg-card border-border">
           <h2 className="text-xl font-semibold mb-4 text-foreground">Account Information</h2>
-          
+
           <div className="space-y-4">
             {/* Email (read-only) */}
             <div>
@@ -826,12 +826,12 @@ export function Profile() {
                     setMatrixPwLoading(true)
                     const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                     if (!token) return
-                    
+
                     const response = await fetch(`${API_URL}/api/v1/matrix/disconnect-account`, {
                       method: 'POST',
                       headers: { 'Authorization': `Bearer ${token}` }
                     })
-                    
+
                     if (response.ok) {
                       setMatrixConnected(false)
                       setMatrixUserId('')
@@ -924,7 +924,7 @@ export function Profile() {
                           setMatrixConnectionLoading(true)
                           const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                           if (!token) return
-                          
+
                           const response = await fetch(`${API_URL}/api/v1/matrix/login-and-connect`, {
                             method: 'POST',
                             headers: {
@@ -937,7 +937,7 @@ export function Profile() {
                               homeserver: loginHomeserver
                             })
                           })
-                          
+
                           if (response.ok) {
                             const data = await response.json()
                             setMatrixConnected(true)
@@ -1028,7 +1028,7 @@ export function Profile() {
                         setMatrixConnectionLoading(true)
                         const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null
                         if (!token) return
-                        
+
                         const response = await fetch(`${API_URL}/api/v1/matrix/connect-account`, {
                           method: 'POST',
                           headers: {
@@ -1041,7 +1041,7 @@ export function Profile() {
                             homeserver: manualHomeserver
                           })
                         })
-                        
+
                         if (response.ok) {
                           setMatrixConnected(true)
                           setMatrixUserId(manualUserId)
@@ -1100,7 +1100,7 @@ export function Profile() {
           <p className="text-sm mb-4 text-muted-foreground">
             Select interests from active groups to get better recommendations
           </p>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {availableInterests.map((interest: string) => (
               <label
@@ -1142,8 +1142,8 @@ export function Profile() {
           <div className="space-y-4">
             {exportMessage && (
               <div className={`p-4 rounded-lg border ${
-                exportMessage.type === 'success' 
-                  ? 'bg-green-900/40 border-green-700 text-green-300' 
+                exportMessage.type === 'success'
+                  ? 'bg-green-900/40 border-green-700 text-green-300'
                   : 'bg-red-900/40 border-red-700 text-red-300'
               }`}>
                 {exportMessage.text}
@@ -1379,7 +1379,7 @@ export function Profile() {
         {/* Profile Details */}
         <div className="rounded-lg p-6 border bg-card border-border">
           <h2 className="text-xl font-semibold mb-4 text-foreground">Profile Details</h2>
-          
+
           <div className="space-y-4">
             {/* Bio */}
             <div>
@@ -1650,7 +1650,7 @@ export function Profile() {
               </label>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Reader Profile will be enabled when the bookshelf feature is reintroduced. 
+              Reader Profile will be enabled when the bookshelf feature is reintroduced.
               This will show your reading history, favorite books, and reading preferences.
             </p>
           </div>

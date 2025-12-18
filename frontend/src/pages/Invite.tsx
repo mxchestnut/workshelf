@@ -27,7 +27,7 @@ export function Invite() {
   const [invitationType, setInvitationType] = useState<'platform' | 'group' | null>(null)
   const [groupInvitation, setGroupInvitation] = useState<GroupInvitation | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
 
   useEffect(() => {
     const loadUser = async () => {
@@ -55,7 +55,7 @@ export function Invite() {
     // First try group invitation endpoint
     try {
       const response = await fetch(`${API_URL}/api/v1/groups/invitations/verify/${token}`)
-      
+
       if (response.ok) {
         const data = await response.json()
         setInvitationType('group')
@@ -142,11 +142,11 @@ export function Invite() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen flex items-center justify-center p-6"
       style={{ backgroundColor: '#37322E' }}
     >
-      <div 
+      <div
         className="max-w-md w-full p-8 rounded-lg text-center"
         style={{ backgroundColor: '#524944' }}
       >
@@ -172,7 +172,7 @@ export function Invite() {
           <>
             <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#B34B0C' }} />
             <h1 className="text-2xl font-bold text-white mb-4">You're Invited!</h1>
-            
+
             <div className="text-left mb-6 p-4 rounded" style={{ backgroundColor: '#37322E' }}>
               <p className="text-sm" style={{ color: '#B3B2B0' }}>You've been invited to join</p>
               <p className="text-xl font-bold text-white mt-1">{groupInvitation.group_name}</p>

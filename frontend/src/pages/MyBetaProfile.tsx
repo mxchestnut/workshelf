@@ -44,7 +44,7 @@ const SPECIALTY_OPTIONS = [
 ]
 
 export default function MyBetaProfile() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [profile, setProfile] = useState<BetaProfile>({
     availability: 'available',
     bio: '',
@@ -187,7 +187,7 @@ export default function MyBetaProfile() {
     <div className="min-h-screen" style={{ backgroundColor: '#37322E' }}>
       <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} />
       <div className="ml-0 md:ml-80 transition-all duration-300">
-      
+
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

@@ -16,7 +16,7 @@ interface BetaRequestItem {
 }
 
 export default function MyBetaRequests() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [sent, setSent] = useState<BetaRequestItem[]>([])
   const [received, setReceived] = useState<BetaRequestItem[]>([])
   const [loading, setLoading] = useState(true)

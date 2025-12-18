@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { 
-  BookOpen, 
-  Users, 
+import {
+  BookOpen,
+  Users,
   Store as StoreIcon,
   TrendingUp,
   Sparkles,
@@ -150,11 +150,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation user={user} onLogin={handleLogin} onLogout={handleLogout} currentPage="home" />
-      
+
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
+
           {/* Hero Section */}
           <div className="mb-12">
             <div className="bg-card border border-border p-8 md:p-12">
@@ -167,7 +167,7 @@ export default function Home() {
               </h1>
               <p className="text-xl mb-6 max-w-2xl text-muted-foreground">\nConnect with fellow writers, join groups, share your work, and build meaningful relationships in a vibrant creative community.
               </p>
-              
+
               {/* Platform Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 <div className="bg-muted">
@@ -194,7 +194,7 @@ export default function Home() {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6">Get Started</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              
+
               {/* Join Groups */}
               <button
                 onClick={() => handleNavigation('/groups')}
@@ -270,7 +270,7 @@ export default function Home() {
                   View all <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {featuredBooks.map((book) => (
                   <button
@@ -279,8 +279,8 @@ export default function Home() {
                     className="rounded-lg overflow-hidden transition-all group border bg-card border-border"
                   >
                     {book.cover_image_url ? (
-                      <img 
-                        src={book.cover_image_url} 
+                      <img
+                        src={book.cover_image_url}
                         alt={book.title}
                         className="w-full aspect-[2/3] object-cover group-hover:scale-105 transition-transform"
                         loading="lazy"
@@ -312,7 +312,7 @@ export default function Home() {
           )}
 
           {/* Getting Started Guide (for new users) */}
-          {user && !user.bio && (
+          {user && !(user as any).bio && (
             <div className="mb-12">
               <div className="bg-card border border-border p-8">
                 <div className="flex items-start gap-4">
@@ -340,7 +340,7 @@ export default function Home() {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6">Join the Community</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
+
               {/* Feed */}
               <div className="bg-card border border-border p-6">
                 <div className="w-12 h-12 flex items-center justify-center mb-4">
@@ -399,7 +399,7 @@ export default function Home() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-6">Why Work Shelf?</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
+
               <div className="flex gap-4">
                 <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                   <Users className="w-6 h-6" />
