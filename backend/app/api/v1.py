@@ -23,7 +23,7 @@ from app.api import (
     activity,
     reading,
     reading_list,
-    bookshelf,  # Personal bookshelf (Goodreads-style)
+    vault,  # Personal vault (Goodreads-style)
     book_suggestions,  # Book suggestions from users
     authors,  # Author tracking (follows from books)
     free_books,  # Free legal ebooks (Gutenberg, Standard Ebooks)
@@ -117,7 +117,7 @@ api_router.include_router(activity.router)
 # Phase 3: Reading & Discovery
 api_router.include_router(reading.router)
 api_router.include_router(reading_list.router)
-api_router.include_router(bookshelf.router)  # Personal bookshelf
+api_router.include_router(vault.router)  # Personal vault
 api_router.include_router(book_suggestions.router)  # Book suggestions from users
 api_router.include_router(authors.router)  # Author tracking
 api_router.include_router(free_books.router)  # Free legal ebooks
