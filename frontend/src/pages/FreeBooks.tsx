@@ -36,10 +36,8 @@ export default function FreeBooks() {
   }, [])
 
   const loadUser = async () => {
-    try {
-    } catch (err) {
-      console.error('Error loading user:', err)
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   }
 
   const loadPopularBooks = async () => {

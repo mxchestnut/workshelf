@@ -148,7 +148,7 @@ class Purchase(Base):
     # Relationships
     user = relationship("User", foreign_keys=[user_id], back_populates="purchases")
     store_item = relationship("StoreItem", foreign_keys=[store_item_id], back_populates="purchases")
-    bookshelf_item = relationship("BookshelfItem", foreign_keys=[bookshelf_item_id])
+    article = relationship("VaultArticle", foreign_keys=[article_id])
     
     # Indexes
     __table_args__ = (

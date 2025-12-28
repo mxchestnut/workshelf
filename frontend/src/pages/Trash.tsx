@@ -79,10 +79,8 @@ export default function Trash() {
   }, [activeTab])
 
   const loadUser = async () => {
-    try {
-    } catch (err) {
-      console.error('Error loading user:', err)
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   }
 
   const loadTrashData = async () => {

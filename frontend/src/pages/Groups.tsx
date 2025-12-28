@@ -42,8 +42,8 @@ export default function Groups() {
   }, [])
 
   const loadUser = async () => {
-    if (user) {
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   }
 
   const loadGroups = async () => {

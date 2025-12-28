@@ -46,8 +46,8 @@ export default function GroupSettings() {
   }, [groupId]);
 
   const loadUser = async () => {
-    if (user) {
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   };
 
   const loadGroup = async () => {

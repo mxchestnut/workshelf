@@ -65,8 +65,8 @@ export default function StudioV2() {
   }, [selectedProject])
 
   const loadUser = async () => {
-    if (user) {
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   }
 
   const loadProjects = async () => {

@@ -97,11 +97,8 @@ export default function Messages() {
   }
 
   const loadUser = async () => {
-    try {
-    } catch (error) {
-      console.error('Failed to load user:', error)
-      login()
-    }
+    // User loading logic removed - will use auth context
+    return Promise.resolve()
   }
 
   const checkMatrixStatus = async () => {

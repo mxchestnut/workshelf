@@ -70,10 +70,8 @@ export default function Store() {
   }, [])
 
   const loadUser = async () => {
-    try {
-    } catch (err) {
-      console.error('Error loading user:', err)
-    }
+    // User loading logic removed - placeholder function
+    return Promise.resolve()
   }
 
   // Check for author query parameter on mount
