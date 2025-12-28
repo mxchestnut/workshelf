@@ -77,7 +77,7 @@ class EpubSubmission(Base, TimestampMixin):
     # Relationships
     user = relationship("User", foreign_keys=[user_id], back_populates="epub_submissions")
     moderator = relationship("User", foreign_keys=[moderator_id])
-    article = relationship("VaultArticle", foreign_keys=[article_id])
+    article = relationship("Article", foreign_keys=[article_id])
 
 
 class VerificationLog(Base, TimestampMixin):
