@@ -15,7 +15,6 @@ import {
   UserCircle,
   Settings,
   Shield,
-  UserRoundPen,
   Library,
   Search
 } from 'lucide-react'
