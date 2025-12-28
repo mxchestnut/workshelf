@@ -28,7 +28,7 @@ router = APIRouter(prefix="/vault", tags=["vault"])
 # Schemas
 # ============================================================================
 
-class BookshelfItemCreate(BaseModel):
+class ArticleCreate(BaseModel):
     """Create a new bookshelf item"""
     # Item type
     item_type: str = Field(..., description="'document' or 'book'")
@@ -62,7 +62,7 @@ class BookshelfItemCreate(BaseModel):
     finished_reading: Optional[datetime] = None
 
 
-class BookshelfItemUpdate(BaseModel):
+class ArticleUpdate(BaseModel):
     """Update a bookshelf item"""
     status: Optional[str] = None
     rating: Optional[int] = Field(None, ge=1, le=5)
@@ -80,7 +80,7 @@ class ReadingProgressUpdate(BaseModel):
     reading_progress: float = Field(..., ge=0.0, le=100.0, description="Percentage read (0-100)")
 
 
-class BookshelfItemResponse(BaseModel):
+class ArticleResponse(BaseModel):
     """Bookshelf item response"""
     id: int
     user_id: int
@@ -163,9 +163,9 @@ class BookEnhanceResponse(BaseModel):
 # Endpoints
 # ============================================================================
 
-@router.post("", response_model=BookshelfItemResponse, status_code=201)
+@router.post("", response_model=ArticleResponse, status_code=201)
 async def add_to_bookshelf(
-    item_data: BookshelfItemCreate,
+    item_data: ArticleCreate,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -193,9 +193,9 @@ async def add_to_bookshelf(
         # Check if document exists (optional - could add this check)
         # Check if already in bookshelf
         result = await db.execute(
-            select(BookshelfItem).where(
-                BookshelfItem.user_id == user.id,
-                BookshelfItem.document_id == item_data.document_id
+            select(Article).where(
+                Article.user_id == user.id,
+                Article.document_id == item_data.document_id
             )
         )
         if result.scalar_one_or_none():
@@ -209,9 +209,9 @@ async def add_to_bookshelf(
         # Check if already in bookshelf by ISBN (if provided) or by title+author
         if item_data.isbn:
             result = await db.execute(
-                select(BookshelfItem).where(
-                    BookshelfItem.user_id == user.id,
-                    BookshelfItem.isbn == item_data.isbn
+                select(Article).where(
+                    Article.user_id == user.id,
+                    Article.isbn == item_data.isbn
                 )
             )
             if result.scalar_one_or_none():
@@ -219,17 +219,17 @@ async def add_to_bookshelf(
         else:
             # Check by title and author to avoid duplicates
             result = await db.execute(
-                select(BookshelfItem).where(
-                    BookshelfItem.user_id == user.id,
-                    BookshelfItem.title == item_data.title,
-                    BookshelfItem.author == item_data.author
+                select(Article).where(
+                    Article.user_id == user.id,
+                    Article.title == item_data.title,
+                    Article.author == item_data.author
                 )
             )
             if result.scalar_one_or_none():
                 raise HTTPException(status_code=400, detail="Book already in bookshelf")
     
     # Create bookshelf item
-    bookshelf_item = BookshelfItem(
+    bookshelf_item = Article(
         user_id=user.id,
         item_type=item_data.item_type,
         document_id=item_data.document_id,
@@ -339,7 +339,7 @@ async def add_to_bookshelf(
             document_author = document.owner.display_name if document.owner else None
     
     # Convert to response
-    return BookshelfItemResponse(
+    return ArticleResponse(
         id=bookshelf_item.id,
         user_id=bookshelf_item.user_id,
         item_type=bookshelf_item.item_type,
@@ -373,7 +373,7 @@ async def add_to_bookshelf(
     )
 
 
-@router.get("", response_model=List[BookshelfItemResponse])
+@router.get("", response_model=List[ArticleResponse])
 async def get_my_bookshelf(
     status: Optional[str] = Query(None, description="Filter by status"),
     favorites_only: bool = Query(False, description="Show only favorites"),
@@ -390,15 +390,15 @@ async def get_my_bookshelf(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     # Load bookshelf items without joins to avoid PostgreSQL reserved word issues
-    query = select(BookshelfItem).where(BookshelfItem.user_id == user.id)
+    query = select(Article).where(Article.user_id == user.id)
     
     if status:
-        query = query.where(BookshelfItem.status == status)
+        query = query.where(Article.status == status)
     
     if favorites_only:
-        query = query.where(BookshelfItem.is_favorite == True)
+        query = query.where(Article.is_favorite == True)
     
-    query = query.order_by(BookshelfItem.added_at.desc())
+    query = query.order_by(Article.added_at.desc())
     
     result = await db.execute(query)
     items = result.scalars().all()
@@ -413,7 +413,7 @@ async def get_my_bookshelf(
         documents_map = {doc.id: doc for doc in docs}
     
     return [
-        BookshelfItemResponse(
+        ArticleResponse(
             id=item.id,
             user_id=item.user_id,
             item_type=item.item_type,
@@ -459,42 +459,42 @@ async def get_bookshelf_stats(
     
     # Total books
     total_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(BookshelfItem.user_id == user.id)
+        select(func.count(Article.id)).where(Article.user_id == user.id)
     )
     total_books = total_result.scalar() or 0
     
     # Currently reading
     reading_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.status == 'reading'
+        select(func.count(Article.id)).where(
+            Article.user_id == user.id,
+            Article.status == 'reading'
         )
     )
     currently_reading = reading_result.scalar() or 0
     
     # Books read
     read_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.status == 'read'
+        select(func.count(Article.id)).where(
+            Article.user_id == user.id,
+            Article.status == 'read'
         )
     )
     books_read = read_result.scalar() or 0
     
     # Want to read
     want_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.status == 'want-to-read'
+        select(func.count(Article.id)).where(
+            Article.user_id == user.id,
+            Article.status == 'want-to-read'
         )
     )
     want_to_read = want_result.scalar() or 0
     
     # Favorites
     favorites_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.is_favorite == True
+        select(func.count(Article.id)).where(
+            Article.user_id == user.id,
+            Article.is_favorite == True
         )
     )
     favorites = favorites_result.scalar() or 0
@@ -502,10 +502,10 @@ async def get_bookshelf_stats(
     # Books read this year
     current_year = datetime.now(timezone.utc).year
     year_result = await db.execute(
-        select(func.count(BookshelfItem.id)).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.status == 'read',
-            func.extract('year', BookshelfItem.finished_reading) == current_year
+        select(func.count(Article.id)).where(
+            Article.user_id == user.id,
+            Article.status == 'read',
+            func.extract('year', Article.finished_reading) == current_year
         )
     )
     books_read_this_year = year_result.scalar() or 0
@@ -556,9 +556,9 @@ async def get_recommendations_by_favorite_authors(
     
     # Get books already in user's bookshelf (to exclude from recommendations)
     existing_books_result = await db.execute(
-        select(BookshelfItem.isbn, BookshelfItem.title, BookshelfItem.author).where(
-            BookshelfItem.user_id == user.id,
-            BookshelfItem.item_type == 'book'
+        select(Article.isbn, Article.title, Article.author).where(
+            Article.user_id == user.id,
+            Article.item_type == 'book'
         )
     )
     existing_books = existing_books_result.all()
@@ -646,7 +646,7 @@ async def get_recommendations_by_favorite_authors(
     }
 
 
-@router.get("/{item_id}", response_model=BookshelfItemResponse)
+@router.get("/{item_id}", response_model=ArticleResponse)
 async def get_bookshelf_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
@@ -656,18 +656,18 @@ async def get_bookshelf_item(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     result = await db.execute(
-        select(BookshelfItem).where(
-            BookshelfItem.id == item_id,
-            BookshelfItem.user_id == user.id
+        select(Article).where(
+            Article.id == item_id,
+            Article.user_id == user.id
         )
-        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
+        .options(joinedload(Article.document).joinedload(Document.owner))
     )
     item = result.scalar_one_or_none()
     
     if not item:
         raise HTTPException(status_code=404, detail="Bookshelf item not found")
     
-    return BookshelfItemResponse(
+    return ArticleResponse(
         id=item.id,
         user_id=item.user_id,
         item_type=item.item_type,
@@ -701,10 +701,10 @@ async def get_bookshelf_item(
     )
 
 
-@router.put("/{item_id}", response_model=BookshelfItemResponse)
+@router.put("/{item_id}", response_model=ArticleResponse)
 async def update_bookshelf_item(
     item_id: int,
-    update_data: BookshelfItemUpdate,
+    update_data: ArticleUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -712,11 +712,11 @@ async def update_bookshelf_item(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     result = await db.execute(
-        select(BookshelfItem).where(
-            BookshelfItem.id == item_id,
-            BookshelfItem.user_id == user.id
+        select(Article).where(
+            Article.id == item_id,
+            Article.user_id == user.id
         )
-        .options(joinedload(BookshelfItem.document).joinedload(Document.owner))
+        .options(joinedload(Article.document).joinedload(Document.owner))
     )
     item = result.scalar_one_or_none()
     
@@ -744,7 +744,7 @@ async def update_bookshelf_item(
     await db.commit()
     await db.refresh(item)
     
-    return BookshelfItemResponse(
+    return ArticleResponse(
         id=item.id,
         user_id=item.user_id,
         item_type=item.item_type,
@@ -788,9 +788,9 @@ async def delete_bookshelf_item(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     result = await db.execute(
-        select(BookshelfItem).where(
-            BookshelfItem.id == item_id,
-            BookshelfItem.user_id == user.id
+        select(Article).where(
+            Article.id == item_id,
+            Article.user_id == user.id
         )
     )
     item = result.scalar_one_or_none()
@@ -813,9 +813,9 @@ async def update_reading_progress(
     user = await user_service.get_or_create_user_from_keycloak(db, current_user)
     
     result = await db.execute(
-        select(BookshelfItem).where(
-            BookshelfItem.id == item_id,
-            BookshelfItem.user_id == user.id
+        select(Article).where(
+            Article.id == item_id,
+            Article.user_id == user.id
         )
     )
     item = result.scalar_one_or_none()
@@ -848,7 +848,7 @@ async def update_reading_progress(
 # Public bookshelf (for user profiles)
 # ============================================================================
 
-@router.get("/public/{username}", response_model=List[BookshelfItemResponse])
+@router.get("/public/{username}", response_model=List[ArticleResponse])
 async def get_public_bookshelf(
     username: str,
     status: Optional[str] = Query(None),
@@ -869,24 +869,24 @@ async def get_public_bookshelf(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    query = select(BookshelfItem).where(
-        BookshelfItem.user_id == user.id,
-        BookshelfItem.review_public == True
-    ).options(joinedload(BookshelfItem.document).joinedload(Document.owner))
+    query = select(Article).where(
+        Article.user_id == user.id,
+        Article.review_public == True
+    ).options(joinedload(Article.document).joinedload(Document.owner))
     
     if status:
-        query = query.where(BookshelfItem.status == status)
+        query = query.where(Article.status == status)
     
     if favorites_only:
-        query = query.where(BookshelfItem.is_favorite == True)
+        query = query.where(Article.is_favorite == True)
     
-    query = query.order_by(BookshelfItem.added_at.desc())
+    query = query.order_by(Article.added_at.desc())
     
     result = await db.execute(query)
     items = result.scalars().unique().all()
     
     return [
-        BookshelfItemResponse(
+        ArticleResponse(
             id=item.id,
             user_id=item.user_id,
             item_type=item.item_type,
