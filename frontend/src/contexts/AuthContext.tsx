@@ -1,16 +1,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { InteractionStatus, AccountInfo } from '@azure/msal-browser';
-import { apiRequest } from '../config/authConfig';
 
-// Extended user type that combines MSAL AccountInfo with backend properties
-export interface User extends AccountInfo {
-  // Backend properties (optional for compatibility)
+// User type for the application (Keycloak-based)
+export interface User {
+  // Backend properties
   id?: number;
   display_name?: string;
+  username?: string;
   email?: string;
   is_staff?: boolean;
   groups?: any[];
+  // Compatibility properties
+  homeAccountId?: string;
+  localAccountId?: string;
+  name?: string;
+  tenantId?: string;
+  environment?: string;
 }
 
 interface AuthContextType {
@@ -25,59 +29,65 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { instance, accounts, inProgress } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Loading state should be false when MSAL is not in progress
-    setIsLoading(inProgress !== InteractionStatus.None);
-  }, [inProgress]);
+    // Check for existing token on mount
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      setIsAuthenticated(true);
+      // Try to get user info from localStorage
+      const storedUser = localStorage.getItem('user_info');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          console.error('Failed to parse stored user info');
+        }
+      }
+    }
+    setIsLoading(false);
+  }, []);
 
   const login = async () => {
-    try {
-      await instance.loginPopup(apiRequest);
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
+    // Redirect to Keycloak login
+    const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL;
+    const realm = import.meta.env.VITE_KEYCLOAK_REALM || 'workshelf';
+    const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'workshelf-frontend';
+    const redirectUri = encodeURIComponent(window.location.origin + '/callback');
+    
+    window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid`;
   };
 
   const logout = async () => {
-    try {
-      await instance.logoutPopup({
-        mainWindowRedirectUri: '/',
-      });
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
-    }
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_info');
+    setIsAuthenticated(false);
+    setUser(null);
+    
+    // Redirect to Keycloak logout
+    const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL;
+    const realm = import.meta.env.VITE_KEYCLOAK_REALM || 'workshelf';
+    const redirectUri = encodeURIComponent(window.location.origin);
+    
+    window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?redirect_uri=${redirectUri}`;
   };
 
   const getAccessToken = async (): Promise<string> => {
-    if (!accounts[0]) {
-      throw new Error('No account found');
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No access token found');
     }
-
-    try {
-      // Try to acquire token silently
-      const response = await instance.acquireTokenSilent({
-        ...apiRequest,
-        account: accounts[0],
-      });
-      return response.accessToken;
-    } catch (error) {
-      console.error('Silent token acquisition failed, trying popup:', error);
-      // If silent acquisition fails, try popup
-      const response = await instance.acquireTokenPopup(apiRequest);
-      return response.accessToken;
-    }
+    return token;
   };
 
   const value: AuthContextType = {
     isAuthenticated,
     isLoading,
-    user: accounts[0] || null,
+    user,
     login,
     logout,
     getAccessToken,
