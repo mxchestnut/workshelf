@@ -64,3 +64,6 @@ production-secrets*.txt
 
 # Kit's personal notes (do not sync)
 Kit's Notes/
+
+# Documentation (keep local only)
+docs/
