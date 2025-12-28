@@ -1,5 +1,5 @@
 #!/bin/bash
-# Safe Deployment Script for WorkShelf
+# Safe Deployment Script for NPC
 # This script ensures database safety before deploying
 
 set -e  # Exit on any error
@@ -15,7 +15,7 @@ STAGING_DB_URL="postgresql://..."  # TODO: Set staging database URL
 PROD_DB_URL="postgresql://..."     # TODO: Set production database URL
 DEPLOYMENT_ENV="${1:-staging}"     # Default to staging
 
-echo -e "${GREEN}=== WorkShelf Safe Deployment ===${NC}"
+echo -e "${GREEN}=== NPC Safe Deployment ===${NC}"
 echo "Environment: $DEPLOYMENT_ENV"
 echo ""
 
@@ -146,7 +146,7 @@ echo ""
 echo "Next steps:"
 echo "1. Monitor deployment: gh run watch"
 echo "2. Check logs: ssh ubuntu@34.239.176.138 'docker compose logs -f backend'"
-echo "3. Test endpoints: curl https://api.workshelf.dev/health"
+echo "3. Test endpoints: curl https://api.nerdchurchpartners.org/health"
 echo ""
 
 if [ "$DEPLOYMENT_ENV" == "production" ]; then

@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import { UserPlus, UserCheck, Heart, Users } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface GroupActionButtonsProps {
   groupId: number

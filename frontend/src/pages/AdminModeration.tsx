@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org';
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, User, Calendar, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 

@@ -56,7 +56,7 @@ jobs:
     if: github.event.inputs.confirm == 'deploy'
     environment:
       name: production
-      url: https://workshelf.dev
+      url: https://nerdchurchpartners.org
     
     steps:
       - uses: actions/checkout@v4
@@ -67,8 +67,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
-          chmod 600 ~/.ssh/workshelf-key.pem
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/npc-key.pem
+          chmod 600 ~/.ssh/npc-key.pem
           # actionlint: ignore
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       
@@ -79,12 +79,12 @@ jobs:
           EC2_USER: ubuntu
           GIT_SHA: ${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
+          ssh -i ~/.ssh/npc-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
             set -e
-            cd /home/ubuntu/workshelf
+            cd /home/ubuntu/npc
             
             echo "🔧 Fixing git permissions..."
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/workshelf/.git
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/npc/.git
             
             echo "📥 Pulling latest code..."
             git fetch origin main
@@ -126,7 +126,7 @@ jobs:
             sleep 10
             
             echo "🗄️  Running database migrations..."
-            sudo docker-compose -f deploy/docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_bookshelf.py || echo "⚠️  Migration already applied or failed"
+            sudo docker-compose -f deploy/docker-compose.prod.yml exec -T backend python scripts/add_store_item_to_vault.py || echo "⚠️  Migration already applied or failed"
             
             echo "♻️  Restarting backend to load schema changes..."
             sudo docker-compose -f deploy/docker-compose.prod.yml restart backend
@@ -134,14 +134,14 @@ jobs:
             
             echo "🔧 Fixing CORS configuration..."
             cd deploy && sudo bash fix-cors.sh || echo "⚠️  CORS fix script not available"
-            cd /home/ubuntu/workshelf
+            cd /home/ubuntu/npc
             
             echo "⏳ Waiting for services to stabilize..."
             sleep 30
             
             echo "🏥 Health checks..."
-            curl -f https://api.workshelf.dev/health || exit 1
-            curl -f https://workshelf.dev/health || exit 1
+            curl -f https://api.nerdchurchpartners.org/health || exit 1
+            curl -f https://nerdchurchpartners.org/health || exit 1
             
             echo "✅ Deployment complete!"
           DEPLOY

@@ -3,7 +3,7 @@ import { BookOpen, Star, Filter, Search, X, TrendingUp, Sparkles, Library, Exter
 import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface LibraryAvailability {
   openLibrary: boolean
@@ -564,7 +564,7 @@ function FreeBookCard({ book }: FreeBookCardProps) {
       )
 
       if (response.ok) {
-        alert(`"${book.title}" added to your bookshelf!`)
+        alert(`"${book.title}" added to your vault!`)
       } else {
         const error = await response.json()
         alert(error.detail || 'Failed to add book')

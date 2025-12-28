@@ -10,8 +10,8 @@ echo "=================================="
 # Production server details
 PROD_USER="ubuntu"
 PROD_HOST="34.239.176.138"
-PROD_PATH="/home/ubuntu/workshelf"
-KEY_PATH="$HOME/.ssh/workshelf-key.pem"
+PROD_PATH="/home/ubuntu/npc"
+KEY_PATH="$HOME/.ssh/npc-key.pem"
 
 echo "📡 Connecting to production server..."
 

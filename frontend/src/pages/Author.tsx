@@ -18,7 +18,7 @@ import Superscript from '@tiptap/extension-superscript'
 import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface Author {
   id: number
@@ -237,7 +237,7 @@ export default function Author() {
     editor?.setEditable(true)
   }
 
-  const handleAddToBookshelf = async (bookId: number, bookTitle: string) => {
+  const handleAddToVault = async (bookId: number, bookTitle: string) => {
     const token = localStorage.getItem('access_token')
     if (!token) {
       window.location.href = '/login'
@@ -252,12 +252,12 @@ export default function Author() {
         },
       })
 
-      if (!response.ok) throw new Error('Failed to add to bookshelf')
+      if (!response.ok) throw new Error('Failed to add to vault')
       
-      alert(`"${bookTitle}" added to your bookshelf!`)
+      alert(`"${bookTitle}" added to your vault!`)
     } catch (error) {
-      console.error('Error adding to bookshelf:', error)
-      alert('Failed to add book to bookshelf')
+      console.error('Error adding to vault:', error)
+      alert('Failed to add book to vault')
     }
   }
 
@@ -612,11 +612,11 @@ export default function Author() {
                           ${book.final_price.toFixed(2)}
                         </p>
                       </a>
-                      {/* Add to Bookshelf Button */}
+                      {/* Add to Vault Button */}
                       <button
                         onClick={(e) => {
                           e.preventDefault()
-                          handleAddToBookshelf(book.id, book.title)
+                          handleAddToVault(book.id, book.title)
                         }}
                         className="w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-white hover:opacity-90"
                         style={{ backgroundColor: '#7C3306' }}

@@ -1,5 +1,5 @@
 /**
- * Matomo Analytics Configuration for WorkShelf
+ * Matomo Analytics Configuration for NPC
  * Privacy-focused analytics with cookie-less tracking and DoNotTrack respect
  */
 
@@ -28,7 +28,7 @@ export function initMatomo() {
   const _paq = window._paq;
 
   // Privacy-focused configuration
-  _paq.push(['setCookieDomain', '*.workshelf.dev']);
+  _paq.push(['setCookieDomain', '*.nerdchurchpartners.org']);
   _paq.push(['setDoNotTrack', true]); // Respect browser DoNotTrack
   _paq.push(['disableCookies']); // Cookie-less tracking for GDPR compliance
   

@@ -14,12 +14,12 @@
 
 ┌─────────────────┐
 │     Staging     │  ← Neon DB (separate from prod)
-│  (workshelf.dev)│  ← For testing deployments
+│  (nerdchurchpartners.org)│  ← For testing deployments
 └─────────────────┘
 
 ┌─────────────────┐
 │   Production    │  ← Neon DB (separate, protected)
-│ (workshelf.com) │  ← Real user data, NEVER touch directly
+│ (npc.com) │  ← Real user data, NEVER touch directly
 └─────────────────┘
 ```
 
@@ -28,8 +28,8 @@
 #### A. Create Separate Neon Databases
 1. Go to https://console.neon.tech
 2. Create TWO new databases:
-   - `workshelf-staging` (for testing)
-   - `workshelf-production` (for real users)
+   - `npc-staging` (for testing)
+   - `npc-production` (for real users)
 3. Update `.env` files accordingly
 
 #### B. Enable Neon Backups

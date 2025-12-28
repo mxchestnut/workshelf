@@ -30,7 +30,7 @@ import {
   Download
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface AdminStats {
   total_members: number
@@ -792,7 +792,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground">Site Administration</h2>
               <a
-                href="https://auth.workshelf.dev/admin"
+                href="https://auth.nerdchurchpartners.org/admin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2"

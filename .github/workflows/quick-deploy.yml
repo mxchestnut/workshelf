@@ -22,7 +22,7 @@ jobs:
     if: github.event.inputs.confirm == 'deploy'
     environment:
       name: production
-      url: https://workshelf.dev
+      url: https://nerdchurchpartners.org
     
     steps:
       - name: Setup SSH
@@ -30,8 +30,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
-          chmod 600 ~/.ssh/workshelf-key.pem
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/npc-key.pem
+          chmod 600 ~/.ssh/npc-key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       
       - name: Deploy Service
@@ -40,9 +40,9 @@ jobs:
           EC2_USER: ubuntu
           SERVICE: ${{ inputs.service }}
         run: |
-          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
+          ssh -i ~/.ssh/npc-key.pem $EC2_USER@$EC2_HOST << 'DEPLOY'
             set -e
-            cd /home/ubuntu/workshelf
+            cd /home/ubuntu/npc
             
             echo "📥 Pulling latest code..."
             git fetch origin main
@@ -70,8 +70,8 @@ jobs:
             sleep 15
             
             echo "🏥 Health check..."
-            curl -f https://workshelf.dev/health || echo "⚠️  Frontend health check failed"
-            curl -f https://api.workshelf.dev/health || echo "⚠️  Backend health check failed"
+            curl -f https://nerdchurchpartners.org/health || echo "⚠️  Frontend health check failed"
+            curl -f https://api.nerdchurchpartners.org/health || echo "⚠️  Backend health check failed"
             
             echo "✅ Deployment complete!"
           DEPLOY

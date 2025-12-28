@@ -59,7 +59,7 @@ export function MatrixOnboardingModal({ onClose }: MatrixOnboardingModalProps) {
       // Mark Matrix onboarding as seen in backend
   const token = localStorage.getItem('access_token');
       if (token) {
-  await fetch(`${import.meta.env.VITE_API_URL || 'https://workshelf.dev'}/api/v1/auth/mark-matrix-onboarding-seen`, {
+  await fetch(`${import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'}/api/v1/auth/mark-matrix-onboarding-seen`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -78,7 +78,7 @@ export function MatrixOnboardingModal({ onClose }: MatrixOnboardingModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="matrix-onboarding-title">
       <div ref={dialogRef} className="bg-white rounded-lg p-8 max-w-2xl w-full shadow-xl max-h-[90vh] overflow-y-auto" role="document">
-        <h2 id="matrix-onboarding-title" className="text-2xl font-bold text-gray-900 mb-6">Welcome to Work Shelf Chat!</h2>
+        <h2 id="matrix-onboarding-title" className="text-2xl font-bold text-gray-900 mb-6">Welcome to NPC Chat!</h2>
         
         <div className="space-y-4 text-gray-700">
           <p className="text-lg">
@@ -88,7 +88,7 @@ export function MatrixOnboardingModal({ onClose }: MatrixOnboardingModalProps) {
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <h3 className="font-semibold text-gray-900 mb-2">What is Matrix?</h3>
             <p>
-              Matrix is an open-source, decentralized messaging protocol that powers Work Shelf's real-time chat. 
+              Matrix is an open-source, decentralized messaging protocol that powers NPC's real-time chat. 
               Your messages sync seamlessly across all your devices and stay private.
             </p>
           </div>

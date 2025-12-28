@@ -1,6 +1,6 @@
-# Work Shelf Frontend
+# NPC Frontend
 
-React + Vite frontend for the Work Shelf platform.
+React + Vite frontend for the NPC (Nerdchurch Partners Corporation) platform.
 
 ## Features
 

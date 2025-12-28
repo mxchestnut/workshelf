@@ -12,7 +12,7 @@ export default function HouseRules() {
         <div className="prose prose-blue max-w-none">
           <section className="mb-8">
             <p className="text-lg text-gray-700 mb-6">
-              Welcome to Work Shelf! Our community thrives on creativity, respect, and collaboration. 
+              Welcome to NPC! Our community thrives on creativity, respect, and collaboration. 
               These House Rules help ensure everyone has a positive experience.
             </p>
           </section>
@@ -132,7 +132,7 @@ export default function HouseRules() {
               <li>Use the "Report" button on the content</li>
               <li>Provide specific details about the violation</li>
               <li>Don't publicly call out rule violations (report privately)</li>
-              <li>For urgent safety concerns, contact us directly at support@workshelf.dev</li>
+              <li>For urgent safety concerns, contact us directly at support@nerdchurchpartners.org</li>
             </ul>
 
             <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-3">Enforcement Actions</h3>
@@ -169,7 +169,7 @@ export default function HouseRules() {
               If you have questions about these House Rules or need clarification:
             </p>
             <p className="text-gray-700">
-              Email: <a href="mailto:support@workshelf.dev" className="text-blue-600 hover:underline">support@workshelf.dev</a>
+              Email: <a href="mailto:support@nerdchurchpartners.org" className="text-blue-600 hover:underline">support@nerdchurchpartners.org</a>
             </p>
           </section>
 

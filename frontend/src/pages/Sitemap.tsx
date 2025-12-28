@@ -71,8 +71,8 @@ export function Sitemap() {
       color: "bg-blue-100 text-blue-700",
       items: [
         {
-          name: "My Bookshelf",
-          path: "/bookshelf",
+          name: "My Vault",
+          path: "/vault",
           description: "Your personal collection of saved and purchased books",
           icon: BookMarked,
           status: "active"
@@ -199,7 +199,7 @@ export function Sitemap() {
         "Tag-based content warnings",
         "Include/exclude tag filtering",
         "Author tracking and following",
-        "Bookshelf management"
+        "Vault management"
       ]
     },
     {
@@ -237,7 +237,7 @@ export function Sitemap() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Work Shelf Platform Overview
+            NPC Platform Overview
           </h1>
           <p className="text-xl text-gray-600">
             A comprehensive platform for writers, readers, and indie publishers

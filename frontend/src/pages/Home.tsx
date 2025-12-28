@@ -40,7 +40,7 @@ export default function Home() {
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
   useEffect(() => {
     loadData()
@@ -160,7 +160,7 @@ export default function Home() {
             <div className="bg-card border border-border p-8 md:p-12">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-6 h-6" />
-                <span className="text-sm font-medium uppercase tracking-wide">Welcome to Work Shelf</span>
+                <span className="text-sm font-medium uppercase tracking-wide">Welcome to NPC</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4 font-mono">
                 {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Community'}
@@ -322,7 +322,7 @@ export default function Home() {
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold mb-2 font-mono">New here? Let's get you started!</h3>
                     <p className="mb-4 text-muted-foreground">
-                      Complete your profile to unlock the full Work Shelf experience.
+                      Complete your profile to unlock the full NPC experience.
                     </p>
                     <button
                       onClick={() => handleNavigation('/me')}
@@ -358,20 +358,20 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Your Bookshelf */}
+              {/* Your Vault */}
               <div className="bg-card border border-border p-6">
                 <div className="w-12 h-12 flex items-center justify-center mb-4">
                   <BookMarked className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Your Bookshelf</h3>
+                <h3 className="text-lg font-semibold mb-2">Your Vault</h3>
                 <p className="text-muted-foreground">
                   Access your purchased books and reading list all in one place.
                 </p>
                 <button
-                  onClick={() => handleNavigation('/bookshelf')}
+                  onClick={() => handleNavigation('/vault')}
                   className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity text-primary"
                 >
-                  View bookshelf <ArrowRight className="w-4 h-4" />
+                  View vault <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
@@ -397,7 +397,7 @@ export default function Home() {
 
           {/* Platform Features */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">Why Work Shelf?</h2>
+            <h2 className="text-2xl font-bold mb-6">Why NPC?</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               <div className="flex gap-4">

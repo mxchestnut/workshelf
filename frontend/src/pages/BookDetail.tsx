@@ -9,9 +9,9 @@ import { toast } from '../services/toast'
 // Lazy load the EPUB reader (large dependency)
 const EpubReader = lazy(() => import('../components/EpubReader'))
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
-interface BookshelfItem {
+interface VaultItem {
   id: number
   item_type: 'document' | 'book'
   isbn?: string
@@ -89,17 +89,17 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
       onBack()
     } else {
       // If called from URL, determine where to go back to
-      // If user owns the book (it's in their bookshelf), go to bookshelf
+      // If user owns the book (it's in their vault), go to vault
       // Otherwise if it's a store item, go to store
       if (userOwnsBook || !bookId.startsWith('store-')) {
-        window.location.href = '/bookshelf'
+        window.location.href = '/vault'
       } else {
         window.location.href = '/store'
       }
     }
   }
   
-  const [book, setBook] = useState<BookshelfItem | null>(null)
+  const [book, setBook] = useState<VaultItem | null>(null)
   const [storeItem, setStoreItem] = useState<StoreItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -133,13 +133,13 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
           // Check if user owns this book (check by ISBN or title match)
           if (token) {
             try {
-              const bookshelfResponse = await fetch(`${API_URL}/api/v1/bookshelf`, {
+              const vaultResponse = await fetch(`${API_URL}/api/v1/vault`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               })
-              if (bookshelfResponse.ok) {
-                const bookshelfData = await bookshelfResponse.json()
+              if (vaultResponse.ok) {
+                const vaultData = await vaultResponse.json()
                 // Check if user owns a book with matching ISBN or title
-                const ownedBook = bookshelfData.items?.find((item: BookshelfItem) => 
+                const ownedBook = vaultData.items?.find((item: VaultItem) => 
                   item.isbn === storeData.isbn || 
                   (item.title === storeData.title && item.author === storeData.author_name)
                 )
@@ -149,23 +149,23 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                 }
               }
             } catch (err) {
-              console.log('User not logged in or bookshelf check failed')
+              console.log('User not logged in or vault check failed')
             }
           }
         }
       } else {
-        // Loading a bookshelf item by ID
+        // Loading a vault item by ID
         if (!token) {
           // User not logged in - redirect to login
           window.location.href = '/login'
           return
         }
         
-        const response = await fetch(`${API_URL}/api/v1/bookshelf/${actualId}`, {
+        const response = await fetch(`${API_URL}/api/v1/vault/${actualId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         
-        console.log('[BookDetail] Fetching bookshelf item:', actualId)
+        console.log('[BookDetail] Fetching vault item:', actualId)
         console.log('[BookDetail] Response status:', response.status)
         
         if (response.ok) {
@@ -200,13 +200,13 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
     }
   }
 
-  const updateBook = async (updates: Partial<BookshelfItem>) => {
+  const updateBook = async (updates: Partial<VaultItem>) => {
     if (!book) return
 
     setUpdating(true)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/bookshelf/${bookId}`, {
+      const response = await fetch(`${API_URL}/api/v1/vault/${bookId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -244,14 +244,14 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
     if (!book) return
     
     const bookTitle = book.title || 'this book'
-    if (!confirm(`Remove "${bookTitle}" from your bookshelf? This cannot be undone.`)) {
+    if (!confirm(`Remove "${bookTitle}" from your vault? This cannot be undone.`)) {
       return
     }
 
     setUpdating(true)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/bookshelf/${book.id}`, {
+      const response = await fetch(`${API_URL}/api/v1/vault/${book.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -259,15 +259,15 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
       })
 
       if (response.ok) {
-        // Book deleted successfully - go back to bookshelf
-        toast.success('Book removed from your bookshelf')
+        // Book deleted successfully - go back to vault
+        toast.success('Book removed from your vault')
         handleBack()
       } else {
-        toast.error('Failed to remove book from bookshelf')
+        toast.error('Failed to remove book from vault')
       }
     } catch (error) {
       console.error('Failed to delete book:', error)
-      toast.error('Failed to remove book from bookshelf')
+      toast.error('Failed to remove book from vault')
     } finally {
       setUpdating(false)
     }
@@ -276,7 +276,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
   const saveReadingProgress = async (location: string, progress: number) => {
     try {
       const token = localStorage.getItem('access_token')
-      await fetch(`${API_URL}/api/v1/bookshelf/${actualId}/progress`, {
+      await fetch(`${API_URL}/api/v1/vault/${actualId}/progress`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
     }
   }
 
-  const addToBookshelf = async () => {
+  const addToVault = async () => {
     if (!storeItem) return
 
     try {
@@ -302,7 +302,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,17 +322,17 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
 
       if (!response.ok) {
         const error = await response.json()
-        toast.error(error.detail || 'Failed to add to bookshelf')
+        toast.error(error.detail || 'Failed to add to vault')
         return
       }
 
       const newBook = await response.json()
       setBook(newBook)
       setUserOwnsBook(true)
-      toast.success('Added to your bookshelf! Set your reading status using the dropdown below.')
+      toast.success('Added to your vault! Set your reading status using the dropdown below.')
     } catch (error) {
-      console.error('Error adding to bookshelf:', error)
-      toast.error('Failed to add to bookshelf')
+      console.error('Error adding to vault:', error)
+      toast.error('Failed to add to vault')
     }
   }
 
@@ -404,14 +404,14 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
             onClick={handleBack}
             className="text-[#B34B0C] hover:text-[#8A3809]"
           >
-            Return to {isStoreItem ? 'Store' : 'Bookshelf'}
+            Return to {isStoreItem ? 'Store' : 'Vault'}
           </button>
         </div>
       </div>
     )
   }
 
-  // Use store item or bookshelf item data
+  // Use store item or vault item data
   const displayData = storeItem || book
   const title = storeItem ? storeItem.title : book?.title
   const author = storeItem ? storeItem.author_name : book?.author
@@ -428,7 +428,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to {isStoreItem ? 'Store' : 'Bookshelf'}
+          Back to {isStoreItem ? 'Store' : 'Vault'}
         </button>
 
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -499,7 +499,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
                     >
                       <Trash2 className="w-5 h-5" />
-                      Remove from Bookshelf
+                      Remove from Vault
                     </button>
                   )}
 
@@ -550,11 +550,11 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                       </button>
                       
                       <button
-                        onClick={addToBookshelf}
+                        onClick={addToVault}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-[#B34B0C] text-[#B34B0C] rounded-lg font-semibold hover:bg-orange-50 transition-colors"
                       >
                         <BookOpen className="w-5 h-5" />
-                        Add to Bookshelf
+                        Add to Vault
                       </button>
                       
                       {/* Library Checkout - Opens Libby or WorldCat */}
@@ -572,7 +572,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </>
                   )}
 
-                  {/* Google Books Link - only for bookshelf items */}
+                  {/* Google Books Link - only for vault items */}
                   {userOwnsBook && book && getGoogleBooksUrl(book.isbn, book.title) && (
                     <a
                       href={getGoogleBooksUrl(book.isbn, book.title)!}
@@ -585,7 +585,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </a>
                   )}
 
-                  {/* Library Link - for bookshelf items */}
+                  {/* Library Link - for vault items */}
                   {userOwnsBook && book && (
                     <a
                       href={`https://www.overdrive.com/search?q=${encodeURIComponent(book.title || '')}%20${encodeURIComponent(book.author || '')}`}
@@ -598,7 +598,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                     </a>
                   )}
 
-                  {/* Store Link - for bookshelf items, check if book is in store */}
+                  {/* Store Link - for vault items, check if book is in store */}
                   {userOwnsBook && book && (
                     <button
                       onClick={() => window.location.href = `/store?search=${encodeURIComponent(book.title || '')}`}
@@ -628,7 +628,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
                   </div>
                 )}
 
-                {/* Rating - Only for store items or if bookshelf item has rating */}
+                {/* Rating - Only for store items or if vault item has rating */}
                 {storeItem ? (
                   storeItem.rating_average && storeItem.rating_count > 0 && (
                     <div className="flex items-center gap-2 mb-6">
@@ -824,7 +824,7 @@ export default function BookDetail({ bookId: propBookId, onBack }: BookDetailPro
         </div>
       </div>
 
-      {/* EPUB Reader Modal - Only for bookshelf items with EPUB */}
+      {/* EPUB Reader Modal - Only for vault items with EPUB */}
       {showReader && book?.epub_url && (
         <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"><div className="text-white text-lg">Loading reader...</div></div>}>
           <EpubReader

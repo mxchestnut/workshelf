@@ -6,7 +6,7 @@ import { Configuration, PopupRequest } from '@azure/msal-browser';
  * Your Azure AD App Registration:
  * - Client ID: 44e80fc4-db05-4e6b-8732-7779311cb2c3
  * - Tenant ID: 05b0173d-5c39-4799-889a-d522d3cbf86d
- * - Name: WorkShelf
+ * - Name: NPC
  */
 
 // MSAL configuration
@@ -42,4 +42,4 @@ export const apiRequest: PopupRequest = {
 };
 
 // API endpoint - will be used to validate tokens
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org';

@@ -3,7 +3,7 @@ import { BookOpen, Search, Download, Plus, Loader2, BookMarked, TrendingUp } fro
 import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface FreeBook {
   id: string
@@ -106,7 +106,7 @@ export default function FreeBooks() {
       )
 
       if (response.ok) {
-        alert(`"${book.title}" added to your bookshelf!`)
+        alert(`"${book.title}" added to your vault!`)
         // Remove from list
         setBooks(books.filter(b => b.id !== book.id))
       } else {

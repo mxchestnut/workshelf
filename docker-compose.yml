@@ -1,11 +1,11 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: workshelf-postgres
+    container_name: npc-postgres
     environment:
-      POSTGRES_DB: workshelf
-      POSTGRES_USER: workshelf
-      POSTGRES_PASSWORD: workshelf_password
+      POSTGRES_DB: npc
+      POSTGRES_USER: npc
+      POSTGRES_PASSWORD: npc_password
     ports:
     - "127.0.0.1:5432:5432"
     volumes:
@@ -13,23 +13,23 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - pg_isready -U workshelf
+      - pg_isready -U npc
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   synapse:
     image: matrixdotorg/synapse:latest
-    container_name: workshelf-synapse
+    container_name: npc-synapse
     environment:
       SYNAPSE_SERVER_NAME: matrix.localhost
       SYNAPSE_REPORT_STATS: 'no'
       SYNAPSE_NO_TLS: 'true'
       POSTGRES_HOST: postgres
-      POSTGRES_USER: workshelf
-      POSTGRES_PASSWORD: workshelf_password
+      POSTGRES_USER: npc
+      POSTGRES_PASSWORD: npc_password
       POSTGRES_DB: synapse
     ports:
     - "127.0.0.1:8008:8008"
@@ -39,11 +39,11 @@ services:
       postgres:
         condition: service_healthy
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   minio:
     image: minio/minio:latest
-    container_name: workshelf-minio
+    container_name: npc-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -63,11 +63,11 @@ services:
       timeout: 20s
       retries: 3
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   redis:
     image: redis:7-alpine
-    container_name: workshelf-redis
+    container_name: npc-redis
     ports:
     - "127.0.0.1:6379:6379"
     volumes:
@@ -81,11 +81,11 @@ services:
       timeout: 5s
       retries: 5
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   backend:
     image: python:3.11-slim
-    container_name: workshelf-backend
+    container_name: npc-backend
     working_dir: /app
     command: bash -c "pip install -q -r requirements.txt && bash start.sh"
     environment:
@@ -100,8 +100,8 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MATRIX_HOMESERVER: http://synapse:8008
-      MATRIX_SERVER_NAME: workshelf.dev
-      MATRIX_PUBLIC_HOMESERVER: https://workshelf.dev
+      MATRIX_SERVER_NAME: nerd.church
+      MATRIX_PUBLIC_HOMESERVER: https://matrix.nerdchurchpartners.org
       MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
       SENTRY_DSN: ${SENTRY_DSN:-https://a2ae80bf39b2e57c2147574ce75c860f@o4510280685977605.ingest.us.sentry.io/4510448571383808}
       ENVIRONMENT: development
@@ -115,18 +115,18 @@ services:
     volumes:
     - ./backend:/app
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   frontend:
     image: node:20-alpine
-    container_name: workshelf-frontend
+    container_name: npc-frontend
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     environment:
-      VITE_API_URL: ${VITE_API_URL:-https://api.workshelf.dev}
+      VITE_API_URL: ${VITE_API_URL:-https://api.nerdchurchpartners.org}
       VITE_AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
       VITE_AZURE_TENANT: ${AZURE_TENANT}
-      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-https://workshelf.dev}
+      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-https://matrix.nerdchurchpartners.org}
       VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-https://b8c5190474974430cdd1396231416148@o4510280685977605.ingest.us.sentry.io/4510448574726144}
       VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
       VITE_POSTHOG_KEY: ${VITE_POSTHOG_KEY:-phc_GnJ8zb09tygMcjttDyBrcY3lULGThdeQc8IpP695rpb}
@@ -139,11 +139,11 @@ services:
     - ./frontend:/app
     - /app/node_modules
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   prometheus:
     image: prom/prometheus:latest
-    container_name: workshelf-prometheus
+    container_name: npc-prometheus
     command:
     - --config.file=/etc/prometheus/prometheus.yml
     - --storage.tsdb.path=/prometheus
@@ -157,11 +157,11 @@ services:
     depends_on:
     - backend
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   grafana:
     image: grafana/grafana:latest
-    container_name: workshelf-grafana
+    container_name: npc-grafana
     environment:
     - GF_SECURITY_ADMIN_USER=admin
     - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -175,29 +175,29 @@ services:
     depends_on:
     - prometheus
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
   vault:
     image: hashicorp/vault:latest
-    container_name: workshelf-vault
+    container_name: npc-vault
     cap_add:
     - IPC_LOCK
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:-workshelf-dev-token}
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:-npc-dev-token}
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
     ports:
     - "127.0.0.1:8200:8200"
     volumes:
     - vault_data:/vault/data
     - vault_logs:/vault/logs
-    command: server -dev -dev-root-token-id=${VAULT_ROOT_TOKEN:-workshelf-dev-token}
+    command: server -dev -dev-root-token-id=${VAULT_ROOT_TOKEN:-npc-dev-token}
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-    - workshelf
+    - npc
     restart: unless-stopped
 volumes:
   postgres_data: null
@@ -209,5 +209,5 @@ volumes:
   vault_data: null
   vault_logs: null
 networks:
-  workshelf:
+  npc:
     driver: bridge

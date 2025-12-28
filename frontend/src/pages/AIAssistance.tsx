@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from '../services/toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 type AssistanceTab = 'prompts' | 'character' | 'plot' | 'pacing' | 'synonyms' | 'titles' | 'outline'
 

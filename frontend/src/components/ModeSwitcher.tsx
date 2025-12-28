@@ -1,6 +1,6 @@
 /**
  * ModeSwitcher Component - 4-mode document workflow
- * Modes: Alpha (Draft Room), Beta (Workshop), Publish (Print Queue), Read (Bookshelf)
+ * Modes: Alpha (Draft Room), Beta (Workshop), Publish (Print Queue), Read (Vault)
  */
 
 import { FileEdit, MessageSquare, Printer, BookOpen } from 'lucide-react'
@@ -59,7 +59,7 @@ const modes: ModeConfig[] = [
     value: 'read',
     label: 'Read',
     icon: <BookOpen className="w-4 h-4" />,
-    description: 'Bookshelf - Public viewing',
+    description: 'Vault - Public viewing',
     color: 'text-amber-700',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-300',

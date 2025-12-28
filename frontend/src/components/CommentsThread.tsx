@@ -29,7 +29,7 @@ interface Props {
   documentId: number
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 export function CommentsThread({ documentId }: Props) {
   const [pendingAnchor, setPendingAnchor] = useState<Record<string, any> | null>(null)

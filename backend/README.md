@@ -1,6 +1,6 @@
-# Workshelf Backend
+# NPC Backend
 
-FastAPI backend service for Workshelf platform.
+FastAPI backend service for NPC (Nerdchurch Partners Corporation) platform.
 
 ## Features
 

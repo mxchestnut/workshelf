@@ -22,8 +22,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/workshelf-key.pem
-          chmod 600 ~/.ssh/workshelf-key.pem
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/npc-key.pem
+          chmod 600 ~/.ssh/npc-key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       
       - name: Add SSH Key to Server
@@ -32,7 +32,7 @@ jobs:
           EC2_USER: ubuntu
           NEW_SSH_KEY: ${{ github.event.inputs.ssh_public_key }}
         run: |
-          ssh -i ~/.ssh/workshelf-key.pem $EC2_USER@$EC2_HOST << EOF
+          ssh -i ~/.ssh/npc-key.pem $EC2_USER@$EC2_HOST << EOF
             echo "🔑 Adding new SSH key..."
             
             # Add the key to authorized_keys

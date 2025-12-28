@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { MessageCircle, Send, Search, User as UserIcon, Loader2, X } from 'lucide-react'
 import { toast } from '../services/toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface Message {
   id: number

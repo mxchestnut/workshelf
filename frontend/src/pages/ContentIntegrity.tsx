@@ -11,7 +11,7 @@ import {
   Zap, TrendingUp, Search, RefreshCw, AlertCircle 
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface AICheckResult {
   ai_score: number

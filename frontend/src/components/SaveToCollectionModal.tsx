@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from "../contexts/AuthContext"
 import { X, Plus, Folder, Check } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 // Hook to get auth token
 const useAccessToken = () => {

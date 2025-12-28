@@ -10,7 +10,7 @@ interface FollowerInfo {
   followed_at?: string
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 const Relationships: React.FC = () => {
   const [followers, setFollowers] = useState<FollowerInfo[]>([])

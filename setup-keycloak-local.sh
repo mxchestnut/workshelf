@@ -4,9 +4,9 @@
 set -e
 
 KEYCLOAK_URL="http://localhost:8080"
-ADMIN_USER="admin"
+ADMIN_USER="npc-kit"
 ADMIN_PASS="admin"
-REALM="workshelf"
+REALM="npc"
 
 echo "🔐 Setting up Keycloak for local development..."
 
@@ -41,7 +41,7 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms" \
   -d "{
     \"realm\": \"$REALM\",
     \"enabled\": true,
-    \"displayName\": \"WorkShelf\",
+    \"displayName\": \"NPC\",
     \"registrationAllowed\": true,
     \"loginWithEmailAllowed\": true,
     \"duplicateEmailsAllowed\": false,
@@ -59,8 +59,8 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": "workshelf-api",
-    "name": "WorkShelf API",
+    "clientId": "npc-api",
+    "name": "NPC API",
     "enabled": true,
     "publicClient": false,
     "standardFlowEnabled": true,
@@ -74,7 +74,7 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
 # Get backend client and set secret
 echo "🔑 Setting backend client secret..."
 BACKEND_CLIENT_ID=$(curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
-  -H "Authorization: Bearer $TOKEN" | jq -r '.[] | select(.clientId=="workshelf-api") | .id')
+  -H "Authorization: Bearer $TOKEN" | jq -r '.[] | select(.clientId=="npc-api") | .id')
 
 if [ -n "$BACKEND_CLIENT_ID" ]; then
   BACKEND_SECRET=$(curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/clients/$BACKEND_CLIENT_ID/client-secret" \
@@ -94,8 +94,8 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "clientId": "workshelf-frontend",
-    "name": "WorkShelf Frontend",
+    "clientId": "npc-frontend",
+    "name": "NPC Frontend",
     "enabled": true,
     "publicClient": true,
     "standardFlowEnabled": true,
@@ -120,7 +120,7 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/users" \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
-    "email": "test@workshelf.local",
+    "email": "test@nerdchurch.local",
     "emailVerified": true,
     "enabled": true,
     "firstName": "Test",

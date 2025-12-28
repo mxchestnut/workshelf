@@ -26,7 +26,7 @@ export default function PendingApproval() {
           </h1>
           
           <p className="text-lg mb-6" style={{ color: '#B3B2B0' }}>
-            Thank you for registering! WorkShelf is currently in beta, and all new accounts require staff approval.
+            Thank you for registering! NPC is currently in beta, and all new accounts require staff approval.
           </p>
           
           <p className="mb-8" style={{ color: '#B3B2B0' }}>

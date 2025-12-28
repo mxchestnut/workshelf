@@ -1,5 +1,5 @@
 /**
- * PostHog Product Analytics Configuration for WorkShelf
+ * PostHog Product Analytics Configuration for NPC
  * Provides session replay, feature flags, funnels, and user behavior tracking
  */
 
@@ -40,7 +40,7 @@ export function initPostHog() {
     // Autocapture clicks and form interactions
     autocapture: {
       dom_event_allowlist: ['click', 'submit'], // Only capture clicks and form submits
-      url_allowlist: ['workshelf.dev'], // Only capture on our domain
+      url_allowlist: ['nerdchurchpartners.org'], // Only capture on our domain
     },
     
     // Performance

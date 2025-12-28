@@ -3,7 +3,7 @@ import { ArrowLeft, Pin, Lock, Pencil } from 'lucide-react';
 import TagInput from '../components/TagInput';
 import { PostModerationActions } from '../components/PostModerationActions';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org';
 
 interface Tag {
   id: number;

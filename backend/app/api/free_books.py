@@ -10,7 +10,7 @@ import httpx
 from app.core.database import get_db
 from app.core.azure_auth import get_current_user_id
 from app.models.user import User
-from app.models.bookshelf import BookshelfItem
+from app.models.vault import Article
 
 router = APIRouter(prefix="/free-books", tags=["free-books"])
 

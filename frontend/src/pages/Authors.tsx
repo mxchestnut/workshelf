@@ -55,7 +55,7 @@ export default function Authors() {
   const [loadingBooks, setLoadingBooks] = useState(false)
   const [addingBook, setAddingBook] = useState<string | null>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
   useEffect(() => {
     loadAuthors()
@@ -248,7 +248,7 @@ export default function Authors() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -272,7 +272,7 @@ export default function Authors() {
       if (response.ok) {
         // Remove from books list
         setAuthorBooks(prev => prev.filter(b => b.title !== book.title))
-        alert('Book added to your bookshelf!')
+        alert('Book added to your vault!')
       } else {
         const error = await response.json()
         alert(error.detail || 'Failed to add book')
@@ -503,7 +503,7 @@ export default function Authors() {
             <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No authors yet</h3>
             <p className="text-gray-600">
-              Add books to your bookshelf to automatically track authors!
+              Add books to your vault to automatically track authors!
             </p>
           </div>
         ) : (
@@ -634,7 +634,7 @@ export default function Authors() {
                     <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No books found</h3>
                     <p className="text-gray-600">
-                      We couldn't find any books by this author that aren't already in your bookshelf.
+                      We couldn't find any books by this author that aren't already in your vault.
                     </p>
                   </div>
                 ) : (
@@ -692,7 +692,7 @@ export default function Authors() {
                             ) : (
                               <span className="flex items-center justify-center gap-2">
                                 <Plus className="w-4 h-4" />
-                                Add to Bookshelf
+                                Add to Vault
                               </span>
                             )}
                           </button>

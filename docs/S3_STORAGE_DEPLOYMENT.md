@@ -54,7 +54,7 @@ Document Retrieval Flow:
 
 **Setup:**
 1. Go to https://dash.cloudflare.com/?to=/:account/r2
-2. Create bucket: `workshelf-documents`
+2. Create bucket: `npc-documents`
 3. Create API token with read/write permissions
 4. Set `S3_ENDPOINT_URL` to your R2 endpoint
 
@@ -76,7 +76,7 @@ Add these to your production `.env`:
 S3_ENDPOINT_URL=                    # Empty for AWS S3, set for MinIO/R2
 S3_ACCESS_KEY_ID=your_key_here      # AWS access key or R2 token
 S3_SECRET_ACCESS_KEY=your_secret    # AWS secret or R2 secret
-S3_BUCKET_NAME=workshelf-documents  # Bucket name
+S3_BUCKET_NAME=npc-documents  # Bucket name
 S3_REGION=us-east-1                 # AWS region or R2 auto
 ```
 
@@ -85,7 +85,7 @@ S3_REGION=us-east-1                 # AWS region or R2 auto
 S3_ENDPOINT_URL=
 S3_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 S3_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-S3_BUCKET_NAME=workshelf-documents
+S3_BUCKET_NAME=npc-documents
 S3_REGION=us-east-1
 ```
 
@@ -94,7 +94,7 @@ S3_REGION=us-east-1
 S3_ENDPOINT_URL=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
 S3_ACCESS_KEY_ID=your_r2_access_key
 S3_SECRET_ACCESS_KEY=your_r2_secret_key
-S3_BUCKET_NAME=workshelf-documents
+S3_BUCKET_NAME=npc-documents
 S3_REGION=auto
 ```
 
@@ -103,7 +103,7 @@ S3_REGION=auto
 S3_ENDPOINT_URL=http://localhost:9000
 S3_ACCESS_KEY_ID=minioadmin
 S3_SECRET_ACCESS_KEY=minioadmin
-S3_BUCKET_NAME=workshelf-documents
+S3_BUCKET_NAME=npc-documents
 S3_REGION=us-east-1
 ```
 
@@ -121,24 +121,24 @@ S3_REGION=us-east-1
 **AWS S3:**
 ```bash
 # Using AWS CLI
-aws s3 mb s3://workshelf-documents --region us-east-1
+aws s3 mb s3://npc-documents --region us-east-1
 
 # Set bucket policy (private)
-aws s3api put-bucket-acl --bucket workshelf-documents --acl private
+aws s3api put-bucket-acl --bucket npc-documents --acl private
 ```
 
 **Cloudflare R2:**
 1. Go to Cloudflare Dashboard → R2
 2. Click "Create bucket"
-3. Name: `workshelf-documents`
+3. Name: `npc-documents`
 4. Create API token with read/write permissions
 
 ### Step 3: Update Production Environment
 
 SSH into production server:
 ```bash
-ssh -i ~/.ssh/workshelf-key.pem ubuntu@34.239.176.138
-cd /opt/workshelf/deploy
+ssh -i ~/.ssh/npc-key.pem ubuntu@34.239.176.138
+cd /opt/npc/deploy
 ```
 
 Edit `.env` file:
@@ -207,11 +207,11 @@ Create migration script (future task):
 
 **AWS S3:**
 ```bash
-aws s3 ls s3://workshelf-documents --recursive --summarize
+aws s3 ls s3://npc-documents --recursive --summarize
 ```
 
 **Cloudflare R2:**
-- Dashboard → R2 → workshelf-documents → Metrics
+- Dashboard → R2 → npc-documents → Metrics
 
 ### Backend Logs
 
@@ -279,8 +279,8 @@ docker-compose exec backend python3 scripts/test_s3_storage.py
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::workshelf-documents",
-        "arn:aws:s3:::workshelf-documents/*"
+        "arn:aws:s3:::npc-documents",
+        "arn:aws:s3:::npc-documents/*"
       ]
     }
   ]
@@ -296,7 +296,7 @@ Enable bucket versioning to protect against accidental deletion:
 **AWS S3:**
 ```bash
 aws s3api put-bucket-versioning \
-  --bucket workshelf-documents \
+  --bucket npc-documents \
   --versioning-configuration Status=Enabled
 ```
 

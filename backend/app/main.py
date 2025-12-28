@@ -1,5 +1,5 @@
 """
-Work Shelf - FastAPI Application
+NPC (Nerdchurch Partners Corporation) - FastAPI Application
 Main entry point for the backend API
 """
 import os
@@ -47,7 +47,7 @@ else:
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
-    title="Work Shelf API",
+    title="NPC API",
     description="Social infrastructure platform for creators",
     version=settings.VERSION,
     docs_url="/api/docs",
@@ -79,10 +79,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://workshelf.dev",
-        "https://www.workshelf.dev",
-        "https://app.workshelf.dev",
-        "https://admin.workshelf.dev",
+        "https://nerdchurchpartners.org",
+        "https://www.nerdchurchpartners.org",
+        "https://app.nerdchurchpartners.org",
+        "https://admin.nerdchurchpartners.org",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -91,7 +91,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-print("[CORS] Configured for origins: workshelf.dev, www.workshelf.dev, app.workshelf.dev, admin.workshelf.dev")
+print("[CORS] Configured for origins: nerdchurchpartners.org")
 
 # Health check endpoints
 @app.get("/health")
@@ -103,7 +103,7 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.VERSION,
-        "service": "work-shelf-api"
+        "service": "npc-api"
     }
 
 @app.get("/health/live")
@@ -129,7 +129,7 @@ async def readiness(db: AsyncSession = Depends(get_db)):
         return {
             "status": "ready",
             "database": "connected",
-            "service": "work-shelf-api"
+            "service": "npc-api"
         }
     except Exception as e:
         raise HTTPException(
@@ -146,7 +146,7 @@ app.include_router(api_router, prefix="/api/v1")
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=LOG_LEVEL)
-logger = logging.getLogger("workshelf")
+logger = logging.getLogger("npc")
 
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
 # Stricter limit for auth endpoints to mitigate brute-force / token abuse

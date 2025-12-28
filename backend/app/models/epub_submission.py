@@ -63,7 +63,7 @@ class EpubSubmission(Base, TimestampMixin):
     
     # Publishing
     published_at = Column(DateTime, nullable=True)
-    bookshelf_item_id = Column(Integer, ForeignKey("bookshelf_items.id", ondelete="SET NULL"), nullable=True)
+    article_id = Column(Integer, ForeignKey("vault_articles.id", ondelete="SET NULL"), nullable=True)
     
     # Author attestation
     author_attestation = Column(Boolean, default=False)  # User confirms they are author

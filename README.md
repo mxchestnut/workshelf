@@ -1,4 +1,4 @@
-# WorkShelf
+# NPC (Nerdchurch Partners Corporation)
 
 A minimal, beautiful writing and collaboration platform with:
 - 📝 **Tiptap 3.x** rich text editor
@@ -21,7 +21,7 @@ Built with Python (FastAPI) + React + TypeScript.
 ### 1. Clone and Setup
 
 ```bash
-cd work-shelf
+cd npc
 cp .env.example .env
 # Edit .env if needed (defaults work for local dev)
 ```
@@ -46,10 +46,10 @@ This starts:
 **First time only:**
 
 1. Visit http://localhost:8080
-2. Login with admin / admin
-3. Create realm: workshelf
-4. Create client: workshelf-api (confidential)
-5. Create client: workshelf-frontend (public)
+2. Login with npc-kit / admin
+3. Create realm: npc
+4. Create client: npc-api (confidential)
+5. Create client: npc-frontend (public)
 6. Create a test user
 
 ### 4. Access the Application

@@ -137,7 +137,7 @@ class Purchase(Base):
     refund_reason = Column(Text, nullable=True)
     
     # Access Control
-    bookshelf_item_id = Column(Integer, ForeignKey("bookshelf_items.id"), nullable=True)  # Auto-added to shelf
+    article_id = Column(Integer, ForeignKey("vault_articles.id"), nullable=True)  # Auto-added to vault
     access_granted = Column(Boolean, default=False)
     access_granted_at = Column(DateTime, nullable=True)
     

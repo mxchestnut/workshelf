@@ -3,13 +3,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: workshelf-backend:latest
-    container_name: workshelf-backend
+    image: npc-backend:latest
+    container_name: npc-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     networks:
-      - workshelf
+      - npc
     environment:
       # Database
       DATABASE_URL: ${DATABASE_URL}
@@ -19,23 +19,23 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       
       # Keycloak
-      KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev
-      KEYCLOAK_INTERNAL_URL: http://workshelf-keycloak:8080
-      KEYCLOAK_REALM: workshelf
-      KEYCLOAK_CLIENT_ID: workshelf-api
+      KEYCLOAK_SERVER_URL: https://keycloak.nerdchurchpartners.org
+      KEYCLOAK_INTERNAL_URL: http://npc-keycloak:8080
+      KEYCLOAK_REALM: npc
+      KEYCLOAK_CLIENT_ID: npc-api
       
       # Redis
-      REDIS_URL: redis://workshelf-redis:6379
+      REDIS_URL: redis://npc-redis:6379
       
       # MinIO
-      MINIO_ENDPOINT: workshelf-minio:9000
+      MINIO_ENDPOINT: npc-minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       
       # Matrix
-      MATRIX_HOMESERVER: http://workshelf-synapse:8008
-      MATRIX_SERVER_NAME: workshelf.dev
-      MATRIX_PUBLIC_HOMESERVER: https://workshelf.dev
+      MATRIX_HOMESERVER: http://npc-synapse:8008
+      MATRIX_SERVER_NAME: nerd.church
+      MATRIX_PUBLIC_HOMESERVER: https://matrix.nerdchurchpartners.org
       MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
       
       # Monitoring
@@ -51,12 +51,12 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
-    container_name: workshelf-keycloak
+    container_name: npc-keycloak
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
     networks:
-      - workshelf
+      - npc
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
@@ -74,23 +74,23 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: workshelf-redis
+    container_name: npc-redis
     restart: unless-stopped
     networks:
-      - workshelf
+      - npc
     volumes:
       - redis_data:/data
 
   minio:
     image: minio/minio:latest
-    container_name: workshelf-minio
+    container_name: npc-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
       - "127.0.0.1:9000:9000"
       - "127.0.0.1:9001:9001"
     networks:
-      - workshelf
+      - npc
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
@@ -99,14 +99,14 @@ services:
 
   synapse:
     image: matrixdotorg/synapse:latest
-    container_name: workshelf-synapse
+    container_name: npc-synapse
     restart: unless-stopped
     ports:
       - "8008:8008"
     networks:
-      - workshelf
+      - npc
     environment:
-      SYNAPSE_SERVER_NAME: workshelf.dev
+      SYNAPSE_SERVER_NAME: nerd.church
       SYNAPSE_REPORT_STATS: "no"
     volumes:
       - synapse_data:/data
@@ -117,22 +117,22 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
-        VITE_API_URL: https://workshelf.dev
-        VITE_KEYCLOAK_URL: https://keycloak.workshelf.dev
-        VITE_KEYCLOAK_REALM: workshelf
-        VITE_KEYCLOAK_CLIENT_ID: workshelf-frontend
+        VITE_API_URL: https://api.nerdchurchpartners.org
+        VITE_KEYCLOAK_URL: https://keycloak.nerdchurchpartners.org
+        VITE_KEYCLOAK_REALM: npc
+        VITE_KEYCLOAK_CLIENT_ID: npc-frontend
         VITE_ENVIRONMENT: production
-    image: workshelf-frontend:latest
-    container_name: workshelf-frontend
+    image: npc-frontend:latest
+    container_name: npc-frontend
     restart: unless-stopped
     ports:
       - "5173:80"
     networks:
-      - workshelf
+      - npc
 
 networks:
-  workshelf:
-    name: workshelf_workshelf
+  npc:
+    name: npc_network
     driver: bridge
 
 volumes:

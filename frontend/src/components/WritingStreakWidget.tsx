@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Flame, Target, TrendingUp, Calendar, Award } from 'lucide-react'
 import { calculateStreak, getStreakEmoji, getStreakMessage, type StreakData } from '../utils/streak-calculator'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface WritingGoal {
   dailyWordCount: number

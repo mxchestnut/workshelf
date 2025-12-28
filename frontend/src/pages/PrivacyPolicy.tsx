@@ -162,7 +162,7 @@ export default function PrivacyPolicy() {
               <ul className="space-y-2 text-blue-800 dark:text-blue-300">
                 <li>• <strong>Export Your Data:</strong> Visit <a href="/export" className="underline hover:text-blue-600">Export Center</a> (coming soon)</li>
                 <li>• <strong>Delete Account:</strong> Visit <a href="/profile" className="underline hover:text-blue-600">Profile Settings</a> (coming soon)</li>
-                <li>• <strong>Other Requests:</strong> Email privacy@workshelf.dev [PLACEHOLDER]</li>
+                <li>• <strong>Other Requests:</strong> Email privacy@nerdchurchpartners.org [PLACEHOLDER]</li>
               </ul>
             </div>
           </section>
@@ -188,7 +188,7 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 dark:text-gray-300">
               Workshelf is not intended for users under 13 years of age. We do not knowingly collect
               information from children. If you believe a child has provided us with personal information,
-              please contact us immediately at privacy@workshelf.dev [PLACEHOLDER].
+              please contact us immediately at privacy@nerdchurchpartners.org [PLACEHOLDER].
             </p>
           </section>
 
@@ -226,7 +226,7 @@ export default function PrivacyPolicy() {
             </p>
             <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>Email:</strong> privacy@workshelf.dev [PLACEHOLDER]<br />
+                <strong>Email:</strong> privacy@nerdchurchpartners.org [PLACEHOLDER]<br />
                 <strong>Address:</strong> [PLACEHOLDER: Physical address]<br />
                 <strong>Data Protection Officer:</strong> [PLACEHOLDER: DPO contact if required]
               </p>

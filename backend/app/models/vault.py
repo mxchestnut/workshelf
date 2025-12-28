@@ -1,6 +1,6 @@
 """
-Bookshelf Models
-Track books and Work Shelf documents in user's personal library
+Vault Models
+Track books and NPC documents in user's personal vault
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Float, ForeignKey, CheckConstraint, Index
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -11,13 +11,13 @@ from enum import Enum
 from app.models.base import Base, TimestampMixin
 
 
-class BookshelfItemType(str, Enum):
-    """Type of bookshelf item"""
-    DOCUMENT = "document"  # Work Shelf document
+class ArticleType(str, Enum):
+    """Type of vault article"""
+    DOCUMENT = "document"  # NPC document
     BOOK = "book"  # External book (ISBN)
 
 
-class BookshelfStatus(str, Enum):
+class ArticleStatus(str, Enum):
     """Reading status"""
     READING = "reading"  # Currently reading
     READ = "read"  # Finished reading
@@ -26,18 +26,18 @@ class BookshelfStatus(str, Enum):
     DNF = "dnf"  # Did not finish / disliked
 
 
-class BookshelfItem(Base, TimestampMixin):
+class Article(Base, TimestampMixin):
     """
-    User's bookshelf - tracks both Work Shelf documents and external books
+    User's vault - tracks both NPC documents and external books
     
     This allows users to:
     - Track books they're reading (like Goodreads)
-    - Add Work Shelf documents to their library
+    - Add NPC documents to their library
     - Rate and review books
     - Organize by reading status (reading, read, want-to-read, favorites, DNF)
-    - Display their bookshelf on their public profile
+    - Display their vault on their public profile
     """
-    __tablename__ = "bookshelf_items"
+    __tablename__ = "vault_articles"
     
     id = Column(Integer, primary_key=True, index=True)
     
@@ -48,12 +48,12 @@ class BookshelfItem(Base, TimestampMixin):
     item_type = Column(String(20), nullable=False)
     
     # ========================================================================
-    # For Work Shelf documents (item_type='document')
+    # For NPC documents (item_type='document')
     # ========================================================================
     document_id = Column(Integer, ForeignKey('documents.id', ondelete='CASCADE'), nullable=True, index=True)
     
     # ========================================================================
-    # For published Work Shelf store items
+    # For published NPC store items
     # ========================================================================
     store_item_id = Column(Integer, ForeignKey('store_items.id', ondelete='CASCADE'), nullable=True, index=True)
     
@@ -96,8 +96,8 @@ class BookshelfItem(Base, TimestampMixin):
     # ========================================================================
     # Relationships
     # ========================================================================
-    user = relationship("User", back_populates="bookshelf_items")
-    document = relationship("Document", back_populates="bookshelf_items")
+    user = relationship("User", back_populates="vault_articles")
+    document = relationship("Document", back_populates="vault_articles")
     
     # ========================================================================
     # Constraints and indexes
@@ -107,19 +107,19 @@ class BookshelfItem(Base, TimestampMixin):
         CheckConstraint(
             "(item_type = 'document' AND document_id IS NOT NULL) OR "
             "(item_type = 'book' AND title IS NOT NULL)",
-            name='check_bookshelf_item_valid'
+            name='check_vault_article_valid'
         ),
         # Rating must be 1-5 or null
         CheckConstraint(
             "rating IS NULL OR (rating >= 1 AND rating <= 5)",
-            name='check_bookshelf_rating_range'
+            name='check_vault_rating_range'
         ),
         # Valid statuses
         CheckConstraint(
             "status IN ('reading', 'read', 'want-to-read', 'favorites', 'dnf')",
-            name='check_bookshelf_status'
+            name='check_vault_status'
         ),
         # Indexes
-        Index('idx_bookshelf_user_status', 'user_id', 'status'),
-        Index('idx_bookshelf_user_favorites', 'user_id', 'is_favorite'),
+        Index('idx_vault_user_status', 'user_id', 'status'),
+        Index('idx_vault_user_favorites', 'user_id', 'is_favorite'),
     )

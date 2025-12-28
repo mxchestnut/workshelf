@@ -28,7 +28,6 @@ from app.schemas.project import *  # noqa: F401, F403
 from app.schemas.reading import *  # noqa: F401, F403
 from app.schemas.reading_list import *  # noqa: F401, F403
 from app.schemas.relationships import *  # noqa: F401, F403
-from app.schemas.roleplay import *  # noqa: F401, F403
 from app.schemas.search import *  # noqa: F401, F403
 from app.schemas.sharing import *  # noqa: F401, F403
 from app.schemas.social import *  # noqa: F401, F403

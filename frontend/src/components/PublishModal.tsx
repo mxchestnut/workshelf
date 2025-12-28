@@ -61,7 +61,7 @@ export default function PublishModal({ document, onClose, onPublish }: PublishMo
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Publish to WorkShelf</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Publish to NPC</h2>
             <p className="text-sm text-gray-600 mt-1">Make your work available for readers</p>
           </div>
           <button
@@ -122,7 +122,7 @@ export default function PublishModal({ document, onClose, onPublish }: PublishMo
                 <div>
                   <h3 className="font-semibold text-blue-900 mb-1">Preview Your Published Work</h3>
                   <p className="text-sm text-blue-700">
-                    Your document will be available in the WorkShelf reading experience with 
+                    Your document will be available in the NPC reading experience with 
                     formatting optimized for all devices. Readers will access it through our 
                     Readium-powered reader with features like:
                   </p>
@@ -308,7 +308,7 @@ export default function PublishModal({ document, onClose, onPublish }: PublishMo
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="font-semibold text-yellow-900 mb-2">Important Information</div>
                 <ul className="text-sm text-yellow-800 space-y-1">
-                  <li>• Your work will be publicly available in the WorkShelf reading library</li>
+                  <li>• Your work will be publicly available in the NPC reading library</li>
                   <li>• Readers will access it through our Readium-powered reader</li>
                   <li>• You can unpublish or update pricing at any time</li>
                   <li>• Analytics and reader feedback will be available in your dashboard</li>

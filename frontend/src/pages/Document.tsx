@@ -12,7 +12,7 @@ import '../components/Editor.css'
 import { CommentsThread } from '../components/CommentsThread'
 import { toast } from '../services/toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface DocumentData {
   id: number

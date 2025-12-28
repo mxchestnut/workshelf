@@ -108,8 +108,8 @@ jobs:
       
       - name: Build (validates env & runs prebuild script)
         env:
-          VITE_API_URL: https://api.workshelf.dev
-          VITE_KEYCLOAK_URL: https://keycloak.workshelf.dev
+          VITE_API_URL: https://api.nerdchurchpartners.org
+          VITE_KEYCLOAK_URL: https://keycloak.nerdchurchpartners.org
           # actionlint: ignore
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
           # actionlint: ignore

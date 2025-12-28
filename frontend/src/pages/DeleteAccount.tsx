@@ -8,7 +8,7 @@ import { Navigation } from '../components/Navigation'
 import { useAuth } from "../contexts/AuthContext"
 import { AlertTriangle, X, Trash2 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface DeletionInfo {
   username: string

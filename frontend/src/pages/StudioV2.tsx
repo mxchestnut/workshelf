@@ -6,7 +6,7 @@ import { Navigation } from '../components/Navigation'
 import { BulkUploadModal } from '../components/BulkUploadModal'
 import PublishModal, { PublishData } from '../components/PublishModal'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface Project {
   id: number

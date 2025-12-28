@@ -1,6 +1,6 @@
 """
-Bookshelf API endpoints
-Manage user's book collection (both Work Shelf documents and external books)
+Vault API endpoints
+Manage user's vault collection (both NPC documents and external books)
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,13 +15,13 @@ from anthropic import Anthropic
 
 from app.core.database import get_db
 from app.core.azure_auth import get_current_user
-from app.models.bookshelf import BookshelfItem, BookshelfItemType, BookshelfStatus
+from app.models.vault import Article, ArticleType, ArticleStatus
 from app.models.author import Author, UserFollowsAuthor
 from app.models.document import Document
 from app.models import User
 from app.services import user_service
 
-router = APIRouter(prefix="/bookshelf", tags=["bookshelf"])
+router = APIRouter(prefix="/vault", tags=["vault"])
 
 
 # ============================================================================

@@ -29,7 +29,7 @@ export default function StoreSuccess() {
         </h1>
         
         <p className="text-xl text-gray-600 mb-8">
-          Your book has been added to your bookshelf. Start reading instantly!
+          Your book has been added to your vault. Start reading instantly!
         </p>
 
         {/* Session ID (for debugging) */}
@@ -42,11 +42,11 @@ export default function StoreSuccess() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => window.location.href = '/bookshelf'}
+            onClick={() => window.location.href = '/vault'}
             className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-md hover:shadow-lg"
           >
             <BookOpen className="w-5 h-5" />
-            Go to My Bookshelf
+            Go to My Vault
           </button>
 
           <button
@@ -66,8 +66,8 @@ export default function StoreSuccess() {
               <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mb-3 mx-auto md:mx-0">
                 <span className="text-purple-600 font-bold text-lg">1</span>
               </div>
-              <h4 className="font-semibold text-gray-800 mb-2">Added to Bookshelf</h4>
-              <p className="text-sm text-gray-600">Your book is now available in your personal bookshelf</p>
+              <h4 className="font-semibold text-gray-800 mb-2">Added to Vault</h4>
+              <p className="text-sm text-gray-600">Your book is now available in your personal vault</p>
             </div>
 
             <div>

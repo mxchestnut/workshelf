@@ -115,7 +115,7 @@ class Document(Base, TimestampMixin, TenantMixin):
     # Phase 3: Reading relationships
     bookmarks = relationship("Bookmark", back_populates="document", cascade="all, delete-orphan")
     reading_list_items = relationship("ReadingListItem", back_populates="document", cascade="all, delete-orphan")
-    bookshelf_items = relationship("BookshelfItem", back_populates="document", cascade="all, delete-orphan")
+    vault_articles = relationship("Article", back_populates="document", cascade="all, delete-orphan")
     reading_progress = relationship("ReadingProgress", back_populates="document", cascade="all, delete-orphan")
     
     # Phase 4: Collaboration relationships

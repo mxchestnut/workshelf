@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Construction, StarHalf, Star, MoonStar, Filter, X } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev';
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org';
 
 interface NavigationItem {
   page_path: string;

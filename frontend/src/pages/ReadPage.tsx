@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Loader2, Lock, BookOpen } from 'lucide-react'
 import EpubReader from '../components/EpubReader'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface StoreItem {
   id: number
@@ -27,12 +27,12 @@ export default function ReadPage() {
   const [hasAccess, setHasAccess] = useState(false)
   const [showReader, setShowReader] = useState(false)
   const [readingProgress, setReadingProgress] = useState(0)
-  const [inBookshelf, setInBookshelf] = useState(false)
+  const [inVault, setInVault] = useState(false)
   const [addingToShelf, setAddingToShelf] = useState(false)
 
   useEffect(() => {
     loadStoreItem()
-    checkIfInBookshelf()
+    checkIfInVault()
   }, [itemId])
 
   const loadStoreItem = async () => {
@@ -78,30 +78,30 @@ export default function ReadPage() {
     }
   }
 
-  const checkIfInBookshelf = async () => {
+  const checkIfInVault = async () => {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       if (response.ok) {
-        const bookshelf = await response.json()
-        // Check if this store item is already in bookshelf
-        const found = bookshelf.some((item: any) => 
+        const vault = await response.json()
+        // Check if this store item is already in vault
+        const found = vault.some((item: any) => 
           item.store_item_id?.toString() === itemId
         )
-        setInBookshelf(found)
+        setInVault(found)
       }
     } catch (error) {
-      console.error('Failed to check bookshelf:', error)
+      console.error('Failed to check vault:', error)
     }
   }
 
-  const handleAddToBookshelf = async () => {
+  const handleAddToVault = async () => {
     if (!storeItem) return
     
     setAddingToShelf(true)
@@ -112,7 +112,7 @@ export default function ReadPage() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,10 +130,10 @@ export default function ReadPage() {
       })
 
       if (response.ok) {
-        setInBookshelf(true)
+        setInVault(true)
       }
     } catch (error) {
-      console.error('Failed to add to bookshelf:', error)
+      console.error('Failed to add to vault:', error)
     } finally {
       setAddingToShelf(false)
     }
@@ -276,20 +276,20 @@ export default function ReadPage() {
                   >
                     {readingProgress > 0 ? `Continue Reading (${Math.round(readingProgress)}%)` : 'Start Reading'}
                   </button>
-                  {!inBookshelf && (
+                  {!inVault && (
                     <button
-                      onClick={handleAddToBookshelf}
+                      onClick={handleAddToVault}
                       disabled={addingToShelf}
                       className="w-full md:w-auto px-8 py-3 bg-secondary text-secondary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       <BookOpen className="w-4 h-4" />
-                      {addingToShelf ? 'Adding...' : 'Save to Bookshelf'}
+                      {addingToShelf ? 'Adding...' : 'Save to Vault'}
                     </button>
                   )}
-                  {inBookshelf && (
+                  {inVault && (
                     <div className="flex items-center gap-2 text-green-600">
                       <BookOpen className="w-4 h-4" />
-                      <span className="font-medium">In your bookshelf</span>
+                      <span className="font-medium">In your vault</span>
                     </div>
                   )}
                 </>
@@ -324,7 +324,7 @@ export default function ReadPage() {
 
             {/* Reading Info */}
             <div className="mt-8 p-4 bg-accent rounded-lg">
-              <h3 className="font-semibold text-foreground mb-2">Read with WorkShelf</h3>
+              <h3 className="font-semibold text-foreground mb-2">Read with NPC</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Adjustable font size and themes</li>
                 <li>• Text-to-speech with natural voices</li>

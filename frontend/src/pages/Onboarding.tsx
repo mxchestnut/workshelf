@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // Use same fallback pattern as auth.ts
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org';
 
 // Default interests if no groups exist yet
 const DEFAULT_INTERESTS = [
@@ -155,7 +155,7 @@ export default function Onboarding() {
     if (!formData.birthYear) {
       newErrors.push({ field: 'birthYear', message: 'Birth year is required' });
     } else if (parseInt(formData.birthYear) > maxBirthYear) {
-      newErrors.push({ field: 'birthYear', message: 'You must be at least 18 years old to use Work Shelf' });
+      newErrors.push({ field: 'birthYear', message: 'You must be at least 18 years old to use NPC' });
     }
 
     setErrors(newErrors);
@@ -296,7 +296,7 @@ export default function Onboarding() {
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Work Shelf! 🎉</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to NPC! 🎉</h1>
           <p className="text-gray-600">Let's set up your account</p>
 
           {/* Progress indicator */}

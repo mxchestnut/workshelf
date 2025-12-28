@@ -32,10 +32,10 @@ from app.models.book_suggestion import (
     SuggestionStatus,
     BookSuggestion,
 )
-from app.models.bookshelf import (
-    BookshelfItemType,
-    BookshelfStatus,
-    BookshelfItem,
+from app.models.vault import (
+    ArticleType,
+    ArticleStatus,
+    Article,
 )
 from app.models.collaboration import (
     ReaderRole,
@@ -137,19 +137,6 @@ from app.models.role import (
     Role,
     RolePermission,
     UserRole,
-)
-from app.models.roleplay import (
-    RoleplayGenre,
-    RoleplayRating,
-    PostingOrder,
-    DiceSystem,
-    RoleplayProject,
-    RoleplayCharacter,
-    RoleplayScene,
-    RoleplayPassage,
-    LoreEntry,
-    PassageReaction,
-    DiceRoll,
 )
 from app.models.social import (
     UserFollow,
@@ -301,12 +288,6 @@ __all__ = [
     "ReadingProgress",
     "Role",
     "RolePermission",
-    "RoleplayCharacter",
-    "RoleplayGenre",
-    "RoleplayPassage",
-    "RoleplayProject",
-    "RoleplayRating",
-    "RoleplayScene",
     "ScholarshipRequest",
     "ShareLink",
     "StoreItem",

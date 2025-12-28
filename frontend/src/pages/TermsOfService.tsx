@@ -13,7 +13,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-700 mb-4">
-              By accessing and using Work Shelf ("the Platform"), you accept and agree to be bound by the terms and 
+              By accessing and using NPC ("the Platform"), you accept and agree to be bound by the terms and 
               provision of this agreement. If you do not agree to these Terms of Service, please do not use the Platform.
             </p>
           </section>
@@ -21,7 +21,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Description of Service</h2>
             <p className="text-gray-700 mb-4">
-              Work Shelf is a collaborative platform for creative writing, storytelling, and community building. 
+              NPC is a collaborative platform for creative writing, storytelling, and community building. 
               The Platform allows users to:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
@@ -53,7 +53,7 @@ export default function TermsOfService() {
             <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-3">4.1 Your Content</h3>
             <p className="text-gray-700 mb-4">
               You retain all rights to content you create, upload, or share on the Platform ("User Content"). 
-              By posting User Content, you grant Work Shelf a non-exclusive, worldwide, royalty-free license to:
+              By posting User Content, you grant NPC a non-exclusive, worldwide, royalty-free license to:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2 mb-4">
               <li>Display, reproduce, and distribute your content on the Platform</li>
@@ -98,7 +98,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Intellectual Property</h2>
             <p className="text-gray-700 mb-4">
-              The Platform and its original content, features, and functionality are owned by Work Shelf and are 
+              The Platform and its original content, features, and functionality are owned by NPC and are 
               protected by international copyright, trademark, and other intellectual property laws.
             </p>
           </section>
@@ -148,7 +148,7 @@ export default function TermsOfService() {
               If you have questions about these Terms of Service, please contact us at:
             </p>
             <p className="text-gray-700">
-              Email: <a href="mailto:support@workshelf.dev" className="text-blue-600 hover:underline">support@workshelf.dev</a>
+              Email: <a href="mailto:support@nerdchurchpartners.org" className="text-blue-600 hover:underline">support@nerdchurchpartners.org</a>
             </p>
           </section>
         </div>

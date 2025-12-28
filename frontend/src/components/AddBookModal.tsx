@@ -58,7 +58,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     rating: '',
   })
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
@@ -142,7 +142,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     setAdding(true)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     setEnhancing(index)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/bookshelf/enhance-book-data`, {
+      const response = await fetch(`${API_URL}/api/v1/vault/enhance-book-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
     setAdding(true)
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_URL}/api/v1/bookshelf`, {
+      const response = await fetch(`${API_URL}/api/v1/vault`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -473,7 +473,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                         ) : (
                           <>
                             <Plus className="w-4 h-4" />
-                            Add to Bookshelf
+                            Add to Vault
                           </>
                         )}
                       </button>
@@ -832,7 +832,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }: AddBookMo
                 ) : (
                   <>
                     <Plus className="w-5 h-5" />
-                    Add to Bookshelf
+                    Add to Vault
                   </>
                 )}
               </button>

@@ -111,7 +111,7 @@ export function Profile() {
     theme: 'system'
   })
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
   useEffect(() => {
     loadProfile()
@@ -1366,10 +1366,10 @@ export function Profile() {
                 </a>
                 {' '}or contact support at{' '}
                 <a
-                  href="mailto:privacy@workshelf.dev"
+                  href="mailto:privacy@nerdchurchpartners.org"
                   className="text-primary hover:underline"
                 >
-                  privacy@workshelf.dev
+                  privacy@nerdchurchpartners.org
                 </a>
               </p>
             </div>
@@ -1645,12 +1645,12 @@ export function Profile() {
                 <input type="checkbox" className="w-5 h-5 rounded border-border" />
                 <div>
                   <div className="font-medium text-foreground">Make Reader Profile Public</div>
-                  <div className="text-sm text-muted-foreground">Show your reading activity and bookshelf to others</div>
+                  <div className="text-sm text-muted-foreground">Show your reading activity and vault to others</div>
                 </div>
               </label>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Reader Profile will be enabled when the bookshelf feature is reintroduced.
+              Reader Profile will be enabled when the vault feature is reintroduced.
               This will show your reading history, favorite books, and reading preferences.
             </p>
           </div>

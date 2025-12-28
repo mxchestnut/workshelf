@@ -23,7 +23,7 @@ export function AdvancedSearch() {
   const [total, setTotal] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
   useEffect(() => {
     // Run search when filters change and query is non-empty
@@ -96,7 +96,7 @@ export function AdvancedSearch() {
             <h1 className="text-2xl font-bold">Search</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            Search published works, books, and public content across WorkShelf
+            Search published works, books, and public content across NPC
           </p>
         </div>
 

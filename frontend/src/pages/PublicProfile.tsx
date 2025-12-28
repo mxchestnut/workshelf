@@ -12,7 +12,7 @@ import {
   X
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface PublicProfileData {
   user_id: number
@@ -40,7 +40,7 @@ interface Document {
   created_at: string
 }
 
-interface BookshelfItem {
+interface VaultItem {
   id: number
   title: string
   author: string
@@ -60,9 +60,9 @@ export default function PublicProfile() {
   const { user: currentUser, login, logout } = useAuth()
   const [profile, setProfile] = useState<PublicProfileData | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
-  const [bookshelf, setBookshelf] = useState<BookshelfItem[]>([])
+  const [vault, setVault] = useState<VaultItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'documents' | 'bookshelf'>('documents')
+  const [activeTab, setActiveTab] = useState<'documents' | 'vault'>('documents')
   const [showFollowersModal, setShowFollowersModal] = useState(false)
   const [showFollowingModal, setShowFollowingModal] = useState(false)
   const [followers, setFollowers] = useState<FollowUser[]>([])
@@ -99,7 +99,7 @@ export default function PublicProfile() {
       const data = await response.json()
       setProfile(data.profile)
       setDocuments(data.documents || [])
-      setBookshelf(data.bookshelf || [])
+      setVault(data.vault || [])
     } catch (error) {
       console.error('Error loading profile:', error)
       toast.error('Failed to load profile')
@@ -450,7 +450,7 @@ export default function PublicProfile() {
           <div className="rounded-lg p-6" style={{ backgroundColor: '#524944' }}>
             <div className="flex items-center gap-3 mb-2">
               <BookOpen className="w-6 h-6" style={{ color: '#EDAC53' }} />
-              <span className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{bookshelf.length}</span>
+              <span className="text-2xl font-bold" style={{ color: '#F1EEEB' }}>{vault.length}</span>
             </div>
             <p style={{ color: '#B3B2B0' }}>Books</p>
           </div>
@@ -480,16 +480,16 @@ export default function PublicProfile() {
               Documents ({documents.length})
             </button>
             <button
-              onClick={() => setActiveTab('bookshelf')}
+              onClick={() => setActiveTab('vault')}
               className={`pb-3 px-2 font-medium transition-colors ${
-                activeTab === 'bookshelf' ? 'border-b-2' : ''
+                activeTab === 'vault' ? 'border-b-2' : ''
               }`}
               style={{
-                color: activeTab === 'bookshelf' ? '#EDAC53' : '#B3B2B0',
-                borderColor: activeTab === 'bookshelf' ? '#EDAC53' : 'transparent'
+                color: activeTab === 'vault' ? '#EDAC53' : '#B3B2B0',
+                borderColor: activeTab === 'vault' ? '#EDAC53' : 'transparent'
               }}
             >
-              Bookshelf ({bookshelf.length})
+              Vault ({vault.length})
             </button>
           </div>
         </div>
@@ -527,12 +527,12 @@ export default function PublicProfile() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {bookshelf.length === 0 ? (
+            {vault.length === 0 ? (
               <div className="col-span-4 text-center py-12" style={{ color: '#B3B2B0' }}>
                 No books on shelf yet
               </div>
             ) : (
-              bookshelf.map((book) => (
+              vault.map((book) => (
                 <div key={book.id} className="rounded-lg overflow-hidden hover:scale-105 transition-transform">
                   {book.cover_url ? (
                     <img src={book.cover_url} alt={`Book cover for ${book.title}`} className="w-full aspect-[2/3] object-cover" />

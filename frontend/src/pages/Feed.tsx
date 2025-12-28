@@ -10,7 +10,7 @@ import { SaveToCollectionModal } from '../components/SaveToCollectionModal'
 import PageVersion from '../components/PageVersion'
 import { BookOpen, Pin, Clock, Users, Bell, Sparkles, Globe } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 type FeedTab = 'personal' | 'updates' | 'beta-feed' | 'groups' | 'global' | 'discover'
 

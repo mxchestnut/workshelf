@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Upload, CheckCircle, AlertCircle, Loader2, Shield, FileText } from 'lucide-react'
 import { toast } from '../services/toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 export default function UploadBook() {
   const [step, setStep] = useState<'form' | 'uploading' | 'verifying' | 'success' | 'error'>('form')
@@ -179,10 +179,10 @@ export default function UploadBook() {
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 pb-8">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <button
-            onClick={() => window.location.href = '/bookshelf'}
+            onClick={() => window.location.href = '/vault'}
             className="text-white/80 hover:text-white mb-4 flex items-center gap-2"
           >
-            ← Back to Bookshelf
+            ← Back to Vault
           </button>
           <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
             <Upload className="w-10 h-10" />
@@ -473,10 +473,10 @@ export default function UploadBook() {
                 Upload Another Book
               </button>
               <button
-                onClick={() => window.location.href = '/bookshelf'}
+                onClick={() => window.location.href = '/vault'}
                 className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300"
               >
-                Go to Bookshelf
+                Go to Vault
               </button>
             </div>
           </div>

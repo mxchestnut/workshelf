@@ -125,9 +125,9 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <span>Home</span>
                   </Link>
                   <Link 
-                    to="/bookshelf"
+                    to="/vault"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive('/bookshelf') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                      isActive('/vault') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                     }`}
                   >
                     <Library className="w-5 h-5" />
@@ -178,15 +178,6 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   >
                     <MessageCircle className="w-5 h-5" />
                     <span>Messages</span>
-                  </Link>
-                  <Link 
-                    to="/roleplays"
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive('/roleplays') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                    }`}
-                  >
-                    <UserRoundPen className="w-5 h-5" />
-                    <span>Roleplay</span>
                   </Link>
                 </div>
 

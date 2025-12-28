@@ -8,7 +8,7 @@ import { Clock, RotateCcw, X, FileText, ArrowRight } from 'lucide-react'
 import { toast } from '../services/toast'
 import { DocumentMode } from './ModeSwitcher'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface DocumentVersion {
   id: number

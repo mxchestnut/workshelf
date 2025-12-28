@@ -7,7 +7,7 @@ import BookDetail from './BookDetail'
 import { ReadingListsTab } from '../components/ReadingListsTab'
 import PageVersion from '../components/PageVersion'
 
-interface BookshelfItem {
+interface VaultItem {
   id: number
   item_type: 'document' | 'book'
   document_id?: number
@@ -48,7 +48,7 @@ interface BookRecommendation {
   favorite_author: string
 }
 
-interface BookshelfStats {
+interface VaultStats {
   total_books: number
   currently_reading: number
   books_read: number
@@ -67,10 +67,10 @@ interface ReadingList {
   updated_at: string
 }
 
-export default function Bookshelf() {
-  const [books, setBooks] = useState<BookshelfItem[]>([])
+export default function Vault() {
+  const [books, setBooks] = useState<VaultItem[]>([])
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([])
-  const [stats, setStats] = useState<BookshelfStats | null>(null)
+  const [stats, setStats] = useState<VaultStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadingRecs, setLoadingRecs] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('all')
@@ -83,11 +83,11 @@ export default function Bookshelf() {
   const [readingLists, setReadingLists] = useState<ReadingList[]>([])
   const [loadingLists, setLoadingLists] = useState(false)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+  const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
   useEffect(() => {
     loadUser()
-    loadBookshelf()
+    loadVault()
     loadStats()
     if (activeTab === 'recommendations') {
       loadRecommendations()
@@ -105,7 +105,7 @@ export default function Bookshelf() {
     }
   }
 
-  const loadBookshelf = async () => {
+  const loadVault = async () => {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
@@ -113,7 +113,7 @@ export default function Bookshelf() {
         return
       }
 
-      let url = `${API_URL}/api/v1/bookshelf`
+      let url = `${API_URL}/api/v1/vault`
       
       // Add filters based on active tab
       if (activeTab !== 'all') {
@@ -138,9 +138,9 @@ export default function Bookshelf() {
         const contentType = response.headers.get('content-type')
         if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json()
-          console.error('Bookshelf API error:', errorData)
+          console.error('Vault API error:', errorData)
         } else {
-          console.error('Bookshelf API error:', response.status, response.statusText)
+          console.error('Vault API error:', response.status, response.statusText)
         }
         
         // If unauthorized, clear token and redirect
@@ -152,7 +152,7 @@ export default function Bookshelf() {
       }
       setLoading(false)
     } catch (err) {
-      console.error('Failed to load bookshelf:', err)
+      console.error('Failed to load vault:', err)
       setLoading(false)
     }
   }
@@ -162,7 +162,7 @@ export default function Bookshelf() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf/stats`, {
+      const response = await fetch(`${API_URL}/api/v1/vault/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -186,7 +186,7 @@ export default function Bookshelf() {
         return
       }
 
-      const response = await fetch(`${API_URL}/api/v1/bookshelf/recommendations/by-favorite-authors?limit=20`, {
+      const response = await fetch(`${API_URL}/api/v1/vault/recommendations/by-favorite-authors?limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -284,9 +284,9 @@ export default function Bookshelf() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="bookshelf" />
+        <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="vault" />
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg text-foreground">Loading bookshelf...</div>
+          <div className="text-lg text-foreground">Loading vault...</div>
         </div>
       </div>
     )
@@ -299,12 +299,12 @@ export default function Bookshelf() {
           bookId={selectedBookId} 
           onBack={() => {
             setSelectedBookId(null)
-            loadBookshelf() // Refresh in case anything changed
+            loadVault() // Refresh in case anything changed
           }} 
         />
       ) : (
     <div className="min-h-screen bg-background">
-      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="bookshelf" />
+      <Navigation user={user} onLogin={() => login()} onLogout={() => logout()} currentPage="vault" />
       
       {/* Main content with left margin for sidebar */}
       <div className="ml-0 md:ml-80 transition-all duration-300">
@@ -313,7 +313,7 @@ export default function Bookshelf() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">My Bookshelf</h1>
+              <h1 className="text-4xl font-bold text-foreground mb-2">My Vault</h1>
               <p className="text-foreground">Track your reading journey</p>
             </div>
             <div className="flex gap-3">
@@ -591,12 +591,12 @@ export default function Bookshelf() {
                       )}
                       <button
                         onClick={() => {
-                          // TODO: Add to bookshelf functionality
-                          console.log('Add to bookshelf:', rec)
+                          // TODO: Add to vault functionality
+                          console.log('Add to vault:', rec)
                         }}
                         className="w-full px-4 py-2 bg-[hsl(var(--primary))] text-foreground rounded-lg font-medium hover:bg-[hsl(var(--primary))] transition-colors"
                       >
-                        Add to Bookshelf
+                        Add to Vault
                       </button>
                     </div>
                   </div>
@@ -608,7 +608,7 @@ export default function Bookshelf() {
           <div className="text-center py-16">
             <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-400 mb-2">
-              {searchQuery ? 'No books found' : 'Your bookshelf is empty'}
+              {searchQuery ? 'No books found' : 'Your vault is empty'}
             </h3>
             <p className="text-gray-500 mb-6">
               {searchQuery
@@ -720,13 +720,13 @@ export default function Bookshelf() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onBookAdded={() => {
-          loadBookshelf()
+          loadVault()
           loadStats()
         }}
       />
 
         {/* Page Version */}
-        <PageVersion path="/bookshelf" />
+        <PageVersion path="/vault" />
       </div> {/* Close ml-0 md:ml-80 wrapper */}
     </div>
       )}

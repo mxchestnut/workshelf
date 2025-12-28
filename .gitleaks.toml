@@ -1,11 +1,11 @@
-title = "Workshelf Gitleaks Config"
+title = "NPC Gitleaks Config"
 
 [extend]
 useDefault = true
 
 [[rules]]
-id = "workshelf-api-key"
-description = "Workshelf API Key"
+id = "npc-api-key"
+description = "NPC API Key"
 regex = '''(?i)(api[_-]?key|apikey|api[_-]?token)['"]?\s*[:=]\s*['"]?[0-9a-zA-Z\-_]{32,}'''
 
 [[rules]]

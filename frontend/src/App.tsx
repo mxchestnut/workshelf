@@ -42,7 +42,7 @@ const Documents = lazy(() => import('./pages/Documents'))
 const Document = lazy(() => import('./pages/Document').then(module => ({ default: module.Document })))
 const Profile = lazy(() => import('./pages/Profile').then(module => ({ default: module.Profile })))
 const PublicProfile = lazy(() => import('./pages/PublicProfile'))
-const Bookshelf = lazy(() => import('./pages/Bookshelf'))
+const Vault = lazy(() => import('./pages/Vault'))
 const Authors = lazy(() => import('./pages/Authors'))
 const Author = lazy(() => import('./pages/Author'))
 const FreeBooks = lazy(() => import('./pages/FreeBooks'))
@@ -83,13 +83,6 @@ const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const StaffPanel = lazy(() => import('./pages/StaffPanel').then(module => ({ default: module.StaffPanel })))
 const ReadPage = lazy(() => import('./pages/ReadPage'))
 
-// Roleplay Studio pages
-const RoleplaysList = lazy(() => import('./pages/roleplay/RoleplaysList').then(module => ({ default: module.RoleplaysList })))
-const CreateRoleplay = lazy(() => import('./pages/roleplay/CreateRoleplay').then(module => ({ default: module.CreateRoleplay })))
-const RoleplayProject = lazy(() => import('./pages/roleplay/RoleplayProject').then(module => ({ default: module.RoleplayProject })))
-const CharacterSheet = lazy(() => import('./pages/roleplay/CharacterSheet').then(module => ({ default: module.CharacterSheet })))
-const RoleplayLore = lazy(() => import('./pages/roleplay/RoleplayLore').then(module => ({ default: module.RoleplayLore })))
-
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -117,13 +110,13 @@ function AppContent() {
   // Check admin subdomain redirects
   useEffect(() => {
     const hostname = window.location.hostname
-    const isAdminSubdomain = hostname === 'admin.workshelf.dev' || hostname === 'admin.localhost'
+    const isAdminSubdomain = hostname === 'admin.nerdchurchpartners.org' || hostname === 'admin.localhost'
 
     if (isAdminSubdomain && location.pathname === '/') {
       if (isAuthenticated) {
         window.location.href = '/admin'
       } else {
-        window.location.href = 'https://workshelf.dev/'
+        window.location.href = 'https://nerdchurchpartners.org/'
       }
     }
   }, [location.pathname, isAuthenticated])
@@ -178,13 +171,6 @@ function AppContent() {
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/project/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
             
-            {/* Roleplays */}
-            <Route path="/roleplays" element={<ProtectedRoute><RoleplaysList /></ProtectedRoute>} />
-            <Route path="/roleplay/new" element={<ProtectedRoute><CreateRoleplay /></ProtectedRoute>} />
-            <Route path="/roleplay/:projectId" element={<ProtectedRoute><RoleplayProject /></ProtectedRoute>} />
-            <Route path="/roleplay/:projectId/characters/:characterId" element={<ProtectedRoute><CharacterSheet /></ProtectedRoute>} />
-            <Route path="/roleplay/:projectId/lore" element={<ProtectedRoute><RoleplayLore /></ProtectedRoute>} />
-            
             {/* Dashboard */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             
@@ -204,7 +190,7 @@ function AppContent() {
             <Route path="/document" element={<ProtectedRoute><Document /></ProtectedRoute>} />
             
             {/* Books/Store */}
-            <Route path="/bookshelf" element={<ProtectedRoute><Bookshelf /></ProtectedRoute>} />
+            <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
             <Route path="/authors" element={<Authors />} />
             <Route path="/authors/:authorId" element={<Author />} />
             <Route path="/free-books" element={<FreeBooks />} />

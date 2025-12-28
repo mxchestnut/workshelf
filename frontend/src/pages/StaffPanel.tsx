@@ -25,7 +25,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface Invitation {
   id: number
@@ -656,7 +656,7 @@ export function StaffPanel() {
           <h3 className="text-xl font-bold text-foreground mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
-              href="https://auth.workshelf.dev/admin"
+              href="https://auth.nerdchurchpartners.org/admin"
               target="_blank"
               rel="noopener noreferrer"
               className="p-4 rounded-lg border-2 bg-background border-border hover:border-primary transition-colors"

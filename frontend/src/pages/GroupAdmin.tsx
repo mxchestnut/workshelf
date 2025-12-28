@@ -12,7 +12,7 @@ import { MemberRoleManager } from '../components/MemberRoleManager'
 import ModerationLog from '../components/ModerationLog'
 import InviteMembersModal from '../components/InviteMembersModal'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface GroupMember {
   id: number
@@ -1222,14 +1222,14 @@ export default function GroupAdmin() {
                             </div>
 
                             <div>
-                              <p className="text-xs text-gray-400 mb-1">Point your domain to WorkShelf:</p>
+                              <p className="text-xs text-gray-400 mb-1">Point your domain to NPC:</p>
                               <div className="flex items-center gap-2 p-2 rounded font-mono text-sm" style={{ backgroundColor: '#37322E' }}>
                                 <code className="flex-1 text-white">
-                                  CNAME @ workshelf.dev
+                                  CNAME @ nerdchurchpartners.org
                                 </code>
                                 <button
                                   onClick={() => {
-                                    navigator.clipboard.writeText('workshelf.dev')
+                                    navigator.clipboard.writeText('nerdchurchpartners.org')
                                     setSuccess('CNAME target copied!')
                                     setTimeout(() => setSuccess(null), 2000)
                                   }}
@@ -1794,7 +1794,7 @@ export default function GroupAdmin() {
                 {groupSettings.subdomain_requested && (
                   <div className="p-4 rounded-lg" style={{ backgroundColor: '#37322E' }}>
                     <p className="text-sm font-medium text-gray-300 mb-1">Custom Subdomain</p>
-                    <p className="text-white font-mono">{groupSettings.subdomain_requested}.workshelf.dev</p>
+                    <p className="text-white font-mono">{groupSettings.subdomain_requested}.nerdchurchpartners.org</p>
                     {groupSettings.subdomain_approved ? (
                       <span className="inline-block mt-2 px-3 py-1 rounded text-xs font-medium text-white" style={{ backgroundColor: '#10B981' }}>
                         ✓ APPROVED

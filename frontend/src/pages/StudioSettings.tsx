@@ -6,7 +6,7 @@ import {
 import { Navigation } from '../components/Navigation'
 import { useAuth } from "../contexts/AuthContext"
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
 
 interface Studio {
   id: number

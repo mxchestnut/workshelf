@@ -1,5 +1,5 @@
 /**
- * WorkShelf Editor - Beautiful, distraction-free writing
+ * NPC Editor - Beautiful, distraction-free writing
  * 
  * Features:
  * - Rich text editing with TipTap

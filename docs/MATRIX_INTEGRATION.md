@@ -2,7 +2,7 @@
 
 ## Overview
 
-WorkShelf has a dual messaging system:
+NPC has a dual messaging system:
 1. **Simple Internal Messaging** (current) - Database-stored conversations
 2. **Matrix Protocol** (future) - Federated, real-time messaging with full features
 
@@ -35,7 +35,7 @@ Matrix Synapse is already running in your docker-compose.yml:
 ```yaml
 synapse:
   image: matrixdotorg/synapse:latest
-  container_name: workshelf-synapse
+  container_name: npc-synapse
   environment:
     SYNAPSE_SERVER_NAME: matrix.localhost
   ports:
@@ -44,7 +44,7 @@ synapse:
 
 ### Production URL
 - Homeserver URL: `http://synapse:8008` (internal Docker network)
-- Public URL: Should be `https://matrix.workshelf.dev` (requires nginx config)
+- Public URL: Should be `https://matrix.nerdchurchpartners.org` (requires nginx config)
 
 ---
 
@@ -108,7 +108,7 @@ import asyncio
 from nio import AsyncClient, LoginResponse, RoomCreateResponse, RoomInviteResponse
 
 MATRIX_HOMESERVER = os.getenv("MATRIX_HOMESERVER", "http://synapse:8008")
-MATRIX_BOT_USER = os.getenv("MATRIX_BOT_USER", "@bot:matrix.workshelf.dev")
+MATRIX_BOT_USER = os.getenv("MATRIX_BOT_USER", "@bot:matrix.nerdchurchpartners.org")
 MATRIX_BOT_PASSWORD = os.getenv("MATRIX_BOT_PASSWORD", "change_me")
 
 
@@ -121,7 +121,7 @@ class MatrixService:
         Register a new Matrix user
         Returns matrix_user_id on success
         """
-        client = AsyncClient(MATRIX_HOMESERVER, f"@{username}:matrix.workshelf.dev")
+        client = AsyncClient(MATRIX_HOMESERVER, f"@{username}:matrix.nerdchurchpartners.org")
         
         try:
             response = await client.register(username, password)
@@ -308,7 +308,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import * as sdk from 'matrix-js-sdk'
 import { authService } from '../services/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://workshelf.dev'
+const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
 interface MatrixContextType {
   client: sdk.MatrixClient | null
@@ -429,13 +429,13 @@ export default function Messages() {
 Add to `.env`:
 ```bash
 MATRIX_HOMESERVER=http://synapse:8008
-MATRIX_BOT_USER=@bot:matrix.workshelf.dev
+MATRIX_BOT_USER=@bot:matrix.nerdchurchpartners.org
 MATRIX_BOT_PASSWORD=your_secure_password
 ```
 
 Add to production `.env`:
 ```bash
-MATRIX_HOMESERVER=https://matrix.workshelf.dev
+MATRIX_HOMESERVER=https://matrix.nerdchurchpartners.org
 ```
 
 ---
@@ -444,7 +444,7 @@ MATRIX_HOMESERVER=https://matrix.workshelf.dev
 
 1. **Set up Matrix admin account**
    ```bash
-   docker exec -it workshelf-synapse register_new_matrix_user http://localhost:8008 -c /data/homeserver.yaml -u admin -p your_password --admin
+   docker exec -it npc-synapse register_new_matrix_user http://localhost:8008 -c /data/homeserver.yaml -u admin -p your_password --admin
    ```
 
 2. **Test Matrix registration**
@@ -453,7 +453,7 @@ MATRIX_HOMESERVER=https://matrix.workshelf.dev
    - Test creating a DM room
 
 3. **Configure nginx for Matrix federation**
-   - Add `matrix.workshelf.dev` subdomain
+   - Add `matrix.nerdchurchpartners.org` subdomain
    - Proxy to port 8008
    - Set up SSL cert
 
@@ -478,7 +478,7 @@ Point Element Web to your homeserver to debug:
 1. Go to https://app.element.io
 2. Click "Sign in"
 3. Click "Edit" next to homeserver
-4. Enter `https://matrix.workshelf.dev`
+4. Enter `https://matrix.nerdchurchpartners.org`
 5. Login with Matrix credentials from database
 6. See all rooms and messages
 

@@ -1,5 +1,5 @@
 /**
- * Sentry configuration for WorkShelf frontend
+ * Sentry configuration for NPC frontend
  * Provides error tracking, performance monitoring, and session replay
  */
 import * as Sentry from '@sentry/react';

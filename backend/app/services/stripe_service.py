@@ -13,7 +13,7 @@ from sqlalchemy import select
 from fastapi import HTTPException
 
 from app.models.store import StoreItem, Purchase, PurchaseStatus, AuthorEarnings
-from app.models.bookshelf import BookshelfItem
+from app.models.vault import Article
 from app.models.author import Author
 
 
