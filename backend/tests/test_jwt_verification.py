@@ -14,7 +14,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from jose import jwt
 from fastapi import HTTPException
-from app.core.azure_auth import KeycloakAuth
+from app.core.auth import KeycloakAuth
 
 pytestmark = pytest.mark.skip(reason="JWT verification tests need proper RSA key mocking")
 
