@@ -19,10 +19,10 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       
       # Keycloak
-      KEYCLOAK_SERVER_URL: https://keycloak.nerdchurchpartners.org
-      KEYCLOAK_INTERNAL_URL: http://npc-keycloak:8080
-      KEYCLOAK_REALM: npc
-      KEYCLOAK_CLIENT_ID: npc-api
+      KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev
+      KEYCLOAK_INTERNAL_URL: http://workshelf-keycloak:8080
+      KEYCLOAK_REALM: workshelf
+      KEYCLOAK_CLIENT_ID: workshelf-api
       
       # Redis
       REDIS_URL: redis://npc-redis:6379
@@ -117,10 +117,10 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
-        VITE_API_URL: https://api.nerdchurchpartners.org
-        VITE_KEYCLOAK_URL: https://keycloak.nerdchurchpartners.org
-        VITE_KEYCLOAK_REALM: npc
-        VITE_KEYCLOAK_CLIENT_ID: npc-frontend
+        VITE_API_URL: https://api.workshelf.dev
+        VITE_KEYCLOAK_URL: https://keycloak.workshelf.dev
+        VITE_KEYCLOAK_REALM: workshelf
+        VITE_KEYCLOAK_CLIENT_ID: workshelf-frontend
         VITE_ENVIRONMENT: production
     image: npc-frontend:latest
     container_name: npc-frontend

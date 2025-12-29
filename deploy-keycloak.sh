@@ -49,10 +49,10 @@ if sudo docker ps | grep -q keycloak; then
     sudo docker ps | grep keycloak
     echo ""
     echo "📝 Next steps:"
-    echo "1. Ensure DNS points keycloak.nerdchurchpartners.org to this server"
+    echo "1. Ensure DNS points keycloak.workshelf.dev to this server"
     echo "2. Configure nginx reverse proxy for HTTPS"
     echo "3. Access Keycloak admin console at http://localhost:8080"
-    echo "4. Configure the 'npc' realm and 'npc-frontend' client"
+    echo "4. Configure the 'workshelf' realm and 'workshelf-frontend' client"
     echo ""
     echo "👤 Admin credentials:"
     echo "   Username: admin"

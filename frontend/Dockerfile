@@ -3,10 +3,10 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Accept build args with secure defaults
-ARG VITE_API_URL=https://api.nerdchurchpartners.org
-ARG VITE_KEYCLOAK_URL=https://keycloak.nerdchurchpartners.org
-ARG VITE_KEYCLOAK_REALM=npc
-ARG VITE_KEYCLOAK_CLIENT_ID=npc-frontend
+ARG VITE_API_URL=https://api.workshelf.dev
+ARG VITE_KEYCLOAK_URL=https://keycloak.workshelf.dev
+ARG VITE_KEYCLOAK_REALM=workshelf
+ARG VITE_KEYCLOAK_CLIENT_ID=workshelf-frontend
 ARG VITE_SENTRY_DSN
 ARG VITE_ENVIRONMENT=production
 ARG VITE_RELEASE=unknown

@@ -18,7 +18,7 @@ if (!keycloakConfig.url) {
 }
 
 // API endpoint
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev';
 
 // Legacy exports for compatibility (can be removed when all usages are updated)
 export const msalConfig = null;
