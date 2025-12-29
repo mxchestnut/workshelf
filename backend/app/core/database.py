@@ -28,6 +28,7 @@ def get_db_engine() -> AsyncEngine:
             settings.DATABASE_URL_CLEAN,
             echo=False,
             poolclass=NullPool,
+            connect_args={"ssl": "require"},  # asyncpg SSL mode
         )
     
     # In production: use cached engine with connection pooling
@@ -38,6 +39,7 @@ def get_db_engine() -> AsyncEngine:
             pool_pre_ping=True,
             pool_size=5,
             max_overflow=10,
+            connect_args={"ssl": "require"},  # asyncpg SSL mode
         )
     return _engine_cache
 
