@@ -1222,7 +1222,7 @@ export default function GroupAdmin() {
                             </div>
 
                             <div>
-                              <p className="text-xs text-gray-400 mb-1">Point your domain to NPC:</p>
+                              <p className="text-xs text-gray-400 mb-1">Point your domain to Workshelf:</p>
                               <div className="flex items-center gap-2 p-2 rounded font-mono text-sm" style={{ backgroundColor: '#37322E' }}>
                                 <code className="flex-1 text-white">
                                   CNAME @ nerdchurchpartners.org

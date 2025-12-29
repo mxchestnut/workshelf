@@ -237,7 +237,7 @@ export function Sitemap() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            NPC Platform Overview
+            Workshelf Platform Overview
           </h1>
           <p className="text-xl text-gray-600">
             A comprehensive platform for writers, readers, and indie publishers

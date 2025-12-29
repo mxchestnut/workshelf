@@ -161,7 +161,7 @@ export function Invite() {
         {status === 'valid' && invitationType === 'platform' && (
           <>
             <CheckCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#10b981' }} />
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome to NPC!</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Welcome to Workshelf!</h1>
             <p className="text-lg mb-4 text-white">{email}</p>
             <p style={{ color: '#B3B2B0' }} className="mb-4">{message}</p>
             <p style={{ color: '#B3B2B0' }}>Redirecting you to sign up...</p>

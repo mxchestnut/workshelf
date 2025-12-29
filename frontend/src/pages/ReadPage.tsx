@@ -324,7 +324,7 @@ export default function ReadPage() {
 
             {/* Reading Info */}
             <div className="mt-8 p-4 bg-accent rounded-lg">
-              <h3 className="font-semibold text-foreground mb-2">Read with NPC</h3>
+              <h3 className="font-semibold text-foreground mb-2">Read with Workshelf</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Adjustable font size and themes</li>
                 <li>• Text-to-speech with natural voices</li>

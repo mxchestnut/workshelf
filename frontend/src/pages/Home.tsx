@@ -160,7 +160,7 @@ export default function Home() {
             <div className="bg-card border border-border p-8 md:p-12">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-6 h-6" />
-                <span className="text-sm font-medium uppercase tracking-wide">Welcome to NPC</span>
+                <span className="text-sm font-medium uppercase tracking-wide">Welcome to Workshelf</span>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4 font-mono">
                 {user ? `Welcome back, ${user.display_name || user.username}!` : 'Your Creative Community'}
@@ -322,7 +322,7 @@ export default function Home() {
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold mb-2 font-mono">New here? Let's get you started!</h3>
                     <p className="mb-4 text-muted-foreground">
-                      Complete your profile to unlock the full NPC experience.
+                      Complete your profile to unlock the full Workshelf experience.
                     </p>
                     <button
                       onClick={() => handleNavigation('/me')}
@@ -397,7 +397,7 @@ export default function Home() {
 
           {/* Platform Features */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">Why NPC?</h2>
+            <h2 className="text-2xl font-bold mb-6">Why Workshelf?</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               <div className="flex gap-4">

@@ -12,7 +12,7 @@ export default function HouseRules() {
         <div className="prose prose-blue max-w-none">
           <section className="mb-8">
             <p className="text-lg text-gray-700 mb-6">
-              Welcome to NPC! Our community thrives on creativity, respect, and collaboration. 
+              Welcome to Workshelf! Our community thrives on creativity, respect, and collaboration. 
               These House Rules help ensure everyone has a positive experience.
             </p>
           </section>

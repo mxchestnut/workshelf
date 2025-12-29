@@ -96,7 +96,7 @@ export function AdvancedSearch() {
             <h1 className="text-2xl font-bold">Search</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            Search published works, books, and public content across NPC
+            Search published works, books, and public content across Workshelf
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 /**
- * PostHog Product Analytics Configuration for NPC
+ * PostHog Product Analytics Configuration for Workshelf
  * Provides session replay, feature flags, funnels, and user behavior tracking
  */
 
