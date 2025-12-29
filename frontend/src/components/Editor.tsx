@@ -68,8 +68,7 @@ import {
   ChevronDown,
   FileEdit,
   Radio,
-  Globe,
-  Send
+  Globe
 } from 'lucide-react'
 
 interface EditorProps {
@@ -427,22 +426,6 @@ export function Editor({
                     <div>
                       <div className="font-medium text-sm">Published</div>
                       <div className="text-xs text-muted-foreground">Make public (read-only)</div>
-                    </div>
-                  </button>
-
-                  <div className="border-t border-border my-1"></div>
-
-                  <button
-                    onClick={() => {
-                      // TODO: Implement send functionality
-                      setStatusMenuOpen(false)
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent text-left transition-colors"
-                  >
-                    <Send className="w-4 h-4 flex-shrink-0" />
-                    <div>
-                      <div className="font-medium text-sm">Send</div>
-                      <div className="text-xs text-muted-foreground">Send as message</div>
                     </div>
                   </button>
                 </div>

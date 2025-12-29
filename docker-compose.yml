@@ -20,27 +20,6 @@ services:
     networks:
     - npc
     restart: unless-stopped
-  synapse:
-    image: matrixdotorg/synapse:latest
-    container_name: npc-synapse
-    environment:
-      SYNAPSE_SERVER_NAME: matrix.localhost
-      SYNAPSE_REPORT_STATS: 'no'
-      SYNAPSE_NO_TLS: 'true'
-      POSTGRES_HOST: postgres
-      POSTGRES_USER: npc
-      POSTGRES_PASSWORD: npc_password
-      POSTGRES_DB: synapse
-    ports:
-    - "127.0.0.1:8008:8008"
-    volumes:
-    - synapse_data:/data
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-    - npc
-    restart: unless-stopped
   minio:
     image: minio/minio:latest
     container_name: npc-minio
@@ -99,10 +78,6 @@ services:
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-      MATRIX_HOMESERVER: http://synapse:8008
-      MATRIX_SERVER_NAME: nerd.church
-      MATRIX_PUBLIC_HOMESERVER: https://matrix.nerdchurchpartners.org
-      MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
       SENTRY_DSN: ${SENTRY_DSN:-https://a2ae80bf39b2e57c2147574ce75c860f@o4510280685977605.ingest.us.sentry.io/4510448571383808}
       ENVIRONMENT: development
     ports:
@@ -126,7 +101,6 @@ services:
       VITE_API_URL: ${VITE_API_URL:-https://api.nerdchurchpartners.org}
       VITE_AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
       VITE_AZURE_TENANT: ${AZURE_TENANT}
-      VITE_MATRIX_HOMESERVER: ${VITE_MATRIX_HOMESERVER:-https://matrix.nerdchurchpartners.org}
       VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-https://b8c5190474974430cdd1396231416148@o4510280685977605.ingest.us.sentry.io/4510448574726144}
       VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
       VITE_POSTHOG_KEY: ${VITE_POSTHOG_KEY:-phc_GnJ8zb09tygMcjttDyBrcY3lULGThdeQc8IpP695rpb}
@@ -201,7 +175,6 @@ services:
     restart: unless-stopped
 volumes:
   postgres_data: null
-  synapse_data: null
   minio_data: null
   redis_data: null
   prometheus_data: null

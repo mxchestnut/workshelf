@@ -12,7 +12,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user, get_optional_user
 from app.models.tags import ContentTag, PostTag
 from app.services import user_service
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter(prefix="/content-tags", tags=["content-tags"])
 
@@ -25,8 +25,7 @@ class TagResponse(BaseModel):
     description: Optional[str]
     usage_count: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TagCreate(BaseModel):

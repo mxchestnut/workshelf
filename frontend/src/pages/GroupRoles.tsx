@@ -136,9 +136,8 @@ export default function GroupRoles() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   const loadRoles = async () => {
@@ -388,10 +387,11 @@ export default function GroupRoles() {
                   {/* Role Name & Color */}
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
+                      <label htmlFor="role-name" className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
                         Role Name
                       </label>
                       <input
+                        id="role-name"
                         type="text"
                         value={editingRole.name || ''}
                         onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })}
@@ -405,10 +405,10 @@ export default function GroupRoles() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
+                      <label htmlFor="role-color" className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
                         Role Color
                       </label>
-                      <div className="flex gap-2 flex-wrap">
+                      <div id="role-color" className="flex gap-2 flex-wrap">
                         {DEFAULT_COLORS.map(color => (
                           <button
                             key={color}
@@ -421,10 +421,11 @@ export default function GroupRoles() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
+                      <label htmlFor="role-position" className="block text-sm font-medium mb-2" style={{ color: '#F1EEEB' }}>
                         Position (Higher = More Authority)
                       </label>
                       <input
+                        id="role-position"
                         type="number"
                         value={editingRole.position || 0}
                         onChange={(e) => setEditingRole({ ...editingRole, position: parseInt(e.target.value) })}

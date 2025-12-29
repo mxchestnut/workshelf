@@ -55,7 +55,7 @@ export default function StudioV2() {
   useEffect(() => {
     loadUser()
     loadProjects()
-  }, [])
+  }, [loadProjects])
 
   useEffect(() => {
     if (selectedProject) {
@@ -64,9 +64,8 @@ export default function StudioV2() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProject])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   const loadProjects = async () => {

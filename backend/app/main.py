@@ -8,6 +8,7 @@ import uuid
 import time
 import json
 import logging
+import jwt  # PyJWT for token parsing in rate limiting
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import Response, JSONResponse
@@ -91,6 +92,12 @@ app.add_middleware(
 
 print("[CORS] Configured for origins: workshelf.dev")
 
+# Security headers middleware
+# Adds comprehensive security headers to all responses
+from app.middleware.security_headers import SecurityHeadersMiddleware
+app.add_middleware(SecurityHeadersMiddleware)
+print("[SECURITY] Security headers middleware enabled")
+
 # Health check endpoints
 @app.get("/health")
 async def health_check():
@@ -168,7 +175,7 @@ async def request_context_middleware(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
     client_ip = request.client.host if request.client else "unknown"
 
-    # Rate limiting (simple IP-based)
+    # Rate limiting (IP-based with user-based enhancement)
     limited = False
     remaining = None
     path = request.url.path
@@ -188,7 +195,27 @@ async def request_context_middleware(request: Request, call_next):
 
     if selected_limit > 0:
         window = int(time.time() // 60)  # current minute bucket
-        key = f"{key_prefix}{client_ip}:{window}"
+        
+        # Determine rate limit key: prefer user ID over IP (prevents IP rotation abuse)
+        rate_limit_key = client_ip
+        auth_header = request.headers.get("Authorization")
+        
+        if auth_header and auth_header.startswith("Bearer "):
+            try:
+                # Extract user identifier from token without full validation
+                # (token validation happens in endpoints, this is just for rate limiting)
+                token = auth_header.split(" ")[1]
+                import jwt
+                # Decode without verification (we just need the 'sub' claim for rate limiting)
+                unverified_payload = jwt.decode(token, options={"verify_signature": False})
+                if "sub" in unverified_payload:
+                    # Use user's Keycloak ID for rate limiting
+                    rate_limit_key = f"user:{unverified_payload['sub']}"
+            except Exception:
+                # If token parsing fails, fall back to IP-based limiting
+                pass
+        
+        key = f"{key_prefix}{rate_limit_key}:{window}"
         try:
             if _redis_client:
                 hits = _redis_client.incr(key)

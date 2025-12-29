@@ -81,9 +81,8 @@ export default function Author() {
     loadUser()
   }, [])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   // TipTap editor for bio editing

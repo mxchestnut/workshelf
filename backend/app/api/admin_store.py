@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 
 from app.core.database import get_db
@@ -29,8 +29,7 @@ class StoreStatsResponse(BaseModel):
     active_items: int
     avg_sale_price: float
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StoreItemAnalyticsResponse(BaseModel):
@@ -46,8 +45,7 @@ class StoreItemAnalyticsResponse(BaseModel):
     status: str
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
@@ -190,6 +188,50 @@ async def delete_store_item(
     await db.commit()
     
     return {"success": True, "item_id": item_id}
+
+
+@router.post("/store/items/{item_id}/generate-audiobook")
+async def generate_audiobook(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    staff_user: User = Depends(require_staff)
+):
+    """
+    Queue audiobook generation for a store item
+    
+    **Note**: This endpoint currently queues the request. Implementation requires:
+    - ElevenLabs API integration for voice cloning and text-to-speech
+    - Background job processing (Celery/Redis recommended)
+    - Audio file storage (S3/MinIO)
+    - Metadata update after completion
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    query = select(StoreItem).where(StoreItem.id == item_id)
+    result = await db.execute(query)
+    item = result.scalar_one_or_none()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Store item not found")
+    
+    if item.has_audiobook:
+        raise HTTPException(status_code=400, detail="Item already has an audiobook")
+    
+    # TODO: Implement actual audiobook generation workflow
+    # 1. Extract text from EPUB
+    # 2. Send to ElevenLabs API for voice cloning/TTS
+    # 3. Store audio files in S3/MinIO
+    # 4. Update item with audiobook URL and pricing
+    # 5. Notify staff when complete
+    
+    # For now, just return success (placeholder)
+    return {
+        "success": True,
+        "message": f"Audiobook generation queued for '{item.title}'",
+        "item_id": item_id,
+        "status": "queued",
+        "note": "Background processing not yet implemented - this is a placeholder endpoint"
+    }
 
 
 # ============================================================================

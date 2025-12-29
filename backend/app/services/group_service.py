@@ -134,8 +134,6 @@ class GroupService:
         await db.commit()
         await db.refresh(group)
         
-        # Matrix integration removed - space creation disabled
-        
         # Load members
         result = await db.execute(
             select(Group)
@@ -348,27 +346,6 @@ class GroupService:
         db.add(member)
         await db.commit()
         await db.refresh(member)
-        
-        # Invite user to the group's Matrix Space (if it exists)
-        # Get group to find space_id
-        group_result = await db.execute(
-            select(Group).where(Group.id == group_id)
-        )
-        group = group_result.scalar_one_or_none()
-        
-        if group and group.matrix_space_id:
-            # Get an admin/owner to do the invite
-            admin_result = await db.execute(
-                select(GroupMember).where(
-                    and_(
-                        GroupMember.group_id == group_id,
-                        GroupMember.role.in_([GroupMemberRole.OWNER, GroupMemberRole.ADMIN])
-                    )
-                ).limit(1)
-            )
-            admin_member = admin_result.scalar_one_or_none()
-            
-            # Matrix integration removed - space invites disabled
         
         # Load user relationship
         result = await db.execute(

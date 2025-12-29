@@ -34,7 +34,7 @@ export default function GroupSettings() {
   const [initialIsPublic, setInitialIsPublic] = useState(true);
   const [isActive, setIsActive] = useState(true);
 
-  const groupId = new URLSearchParams(window.location.search).get('id');
+  const groupId = new URLSearchParams(globalThis.location.search).get('id');
 
   useEffect(() => {
     if (groupId) {
@@ -45,9 +45,8 @@ export default function GroupSettings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   };
 
   const loadGroup = async () => {
@@ -98,7 +97,7 @@ export default function GroupSettings() {
     
     // If changing from public to private, show confirmation
     if (initialIsPublic && !newValue) {
-      const confirmed = window.confirm(
+      const confirmed = globalThis.confirm(
         '⚠️ Warning: Making this group private is permanent.\n\n' +
         'Once a group is private, it cannot be made public again. This protects the privacy of members who join with the expectation that content will remain private.\n\n' +
         'Do you want to continue?'
@@ -198,7 +197,7 @@ export default function GroupSettings() {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">Group not found</h2>
             <button
-              onClick={() => window.location.href = '/groups'}
+              onClick={() => globalThis.location.href = '/groups'}
               className="mt-4 text-gray-600 hover:text-gray-900"
             >
               Go back to groups
@@ -224,7 +223,7 @@ export default function GroupSettings() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => window.location.href = `/groups/${group?.slug}`}
+            onClick={() => globalThis.location.href = `/groups/${group?.slug}`}
             className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -283,7 +282,7 @@ export default function GroupSettings() {
               Privacy & Visibility
             </button>
             <button
-              onClick={() => window.location.href = `/groups/${groupId}/roles`}
+              onClick={() => globalThis.location.href = `/groups/${groupId}/roles`}
               className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm"
             >
               <Shield className="h-5 w-5 inline mr-2" />
@@ -299,10 +298,11 @@ export default function GroupSettings() {
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="settings-group-name" className="block text-sm font-medium text-gray-700 mb-2">
                   Group Name
                 </label>
                 <input
+                  id="settings-group-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -311,10 +311,11 @@ export default function GroupSettings() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="settings-group-description" className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
                 <textarea
+                  id="settings-group-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}

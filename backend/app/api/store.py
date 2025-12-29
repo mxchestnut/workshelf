@@ -9,7 +9,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, and_, or_, func
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -65,8 +65,7 @@ class StoreItemResponse(BaseModel):
     available_formats: List[str] = Field(default_factory=list)  # ["ebook", "audiobook"]
     has_ebook: bool = True  # True if epub_blob_url is set
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CheckoutRequest(BaseModel):
@@ -96,8 +95,7 @@ class PurchaseResponse(BaseModel):
     access_granted: bool
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PublicKeyResponse(BaseModel):

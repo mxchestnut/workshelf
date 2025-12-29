@@ -39,7 +39,7 @@ export function Invite() {
     if (user !== null) {
       verifyInvitation()
     }
-  }, [user])
+  }, [user, verifyInvitation])
 
   const verifyInvitation = async () => {
     // Get token from URL

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting NPC..."
+echo "🚀 Starting WorkShelf..."
 
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
@@ -33,7 +33,7 @@ echo "🔍 Checking service health..."
 docker-compose ps
 
 echo ""
-echo "✅ NPC is running!"
+echo "✅ WorkShelf is running!"
 echo ""
 echo "📍 Access points:"
 echo "   Frontend:  http://localhost:5173"

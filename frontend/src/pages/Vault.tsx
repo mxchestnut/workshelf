@@ -257,12 +257,8 @@ export default function Vault() {
     }
   }
 
-  // TODO: Implement reading list management features
-  // - Create reading list
-  // - Update reading list
-  // - Delete reading list
-  // - View list documents
-  // - Remove from list
+  // Reading list management features are implemented via ReadingListsTab component
+  // See components/ReadingListsTab.tsx for create, update, delete, and document management
 
   const filteredBooks = books.filter(book => {
     // Filter by active tab
@@ -588,9 +584,50 @@ export default function Vault() {
                         </div>
                       )}
                       <button
-                        onClick={() => {
-                          // TODO: Add to vault functionality
-                          console.log('Add to vault:', rec)
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem('access_token')
+                            if (!token) {
+                              alert('Please log in to add books to your vault')
+                              return
+                            }
+
+                            const response = await fetch(`${API_URL}/api/v1/vault`, {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({
+                                item_type: 'book',
+                                isbn: rec.isbn,
+                                title: rec.title,
+                                author: rec.author,
+                                cover_url: rec.cover_url,
+                                description: rec.description,
+                                publisher: rec.publisher,
+                                publish_year: rec.publish_year,
+                                page_count: rec.page_count,
+                                genres: rec.genres,
+                                status: 'want-to-read',
+                                review_public: true
+                              })
+                            })
+
+                            if (response.ok) {
+                              alert(`"${rec.title}" added to your vault!`)
+                              // Refresh vault if we're on the all or want-to-read tab
+                              if (activeTab === 'all' || activeTab === 'want-to-read') {
+                                await loadVault()
+                              }
+                            } else {
+                              const error = await response.json()
+                              alert(`Failed to add to vault: ${error.detail || 'Unknown error'}`)
+                            }
+                          } catch (error) {
+                            console.error('Failed to add to vault:', error)
+                            alert('Failed to add book to vault')
+                          }
                         }}
                         className="w-full px-4 py-2 bg-[hsl(var(--primary))] text-foreground rounded-lg font-medium hover:bg-[hsl(var(--primary))] transition-colors"
                       >

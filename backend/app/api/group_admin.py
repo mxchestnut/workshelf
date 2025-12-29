@@ -41,8 +41,7 @@ class GroupAdminInfo(BaseModel):
     subdomain_rejection_reason: Optional[str]
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SubdomainRequest(BaseModel):
@@ -59,8 +58,7 @@ class GroupMemberInfo(BaseModel):
     role: str
     joined_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GroupPostCreate(BaseModel):
@@ -81,8 +79,7 @@ class GroupPostInfo(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MemberRoleUpdate(BaseModel):

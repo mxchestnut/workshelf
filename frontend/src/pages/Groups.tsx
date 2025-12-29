@@ -41,9 +41,8 @@ export default function Groups() {
     loadGroups()
   }, [])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   const loadGroups = async () => {
@@ -105,7 +104,7 @@ export default function Groups() {
         // Refresh lists
         loadGroups()
         // Optionally navigate to the new group
-        window.location.href = `/groups/${created.slug}`
+        globalThis.location.href = `/groups/${created.slug}`
       } else {
         const errText = await response.text()
         alert(`Failed to create group: ${errText || response.status}`)
@@ -262,10 +261,11 @@ export default function Groups() {
             <form onSubmit={handleCreateGroup} className="p-6 space-y-4">
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="group-name" className="block text-sm font-medium text-foreground mb-2">
                   Group Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="group-name"
                   type="text"
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
@@ -276,10 +276,11 @@ export default function Groups() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="group-description" className="block text-sm font-medium text-foreground mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="group-description"
                   value={newGroupDescription}
                   onChange={(e) => setNewGroupDescription(e.target.value)}
                   placeholder="What is your group about? Who should join?"
@@ -290,10 +291,11 @@ export default function Groups() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="group-privacy" className="block text-sm font-medium text-foreground mb-2">
                   Privacy Level <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="group-privacy"
                   value={newGroupPrivacyLevel}
                   onChange={(e) => setNewGroupPrivacyLevel(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"

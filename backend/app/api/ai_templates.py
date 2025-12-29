@@ -5,7 +5,7 @@ Generate custom project templates based on user interests using Claude
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Any
 
 from app.core.database import get_db
@@ -39,8 +39,7 @@ class AITemplateResponse(BaseModel):
     ai_model: str
     generation_timestamp: str
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GenerateTemplatesResponse(BaseModel):
@@ -65,8 +64,7 @@ class ExistingTemplateResponse(BaseModel):
     icon: Optional[str]
     usage_count: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ApproveTemplateRequest(BaseModel):

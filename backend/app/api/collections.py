@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import joinedload
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -47,8 +47,7 @@ class CollectionItemResponse(BaseModel):
     note: Optional[str]
     created_at: str
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CollectionResponse(BaseModel):
@@ -60,8 +59,7 @@ class CollectionResponse(BaseModel):
     updated_at: Optional[str]
     item_count: int = 0
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CollectionDetailResponse(CollectionResponse):

@@ -15,9 +15,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 interface Project {
   id: number
   name: string
+  title?: string
   description: string
   document_count: number
   collaborator_count: number
+  progress_percentage?: number
   created_at: string
   updated_at: string
 }
@@ -139,7 +141,9 @@ export function Projects() {
   }
 
   const totalDocuments = projects.reduce((sum, p) => sum + p.document_count, 0)
-  const avgProgress = projects.length > 0 ? 50 : 0 // TODO: Add real progress tracking
+  const avgProgress = projects.length > 0 
+    ? projects.reduce((sum, p) => sum + (p.progress_percentage || 0), 0) / projects.length
+    : 0
 
   return (
     <div>
@@ -236,15 +240,52 @@ export function Projects() {
                     </div>
                   </div>
 
-                  <button 
-                    className="p-2 hover:bg-neutral-light rounded-lg"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // TODO: Show project menu
-                    }}
-                  >
-                    <MoreVertical className="w-5 h-5 text-neutral" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      className="p-2 hover:bg-neutral-light rounded-lg"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const menuId = `menu-${project.id}`
+                        const menu = document.getElementById(menuId)
+                        if (menu) {
+                          menu.classList.toggle('hidden')
+                        }
+                      }}
+                    >
+                      <MoreVertical className="w-5 h-5 text-neutral" />
+                    </button>
+                    <div id={`menu-${project.id}`} className="hidden absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          alert('Edit project functionality coming soon!')
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                      >
+                        Edit Project
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          alert('Archive functionality coming soon!')
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                      >
+                        Archive
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (confirm(`Delete "${project.title || project.name}"?`)) {
+                            alert('Delete functionality coming soon!')
+                          }
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

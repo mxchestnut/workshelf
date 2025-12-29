@@ -119,7 +119,13 @@ class Article(Base, TimestampMixin):
             "status IN ('reading', 'read', 'want-to-read', 'favorites', 'dnf')",
             name='check_vault_status'
         ),
-        # Indexes
+        # Performance indexes
         Index('idx_vault_user_status', 'user_id', 'status'),
         Index('idx_vault_user_favorites', 'user_id', 'is_favorite'),
+        Index('idx_vault_user_status_added', 'user_id', 'status', 'added_at'),  # For paginated queries
+        Index('idx_vault_articles_author', 'author', postgresql_ops={'author': 'text_pattern_ops'}),  # For ILIKE searches
+        Index('idx_vault_articles_isbn', 'isbn'),  # For ISBN lookups
+        Index('idx_vault_articles_genres_gin', 'genres', postgresql_using='gin'),  # For array searches
+        Index('idx_vault_favorites_user', 'is_favorite', 'user_id', postgresql_where='is_favorite = true'),  # Partial index
+        Index('idx_vault_finished_reading', 'user_id', 'finished_reading', postgresql_where='finished_reading IS NOT NULL'),  # Reading history
     )

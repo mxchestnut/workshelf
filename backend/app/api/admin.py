@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.core.database import get_db
 from app.core.auth import require_staff
@@ -42,8 +42,7 @@ class GroupPendingResponse(BaseModel):
     member_count: int
     owner_username: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DomainApprovalRequest(BaseModel):
@@ -62,8 +61,7 @@ class DomainPendingResponse(BaseModel):
     created_at: datetime
     studio_name: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AdminStatsResponse(BaseModel):
@@ -97,8 +95,7 @@ class PendingUserResponse(BaseModel):
     created_at: datetime
     is_approved: bool
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserAccountResponse(BaseModel):
@@ -113,8 +110,7 @@ class UserAccountResponse(BaseModel):
     is_verified: bool
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
@@ -293,6 +289,35 @@ async def update_user(
     await db.refresh(user)
     
     return {"success": True, "message": "User updated successfully", "username": user.username}
+
+
+@router.post("/users/{user_id}/make-staff")
+async def make_user_staff(
+    user_id: int,
+    staff_user: User = Depends(require_staff),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Grant staff privileges to a user
+    
+    **Requires**: Platform staff authentication (is_staff=True)
+    """
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.is_staff:
+        raise HTTPException(status_code=400, detail="User is already a staff member")
+    
+    user.is_staff = True
+    await db.commit()
+    await db.refresh(user)
+    
+    return {"success": True, "message": f"User {user.email} is now a staff member"}
 
 
 @router.get("/stats", response_model=AdminStatsResponse)
@@ -648,7 +673,7 @@ async def get_pending_scholarships(
 
 @router.get("/scholarships/all", response_model=List[ScholarshipRequestResponse])
 async def get_all_scholarships(
-    status: Optional[str] = Query(None, regex="^(pending|approved|rejected|negotiating)$"),
+    status: Optional[str] = Query(None, pattern="^(pending|approved|rejected|negotiating)$"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
     current_user: dict = Depends(require_staff),
@@ -1052,8 +1077,7 @@ class StoreStatsResponse(BaseModel):
     active_items: int
     avg_sale_price: float
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StoreItemAnalyticsResponse(BaseModel):
@@ -1069,8 +1093,7 @@ class StoreItemAnalyticsResponse(BaseModel):
     status: str
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/store/stats", response_model=StoreStatsResponse)

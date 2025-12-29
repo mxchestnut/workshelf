@@ -13,7 +13,7 @@ from app.core.auth import get_current_user
 from app.models.collaboration import GroupPost, GroupMember, Group, GroupPostReaction
 from app.models.user import User, UserProfile
 from app.services import user_service
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 router = APIRouter(prefix="/feed", tags=["feed"])
@@ -45,8 +45,7 @@ class FeedPost(BaseModel):
     downvotes: int = 0
     score: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 async def get_votes_for_posts(db: AsyncSession, post_ids: List[int]) -> Dict[int, Dict[str, int]]:

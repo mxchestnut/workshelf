@@ -23,7 +23,7 @@ export default function MyBetaRequests() {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [load])
 
   const load = async () => {
     setLoading(true)

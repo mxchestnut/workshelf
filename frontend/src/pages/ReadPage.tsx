@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Loader2, Lock, BookOpen } from 'lucide-react'
 import EpubReader from '../components/EpubReader'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org'
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.workshelf.dev'
 
 interface StoreItem {
   id: number
@@ -33,7 +33,7 @@ export default function ReadPage() {
   useEffect(() => {
     loadStoreItem()
     checkIfInVault()
-  }, [itemId])
+  }, [itemId, loadStoreItem, checkIfInVault])
 
   const loadStoreItem = async () => {
     try {
@@ -306,9 +306,33 @@ export default function ReadPage() {
               ) : (
                 <div className="space-y-3">
                   <button
-                    onClick={() => {
-                      // TODO: Integrate with Stripe checkout
-                      alert('Purchase flow coming soon!')
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem('access_token')
+                        const response = await fetch(`${API_URL}/api/v1/store/create-checkout`, {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                            store_item_id: storeItem.id,
+                            success_url: `${globalThis.location.origin}/store/success?item_id=${storeItem.id}`,
+                            cancel_url: `${globalThis.location.origin}/read/${storeItem.id}`
+                          })
+                        })
+
+                        if (response.ok) {
+                          const data = await response.json()
+                          globalThis.location.href = data.checkout_url
+                        } else {
+                          const error = await response.json()
+                          alert(`Checkout failed: ${error.detail || 'Unknown error'}`)
+                        }
+                      } catch (error) {
+                        console.error('Checkout error:', error)
+                        alert('Failed to initiate checkout. Please try again.')
+                      }
                     }}
                     className="w-full md:w-auto px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
                   >

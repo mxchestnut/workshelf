@@ -39,11 +39,10 @@ export default function DeleteAccount() {
   useEffect(() => {
     loadUser()
     fetchDeletionInfo()
-  }, [])
+  }, [fetchDeletionInfo])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   const fetchDeletionInfo = async () => {
@@ -59,7 +58,7 @@ export default function DeleteAccount() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          window.location.href = '/auth-callback'
+          globalThis.location.href = '/auth-callback'
           return
         }
         throw new Error('Failed to fetch deletion info')
@@ -120,7 +119,7 @@ export default function DeleteAccount() {
       // Clear local storage and redirect after a delay
       setTimeout(() => {
         logout()
-        window.location.href = '/'
+        globalThis.location.href = '/'
       }, 5000)
 
     } catch (err: any) {
@@ -251,7 +250,7 @@ export default function DeleteAccount() {
           </h2>
           <ul className="space-y-3">
             {deletionInfo.warnings.map((warning, index) => (
-              <li key={index} className="flex items-start">
+              <li key={`warning-${index}-${warning.slice(0, 20)}`} className="flex items-start">
                 <X className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <span className="ml-3 text-gray-700 dark:text-gray-200">{warning}</span>
               </li>
@@ -284,7 +283,7 @@ export default function DeleteAccount() {
             {/* Checkboxes */}
             <div className="space-y-4 mb-6">
               {deletionInfo.confirmations_required.map((confirmation, index) => (
-                <label key={index} className="flex items-start cursor-pointer">
+                <label key={`confirm-${index}-${confirmation.slice(0, 20)}`} className="flex items-start cursor-pointer">
                   <input
                     type="checkbox"
                     checked={

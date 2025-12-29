@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, require_staff
@@ -33,8 +33,7 @@ class InvitationResponse(BaseModel):
     expires_at: datetime
     accepted_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvitationVerifyResponse(BaseModel):

@@ -6,7 +6,7 @@ from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.core.database import get_db
 from app.core.auth import get_current_user, get_optional_user
@@ -38,8 +38,7 @@ class AuthorResponse(BaseModel):
     total_sales: int = 0
     is_following: bool = False  # Whether current user follows this author
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookSummary(BaseModel):
@@ -52,8 +51,7 @@ class BookSummary(BaseModel):
     rating_count: int
     published_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EditRequest(BaseModel):
@@ -78,8 +76,7 @@ class EditResponse(BaseModel):
     rejection_reason: Optional[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Endpoints

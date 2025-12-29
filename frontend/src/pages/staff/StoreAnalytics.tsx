@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Navigation } from '../../components/Navigation'
 import { useAuth } from "../../contexts/AuthContext"
 import { 
@@ -33,6 +34,7 @@ interface SalesStats {
 
 export function StoreAnalytics() {
   const { user, login, logout } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<SalesStats>({
     total_revenue: 0,
@@ -126,8 +128,7 @@ export function StoreAnalytics() {
     item => !item.has_audiobook && item.revenue >= AUDIOBOOK_THRESHOLD
   )
 
-  const handleAddItem = () => {
-    console.log('Add new store item')
+  conavigate('/upload-book')
     // TODO: Open modal or navigate to add item page
   }
 
@@ -140,11 +141,22 @@ export function StoreAnalytics() {
     if (!token) return
 
     try {
-      // TODO: Implement backend endpoint POST /api/v1/admin/store/items/{itemId}/generate-audiobook
-      console.log(`Queueing audiobook generation for item ${itemId}`)
-      alert(`Audiobook generation queued for "${title}"!\n\nYou'll be notified when complete.`)
-      // For now, just reload data
-      await loadStoreData()
+      const response = await fetch(`${API_URL}/api/v1/admin/store/items/${itemId}/generate-audiobook`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(`Audiobook generation queued for "${title}"!\n\nNote: ${data.note}\n\nYou'll be notified when the full implementation is complete.`)
+        await loadStoreData()
+      } else {
+        const error = await response.json()
+        alert(`Failed to queue audiobook generation: ${error.detail || 'Unknown error'}`)
+      }
     } catch (error) {
       console.error('Failed to queue audiobook generation:', error)
       alert('Failed to queue audiobook generation')

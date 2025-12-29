@@ -75,7 +75,6 @@ const ExportCenter = lazy(() => import('./pages/ExportCenter').then(module => ({
 const AccessibilitySettings = lazy(() => import('./pages/AccessibilitySettings').then(module => ({ default: module.AccessibilitySettings })))
 const AdvancedSearch = lazy(() => import('./pages/AdvancedSearch').then(module => ({ default: module.AdvancedSearch })))
 const BookSuggestions = lazy(() => import('./pages/BookSuggestions').then(module => ({ default: module.BookSuggestions })))
-const Messages = lazy(() => import('./pages/Messages'))
 const AIPolicy = lazy(() => import('./pages/AIPolicy'))
 const Relationships = lazy(() => import('./pages/Relationships'))
 const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
@@ -214,7 +213,6 @@ function AppContent() {
             <Route path="/accessibility" element={<ProtectedRoute><AccessibilitySettings /></ProtectedRoute>} />
             <Route path="/advanced-search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
             <Route path="/book-suggestions" element={<ProtectedRoute><BookSuggestions /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/relationships" element={<ProtectedRoute><Relationships /></ProtectedRoute>} />
             <Route path="/creator-earnings" element={<ProtectedRoute><CreatorEarnings /></ProtectedRoute>} />
             <Route path="/reading-lists" element={<ProtectedRoute><ReadingListsBrowse /></ProtectedRoute>} />

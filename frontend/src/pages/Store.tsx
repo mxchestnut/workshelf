@@ -69,9 +69,8 @@ export default function Store() {
     loadUser()
   }, [])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   // Check for author query parameter on mount

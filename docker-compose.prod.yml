@@ -32,12 +32,6 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       
-      # Matrix
-      MATRIX_HOMESERVER: http://npc-synapse:8008
-      MATRIX_SERVER_NAME: nerd.church
-      MATRIX_PUBLIC_HOMESERVER: https://matrix.nerdchurchpartners.org
-      MATRIX_ADMIN_ACCESS_TOKEN: ${MATRIX_ADMIN_ACCESS_TOKEN}
-      
       # Monitoring
       SENTRY_DSN: ${SENTRY_DSN}
       ENVIRONMENT: production
@@ -92,20 +86,6 @@ services:
     volumes:
       - minio_data:/data
 
-  synapse:
-    image: matrixdotorg/synapse:latest
-    container_name: npc-synapse
-    restart: unless-stopped
-    ports:
-      - "8008:8008"
-    networks:
-      - npc
-    environment:
-      SYNAPSE_SERVER_NAME: nerd.church
-      SYNAPSE_REPORT_STATS: "no"
-    volumes:
-      - synapse_data:/data
-
   frontend:
     build:
       context: ./frontend
@@ -133,4 +113,3 @@ networks:
 volumes:
   redis_data:
   minio_data:
-  synapse_data:

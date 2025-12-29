@@ -11,10 +11,6 @@ export function SystemSettings() {
   const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    checkAccess()
-  }, [])
-
   const checkAccess = async () => {
     try {
       if (!user || !user.is_staff) {
@@ -27,6 +23,10 @@ export function SystemSettings() {
       window.location.href = '/'
     }
   }
+
+  useEffect(() => {
+    checkAccess()
+  }, [checkAccess])
 
   if (loading) {
     return (

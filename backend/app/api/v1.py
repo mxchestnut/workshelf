@@ -152,6 +152,9 @@ api_router.include_router(ai_assist.router)
 api_router.include_router(ai_chat.router)  # Conversational AI assistant
 
 # AI Templates (generate custom templates based on interests) - DISABLED
+# Reason: Feature complete but not currently used in production. Can be enabled by uncommenting.
+# The backend implementation is complete, but frontend integration is not yet in use.
+# To enable: Uncomment the import at the top and the include_router line below.
 # api_router.include_router(ai_templates.router)
 
 # Admin endpoints (Keycloak-protected for platform staff)

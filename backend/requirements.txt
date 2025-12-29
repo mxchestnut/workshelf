@@ -33,10 +33,6 @@ stripe==14.0.1
 aiohttp==3.13.2
 beautifulsoup4==4.12.2
 
-# Matrix Protocol
-matrix-nio==0.24.0
-lxml>=5.0.0  # Python 3.13 compatible
-
 # AI Services
 anthropic==0.75.0  # Claude API for creative writing assistance
 

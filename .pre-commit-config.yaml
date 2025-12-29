@@ -13,30 +13,30 @@ repos:
 
   # Python linting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.4
+    rev: v0.8.4
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         files: ^backend/
 
-  # TypeScript/JavaScript formatting
+  # TypeScript/JavaScript formatting and linting
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.55.0
+    rev: v9.17.0
     hooks:
       - id: eslint
         files: ^frontend/src/.*\.[jt]sx?$
         types: [file]
         args: [--fix, --max-warnings=0]
         additional_dependencies:
-          - eslint@8.55.0
-          - '@typescript-eslint/eslint-plugin@6.14.0'
-          - '@typescript-eslint/parser@6.14.0'
-          - eslint-plugin-react-hooks@4.6.0
-          - eslint-plugin-react-refresh@0.4.5
+          - eslint@9.17.0
+          - '@typescript-eslint/eslint-plugin@8.18.1'
+          - '@typescript-eslint/parser@8.18.1'
+          - eslint-plugin-react-hooks@5.1.0
+          - eslint-plugin-react-refresh@0.4.16
 
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -50,7 +50,7 @@ repos:
 
   # Security checks
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]

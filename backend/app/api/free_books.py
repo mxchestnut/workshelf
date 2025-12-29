@@ -22,7 +22,7 @@ STANDARD_EBOOKS_API = "https://standardebooks.org/ebooks"
 @router.get("/search")
 async def search_free_books(
     query: str = Query(..., min_length=1),
-    source: str = Query("all", regex="^(all|gutenberg|standard-ebooks)$"),
+    source: str = Query("all", pattern="^(all|gutenberg|standard-ebooks)$"),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
@@ -185,7 +185,7 @@ async def get_popular_free_books(
 @router.post("/add-to-shelf/{book_id}")
 async def add_free_book_to_shelf(
     book_id: str,
-    status: str = Query("want-to-read", regex="^(reading|read|want-to-read)$"),
+    status: str = Query("want-to-read", pattern="^(reading|read|want-to-read)$"),
     db: AsyncSession = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):

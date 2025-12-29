@@ -34,10 +34,6 @@ services:
       MINIO_BUCKET_NAME: workshelf
       MINIO_USE_SSL: "false"
       
-      # Matrix
-      MATRIX_SERVER_URL: http://workshelf-synapse-local:8008
-      MATRIX_ADMIN_ACCESS_TOKEN: local_dev_token
-      
       # Monitoring
       ENVIRONMENT: local
     depends_on:
@@ -126,20 +122,6 @@ services:
       - minio_data_local:/data
     command: server /data --console-address ":9001"
 
-  synapse:
-    image: matrixdotorg/synapse:latest
-    container_name: workshelf-synapse-local
-    restart: unless-stopped
-    ports:
-      - "8008:8008"
-    networks:
-      - workshelf-local
-    environment:
-      SYNAPSE_SERVER_NAME: localhost
-      SYNAPSE_REPORT_STATS: "no"
-    volumes:
-      - synapse_data_local:/data
-
   frontend:
     build:
       context: ./frontend
@@ -166,4 +148,3 @@ volumes:
   postgres_data_local:
   redis_data_local:
   minio_data_local:
-  synapse_data_local:

@@ -96,8 +96,7 @@ class SubmissionResponse(BaseModel):
     verification_date: Optional[datetime]
     published_at: Optional[datetime]
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class VerificationResultResponse(BaseModel):

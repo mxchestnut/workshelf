@@ -6,6 +6,9 @@
 .env.prod
 .env.production
 
+# Documentation (tracked separately)
+docs/
+
 # Backups
 backups/
 

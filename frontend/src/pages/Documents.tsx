@@ -40,9 +40,8 @@ export default function Documents() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFolderId])
 
-  const loadUser = async () => {
+  const loadUser = () => {
     // User loading logic removed - placeholder function
-    return Promise.resolve()
   }
 
   const loadDocuments = async () => {
@@ -81,7 +80,7 @@ export default function Documents() {
   }
 
   const handleNewDocument = () => {
-    window.location.href = '/document'
+    globalThis.location.href = '/document'
   }
 
   const handleImportClick = () => {
@@ -285,7 +284,7 @@ export default function Documents() {
                     key={doc.id}
                     className="rounded-lg p-6 cursor-pointer transition-all hover:scale-105"
                     style={{ backgroundColor: '#524944' }}
-                    onClick={() => window.location.href = `/document?id=${doc.id}`}
+                    onClick={() => globalThis.location.href = `/document?id=${doc.id}`}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <FileText className="w-6 h-6" style={{ color: '#EDAC53' }} />

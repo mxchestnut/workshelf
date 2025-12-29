@@ -1,67 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { keycloakConfig, API_BASE_URL } from '../config/authConfig';
-
-// PKCE helper functions
-const generateCodeVerifier = (): string => {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return btoa(String.fromCharCode(...array))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-};
-
-const generateCodeChallenge = async (verifier: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-};
-
-// User type for the application (Keycloak-based)
-export interface User {
-  // Backend properties
-  id?: number;
-  display_name?: string;
-  username?: string;
-  email?: string;
-  is_staff?: boolean;
-  groups?: any[];
-  // Keycloak properties
-  sub?: string;
-  preferred_username?: string;
-  given_name?: string;
-  family_name?: string;
-  // Compatibility properties
-  homeAccountId?: string;
-  localAccountId?: string;
-  name?: string;
-}
-
-interface AuthContextType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  user: User | null;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  getAccessToken: () => Promise<string>;
-}
+import { generateCodeVerifier, generateCodeChallenge, isTokenExpired } from './authHelpers';
+import type { User, AuthContextType } from './authTypes';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Token refresh helper
-const isTokenExpired = (token: string): boolean => {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const expiresAt = payload.exp * 1000; // Convert to milliseconds
-    return Date.now() >= expiresAt - 60000; // Refresh 1 minute before expiry
-  } catch {
-    return true;
-  }
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -280,3 +222,6 @@ export function useAuth() {
   }
   return context;
 }
+
+// Re-export types for backward compatibility
+export type { User, AuthContextType } from './authTypes';

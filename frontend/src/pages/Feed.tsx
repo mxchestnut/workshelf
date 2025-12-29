@@ -187,7 +187,7 @@ export function Feed() {
     }
 
     loadData()
-  }, [activeTab, sortBy, includeTags, excludeTags, loadFeed])
+  }, [activeTab, sortBy, includeTags, excludeTags, loadFeed, login, user])
 
   // Load available tags
   useEffect(() => {
@@ -569,8 +569,10 @@ export function Feed() {
                         key={tag.id}
                         className="inline-block px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 cursor-pointer"
                         onClick={() => {
-                          // TODO: Filter feed by this tag
-                          console.log('Filter by tag:', tag.name)
+                          // Add tag to include filters
+                          if (!includeTags.includes(tag.id)) {
+                            setIncludeTags([...includeTags, tag.id])
+                          }
                         }}
                       >
                         {tag.name}

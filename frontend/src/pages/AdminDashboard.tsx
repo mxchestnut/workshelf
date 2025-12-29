@@ -1070,10 +1070,29 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                         <div className="flex items-center gap-2">
                           {!usr.is_staff && user?.id !== usr.id && (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Make ${usr.email} a staff member?`)) {
-                                  // TODO: Add make staff endpoint call
-                                  console.log('Make staff:', usr.id)
+                                  try {
+                                    const token = localStorage.getItem('access_token')
+                                    const response = await fetch(`${API_URL}/api/v1/admin/users/${usr.id}/make-staff`, {
+                                      method: 'POST',
+                                      headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                      }
+                                    })
+                                    
+                                    if (response.ok) {
+                                      alert(`${usr.email} is now a staff member`)
+                                      loadUsers() // Reload the user list
+                                    } else {
+                                      const error = await response.json()
+                                      alert(`Failed to make staff: ${error.detail || 'Unknown error'}`)
+                                    }
+                                  } catch (error) {
+                                    console.error('Failed to make staff:', error)
+                                    alert('Failed to make staff member')
+                                  }
                                 }
                               }}
                               className="px-3 py-1 text-xs border-2 border-border text-foreground rounded hover:border-primary transition-colors"

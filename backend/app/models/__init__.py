@@ -24,10 +24,6 @@ from app.models.author import (
     AuthorEdit,
     UserFollowsAuthor,
 )
-from app.models.author_follows import (
-    AuthorFollowStatus,
-    AuthorFollow,
-)
 from app.models.book_suggestion import (
     SuggestionStatus,
     BookSuggestion,
@@ -197,8 +193,6 @@ __all__ = [
     "Author",
     "AuthorEarnings",
     "AuthorEdit",
-    "AuthorFollow",
-    "AuthorFollowStatus",
     "Base",
     "BetaFeedback",
     "BetaReaderAppointment",
