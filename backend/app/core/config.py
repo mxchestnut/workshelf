@@ -54,6 +54,9 @@ class Settings(BaseSettings):
         url = url.replace('?sslmode=require&channel_binding=require', '')
         url = url.replace('?sslmode=require', '')
         url = url.replace('&sslmode=require', '')
+        url = url.replace('?ssl=true&channel_binding=require', '')
+        url = url.replace('?ssl=true', '')
+        url = url.replace('&ssl=true', '')
         url = url.replace('&channel_binding=require', '')
         return url
     
