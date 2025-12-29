@@ -22,5 +22,13 @@ async def get_current_user_profile(
     Get or create the current authenticated user's profile.
     This endpoint will auto-create a user record on first authentication.
     """
-    user = await user_service.get_or_create_user_from_keycloak(db, current_user)
-    return user
+    try:
+        print(f"[/me] Getting user for keycloak_id: {current_user.get('sub')}")
+        user = await user_service.get_or_create_user_from_keycloak(db, current_user)
+        print(f"[/me] Successfully got user: {user.id}")
+        return user
+    except Exception as e:
+        print(f"[/me ERROR] Failed to get/create user: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
