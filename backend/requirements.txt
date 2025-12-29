@@ -1,71 +1,71 @@
 # Core Framework
 # Pin to a published FastAPI release; 0.124.x does not exist on PyPI and breaks container start.
-fastapi==0.115.6
-uvicorn[standard]==0.38.0
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
 pydantic==2.12.5
 pydantic-settings==2.12.0
 email-validator==2.3.0
 
 # Database
 sqlalchemy[asyncio]==2.0.45
-asyncpg==0.30.0
+asyncpg==0.31.0
 psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
-alembic==1.14.1
+alembic==1.17.2
 
 # Caching & Rate Limiting
 redis==5.2.1
 
 # Authentication & Security
-python-jose[cryptography]==3.4.0
+python-jose[cryptography]==3.5.0
 cryptography>=41.0.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.18
+python-multipart==0.0.21
 # Security: pin ecdsa to patched version (python-jose dependency)
 ecdsa>=0.19.0
 # Microsoft Entra ID (Azure AD) authentication
-msal==1.31.1
-PyJWT==2.8.0
+msal==1.34.0
+PyJWT==2.10.1
 
 # Payment Processing
-stripe==14.0.1
+stripe==14.1.0
 
 # Price Scraping & Web Requests
 aiohttp==3.13.2
-beautifulsoup4==4.12.2
+beautifulsoup4==4.14.3
 
 # AI Services
 anthropic==0.75.0  # Claude API for creative writing assistance
 
 # EPUB Processing
-ebooklib==0.18
+ebooklib==0.20
 html2text==2020.1.16
 
 # Document Format Support
-python-docx==1.1.2  # Microsoft Word (.docx)
+python-docx==1.2.0  # Microsoft Word (.docx)
 odfpy==1.4.1  # OpenDocument (.odt)
 PyPDF2==3.0.1  # PDF text extraction
-markdown2==2.5.1  # Enhanced markdown parsing
+markdown2==2.5.4  # Enhanced markdown parsing
 
 # Azure SDK
-azure-storage-blob==12.19.0
-azure-identity==1.16.1
+azure-storage-blob==12.27.1
+azure-identity==1.25.1
 
 # AWS SDK
-boto3==1.35.0  # For SES email sending
+boto3==1.42.18  # For SES email sending
 
 # Error Tracking
-sentry-sdk[fastapi]==2.18.0
+sentry-sdk[fastapi]==2.48.0
 
 # Metrics & Observability
-prometheus-fastapi-instrumentator==7.0.0
+prometheus-fastapi-instrumentator==7.1.0
 
 # Testing
 pytest==8.3.4
 pytest-asyncio==0.24.0
-httpx==0.27.2
+httpx==0.28.1
 
 # Development
-python-dotenv==1.0.1
-requests==2.32.4  # For Keycloak setup script
+python-dotenv==1.2.1
+requests==2.32.5  # For Keycloak setup script
 # Security: pin urllib3 to patched version (requests/boto3 dependency)
 urllib3>=2.5.0
