@@ -70,7 +70,7 @@
     "react-dom": "^19.2.1",
     "react-reader": "^2.0.15",
     "react-router-dom": "^7.10.1",
-    "tailwind-merge": "^2.1.0",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
