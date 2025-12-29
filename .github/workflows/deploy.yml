@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Check CI status
         if: ${{ !inputs.skip_tests }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             // Get the latest commit on main branch
@@ -59,7 +59,7 @@ jobs:
       url: https://nerdchurchpartners.org
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup SSH
         env:
