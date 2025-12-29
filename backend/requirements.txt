@@ -13,7 +13,7 @@ psycopg2-binary  # For Alembic migrations (version flexible for ARM64)
 alembic==1.14.1
 
 # Caching & Rate Limiting
-redis==5.2.1
+redis==7.1.0
 
 # Authentication & Security
 python-jose[cryptography]==3.4.0
