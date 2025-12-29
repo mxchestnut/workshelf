@@ -20,7 +20,7 @@ services:
       
       # Keycloak
       KEYCLOAK_SERVER_URL: https://keycloak.workshelf.dev
-      KEYCLOAK_INTERNAL_URL: http://workshelf-keycloak:8080
+      KEYCLOAK_INTERNAL_URL: http://npc-keycloak:8080
       KEYCLOAK_REALM: workshelf
       KEYCLOAK_CLIENT_ID: workshelf-api
       
