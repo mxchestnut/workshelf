@@ -15,7 +15,11 @@ config = context.config
 
 # Set the database URL from settings
 # Convert asyncpg URL to psycopg2 and fix SSL parameter
-db_url = settings.DATABASE_URL.replace('+asyncpg', '').replace('ssl=require', 'sslmode=require')
+db_url = settings.DATABASE_URL.replace('+asyncpg', '')
+# Handle various SSL parameter formats
+db_url = db_url.replace('ssl=require', 'sslmode=require')
+db_url = db_url.replace('ssl=true', 'sslmode=require')
+db_url = db_url.replace('&channel_binding=require', '')
 config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
