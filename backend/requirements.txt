@@ -38,7 +38,7 @@ anthropic==0.75.0  # Claude API for creative writing assistance
 
 # EPUB Processing
 ebooklib==0.18
-html2text==2020.1.16
+html2text==2025.4.15
 
 # Document Format Support
 python-docx==1.1.2  # Microsoft Word (.docx)
