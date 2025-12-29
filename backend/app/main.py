@@ -79,10 +79,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://nerdchurchpartners.org",
-        "https://www.nerdchurchpartners.org",
-        "https://app.nerdchurchpartners.org",
-        "https://admin.nerdchurchpartners.org",
+        "https://workshelf.dev",
+        "https://www.workshelf.dev",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -91,7 +89,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-print("[CORS] Configured for origins: nerdchurchpartners.org")
+print("[CORS] Configured for origins: workshelf.dev")
 
 # Health check endpoints
 @app.get("/health")
