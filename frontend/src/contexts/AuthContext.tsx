@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { keycloakConfig, API_BASE_URL } from '../config/authConfig';
 
+// PKCE helper functions
+const generateCodeVerifier = (): string => {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
+
+const generateCodeChallenge = async (verifier: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
+
 // User type for the application (Keycloak-based)
 export interface User {
   // Backend properties
@@ -179,47 +199,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [getAccessToken, fetchUserInfo]);
 
   const login = async () => {
-    // Store current location for redirect after login
-    sessionStorage.setItem('redirect_after_login', globalThis.location.pathname);
-    
-    // Generate state and nonce for security
-    const state = crypto.randomUUID();
-    const nonce = crypto.randomUUID();
-    sessionStorage.setItem('oauth_state', state);
-    sessionStorage.setItem('oauth_nonce', nonce);
-    
-    const redirectUri = encodeURIComponent(globalThis.location.origin + '/callback');
-    const authUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/auth`;
-    const params = new URLSearchParams({
-      client_id: keycloakConfig.clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid profile email',
-      state,
-      nonce,
-    });
-    
-    globalThis.location.href = `${authUrl}?${params.toString()}`;
+    try {
+      // Store current location for redirect after login
+      sessionStorage.setItem('redirect_after_login', globalThis.location.pathname);
+      
+      // Generate state and nonce for security
+      const state = crypto.randomUUID();
+      const nonce = crypto.randomUUID();
+      sessionStorage.setItem('oauth_state', state);
+      sessionStorage.setItem('oauth_nonce', nonce);
+      
+      // Generate PKCE code verifier and challenge
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+      
+      console.log('[Auth] Starting login with PKCE...');
+      
+      const redirectUri = globalThis.location.origin + '/callback';
+      const authUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/auth`;
+      const params = new URLSearchParams({
+        client_id: keycloakConfig.clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid profile email',
+        state,
+        nonce,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+      });
+      
+      globalThis.location.href = `${authUrl}?${params.toString()}`;
+    } catch (error) {
+      console.error('[Auth] Login initiation failed:', error);
+      throw error;
+    }
   };
 
   const logout = async () => {
-    const token = localStorage.getItem('access_token');
+    const idToken = localStorage.getItem('id_token');
+    
+    console.log('[Auth] Logging out...');
     
     // Clear local state
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('id_token');
     localStorage.removeItem('user_info');
     setIsAuthenticated(false);
     setUser(null);
     
     // Redirect to Keycloak logout
-    const redirectUri = encodeURIComponent(globalThis.location.origin);
+    const redirectUri = globalThis.location.origin;
     const logoutUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/logout`;
     
-    if (token) {
-      globalThis.location.href = `${logoutUrl}?id_token_hint=${token}&post_logout_redirect_uri=${redirectUri}`;
+    // Use id_token_hint if available for proper SSO logout
+    if (idToken) {
+      globalThis.location.href = `${logoutUrl}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
     } else {
-      globalThis.location.href = `${logoutUrl}?post_logout_redirect_uri=${redirectUri}`;
+      globalThis.location.href = `${logoutUrl}?post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
     }
   };
 

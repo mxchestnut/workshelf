@@ -12,6 +12,11 @@ export const keycloakConfig = {
   clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'workshelf-frontend',
 };
 
+// Validate configuration
+if (!keycloakConfig.url) {
+  console.warn('[Auth Config] VITE_KEYCLOAK_URL is not set. Authentication will not work.');
+}
+
 // API endpoint
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.nerdchurchpartners.org';
 

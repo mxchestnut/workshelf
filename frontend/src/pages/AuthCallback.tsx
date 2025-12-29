@@ -45,12 +45,21 @@ export function AuthCallback() {
 
         console.log('[AuthCallback] Exchanging authorization code for tokens...')
 
+        // Get PKCE code verifier
+        const codeVerifier = sessionStorage.getItem('pkce_code_verifier')
+        if (!codeVerifier) {
+          console.error('[AuthCallback] Missing PKCE code verifier')
+          setError('Authentication session expired. Please try again.')
+          return
+        }
+
         // Exchange authorization code for tokens
         const tokenParams = new URLSearchParams()
         tokenParams.append('grant_type', 'authorization_code')
         tokenParams.append('client_id', keycloakConfig.clientId)
         tokenParams.append('code', code)
         tokenParams.append('redirect_uri', globalThis.location.origin + '/callback')
+        tokenParams.append('code_verifier', codeVerifier)
 
         const tokenResponse = await fetch(
           `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/token`,
@@ -73,10 +82,13 @@ export function AuthCallback() {
         const tokens = await tokenResponse.json()
         console.log('[AuthCallback] Tokens received successfully')
 
-        // Store tokens
+        // Store tokens (including id_token for logout)
         localStorage.setItem('access_token', tokens.access_token)
         if (tokens.refresh_token) {
           localStorage.setItem('refresh_token', tokens.refresh_token)
+        }
+        if (tokens.id_token) {
+          localStorage.setItem('id_token', tokens.id_token)
         }
 
         // Fetch user info from backend
@@ -96,9 +108,10 @@ export function AuthCallback() {
           console.warn('[AuthCallback] Failed to fetch user info, continuing anyway:', error)
         }
 
-        // Clean up
+        // Clean up session storage
         sessionStorage.removeItem('oauth_state')
         sessionStorage.removeItem('oauth_nonce')
+        sessionStorage.removeItem('pkce_code_verifier')
 
         // Redirect to stored URL or default
         const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/feed'
