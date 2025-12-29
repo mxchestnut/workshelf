@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, List
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.services import user_service
 from app.services.comment_service import CommentService
 from app.schemas.collaboration import (

@@ -8,7 +8,7 @@ from sqlalchemy import select, or_, func, and_
 from typing import List, Optional
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.schemas.search import SearchQuery, SearchResponse
 from app.services import search_service, user_service
 from app.models.user import User

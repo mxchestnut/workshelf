@@ -12,7 +12,7 @@ from sqlalchemy import select, desc, and_, or_, func
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.models.user import User
 from app.models.store import StoreItem, Purchase, StoreItemStatus, PurchaseStatus
 from app.services.stripe_service import StripeService

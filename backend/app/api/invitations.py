@@ -10,7 +10,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user, require_staff
+from app.core.auth import get_current_user, require_staff
 from app.models.user import User
 from app.models.invitation import Invitation, InvitationStatus
 

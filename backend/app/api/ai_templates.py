@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.models import User
 from app.models.ai_templates import AIGeneratedTemplate
 from app.services.ai_template_service import AITemplateGenerator

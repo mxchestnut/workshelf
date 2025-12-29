@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, List, Optional
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.services import user_service
 from app.services.reading_list_service import BookmarkService, ReadingListService
 from app.schemas.reading_list import (

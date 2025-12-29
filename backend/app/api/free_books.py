@@ -8,7 +8,7 @@ from sqlalchemy import select
 from typing import List, Optional
 import httpx
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user_id
+from app.core.auth import get_current_user_id
 from app.models.user import User
 from app.models.vault import Article
 

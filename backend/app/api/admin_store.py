@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from decimal import Decimal
 
 from app.core.database import get_db
-from app.core.azure_auth import require_staff
+from app.core.auth import require_staff
 from app.models.user import User
 from app.models.store import StoreItem, StoreItemStatus
 

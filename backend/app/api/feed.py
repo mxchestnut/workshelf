@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
-from app.core.azure_auth import get_current_user
+from app.core.auth import get_current_user
 from app.models.collaboration import GroupPost, GroupMember, Group, GroupPostReaction
 from app.models.user import User, UserProfile
 from app.services import user_service

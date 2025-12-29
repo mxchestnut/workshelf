@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.core.azure_auth import require_staff
+from app.core.auth import require_staff
 from app.models.collaboration import Group, GroupMember, GroupMemberRole
 from app.models.studio_customization import StudioCustomDomain
 from app.models.user import User
