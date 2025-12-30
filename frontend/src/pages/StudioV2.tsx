@@ -81,7 +81,6 @@ export default function StudioV2() {
   }, [login])
 
   useEffect(() => {
-    loadUser()
     loadProjects()
   }, [loadProjects])
 

@@ -1084,7 +1084,7 @@ export function AdminDashboard({ embedded = false }: AdminDashboardProps) {
                                     
                                     if (response.ok) {
                                       alert(`${usr.email} is now a staff member`)
-                                      loadUsers() // Reload the user list
+                                      loadUser() // Reload the user list
                                     } else {
                                       const error = await response.json()
                                       alert(`Failed to make staff: ${error.detail || 'Unknown error'}`)

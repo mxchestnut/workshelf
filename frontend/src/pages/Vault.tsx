@@ -616,10 +616,8 @@ export default function Vault() {
 
                             if (response.ok) {
                               alert(`"${rec.title}" added to your vault!`)
-                              // Refresh vault if we're on the all or want-to-read tab
-                              if (activeTab === 'all' || activeTab === 'want-to-read') {
-                                await loadVault()
-                              }
+                              // Refresh vault after adding
+                              await loadVault()
                             } else {
                               const error = await response.json()
                               alert(`Failed to add to vault: ${error.detail || 'Unknown error'}`)
