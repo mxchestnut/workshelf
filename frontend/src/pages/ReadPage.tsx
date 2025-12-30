@@ -100,8 +100,6 @@ export default function ReadPage() {
     loadStoreItem()
     checkIfInVault()
   }, [loadStoreItem, checkIfInVault])
-    }
-  }
 
   const handleAddToVault = async () => {
     if (!storeItem) return

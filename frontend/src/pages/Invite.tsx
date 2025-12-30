@@ -61,13 +61,7 @@ export function Invite() {
     } catch (error) {
       console.error('[Invite] Error checking group invitation:', error)
     }
-  }, [])
 
-  useEffect(() => {
-    if (user !== null) {
-      verifyInvitation()
-    }
-  }, [user, verifyInvitation])
     // Fall back to platform invitation endpoint
     try {
       const response = await fetch(`${API_URL}/api/v1/invitations/verify/${token}`)
@@ -94,7 +88,13 @@ export function Invite() {
       setStatus('invalid')
       setMessage('Failed to verify invitation')
     }
-  }
+  }, [login])
+
+  useEffect(() => {
+    if (user !== null) {
+      verifyInvitation()
+    }
+  }, [user, verifyInvitation])
 
   const acceptGroupInvitation = async () => {
     if (!groupInvitation) return

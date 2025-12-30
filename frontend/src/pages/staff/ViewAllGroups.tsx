@@ -2,7 +2,7 @@
  * View All Groups - Staff only page for viewing and managing all groups
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Navigation } from '../../components/Navigation'
 import { useAuth } from "../../contexts/AuthContext"
 import { Users, ArrowLeft } from 'lucide-react'
@@ -11,11 +11,7 @@ export function ViewAllGroups() {
   const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    checkAccess()
-  }, [])
-
-  const checkAccess = async () => {
+  const checkAccess = useCallback(async () => {
     try {
       if (!user || !user.is_staff) {
         window.location.href = '/'
@@ -26,7 +22,11 @@ export function ViewAllGroups() {
       console.error('Access check failed:', error)
       window.location.href = '/'
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    checkAccess()
+  }, [checkAccess])
 
   if (loading) {
     return (
