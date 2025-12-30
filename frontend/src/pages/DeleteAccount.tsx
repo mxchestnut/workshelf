@@ -3,7 +3,7 @@
  * Allows users to permanently delete their account with proper warnings and confirmations
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Navigation } from '../components/Navigation'
 import { useAuth } from "../contexts/AuthContext"
 import { AlertTriangle, X, Trash2 } from 'lucide-react'
@@ -36,16 +36,11 @@ export default function DeleteAccount() {
   const [deleted, setDeleted] = useState(false)
   const [deletionResult, setDeletionResult] = useState<any>(null)
 
-  useEffect(() => {
-    loadUser()
-    fetchDeletionInfo()
-  }, [fetchDeletionInfo])
-
   const loadUser = () => {
     // User loading logic removed - placeholder function
   }
 
-  const fetchDeletionInfo = async () => {
+  const fetchDeletionInfo = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -72,7 +67,12 @@ export default function DeleteAccount() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAccessToken])
+
+  useEffect(() => {
+    loadUser()
+    fetchDeletionInfo()
+  }, [fetchDeletionInfo])
 
   const handleDeleteAccount = async () => {
     if (!deletionInfo) return

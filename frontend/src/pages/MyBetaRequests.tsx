@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Navigation } from '../components/Navigation'
 import { useAuth } from "../contexts/AuthContext"
 import { CheckCircle, XCircle, Send, Inbox } from 'lucide-react'
@@ -21,11 +21,7 @@ export default function MyBetaRequests() {
   const [received, setReceived] = useState<BetaRequestItem[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const token = await getAccessToken()
@@ -44,7 +40,11 @@ export default function MyBetaRequests() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAccessToken])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   const statusBadge = (status: BetaRequestItem['status']) => {
     const map: Record<string, string> = {

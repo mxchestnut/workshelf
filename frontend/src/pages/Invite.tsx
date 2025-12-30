@@ -1,7 +1,7 @@
 /**
  * Invitation Page - Verify invitation token and redirect to signup or accept group invitation
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Loader2, CheckCircle, XCircle, Users } from 'lucide-react'
 import { useAuth } from "../contexts/AuthContext"
 import { toast } from '../services/toast'
@@ -35,13 +35,7 @@ export function Invite() {
     loadUser()
   }, [])
 
-  useEffect(() => {
-    if (user !== null) {
-      verifyInvitation()
-    }
-  }, [user, verifyInvitation])
-
-  const verifyInvitation = async () => {
+  const verifyInvitation = useCallback(async () => {
     // Get token from URL
     const path = window.location.pathname
     const token = path.split('/invite/')[1]
@@ -67,7 +61,13 @@ export function Invite() {
     } catch (error) {
       console.error('[Invite] Error checking group invitation:', error)
     }
+  }, [])
 
+  useEffect(() => {
+    if (user !== null) {
+      verifyInvitation()
+    }
+  }, [user, verifyInvitation])
     // Fall back to platform invitation endpoint
     try {
       const response = await fetch(`${API_URL}/api/v1/invitations/verify/${token}`)

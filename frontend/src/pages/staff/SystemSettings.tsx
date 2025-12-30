@@ -2,7 +2,7 @@
  * System Settings - Staff only page for platform configuration
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Navigation } from '../../components/Navigation'
 import { useAuth } from "../../contexts/AuthContext"
 import { Settings, ArrowLeft, TrendingUp, Tag } from 'lucide-react'
@@ -11,7 +11,7 @@ export function SystemSettings() {
   const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
-  const checkAccess = async () => {
+  const checkAccess = useCallback(async () => {
     try {
       if (!user || !user.is_staff) {
         window.location.href = '/'
@@ -22,7 +22,7 @@ export function SystemSettings() {
       console.error('Access check failed:', error)
       window.location.href = '/'
     }
-  }
+  }, [user])
 
   useEffect(() => {
     checkAccess()

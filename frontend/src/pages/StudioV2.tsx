@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FileText, Folder, Plus, ChevronRight, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { useAuth } from "../contexts/AuthContext"
@@ -52,23 +52,7 @@ export default function StudioV2() {
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [newProjectTitle, setNewProjectTitle] = useState('')
 
-  useEffect(() => {
-    loadUser()
-    loadProjects()
-  }, [loadProjects])
-
-  useEffect(() => {
-    if (selectedProject) {
-      loadFoldersAndDocuments(selectedProject.id)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProject])
-
-  const loadUser = () => {
-    // User loading logic removed - placeholder function
-  }
-
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
@@ -94,7 +78,12 @@ export default function StudioV2() {
       console.error('Error loading projects:', err)
       setLoading(false)
     }
-  }
+  }, [login])
+
+  useEffect(() => {
+    loadUser()
+    loadProjects()
+  }, [loadProjects])
 
   const loadDocuments = async (projectId: number) => {
     try {

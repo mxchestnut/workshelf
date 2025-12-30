@@ -1,7 +1,7 @@
 /**
  * Read Page - Readium-powered reading experience for published works
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ArrowLeft, Loader2, Lock, BookOpen } from 'lucide-react'
 import EpubReader from '../components/EpubReader'
 
@@ -30,12 +30,7 @@ export default function ReadPage() {
   const [inVault, setInVault] = useState(false)
   const [addingToShelf, setAddingToShelf] = useState(false)
 
-  useEffect(() => {
-    loadStoreItem()
-    checkIfInVault()
-  }, [itemId, loadStoreItem, checkIfInVault])
-
-  const loadStoreItem = async () => {
+  const loadStoreItem = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
       
@@ -76,9 +71,9 @@ export default function ReadPage() {
       setError(err.message || 'Failed to load book')
       setLoading(false)
     }
-  }
+  }, [itemId])
 
-  const checkIfInVault = async () => {
+  const checkIfInVault = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) return
@@ -98,6 +93,13 @@ export default function ReadPage() {
       }
     } catch (error) {
       console.error('Failed to check vault:', error)
+    }
+  }, [itemId])
+
+  useEffect(() => {
+    loadStoreItem()
+    checkIfInVault()
+  }, [loadStoreItem, checkIfInVault])
     }
   }
 

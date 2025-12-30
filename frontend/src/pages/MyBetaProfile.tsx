@@ -2,7 +2,7 @@
  * My Beta Profile Page
  * Settings page for beta readers to set up their marketplace profile
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from "../contexts/AuthContext"
 import { Navigation } from '../components/Navigation'
 import { BookOpen, DollarSign, Clock, Users, Plus, Trash2, Save } from 'lucide-react'
@@ -63,11 +63,7 @@ export default function MyBetaProfile() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-  useEffect(() => {
-    loadProfile()
-  }, [loadProfile])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
 
       const response = await fetch('/api/v1/beta-profiles/my-profile', {
@@ -98,7 +94,11 @@ export default function MyBetaProfile() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAccessToken])
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
 
   const handleSave = async () => {
     setSaving(true)

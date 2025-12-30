@@ -2,7 +2,7 @@
  * Global Moderation - Staff only page for reviewing all flagged content
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Navigation } from '../../components/Navigation'
 import { useAuth } from "../../contexts/AuthContext"
 import { Flag, ArrowLeft, Shield } from 'lucide-react'
@@ -11,7 +11,7 @@ export function GlobalModeration() {
   const { user, login, logout } = useAuth()
   const [loading, setLoading] = useState(true)
 
-  const checkAccess = async () => {
+  const checkAccess = useCallback(async () => {
     try {
       if (!user || !user.is_staff) {
         window.location.href = '/'
@@ -22,7 +22,7 @@ export function GlobalModeration() {
       console.error('Access check failed:', error)
       window.location.href = '/'
     }
-  }
+  }, [user])
 
   useEffect(() => {
     checkAccess()
