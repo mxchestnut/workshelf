@@ -118,7 +118,9 @@ export function AuthCallback() {
         sessionStorage.removeItem('redirect_after_login')
 
         console.log('[AuthCallback] Authentication complete, redirecting to:', redirectUrl)
-        navigate(redirectUrl, { replace: true })
+        
+        // Force a full page reload to ensure AuthContext re-initializes with new tokens
+        globalThis.location.href = redirectUrl
       } catch (error) {
         console.error('[AuthCallback] Error during callback:', error)
         setError('An unexpected error occurred during authentication')
