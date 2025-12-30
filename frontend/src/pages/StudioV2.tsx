@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Folder, Plus, ChevronRight, Loader2, Upload, Trash2, FolderPlus, FilePlus } from 'lucide-react'
 import { Editor } from '../components/Editor'
 import { useAuth } from "../contexts/AuthContext"
@@ -52,38 +52,37 @@ export default function StudioV2() {
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [newProjectTitle, setNewProjectTitle] = useState('')
 
-  const loadProjects = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        login()
-        return
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/projects/?skip=0&limit=100`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data || [])
-        
-        // Auto-select first project
-        if (data && data.length > 0) {
-          setSelectedProject(data[0])
-        }
-      }
-      setLoading(false)
-    } catch (err) {
-      console.error('Error loading projects:', err)
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          login()
+          return
+        }
+
+        const response = await fetch(`${API_URL}/api/v1/projects/?skip=0&limit=100`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setProjects(data || [])
+          
+          // Auto-select first project
+          if (data && data.length > 0) {
+            setSelectedProject(data[0])
+          }
+        }
+        setLoading(false)
+      } catch (err) {
+        console.error('Error loading projects:', err)
+        setLoading(false)
+      }
+    }
+    
     loadProjects()
-  }, [loadProjects])
+  }, [login])
 
   const loadDocuments = async (projectId: number) => {
     try {
