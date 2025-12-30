@@ -128,7 +128,8 @@ export function StoreAnalytics() {
     item => !item.has_audiobook && item.revenue >= AUDIOBOOK_THRESHOLD
   )
 
-  conavigate('/upload-book')
+  const handleAddItem = () => {
+    navigate('/upload-book')
     // TODO: Open modal or navigate to add item page
   }
 
