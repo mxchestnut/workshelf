@@ -1,14 +1,13 @@
 /**
  * ChatBar Component
- * Floating chat dock at bottom of screen with Messages and AI Assistant tabs
+ * Floating chat dock at bottom of screen with AI Assistant
  */
 import { useState, useEffect } from 'react'
-import { MessageCircle, Bot, X, Minus } from 'lucide-react'
+import { Bot, X, Minus } from 'lucide-react'
 import AIChat from './AIChat'
-import MessagesChat from './MessagesChat'
 import { chatBarEvents } from '../utils/chatBarEvents'
 
-type ChatTab = 'messages' | 'ai' | null
+type ChatTab = 'ai' | null
 
 export default function ChatBar() {
   const [activeTab, setActiveTab] = useState<ChatTab>(null)
@@ -52,17 +51,8 @@ export default function ChatBar() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50 rounded-t-lg">
             <div className="flex items-center gap-2">
-              {activeTab === 'ai' ? (
-                <>
-                  <Bot className="w-5 h-5 text-primary" />
-                  <span className="font-semibold">AI Assistant</span>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="w-5 h-5 text-primary" />
-                  <span className="font-semibold">Messages</span>
-                </>
-              )}
+              <Bot className="w-5 h-5 text-primary" />
+              <span className="font-semibold">AI Assistant</span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -85,7 +75,7 @@ export default function ChatBar() {
           {/* Chat Content */}
           {!isMinimized && (
             <div className="flex-1 overflow-hidden">
-              {activeTab === 'ai' ? <AIChat initialContext={aiContext} /> : <MessagesChat />}
+              <AIChat initialContext={aiContext} />
             </div>
           )}
         </div>
@@ -93,15 +83,6 @@ export default function ChatBar() {
 
       {/* Floating Dock */}
       <div className="fixed bottom-6 right-6 flex gap-3 z-50">
-        <button
-          onClick={() => openTab('messages')}
-          className={`p-4 rounded-full shadow-lg transition-all hover:scale-110 ${
-            activeTab === 'messages' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'
-          }`}
-          aria-label="Open messages"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </button>
         <button
           onClick={() => openTab('ai')}
           className={`p-4 rounded-full shadow-lg transition-all hover:scale-110 ${
