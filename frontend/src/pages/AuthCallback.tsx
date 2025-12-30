@@ -13,7 +13,13 @@ export function AuthCallback() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Prevent double execution in React Strict Mode
+    let executed = false
+    
     const handleCallback = async () => {
+      if (executed) return
+      executed = true
+      
       try {
         // Get authorization code from URL
         const params = new URLSearchParams(globalThis.location.search)
@@ -119,7 +125,8 @@ export function AuthCallback() {
 
         console.log('[AuthCallback] Authentication complete, redirecting to:', redirectUrl)
         
-        // Force a full page reload to ensure AuthContext re-initializes with new tokens
+        // Small delay to ensure localStorage writes complete, then force full page reload
+        await new Promise(resolve => setTimeout(resolve, 100))
         globalThis.location.href = redirectUrl
       } catch (error) {
         console.error('[AuthCallback] Error during callback:', error)
