@@ -78,7 +78,8 @@ export default function StudioV2() {
       console.error('Error loading projects:', err)
       setLoading(false)
     }
-  }, [login])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     loadProjects()

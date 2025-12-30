@@ -17,7 +17,10 @@ export function AuthCallback() {
     let executed = false
     
     const handleCallback = async () => {
-      if (executed) return
+      if (executed) {
+        console.log('[AuthCallback] Already executed, skipping')
+        return
+      }
       executed = true
       
       try {
