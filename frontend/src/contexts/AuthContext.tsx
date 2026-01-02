@@ -269,5 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// Re-export useAuth for backward compatibility
+export { useAuth } from './useAuth';
+
 // Re-export types for backward compatibility
 export type { User, AuthContextType } from './authTypes';
