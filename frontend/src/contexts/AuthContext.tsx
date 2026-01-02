@@ -1,26 +1,24 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useEffect, useState, useCallback } from 'react';
 import { keycloakConfig, API_BASE_URL } from '../config/authConfig';
 import { generateCodeVerifier, generateCodeChallenge, isTokenExpired } from './authHelpers';
 import type { User, AuthContextType } from './authTypes';
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Check if mock auth is enabled
 const isMockAuth = import.meta.env.VITE_MOCK_AUTH === 'true';
 
 // Mock user for local development
 const MOCK_USER: User = {
-  id: 'mock-user-id',
+  id: 999,
   username: 'localdev',
   email: 'dev@local.test',
   display_name: 'Local Dev User',
-  role: 'admin',
+  is_staff: true,
   groups: ['admin', 'users'],
-  subdomain: null,
-  storage_used: 0,
-  storage_limit: 1073741824,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  sub: 'mock-user-sub',
+  preferred_username: 'localdev',
 };
 
 // Mock token for local development
@@ -103,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     let token = localStorage.getItem('access_token');
-    
+
     if (!token) {
       throw new Error('No access token found');
     }
@@ -143,12 +141,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const token = localStorage.getItem('access_token');
-      
+
       if (token) {
         try {
           // Validate and possibly refresh token
           const validToken = await getAccessToken();
-          
+
           // Get user info from localStorage or fetch from backend
           const storedUser = localStorage.getItem('user_info');
           if (storedUser) {
@@ -159,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.error('[Auth] Failed to parse stored user info');
             }
           }
-          
+
           // Fetch fresh user info in background
           await fetchUserInfo(validToken);
           setIsAuthenticated(true);
@@ -171,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('user_info');
         }
       }
-      
+
       setIsLoading(false);
     };
 
@@ -192,20 +190,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Store current location for redirect after login
       sessionStorage.setItem('redirect_after_login', globalThis.location.pathname);
-      
+
       // Generate state and nonce for security
       const state = crypto.randomUUID();
       const nonce = crypto.randomUUID();
       sessionStorage.setItem('oauth_state', state);
       sessionStorage.setItem('oauth_nonce', nonce);
-      
+
       // Generate PKCE code verifier and challenge
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-      
+
       console.log('[Auth] Starting login with PKCE...');
-      
+
       const redirectUri = globalThis.location.origin + '/callback';
       const authUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/auth`;
       const params = new URLSearchParams({
@@ -218,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
       });
-      
+
       globalThis.location.href = `${authUrl}?${params.toString()}`;
     } catch (error) {
       console.error('[Auth] Login initiation failed:', error);
@@ -236,9 +234,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const idToken = localStorage.getItem('id_token');
-    
+
     console.log('[Auth] Logging out...');
-    
+
     // Clear local state
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -246,11 +244,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('user_info');
     setIsAuthenticated(false);
     setUser(null);
-    
+
     // Redirect to Keycloak logout
     const redirectUri = globalThis.location.origin;
     const logoutUrl = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/logout`;
-    
+
     // Use id_token_hint if available for proper SSO logout
     if (idToken) {
       globalThis.location.href = `${logoutUrl}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
@@ -269,14 +267,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }
 
 // Re-export types for backward compatibility

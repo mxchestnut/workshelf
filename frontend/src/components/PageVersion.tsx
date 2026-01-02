@@ -21,7 +21,7 @@ const PageVersion: React.FC<PageVersionProps> = ({ path }) => {
       try {
         // Remove leading slash for API call
         const apiPath = path === '/' ? 'landing' : (path.startsWith('/') ? path.substring(1) : path);
-        const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
+        const token = localStorage.getItem('access_token');
         const response = await fetch(`${API_URL}/api/v1/pages/${apiPath}/version`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -50,7 +50,7 @@ const PageVersion: React.FC<PageVersionProps> = ({ path }) => {
     const recordView = async () => {
       try {
         const apiPath = path === '/' ? 'landing' : (path.startsWith('/') ? path.substring(1) : path);
-        const authAccounts = JSON.parse(localStorage.getItem(`msal.account.keys`) || `[]`); const token = authAccounts.length > 0 ? localStorage.getItem(`msal.token.${authAccounts[0]}.accessToken`) : null;
+        const token = localStorage.getItem('access_token');
         await fetch(`${API_URL}/api/v1/pages/${apiPath}/view`, {
           method: 'POST',
           headers: {

@@ -6,8 +6,14 @@ echo "🎨 Starting Work Shelf Studio (Frontend + Backend with Mock Auth)..."
 echo ""
 
 # Setup backend env
-cat > backend/.env.local << 'EOF'
-DATABASE_URL=postgresql://neondb_owner:npg_JQ0XKyGhZ5RO@ep-cold-rice-ad0d3rzt-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require
+if [ -z "$DATABASE_URL" ]; then
+  echo "⚠️  DATABASE_URL not set. Please set it in your environment."
+  echo "Example: export DATABASE_URL='postgresql://user:pass@host/db'"
+  exit 1
+fi
+
+cat > backend/.env.local << EOF
+DATABASE_URL=$DATABASE_URL
 KEYCLOAK_SERVER_URL=https://keycloak.workshelf.dev
 KEYCLOAK_REALM=workshelf
 KEYCLOAK_CLIENT_ID=workshelf-api
