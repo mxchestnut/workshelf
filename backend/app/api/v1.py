@@ -37,7 +37,7 @@ from app.api import (
     writer_readers,  # Writer-reader relationships (alpha/beta readers)
     groups,
     messaging,
-    matrix,  # Matrix protocol integration
+    # matrix,  # Matrix protocol integration - DISABLED (module not found)
     subscriptions,
     creator,
     content_integrity,
@@ -136,7 +136,7 @@ api_router.include_router(beta_profiles.router)  # Beta reader marketplace profi
 api_router.include_router(writer_readers.router)  # Writer-reader relationships (alpha/beta)
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
-api_router.include_router(matrix.router)  # Matrix protocol integration
+# api_router.include_router(matrix.router)  # Matrix protocol integration - DISABLED
 
 # Phase 6: Monetization & Premium Features
 api_router.include_router(subscriptions.router)

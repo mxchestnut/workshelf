@@ -37,7 +37,7 @@ interface Document {
 }
 
 export default function StudioV2() {
-  const { user, login, logout } = useAuth()
+  const { user, login, logout, getAccessToken } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [folders, setFolders] = useState<TreeFolder[]>([])
@@ -55,7 +55,7 @@ export default function StudioV2() {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const token = localStorage.getItem('access_token')
+        const token = await getAccessToken()
         if (!token) {
           login()
           return
@@ -86,7 +86,7 @@ export default function StudioV2() {
 
   const loadDocuments = async (projectId: number) => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/documents?project_id=${projectId}&page_size=1000`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -109,7 +109,7 @@ export default function StudioV2() {
 
   const loadFoldersAndDocuments = async (projectId: number) => {
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       
       // Load folder tree filtered by project
       const foldersResponse = await fetch(`${API_URL}/api/v1/folders/tree?project_id=${projectId}`, {
@@ -147,7 +147,7 @@ export default function StudioV2() {
     console.log('[CREATE DOC] Creating document in folder:', folderId, 'for project:', selectedProject.id)
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/documents`, {
         method: 'POST',
         headers: {
@@ -186,7 +186,7 @@ export default function StudioV2() {
     if (!name) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       console.log('[StudioV2] API_URL:', API_URL)
       console.log('[StudioV2] Full URL:', `${API_URL}/api/v1/folders/`)
       const response = await fetch(`${API_URL}/api/v1/folders/`, {
@@ -217,7 +217,7 @@ export default function StudioV2() {
     if (!selectedProject) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/folders/${folderId}`, {
         method: 'PUT',
         headers: {
@@ -239,7 +239,7 @@ export default function StudioV2() {
     if (!confirm('Delete this folder? Documents inside will not be deleted.')) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/folders/${folderId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -257,7 +257,7 @@ export default function StudioV2() {
     if (!newProjectTitle.trim()) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/projects/`, {
         method: 'POST',
         headers: {
@@ -289,7 +289,7 @@ export default function StudioV2() {
     }
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -337,7 +337,7 @@ export default function StudioV2() {
     }
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/documents/${documentId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -365,7 +365,7 @@ export default function StudioV2() {
 
     // For draft/beta, update status directly
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/documents/${selectedDocument.id}`, {
         method: 'PUT',
         headers: {
@@ -394,7 +394,7 @@ export default function StudioV2() {
     if (!selectedDocument) return
 
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const params = new URLSearchParams({
         price_usd: publishData.price_usd.toString()
       })
@@ -449,7 +449,7 @@ export default function StudioV2() {
 
     setSaving(true)
     try {
-      const token = localStorage.getItem('access_token')
+      const token = await getAccessToken()
       const response = await fetch(`${API_URL}/api/v1/documents/${selectedDocument.id}`, {
         method: 'PUT',
         headers: {

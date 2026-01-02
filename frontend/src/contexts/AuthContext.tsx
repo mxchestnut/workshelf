@@ -5,6 +5,27 @@ import type { User, AuthContextType } from './authTypes';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Check if mock auth is enabled
+const isMockAuth = import.meta.env.VITE_MOCK_AUTH === 'true';
+
+// Mock user for local development
+const MOCK_USER: User = {
+  id: 'mock-user-id',
+  username: 'localdev',
+  email: 'dev@local.test',
+  display_name: 'Local Dev User',
+  role: 'admin',
+  groups: ['admin', 'users'],
+  subdomain: null,
+  storage_used: 0,
+  storage_limit: 1073741824,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+// Mock token for local development
+const MOCK_TOKEN = 'mock-token-for-local-development';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +96,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Get access token with automatic refresh
   const getAccessToken = useCallback(async (): Promise<string> => {
+    // Mock auth mode - return mock token
+    if (isMockAuth) {
+      console.log('[Auth] Mock mode: returning mock token');
+      return MOCK_TOKEN;
+    }
+
     let token = localStorage.getItem('access_token');
     
     if (!token) {
@@ -104,6 +131,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Initialize auth state on mount
   useEffect(() => {
     const initAuth = async () => {
+      // Mock auth mode - auto-login as mock user
+      if (isMockAuth) {
+        console.log('[Auth] Mock mode enabled - auto-authenticating');
+        localStorage.setItem('access_token', MOCK_TOKEN);
+        localStorage.setItem('user_info', JSON.stringify(MOCK_USER));
+        setUser(MOCK_USER);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem('access_token');
       
       if (token) {
@@ -141,6 +179,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [getAccessToken, fetchUserInfo]);
 
   const login = async () => {
+    // Mock auth mode - instant login
+    if (isMockAuth) {
+      console.log('[Auth] Mock mode: logging in as mock user');
+      localStorage.setItem('access_token', MOCK_TOKEN);
+      localStorage.setItem('user_info', JSON.stringify(MOCK_USER));
+      setUser(MOCK_USER);
+      setIsAuthenticated(true);
+      return;
+    }
+
     try {
       // Store current location for redirect after login
       sessionStorage.setItem('redirect_after_login', globalThis.location.pathname);
@@ -179,6 +227,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    // Mock auth mode - instant logout
+    if (isMockAuth) {
+      console.log('[Auth] Mock mode: logging out');
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
     const idToken = localStorage.getItem('id_token');
     
     console.log('[Auth] Logging out...');

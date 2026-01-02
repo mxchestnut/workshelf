@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 import secrets
 
 from app.core.database import get_db

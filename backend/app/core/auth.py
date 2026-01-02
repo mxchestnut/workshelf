@@ -13,9 +13,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 import json
+import os
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
+
+# Mock authentication for local development
+MOCK_AUTH_ENABLED = os.getenv("MOCK_AUTH", "false").lower() == "true"
+MOCK_USER_PAYLOAD = {
+    "sub": "mock-user-keycloak-id",
+    "preferred_username": "localdev",
+    "email": "dev@local.test",
+    "name": "Local Dev User",
+    "exp": 9999999999,  # Far future expiration
+    "iat": 1609459200,
+    "iss": "mock-issuer"
+}
 
 
 class KeycloakAuth:
@@ -128,6 +141,11 @@ class KeycloakAuth:
         Raises:
             HTTPException: If token is invalid
         """
+        # Mock authentication for local development
+        if MOCK_AUTH_ENABLED and token == "mock-token-for-local-development":
+            print("[AUTH DEBUG] Mock auth enabled - returning mock user")
+            return MOCK_USER_PAYLOAD
+        
         try:
             # Get JWKS from Keycloak
             jwks = await self.get_jwks()
