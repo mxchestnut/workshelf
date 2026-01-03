@@ -2,6 +2,7 @@
 API v1 Router
 Aggregates all v1 endpoints
 """
+
 from fastapi import APIRouter
 from app.api import (
     auth,
@@ -57,9 +58,11 @@ from app.api import (
     trash,  # Trash bin for soft-deleted documents/projects
     collections,  # Universal bookmarking system
     pages,  # Page tracking and navigation
+    workspaces,  # Collaborative workspaces
 )
 
 api_router = APIRouter()
+
 
 @api_router.get("/status")
 async def api_status():
@@ -89,9 +92,10 @@ async def api_status():
             "content-integrity",
             "export",
             "accessibility",
-            "ai-assistance"
-        ]
+            "ai-assistance",
+        ],
     }
+
 
 # Include routers
 api_router.include_router(auth.router)
@@ -103,7 +107,9 @@ api_router.include_router(bulk_upload.router)  # Bulk document upload
 api_router.include_router(studios.router)
 api_router.include_router(user_profiles.router)
 api_router.include_router(tags.router)
-api_router.include_router(content_tags.router)  # AO3-style tags for posts/ebooks/articles
+api_router.include_router(
+    content_tags.router
+)  # AO3-style tags for posts/ebooks/articles
 api_router.include_router(search.router)
 api_router.include_router(projects.router)
 api_router.include_router(folders.router)
@@ -133,9 +139,14 @@ api_router.include_router(comments.router)
 api_router.include_router(beta_reading.router)
 api_router.include_router(beta_appointments.router)  # Beta reader appointments
 api_router.include_router(beta_profiles.router)  # Beta reader marketplace profiles
-api_router.include_router(writer_readers.router)  # Writer-reader relationships (alpha/beta)
+api_router.include_router(
+    writer_readers.router
+)  # Writer-reader relationships (alpha/beta)
 api_router.include_router(groups.router)
 api_router.include_router(messaging.router)
+api_router.include_router(
+    workspaces.router, prefix="/workspaces", tags=["workspaces"]
+)  # Collaborative workspaces
 # api_router.include_router(matrix.router)  # Matrix protocol integration - DISABLED
 
 # Phase 6: Monetization & Premium Features
