@@ -1,6 +1,7 @@
 """
 Authentication API endpoints
 """
+
 from fastapi import APIRouter, Depends, HTTPException, status
 import os
 from typing import Dict, Any
@@ -18,35 +19,38 @@ logger = logging.getLogger("app.api.auth")
 
 @router.get("/me")
 async def get_user_info(
-    user: Dict[str, Any] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    user: Dict[str, Any] = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """
     Get current authenticated user information with groups
-    
+
     Requires: Valid JWT token in Authorization header
-    
+
     Returns user information from database including owned groups.
     If user doesn't exist in database, auto-creates them from Keycloak token.
     """
     try:
         keycloak_id = user.get("sub")
         email = user.get("email")
-        logger.info(f"[AUTH /me] keycloak_id=%s email=%s", keycloak_id, email)
+        logger.info("[AUTH /me] keycloak_id=%s email=%s", keycloak_id, email)
 
         # Fetch user from database
-        result = await db.execute(
-            select(User).where(User.keycloak_id == keycloak_id)
-        )
+        result = await db.execute(select(User).where(User.keycloak_id == keycloak_id))
         db_user = result.scalar_one_or_none()
 
         # Auto-create user if they don't exist (first time login after Keycloak registration)
         if not db_user:
             # Derive a base slug and name safely
-            local_part = (email.split('@')[0] if email and '@' in email else keycloak_id[:8]).lower()
+            local_part = (
+                email.split("@")[0] if email and "@" in email else keycloak_id[:8]
+            ).lower()
             base_slug = f"{local_part}-workspace"
             tenant_name = f"{local_part}'s Workspace"
-            logger.info("[AUTH /me] creating tenant base_slug=%s tenant_name=%s", base_slug, tenant_name)
+            logger.info(
+                "[AUTH /me] creating tenant base_slug=%s tenant_name=%s",
+                base_slug,
+                tenant_name,
+            )
 
             # Ensure slug uniqueness by suffixing a counter if necessary
             slug = base_slug
@@ -60,11 +64,7 @@ async def get_user_info(
             logger.info("[AUTH /me] using tenant slug=%s", slug)
 
             # Create a personal tenant for the user
-            tenant = Tenant(
-                name=tenant_name,
-                slug=slug,
-                is_active=True
-            )
+            tenant = Tenant(name=tenant_name, slug=slug, is_active=True)
             db.add(tenant)
             await db.flush()  # Get tenant.id
 
@@ -79,14 +79,17 @@ async def get_user_info(
                 is_approved=False,  # New users must be approved by staff
                 is_active=True,
                 is_verified=bool(user.get("email_verified", False)),
-                tenant_id=tenant.id  # Link user to their personal tenant
+                tenant_id=tenant.id,  # Link user to their personal tenant
             )
             db.add(db_user)
             try:
                 await db.commit()
             except IntegrityError as e:
                 # Very rare race: slug created between check and commit; retry once with new suffix
-                logger.warning("[AUTH /me] IntegrityError on commit, retrying with new slug: %s", str(e))
+                logger.warning(
+                    "[AUTH /me] IntegrityError on commit, retrying with new slug: %s",
+                    str(e),
+                )
                 await db.rollback()
                 suffix += 1
                 tenant.slug = f"{base_slug}-{suffix}"
@@ -94,6 +97,22 @@ async def get_user_info(
                 db.add(db_user)
                 await db.commit()
             await db.refresh(db_user)
+
+            # Create personal workspace for new user
+            from app.services.workspace_service import WorkspaceService
+
+            try:
+                await WorkspaceService.create_personal_workspace(
+                    db, db_user.id, display or local_part
+                )
+                logger.info(
+                    "[AUTH /me] Created personal workspace for user_id=%s", db_user.id
+                )
+            except Exception as e:
+                logger.error(
+                    "[AUTH /me] Failed to create personal workspace: %s", str(e)
+                )
+                # Don't fail login if workspace creation fails
 
         # Fetch user's groups where they are a member
         group_members_result = await db.execute(
@@ -107,12 +126,23 @@ async def get_user_info(
         groups = []
         for membership, group in group_memberships:
             from app.models.collaboration import GroupMemberRole
-            groups.append({
-                "id": str(group.id),
-                "name": group.name,
-                "slug": group.slug,
-                "is_owner": membership.role == GroupMemberRole.OWNER
-            })
+
+            groups.append(
+                {
+                    "id": str(group.id),
+                    "name": group.name,
+                    "slug": group.slug,
+                    "is_owner": membership.role == GroupMemberRole.OWNER,
+                }
+            )
+
+        # Count user's workspaces
+        from app.services.workspace_service import WorkspaceService
+
+        workspaces = await WorkspaceService.list_user_workspaces(
+            db, db_user.id, skip=0, limit=1
+        )
+        workspace_count = len(workspaces)
 
         payload = {
             "id": str(db_user.id),
@@ -123,9 +153,15 @@ async def get_user_info(
             "is_approved": db_user.is_approved,
             "keycloak_id": db_user.keycloak_id,
             "matrix_onboarding_seen": db_user.matrix_onboarding_seen,
-            "groups": groups
+            "groups": groups,
+            "workspace_count": workspace_count,
         }
-        logger.info("[AUTH /me] returning user id=%s groups=%d", payload["id"], len(groups))
+        logger.info(
+            "[AUTH /me] returning user id=%s groups=%d workspaces=%d",
+            payload["id"],
+            len(groups),
+            workspace_count,
+        )
         return payload
     except HTTPException:
         raise
@@ -136,55 +172,49 @@ async def get_user_info(
         if os.getenv("ENVIRONMENT", "development").lower() == "development":
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to retrieve user info: {type(e).__name__}: {str(e)}"
+                detail=f"Failed to retrieve user info: {type(e).__name__}: {str(e)}",
             )
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve user info")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve user info",
+        )
 
 
 @router.get("/verify")
 async def verify_token(user_id: str = Depends(get_current_user_id)):
     """
     Verify that the current token is valid
-    
+
     Requires: Valid JWT token in Authorization header
-    
+
     Returns simple confirmation with user ID
     """
-    return {
-        "valid": True,
-        "user_id": user_id
-    }
+    return {"valid": True, "user_id": user_id}
 
 
 @router.post("/mark-matrix-onboarding-seen")
 async def mark_matrix_onboarding_seen(
     current_user_token: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Mark that the user has seen the Matrix onboarding explanation
-    
+
     Used for existing users who need to see the Matrix explanation once.
     New users automatically get this marked during onboarding completion.
     """
     keycloak_id = current_user_token.get("sub")
-    
+
     # Fetch user from database
-    result = await db.execute(
-        select(User).where(User.keycloak_id == keycloak_id)
-    )
+    result = await db.execute(select(User).where(User.keycloak_id == keycloak_id))
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    
+
     user.matrix_onboarding_seen = True
     await db.commit()
-    
-    return {
-        "success": True,
-        "message": "Matrix onboarding marked as seen"
-    }
+
+    return {"success": True, "message": "Matrix onboarding marked as seen"}
