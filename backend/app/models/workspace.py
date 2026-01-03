@@ -13,6 +13,7 @@ from sqlalchemy import (
     DateTime,
     Enum as SQLEnum,
     Index,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 import enum
@@ -139,6 +140,15 @@ class CollectionStatus(str, enum.Enum):
     ARCHIVED = "archived"  # Archived/inactive
 
 
+class CollectionItemType(str, enum.Enum):
+    """Types of items that can be added to workspace collections"""
+
+    DOCUMENT = "document"
+    POST = "post"
+    EBOOK = "ebook"
+    PROJECT = "project"
+
+
 class WorkspaceCollection(Base, TimestampMixin):
     """
     Collections of collaborative content within workspaces
@@ -181,6 +191,48 @@ class WorkspaceCollection(Base, TimestampMixin):
     workspace = relationship("Workspace", back_populates="collections")
     creator = relationship("User", foreign_keys=[created_by])
     publisher = relationship("User", foreign_keys=[published_by])
+    items = relationship("CollectionItem", back_populates="collection", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<WorkspaceCollection(id={self.id}, workspace_id={self.workspace_id}, name='{self.name}', status={self.status})>"
+
+
+class CollectionItem(Base, TimestampMixin):
+    """
+    Items within workspace collections (documents, posts, ebooks, projects)
+    """
+
+    __tablename__ = "collection_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    collection_id = Column(
+        Integer,
+        ForeignKey("collections.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Polymorphic reference
+    item_type = Column(SQLEnum(CollectionItemType), nullable=False)
+    item_id = Column(Integer, nullable=False)
+
+    # Optional note about this item
+    note = Column(Text, nullable=True)
+
+    # Who added this item
+    added_by = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Relationships
+    collection = relationship("WorkspaceCollection", back_populates="items")
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("collection_id", "item_type", "item_id", name="uq_collection_item"),
+        Index("idx_collection_items_lookup", "item_type", "item_id"),
+        Index("idx_collection_items_created", "collection_id", "created_at"),
+    )
+
+    def __repr__(self):
+        return f"<CollectionItem(id={self.id}, collection_id={self.collection_id}, type={self.item_type}, item_id={self.item_id})>"

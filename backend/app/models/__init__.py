@@ -80,7 +80,9 @@ from app.models.workspace import (
     Workspace,
     WorkspaceMember,
     CollectionStatus,
+    CollectionItemType,
     WorkspaceCollection,
+    CollectionItem,
 )
 from app.models.document import (
     DocumentStatus,
