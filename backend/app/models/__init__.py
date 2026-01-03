@@ -65,9 +65,22 @@ from app.models.collaboration import (
     GroupInvitation,
 )
 from app.models.collection import (
+    BookmarkItemType,
+    BookmarkFolder,
+    BookmarkFolderItem,
+    # Backwards compatibility aliases
     CollectionItemType,
     Collection,
     CollectionItem,
+)
+from app.models.workspace import (
+    WorkspaceType,
+    WorkspaceVisibility,
+    WorkspaceRole,
+    Workspace,
+    WorkspaceMember,
+    CollectionStatus,
+    WorkspaceCollection,
 )
 from app.models.document import (
     DocumentStatus,
@@ -188,6 +201,9 @@ __all__ = [
     "AIGenerationLog",
     "ActivityEvent",
     "ActivityEventType",
+    "Article",
+    "ArticleStatus",
+    "ArticleType",
     "AudiobookSubmission",
     "AudiobookSubmissionStatus",
     "Author",
@@ -204,6 +220,9 @@ __all__ = [
     "BillingInterval",
     "BookSuggestion",
     "Bookmark",
+    "BookmarkFolder",
+    "BookmarkFolderItem",
+    "BookmarkItemType",
     "BookshelfItem",
     "BookshelfItemType",
     "BookshelfStatus",
@@ -212,6 +231,7 @@ __all__ = [
     "Collection",
     "CollectionItem",
     "CollectionItemType",
+    "CollectionStatus",
     "Comment",
     "CommentReaction",
     "ContentTag",
@@ -312,5 +332,11 @@ __all__ = [
     "UserProfile",
     "UserRole",
     "VerificationLog",
+    "Workspace",
+    "WorkspaceCollection",
+    "WorkspaceMember",
+    "WorkspaceRole",
+    "WorkspaceType",
+    "WorkspaceVisibility",
     "WriterReaderRelationship",
 ]

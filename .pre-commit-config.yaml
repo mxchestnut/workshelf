@@ -49,11 +49,10 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
 
-  # Security checks
-  # TODO: Re-enable detect-secrets once baseline is properly configured
-  # - repo: https://github.com/Yelp/detect-secrets
-  #   rev: v1.5.0
-  #   hooks:
-  #     - id: detect-secrets
-  #       args: [--baseline, .secrets.baseline]
-  #       exclude: package-lock.json
+  # Security checks - ALWAYS ENABLED
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json
