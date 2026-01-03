@@ -10,6 +10,7 @@ from app.schemas.beta_appointment import *  # noqa: F401, F403
 from app.schemas.beta_profile import *  # noqa: F401, F403
 from app.schemas.beta_reading import *  # noqa: F401, F403
 from app.schemas.collaboration import *  # noqa: F401, F403
+from app.schemas.collection_item import *  # noqa: F401, F403
 from app.schemas.comment import *  # noqa: F401, F403
 from app.schemas.content_integrity import *  # noqa: F401, F403
 from app.schemas.dashboard import *  # noqa: F401, F403

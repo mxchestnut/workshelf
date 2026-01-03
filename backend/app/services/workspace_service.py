@@ -16,6 +16,7 @@ from app.models.workspace import (
     WorkspaceRole,
     WorkspaceType,
     WorkspaceVisibility,
+    CollectionItem,
 )
 from app.schemas.workspace import (
     WorkspaceCollectionCreate,
@@ -25,6 +26,7 @@ from app.schemas.workspace import (
     WorkspaceMemberUpdate,
     WorkspaceUpdate,
 )
+from app.schemas.collection_item import CollectionItemCreate
 
 
 def _generate_slug(name: str) -> str:
@@ -413,5 +415,130 @@ class WorkspaceService:
             return False
 
         await db.delete(collection)
+        await db.commit()
+        return True
+
+    # Collection Item methods
+    @staticmethod
+    async def add_item_to_collection(
+        db: AsyncSession,
+        workspace_id: int,
+        collection_id: int,
+        user_id: int,
+        item_data: CollectionItemCreate,
+    ) -> Optional[CollectionItem]:
+        """Add an item to a collection."""
+        # Check collection exists and belongs to workspace
+        result = await db.execute(
+            select(WorkspaceCollection).where(
+                and_(
+                    WorkspaceCollection.id == collection_id,
+                    WorkspaceCollection.workspace_id == workspace_id,
+                )
+            )
+        )
+        collection = result.scalar_one_or_none()
+        if not collection:
+            return None
+
+        # Check user permission
+        member = await WorkspaceService.get_member(db, workspace_id, user_id)
+        if not member or not member.can_create_collections:
+            return None
+
+        # Check if item already exists in collection
+        existing = await db.execute(
+            select(CollectionItem).where(
+                and_(
+                    CollectionItem.collection_id == collection_id,
+                    CollectionItem.item_type == item_data.item_type,
+                    CollectionItem.item_id == item_data.item_id,
+                )
+            )
+        )
+        if existing.scalar_one_or_none():
+            return None  # Already in collection
+
+        # Create collection item
+        item = CollectionItem(
+            collection_id=collection_id,
+            item_type=item_data.item_type,
+            item_id=item_data.item_id,
+            note=item_data.note,
+            added_by=user_id,
+        )
+
+        db.add(item)
+        await db.commit()
+        await db.refresh(item)
+        return item
+
+    @staticmethod
+    async def get_collection_items(
+        db: AsyncSession, workspace_id: int, collection_id: int, user_id: int
+    ) -> List[CollectionItem]:
+        """Get all items in a collection."""
+        # Check collection exists and belongs to workspace
+        result = await db.execute(
+            select(WorkspaceCollection).where(
+                and_(
+                    WorkspaceCollection.id == collection_id,
+                    WorkspaceCollection.workspace_id == workspace_id,
+                )
+            )
+        )
+        collection = result.scalar_one_or_none()
+        if not collection:
+            return []
+
+        # Check user has access to workspace
+        member = await WorkspaceService.get_member(db, workspace_id, user_id)
+        if not member:
+            return []
+
+        # Get all items
+        result = await db.execute(
+            select(CollectionItem)
+            .where(CollectionItem.collection_id == collection_id)
+            .order_by(CollectionItem.created_at.desc())
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def remove_item_from_collection(
+        db: AsyncSession,
+        workspace_id: int,
+        collection_id: int,
+        item_id: int,
+        user_id: int,
+    ) -> bool:
+        """Remove an item from a collection."""
+        # Check collection exists and belongs to workspace
+        result = await db.execute(
+            select(WorkspaceCollection).where(
+                and_(
+                    WorkspaceCollection.id == collection_id,
+                    WorkspaceCollection.workspace_id == workspace_id,
+                )
+            )
+        )
+        collection = result.scalar_one_or_none()
+        if not collection:
+            return False
+
+        # Check user permission
+        member = await WorkspaceService.get_member(db, workspace_id, user_id)
+        if not member or not member.can_create_collections:
+            return False
+
+        # Get and delete item
+        result = await db.execute(
+            select(CollectionItem).where(CollectionItem.id == item_id)
+        )
+        item = result.scalar_one_or_none()
+        if not item or item.collection_id != collection_id:
+            return False
+
+        await db.delete(item)
         await db.commit()
         return True

@@ -21,6 +21,10 @@ from app.schemas.workspace import (
     WorkspaceResponse,
     WorkspaceUpdate,
 )
+from app.schemas.collection_item import (
+    CollectionItemCreate,
+    CollectionItemResponse,
+)
 from app.services.workspace_service import WorkspaceService
 
 router = APIRouter()
@@ -349,4 +353,68 @@ async def delete_collection(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to delete collection",
+        )
+
+
+# Collection Item endpoints
+@router.post(
+    "/{workspace_id}/collections/{collection_id}/items",
+    response_model=CollectionItemResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_item_to_collection(
+    workspace_id: int,
+    collection_id: int,
+    item_data: CollectionItemCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Add an item to a collection."""
+    item = await WorkspaceService.add_item_to_collection(
+        db, workspace_id, collection_id, current_user.id, item_data
+    )
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to add items to this collection",
+        )
+    return CollectionItemResponse.model_validate(item)
+
+
+@router.get(
+    "/{workspace_id}/collections/{collection_id}/items",
+    response_model=List[CollectionItemResponse],
+)
+async def get_collection_items(
+    workspace_id: int,
+    collection_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all items in a collection."""
+    items = await WorkspaceService.get_collection_items(
+        db, workspace_id, collection_id, current_user.id
+    )
+    return [CollectionItemResponse.model_validate(item) for item in items]
+
+
+@router.delete(
+    "/{workspace_id}/collections/{collection_id}/items/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def remove_item_from_collection(
+    workspace_id: int,
+    collection_id: int,
+    item_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove an item from a collection."""
+    success = await WorkspaceService.remove_item_from_collection(
+        db, workspace_id, collection_id, item_id, current_user.id
+    )
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to remove items from this collection",
         )
