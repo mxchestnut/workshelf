@@ -23,6 +23,7 @@ import { User } from "../contexts/AuthContext"
 import NotificationBell from './NotificationBell'
 import { ThemeToggle } from './ThemeToggle'
 import { SkipLink } from './SkipLink'
+import WorkspaceSwitcher from './workspace/WorkspaceSwitcher'
 
 interface NavigationProps {
   user: User | null
@@ -45,7 +46,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
       <SkipLink />
 
       {/* Persistent Sidebar Navigation - Opens by default, can be collapsed */}
-      <nav 
+      <nav
         id="main-navigation"
         className={`fixed top-0 left-0 h-full bg-card border-r border-border shadow-lg z-40 transform transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'w-80 translate-x-0' : 'w-16 translate-x-0'
@@ -63,7 +64,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                   <h2 className="text-xl font-bold font-mono">Workshelf</h2>
                 </div>
               )}
-              <button 
+              <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-accent rounded-lg"
                 aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
@@ -80,7 +81,14 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <p className="text-sm text-muted-foreground">{user.email}</p>
                   </div>
                 )}
-                
+
+                {/* Workspace Switcher */}
+                {user && (
+                  <div className="mb-3">
+                    <WorkspaceSwitcher />
+                  </div>
+                )}
+
                 {/* Quick Actions in Header */}
                 {user && (
                   <div className="flex items-center gap-2">
@@ -88,11 +96,11 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <ThemeToggle />
                   </div>
                 )}
-                
+
                 {!user && (
                   <div className="flex items-center gap-2">
                     <ThemeToggle />
-                    <button 
+                    <button
                       onClick={onLogin}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
                     >
@@ -113,7 +121,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {/* Main Pages */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Main</h3>
-                  <Link 
+                  <Link
                     to="/"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -122,7 +130,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <Home className="w-5 h-5" />
                     <span>Home</span>
                   </Link>
-                  <Link 
+                  <Link
                     to="/vault"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/vault') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -131,7 +139,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <Library className="w-5 h-5" />
                     <span>Library</span>
                   </Link>
-                  <Link 
+                  <Link
                     to="/advanced-search"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/advanced-search') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -145,7 +153,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {/* Creation */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Create</h3>
-                  <Link 
+                  <Link
                     to="/studio"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/studio') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -159,7 +167,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {/* Social */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Social</h3>
-                  <Link 
+                  <Link
                     to="/groups"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/groups') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -173,7 +181,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {/* Account */}
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</h3>
-                  <Link 
+                  <Link
                     to="/profile"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/profile') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -182,7 +190,16 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                     <UserCircle className="w-5 h-5" />
                     <span>Profile</span>
                   </Link>
-                  <Link 
+                  <Link
+                    to="/workspace/settings"
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      isActive('/workspace/settings') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                    }`}
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Workspace</span>
+                  </Link>
+                  <Link
                     to="/dashboard"
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive('/dashboard') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -197,7 +214,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                 {user.is_staff && (
                   <div className="mb-4">
                     <h3 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Staff</h3>
-                    <Link 
+                    <Link
                       to="/staff"
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive('/staff') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -206,7 +223,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
                       <Shield className="w-5 h-5" />
                       <span>Staff Panel</span>
                     </Link>
-                    <Link 
+                    <Link
                       to="/admin"
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive('/admin') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
@@ -232,7 +249,7 @@ export function Navigation({ user, onLogin, onLogout, currentPage }: NavigationP
           {sidebarOpen && (
             <div className="p-4 border-t border-border">
               {user && (
-                <button 
+                <button
                   onClick={onLogout}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-foreground hover:bg-accent"
                 >

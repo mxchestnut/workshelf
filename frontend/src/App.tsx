@@ -6,6 +6,7 @@ import BetaBanner from './components/BetaBanner'
 import ChatBar from './components/ChatBar'
 import './App.css'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { WorkspaceProvider } from './contexts/WorkspaceContext'
 import { trackPageView } from './matomo'
 
 // Loading component
@@ -81,19 +82,20 @@ const CreatorEarnings = lazy(() => import('./pages/CreatorEarnings'))
 const ReadingListsBrowse = lazy(() => import('./pages/ReadingListsBrowse'))
 const StaffPanel = lazy(() => import('./pages/StaffPanel').then(module => ({ default: module.StaffPanel })))
 const ReadPage = lazy(() => import('./pages/ReadPage'))
+const WorkspaceSettings = lazy(() => import('./pages/WorkspaceSettings'))
 
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
-  
+
   if (isLoading) {
     return <PageLoader />
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/" replace />
   }
-  
+
   return <>{children}</>
 }
 
@@ -124,7 +126,7 @@ function AppContent() {
     <>
       <ToastContainer />
       <BetaBanner />
-      
+
       <div className="min-h-screen bg-background">
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -136,43 +138,46 @@ function AppContent() {
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/overview" element={<Sitemap />} />
             <Route path="/pending-approval" element={<PendingApproval />} />
-            
+
             {/* Groups - partially public */}
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:slug" element={<GroupDetail />} />
             <Route path="/groups/:slug/posts/:postId" element={<PostDetail />} />
             <Route path="/groups/:slug/roles" element={<ProtectedRoute><GroupRoles /></ProtectedRoute>} />
             <Route path="/group/:slug/admin" element={<ProtectedRoute><GroupAdmin /></ProtectedRoute>} />
-            
+
             {/* Invites */}
             <Route path="/invite/:code" element={<Invite />} />
-            
+
             {/* Protected routes */}
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/tags" element={<ProtectedRoute><TagDiscovery /></ProtectedRoute>} />
-            
+
             {/* Group management */}
             <Route path="/group-settings" element={<ProtectedRoute><GroupSettings /></ProtectedRoute>} />
-            
+
             {/* Profile */}
             <Route path="/me" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:userId" element={<BetaProfileView />} />
             <Route path="/users/:username" element={<PublicProfile />} />
-            
+
             {/* Studio */}
             <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
             <Route path="/studio/:projectId/settings" element={<ProtectedRoute><StudioSettings /></ProtectedRoute>} />
-            
+
             {/* Projects */}
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/project/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-            
+
             {/* Dashboard */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            
+
+            {/* Workspaces */}
+            <Route path="/workspace/settings" element={<ProtectedRoute><WorkspaceSettings /></ProtectedRoute>} />
+
             {/* Admin/Staff */}
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
@@ -182,12 +187,12 @@ function AppContent() {
             <Route path="/staff/moderation" element={<ProtectedRoute><GlobalModeration /></ProtectedRoute>} />
             <Route path="/staff/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
             <Route path="/staff/store" element={<ProtectedRoute><StoreAnalytics /></ProtectedRoute>} />
-            
+
             {/* Documents */}
             <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/document/:documentId" element={<ProtectedRoute><Document /></ProtectedRoute>} />
             <Route path="/document" element={<ProtectedRoute><Document /></ProtectedRoute>} />
-            
+
             {/* Books/Store */}
             <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
             <Route path="/authors" element={<Authors />} />
@@ -198,14 +203,14 @@ function AppContent() {
             <Route path="/store/success" element={<ProtectedRoute><StoreSuccess /></ProtectedRoute>} />
             <Route path="/book/:bookId" element={<BookDetail />} />
             <Route path="/read/:bookId" element={<ProtectedRoute><ReadPage /></ProtectedRoute>} />
-            
+
             {/* Beta */}
             <Route path="/beta-feed" element={<ProtectedRoute><BetaFeed /></ProtectedRoute>} />
             <Route path="/my-beta-profile" element={<ProtectedRoute><MyBetaProfile /></ProtectedRoute>} />
             <Route path="/beta-marketplace" element={<ProtectedRoute><BetaMarketplace /></ProtectedRoute>} />
             <Route path="/beta-request/:requestId" element={<ProtectedRoute><BetaRequest /></ProtectedRoute>} />
             <Route path="/my-beta-requests" element={<ProtectedRoute><MyBetaRequests /></ProtectedRoute>} />
-            
+
             {/* Settings/Utilities */}
             <Route path="/content-integrity" element={<ProtectedRoute><ContentIntegrity /></ProtectedRoute>} />
             <Route path="/ai-assistance" element={<ProtectedRoute><AIAssistance /></ProtectedRoute>} />
@@ -218,17 +223,17 @@ function AppContent() {
             <Route path="/reading-lists" element={<ProtectedRoute><ReadingListsBrowse /></ProtectedRoute>} />
             <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
             <Route path="/trash" element={<ProtectedRoute><Trash /></ProtectedRoute>} />
-            
+
             {/* Legal */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/ai-policy" element={<AIPolicy />} />
-            
+
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </div>
-      
+
       {/* Only show ChatBar when user is authenticated */}
       {isAuthenticated && <ChatBar />}
     </>
@@ -238,7 +243,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <WorkspaceProvider>
+        <AppContent />
+      </WorkspaceProvider>
     </AuthProvider>
   )
 }
