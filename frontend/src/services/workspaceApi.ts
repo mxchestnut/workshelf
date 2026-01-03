@@ -147,3 +147,41 @@ export const collectionApi = {
     if (!response.ok) throw new Error('Failed to delete collection');
   },
 };
+
+// Collection Item API
+export const collectionItemApi = {
+  async add(workspaceId: string, collectionId: string, itemData: { item_type: string; item_id: number; note?: string }): Promise<any> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/workspaces/${workspaceId}/collections/${collectionId}/items`,
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(itemData),
+      }
+    );
+    if (!response.ok) throw new Error('Failed to add item to collection');
+    return response.json();
+  },
+
+  async list(workspaceId: string, collectionId: string): Promise<any[]> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/workspaces/${workspaceId}/collections/${collectionId}/items`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!response.ok) throw new Error('Failed to fetch collection items');
+    return response.json();
+  },
+
+  async remove(workspaceId: string, collectionId: string, itemId: string): Promise<void> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/workspaces/${workspaceId}/collections/${collectionId}/items/${itemId}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!response.ok) throw new Error('Failed to remove item from collection');
+  },
+};

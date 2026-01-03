@@ -7,10 +7,11 @@ import { Editor } from '../components/Editor'
 import { WritingPromptsSidebar } from '../components/WritingPromptsSidebar'
 import { ModeSwitcher, DocumentMode } from '../components/ModeSwitcher'
 import { VersionHistory } from '../components/VersionHistory'
-import { ArrowLeft, Trash2, ExternalLink, Sparkles, History } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Sparkles, History, FolderPlus } from 'lucide-react'
 import '../components/Editor.css'
 import { CommentsThread } from '../components/CommentsThread'
 import { toast } from '../services/toast'
+import AddToCollectionModal from '../components/workspace/AddToCollectionModal'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://nerdchurchpartners.org'
 
@@ -39,6 +40,7 @@ export function Document() {
   const [showCreateVersion, setShowCreateVersion] = useState(false)
   const [versionMessage, setVersionMessage] = useState('')
   const [creatingVersion, setCreatingVersion] = useState(false)
+  const [showAddToCollection, setShowAddToCollection] = useState(false)
 
   // Get document ID from URL path (/document/123) or query (?id=123)
   const pathParts = window.location.pathname.split('/')
@@ -141,7 +143,7 @@ export function Document() {
     try {
       const token = localStorage.getItem('access_token')
       console.log('[Document] Creating new document, token:', token ? 'present' : 'missing')
-      
+
       if (!token) {
         console.error('[Document] No access token found')
         setError('Please log in to create documents')
@@ -166,7 +168,7 @@ export function Document() {
       })
 
       console.log('[Document] Response status:', response.status)
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('[Document] Create failed:', errorText)
@@ -186,7 +188,7 @@ export function Document() {
       setDocument(data)
       setTitle(data.title)
       setLoading(false)
-      
+
       // Update URL with new document ID
       window.history.pushState({}, '', `/document?id=${data.id}`)
     } catch (err) {
@@ -386,7 +388,7 @@ export function Document() {
           </div>
         </div>
       )}
-      
+
       {/* Info Banner */}
       {document.status === 'published' && document.visibility === 'public' && (
         <div className="bg-green-50 border-b border-green-200 px-4 py-2">
@@ -412,7 +414,7 @@ export function Document() {
           </div>
         </div>
       )}
-      
+
       {/* Header */}
       <div className="border-b border-neutral-light bg-white px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -460,7 +462,7 @@ export function Document() {
               </label>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <ModeSwitcher
               currentMode={document.mode || 'alpha'}
@@ -478,6 +480,14 @@ export function Document() {
                 View
               </button>
             )}
+            <button
+              onClick={() => setShowAddToCollection(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Add to workspace collection"
+            >
+              <FolderPlus className="w-4 h-4" />
+              Add to Collection
+            </button>
             <button
               onClick={() => setShowCreateVersion(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-primary hover:bg-primary-light rounded-lg transition-colors font-medium"
@@ -556,11 +566,11 @@ export function Document() {
 
       {/* Keyboard Shortcuts Panel */}
       {showShortcuts && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={() => setShowShortcuts(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
@@ -616,11 +626,11 @@ export function Document() {
 
       {/* Create Version Modal */}
       {showCreateVersion && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setShowCreateVersion(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
@@ -628,7 +638,7 @@ export function Document() {
             <p className="text-sm text-neutral mb-4">
               Create a manual version of your document. This is like a Git commit - it saves a snapshot with your message.
             </p>
-            
+
             <label className="block mb-4">
               <span className="block text-sm font-medium text-neutral-darkest mb-2">
                 Version Message *
@@ -664,6 +674,13 @@ export function Document() {
           </div>
         </div>
       )}
+
+      <AddToCollectionModal
+        isOpen={showAddToCollection}
+        onClose={() => setShowAddToCollection(false)}
+        documentId={document.id}
+        documentTitle={title}
+      />
     </div>
   )
 }
